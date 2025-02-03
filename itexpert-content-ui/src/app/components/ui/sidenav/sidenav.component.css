@@ -1,0 +1,14 @@
+.app-container {
+  height: 100%;
+  width: 100%;
+}
+.app-sidenav {
+  width: 15%;
+}
+.app-sidenav-content {
+  display: flex;
+  height: 100%;
+}
+.contents{
+  /*transform: translate(30px);*/
+}

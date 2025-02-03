@@ -1,0 +1,213 @@
+<p *ngIf="parentNode && !parentNode.parentCode">
+  <mat-toolbar>
+    <span> {{ "PROJECT" | translate }} : {{ parentNode.name }}</span>
+  </mat-toolbar>
+</p>
+<p *ngIf="parentNode && parentNode.parentCode">
+  <mat-toolbar>
+    <span> {{ "NODE" | translate }} : {{ parentNode.name }}</span>
+  </mat-toolbar>
+</p>
+<p *ngIf="!parentNode">
+  <mat-toolbar>
+    <span> {{ "PROJECTS" | translate }}</span>
+  </mat-toolbar>
+</p>
+
+
+<mat-icon class="icon-display scale2 danger"
+          inline matTooltip="{{ 'DELETED_NODES' | translate}}"
+          (click)="deleteds()">delete</mat-icon>
+
+<mat-icon class="icon-display scale2"
+          *ngIf="this.parentNode"
+          inline matTooltip="{{ 'IMPORT' | translate}}"
+          (click)="fileInput.click()">downloading</mat-icon>
+<input hidden #fileInput type="file"
+       id="file"
+       (change)="import($event.target)">
+
+<button mat-fab aria-label="create new project" class="icon-display" (click)="back()" *ngIf="this.parentNode">
+  <mat-icon>skip_previous</mat-icon>
+</button>
+
+
+<button mat-fab aria-label="create new project" class="icon-display" *ngIf="userAccessService.isAdmin()" (click)="create()">
+  <mat-icon>add</mat-icon>
+</button>
+
+
+
+<button mat-fab aria-label="create new project"
+        *ngIf="parentNode && !userAccessService.isAdmin() && userAccessService.isEditor()" (click)="create()">
+  <mat-icon>add</mat-icon>
+</button>
+
+<span class="form-group" style="margin-left: 90%"
+      *ngIf="parentNode && !userAccessService.isAdmin() && userAccessService.isEditor()">
+  <mat-icon class="icon-display" style="scale: 2" inline matTooltip="{{ 'IMPORT' | translate}}"
+            (click)="fileInput.click()">downloading</mat-icon>
+  <input hidden #fileInput type="file"
+         id="file"
+         (change)="import($event.target)">
+</span>
+
+
+<table mat-table [dataSource]="dataSource" *ngIf="userAccessService.getUser()">
+
+  <ng-container matColumnDef="Status">
+    <th mat-header-cell *matHeaderCellDef> {{ "ACTIVE" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <button (click)="gotoPublished(element)" mat-icon-button>
+        <mat-icon class="{{getPublishedIcon(element)}}">fiber_manual_record</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="Version">
+    <th mat-header-cell *matHeaderCellDef> {{ "VERSION" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <span title='{{element.name | translate}}'>{{ element.version }} </span>
+    </td>
+  </ng-container>
+
+
+  <ng-container matColumnDef="Name">
+    <th mat-header-cell *matHeaderCellDef> {{ "NAME" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <div class="description"><i>{{ element.description }}</i></div>
+      <span title="{{element.name | translate}}, {{'CODE'| translate}}: {{ element.code }}">{{ element.name }} </span>
+    </td>
+  </ng-container>
+
+
+  <ng-container matColumnDef="Last Modification">
+    <th mat-header-cell *matHeaderCellDef> {{ "MODIFICATION_DATE" | translate }}</th>
+    <td mat-cell *matCellDef="let element">{{ element.modificationDate |date :'dd/MM/YYYY HH:mm' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="Modified by">
+    <th mat-header-cell *matHeaderCellDef> {{ "MODIFIED_BY" | translate }}</th>
+    <td mat-cell *matCellDef="let element"> {{ element.userName }}</td>
+  </ng-container>
+
+
+  <ng-container matColumnDef="Translations">
+    <th mat-header-cell *matHeaderCellDef> {{ "TRANSLATIONS" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <mat-icon *ngIf="!element.translations || element.translations.length <= 0" class="icon-display"
+                (click)="translations(element)" inline>flag
+      </mat-icon>
+      <mat-icon *ngIf="element.translations && element.translations.length > 0" class="icon-display danger"
+                (click)="translations(element)" inline>flag
+      </mat-icon>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="Rules">
+    <th mat-header-cell *matHeaderCellDef> {{ "RULES" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <mat-icon *ngIf="!element.rules || element.rules.length <= 0" class="icon-display" (click)="rules(element)" inline
+                matTooltip="{{element.rules}}">list
+      </mat-icon>
+      <mat-icon *ngIf="element.rules && element.rules.length > 0" class="icon-display danger"
+                (click)="rules(element)" inline matTooltip="{{element.rules}}">list
+      </mat-icon>
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="Values">
+    <th mat-header-cell *matHeaderCellDef> {{ "VALUES" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <mat-icon *ngIf="!element.values || element.values.length <= 0" class="icon-display" (click)="values(element)"
+                inline matTooltip="{{ 'VALUES' | translate}}">money
+      </mat-icon>
+      <mat-icon *ngIf="element.values && element.values.length > 0" class="icon-display danger"
+                (click)="values(element)" inline matTooltip="{{ 'VALUES' | translate}}">money
+      </mat-icon>
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="Contents">
+    <th mat-header-cell *matHeaderCellDef> {{ "CONTENTS" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <mat-icon *ngIf="element.haveContent" class="icon-display danger" inline
+                matTooltip="{{ 'CONTENTS' | translate}}" (click)="contents(element)">perm_media
+      </mat-icon>
+      <mat-icon *ngIf="!element.haveContent" class="icon-display" inline matTooltip="{{ 'CONTENTS' | translate}}"
+                (click)="contents(element)">perm_media
+      </mat-icon>
+    </td>
+  </ng-container>
+
+
+  <ng-container matColumnDef="Subnodes">
+    <th mat-header-cell *matHeaderCellDef> {{ "SUB_NODES" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <mat-icon *ngIf="element.haveChilds" class="icon-display danger" inline
+                matTooltip="{{ 'SUB_NODES' | translate}}" (click)="subnodes(element)">extension
+      </mat-icon>
+      <mat-icon *ngIf="!element.haveChilds" class="icon-display" inline matTooltip="{{ 'SUB_NODES' | translate}}"
+                (click)="subnodes(element)">extension
+      </mat-icon>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="Publication">
+    <th mat-header-cell *matHeaderCellDef> {{ "PUBLICATION" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <button mat-icon-button *ngIf="userAccessService.canEdit()"
+              matTooltip="{{'DEPLOY_VERSION'| translate}}"
+              (click)="publish(element)">
+        <mat-icon>play_arrow</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+
+  <ng-container matColumnDef="Actions">
+    <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
+    <td mat-cell *matCellDef="let element">
+      <mat-icon class="icon-display  primary"
+                *ngIf="(userAccessService.canDelete()  && parentNode ) || (parentNode && userAccessService.isEditor())|| (userAccessService.isAdmin())"
+                (click)="view(element)" inline matTooltip="{{ 'VIEW' | translate}}">visibility
+      </mat-icon>
+
+      <mat-icon class="icon-display"
+                *ngIf="( userAccessService.canEdit()  && parentNode )|| (userAccessService.canEdit() && userAccessService.isAdmin())|| (parentNode && userAccessService.isEditor())"
+                (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit
+      </mat-icon>
+
+      <button
+        *ngIf="( userAccessService.canEdit()  && parentNode )
+        || (userAccessService.canEdit() && userAccessService.isAdmin() && parentNode )
+        || (parentNode && userAccessService.isEditor() && parentNode )"
+        mat-icon-button matTooltip="{{'EXPORT'| translate}}"
+              (click)="export(element,'')">
+        <mat-icon>ios_share</mat-icon>
+      </button>
+
+      <button
+        *ngIf="( userAccessService.canEdit()  && parentNode )
+        || (userAccessService.canEdit() && userAccessService.isAdmin() && parentNode )
+        || (parentNode && userAccessService.isEditor() && parentNode )"
+
+        mat-icon-button matTooltip="{{'DEPLOY_ENVIRONMENT'| translate}}"
+              [matMenuTriggerFor]="deployNodeMenu">
+        <mat-icon>share</mat-icon>
+      </button>
+      <mat-menu #deployNodeMenu [overlapTrigger]="false" yPosition="below">
+        <button mat-menu-item *ngFor="let env of getEnvironments()" (click)="deploy(element, env.code)">
+            <small> {{ env.name }}</small>
+        </button>
+      </mat-menu>
+
+      <mat-icon class="icon-display danger"
+                *ngIf="(userAccessService.canDelete()  && parentNode ) || (parentNode && userAccessService.isEditor())|| (userAccessService.isAdmin())"
+                (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete
+      </mat-icon>
+    </td>
+
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" ></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"></tr>
+</table>

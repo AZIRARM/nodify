@@ -1,0 +1,18 @@
+<p>
+  <mat-toolbar>
+    <span> {{ title | translate }}</span>
+  </mat-toolbar>
+</p>
+
+<mat-card class="validation-card" appearance="outlined" class="validation-card">
+  <img mat-card-image src="assets/pictures/logos/nodify_transparent.png" alt=" {{ title | translate }}"/>
+  <mat-card-content>
+    <div>
+      <p>{{ message | translate }}</p>
+    </div>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-button (click)="cancel()">{{ "NO" | translate }}</button>
+    <button mat-button (click)="validate()">{{ "YES" | translate }}</button>
+  </mat-card-actions>
+</mat-card>

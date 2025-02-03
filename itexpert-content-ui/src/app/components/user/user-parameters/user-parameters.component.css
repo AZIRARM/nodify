@@ -1,0 +1,10 @@
+div{
+  width: 90%;
+  height: 90%;
+  margin-top: 5%;
+  margin-left: 5%;
+}
+
+td {
+  cursor: pointer;
+}

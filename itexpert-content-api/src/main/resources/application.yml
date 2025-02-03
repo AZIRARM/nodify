@@ -1,0 +1,18 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGO_URL}
+      auto-index-creation:  true
+      #database: itexpert-content-db
+
+  application:
+    name: content-api
+  main:
+    web-appli cation-type: reactive
+    allow-bean-definition-overriding: true
+    lazy-initialization: true
+
+  jackson:
+    default-property-inclusion: non_empty
+server:
+  port: 9080

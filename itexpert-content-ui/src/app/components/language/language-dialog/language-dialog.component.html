@@ -1,0 +1,34 @@
+<p>
+  <mat-toolbar>
+    <span> {{ "LANGUAGE" | translate }}</span>
+  </mat-toolbar>
+</p>
+<div mat-dialog-content>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "LANGUAGE_CODE" | translate }}</mat-label>
+      <input matInput [(ngModel)]="language.code"placeholder="{{ 'LANGUAGE_CODE' | translate }}" required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "LANGUAGE_NAME" | translate }}</mat-label>
+      <input matInput [(ngModel)]="language.name"placeholder="{{ 'LANGUAGE_NAME' | translate }}" required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "LANGUAGE_DESCRIPTION" | translate }}</mat-label>
+      <input matInput [(ngModel)]="language.description"placeholder="{{ 'LANGUAGE_DESCRIPTION' | translate }}">
+    </mat-form-field>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "LANGUAGE_URL_ICON" | translate }}</mat-label>
+      <input matInput [(ngModel)]="language.urlIcon"placeholder="{{ 'LANGUAGE_URL_ICON' | translate }}">
+    </mat-form-field>
+  </p>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
+  <button mat-button (click)="validate()">{{ "SAVE" | translate }}</button>
+</div>

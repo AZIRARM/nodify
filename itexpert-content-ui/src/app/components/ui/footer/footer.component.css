@@ -1,0 +1,17 @@
+.footer {
+  position: fixed;
+  display: block;
+  height: 80px;
+  width: 100%;
+  background-color: black;
+  color: var(--primary);
+  text-align: center;
+}
+.footer table{
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.footer img {
+  max-width: 60px;
+}

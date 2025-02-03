@@ -1,0 +1,56 @@
+<p>
+  <mat-toolbar>
+    <span> {{ "DELETED_CONTENTS_NODES" | translate }}</span>
+  </mat-toolbar>
+</p>
+<div mat-dialog-content>
+
+
+  <table mat-table [dataSource]="dataSource" style="margin-bottom: 50px">
+    <ng-container matColumnDef="Code">
+      <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <span title='{{element.name | translate}}'>{{element.code}} </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Version">
+      <th mat-header-cell *matHeaderCellDef> {{ "VERSION" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <span title='{{element.version | translate}}'>{{element.version}} </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Last Modification">
+      <th mat-header-cell *matHeaderCellDef> {{ "MODIFICATION_DATE" | translate}} </th>
+      <td mat-cell *matCellDef="let element">{{ element.modificationDate |date :'dd/MM/YYYY HH:mm' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="Modified by">
+      <th mat-header-cell *matHeaderCellDef> {{ "MODIFIED_BY" | translate}} </th>
+      <td mat-cell *matCellDef="let element"> {{element.userName}} </td>
+    </ng-container>
+
+
+    <ng-container matColumnDef="Type">
+      <th mat-header-cell *matHeaderCellDef> {{ "TYPE" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <span title='{{element.type | translate}}'>{{element.type}} </span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="Actions">
+      <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <mat-icon class="icon-display scale2 primary" (click)="activate(element)" inline matTooltip="{{ 'ACTIVATE' | translate}}">restore_from_trash</mat-icon>
+        <mat-icon class="icon-display scale2 danger" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"></tr>
+  </table>
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="close()">{{ "CLOSE" | translate }}</button>
+  </div>
+</div>

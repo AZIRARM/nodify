@@ -1,0 +1,28 @@
+.read {
+}
+.unread {
+  font-weight: bold;
+}
+.notification-table {
+  width: 100%;
+}
+
+.read {
+  color: var(--secondary);;
+}
+
+.unread {
+  font-weight: bold;
+  color: var(--danger);;
+}
+
+.icon-display {
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+mat-paginator {
+  display: flex;
+  justify-content: center;
+}
+
