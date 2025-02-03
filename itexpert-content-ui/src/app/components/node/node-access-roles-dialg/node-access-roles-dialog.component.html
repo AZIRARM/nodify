@@ -1,0 +1,23 @@
+<p>
+  <mat-toolbar>
+    <span> {{ "ACCESS_ROLE" | translate }}</span>
+  </mat-toolbar>
+</p>
+<div mat-dialog-content>
+  <p>
+    <mat-form-field>
+      <mat-label>{{ "NODE_ROLES" | translate }}</mat-label>
+      <mat-select [(ngModel)]="node.roles" name="selectAccess Roles" multiple>
+        <mat-option *ngFor="let element of roles" [value]="element.code">{{element.code}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+
+</div>
+
+
+
+<div mat-dialog-actions>
+  <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
+  <button mat-button (click)="validate()">{{ "SAVE" | translate }}</button>
+</div>

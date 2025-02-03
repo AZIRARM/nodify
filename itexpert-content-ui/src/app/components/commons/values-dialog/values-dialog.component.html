@@ -1,0 +1,55 @@
+<p>
+  <mat-toolbar>
+    <span> {{ "VALUES" | translate }}</span>
+  </mat-toolbar>
+</p>
+<div fxLayout="row">
+<mat-form-field style="width: 20%; margin-right: 5px" layou>
+  <mat-label>{{ "KEY" | translate}}</mat-label>
+  <input matInput placeholder="{{ 'KEY' | translate}}" [(ngModel)]="key">
+</mat-form-field>
+<mat-form-field  style="width: 40%; margin-right: 5px">
+  <mat-label>{{ "VALUE" | translate}}</mat-label>
+  <input matInput placeholder="{{ 'VALUE' | translate}}" [(ngModel)]="value">
+</mat-form-field>
+
+  <button mat-button (click)="add()">{{ "UPDATE_VALUE" | translate}}</button>
+</div>
+
+    <table mat-table [dataSource]="dataSource" style="margin-bottom: 50px">
+
+
+      <ng-container matColumnDef="Key">
+        <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate}} </th>
+        <td mat-cell *matCellDef="let element">
+          <span title='{{element.key | translate}}'>{{element.key}} </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="Value">
+        <th mat-header-cell *matHeaderCellDef> {{ "VERSION" | translate}} </th>
+        <td mat-cell *matCellDef="let element">
+          <span title='{{element.value | translate}}'>{{element.value}} </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="Actions">
+        <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
+        <td mat-cell *matCellDef="let element">
+          <mat-icon class="icon-display" inline matTooltip="{{ 'DELETE' | translate}}" (click)="edit(element)">
+            edit
+          </mat-icon>
+          <mat-icon class="icon-display danger" inline matTooltip="{{ 'DELETE' | translate}}" (click)="remove(element.key)">
+            delete_forever
+          </mat-icon>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"></tr>
+    </table>
+    <div style="width: 100%; text-align: center; margin-top: 5%;">
+      <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
+      <button mat-button (click)="validate()">{{ "SAVE" | translate }}</button>
+    </div>
+

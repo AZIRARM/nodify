@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: "mongo:latest"
+    volumes:
+      - mongo:/data/db
+      - mongo-conf:/data/configdb
+
+  nodify-core:
+    image: nodify-core:latest
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URL: "mongodb://mongo:27017/nodify"
+      ADMIN_PWD: Admin13579++
+    expose:
+      - "8080"
+
+  nodify-api:
+    image: nodify-api:latest
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URL: "mongodb://mongo:27017/nodify"
+    expose:
+      - "9080"
+
+  nodify-ui:
+    image: nodify-ui:latest
+    depends_on:
+      - nodify-core
+      - nodify-api
+    ports:
+      - 80:80
+    environment:
+      EXPERT_CONTENT_CORE_URL: "http://nodify-core:8080"
+      EXPERT_CONTENT_API_URL: "http://nodify-api:9080"
+
+volumes:
+  mongo:
+  mongo-conf:
+

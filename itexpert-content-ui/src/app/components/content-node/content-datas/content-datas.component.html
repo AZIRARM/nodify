@@ -1,0 +1,22 @@
+<p *ngIf="contentNode.datas">
+  <mat-toolbar>
+    <span> {{ "DATAS" | translate }}</span>
+  </mat-toolbar>
+</p>
+<mat-card class="card" appearance="outlined"
+          *ngFor="let item  of contentNode.datas">
+  <mat-card-header>
+    <mat-card-title>{{ item.key }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>{{ item.key }}</p>
+  </mat-card-content>
+  <mat-card-footer class="card-footer">
+    <mat-chip-set aria-label="Chihuahua traits">
+      <mat-chip>
+        <button mat-button (click)="deleteData(contentNode.code, item.key)" class="warn">{{ "DELETE" | translate }}
+        </button>
+      </mat-chip>
+    </mat-chip-set>
+  </mat-card-footer>
+</mat-card>
