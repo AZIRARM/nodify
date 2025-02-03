@@ -1,0 +1,47 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGO_URL}
+      auto-index-creation:  true
+
+  application:
+    name: content-core
+
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+    lazy-initialization: true
+
+  jackson:
+    default-property-inclusion: non_empty
+
+  springdoc:
+    show-actuator: true
+    use-management-port: true
+    show-login-endpoint: true
+    webjars.prefix: ""
+
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: openapi,swagger-ui
+
+app:
+  defaultLanguages: EN;FR;ES
+  admin-user: admin
+  admin-password: ${ADMIN_PWD}
+
+springbootwebfluxjjwt:
+  jjwt:
+    secret: 908jnNDNKD%%+D++*1°030..W***££%_°°00+/.?????%%%Jnn,ds---))ààuezyzuiuaueyruziu
+    expiration: 28800
+  password:
+    encoder:
+      secret: sddfskjnjnsdfdjsdfjjdsb0399¨¨¨%*%++++£%*¨¨¨¨¨//.
+      iteration:  33
+      keylength:  256
+server:
+  port : 8080

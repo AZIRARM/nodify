@@ -1,0 +1,65 @@
+<p>
+  <mat-toolbar *ngIf="!isCreation && isProject">
+    <span> {{ "PROJECT_UPDATE" | translate }}</span>
+  </mat-toolbar>
+  <mat-toolbar *ngIf="isCreation && isProject">
+    <span> {{ "PROJECT_CREATE" | translate }}</span>
+  </mat-toolbar>
+  <mat-toolbar *ngIf="!isCreation && !isProject">
+    <span> {{ "NODE_UPDATE" | translate }}</span>
+  </mat-toolbar>
+  <mat-toolbar *ngIf="isCreation && !isProject">
+    <span> {{ "NODE_CREATE" | translate }}</span>
+  </mat-toolbar>
+</p>
+
+<div mat-dialog-content>
+
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "NODE_NAME" | translate }}</mat-label>
+      <input matInput [(ngModel)]="node.name" (ngModelChange)="generateCode()" placeholder="{{ 'NODE_NAME' | translate }}" required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "NODE_CODE" | translate }}</mat-label>
+      <input matInput [(ngModel)]="node.code" disabled placeholder="{{ 'NODE_CODE' | translate }}" required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "NODE_DESCRIPTION" | translate }}</mat-label>
+      <input matInput [(ngModel)]="node.description" placeholder="{{ 'NODE_DESCRIPTION' | translate }}">
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "NODE_TYPE" | translate }}</mat-label>
+      <input matInput [(ngModel)]="node.type" placeholder="{{ 'NODE_TYPE' | translate }}">
+    </mat-form-field>
+  </p>
+
+  <p>
+    <mat-form-field>
+      <mat-label>{{ "NODE_DEFAULT_LANGUAGE" | translate }}</mat-label>
+      <mat-select [(ngModel)]="node.defaultLanguage" name="selectLanguage" required>
+        <mat-option *ngFor="let lang of languages" [value]="lang.code">{{lang.code}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+
+  <p>
+    <mat-form-field>
+      <mat-label>{{ "NODE_LANGUAGE" | translate }}</mat-label>
+      <mat-select [(ngModel)]="node.languages" name="selectLanguages" multiple>
+        <mat-option *ngFor="let lang of languages" [value]="lang.code">{{lang.code}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
+  <button mat-button [disabled]="!node.defaultLanguage || !node.code || !node.name|| node.name.trim().length<4" (click)="validate()">{{ "SAVE" | translate }}</button>
+</div>

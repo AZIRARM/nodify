@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        registry = "azirar.ovh:5143/nodify-lib"
+    }
+
+    tools {
+        maven "Maven"
+        jdk "Jdk"
+    }
+
+    stages {
+        stage('Initialize') {
+            steps {
+                sh '''
+                    set -e
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                    echo "JAVA_HOME = ${JAVA_HOME}"
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('itexpert-content-lib') {
+                    sh '''
+                        set -e
+                        mvn test
+                    '''
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('itexpert-content-lib') {
+                    sh '''
+                        set -e
+                        mvn clean install -DskipTests
+                    '''
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+            }
+        }
+    }
+}

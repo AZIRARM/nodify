@@ -1,0 +1,19 @@
+table {
+  width: 100%;
+}
+td {
+  cursor: pointer;
+}
+
+.file-input {
+  display: none;
+}
+.description {
+  display: block;
+  color: var(--secondary);;
+  width: 100%;
+  height: 5%;;
+  z-index: 999;
+  max-width: 120px;
+  font-size: smaller;
+}

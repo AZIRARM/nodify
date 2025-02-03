@@ -1,0 +1,41 @@
+button {
+  margin-right: 8px;
+}
+
+.validation-card {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  color: var(--secondary);
+}
+.validation-card img {
+  width: 90%;
+}
+div {
+  width: 100%;
+  height: auto;
+  text-align: center;
+  margin-top: 5%;
+  margin-bottom: 10%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+mat-card {
+  max-width: 500px;
+}
+
+img {
+  width: 200px;
+  height: auto;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+mat-card-actions {
+  margin-right: auto;
+  margin-left: auto;
+}
+mat-card {
+  border-width: 0;
+}
