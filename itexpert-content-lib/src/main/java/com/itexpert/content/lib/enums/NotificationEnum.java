@@ -1,0 +1,5 @@
+package com.itexpert.content.lib.enums;
+
+public enum NotificationEnum {
+    CREATION, DELETION,  DELETION_DEFINITIVELY, ARCHIVING, REACTIVATION, DEPLOYMENT, UPDATE, REVERT, EXPORT, CREATION_OR_UPDATE, IMPORT
+}

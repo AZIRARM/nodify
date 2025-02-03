@@ -1,0 +1,105 @@
+/* You can add global styles to this file, and also import other style files */
+:root {
+  --primary: #6fb506; /* Vert foncé riche pour le rôle principal */
+  --secondary: #609a05; /* Vert légèrement plus clair pour le rôle secondaire */
+  --danger: #ff0707; /* Rouge profond pour signaler un danger */
+  --warn: #f69738; /* Jaune chaud pour un avertissement */
+  --disabled: #686262; /* Gris chaud pour une desactivation */
+}
+
+html, body { height: 92%; width: 100% }
+body {
+  margin: 0; font-family:
+  Roboto, "Helvetica Neue", sans-serif;
+  color: var(--primary);
+}
+
+mat-toolbar{
+  width: 96%;
+}
+
+.icon-display {
+  transform: scale(1);
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-bottom: 5px;
+}
+.icon-display:hover {
+  transform: scale(1.2);
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.scale1-2{
+  transform: scale(1.3);
+}
+.scale1-5{
+  transform: scale(1.6);
+}
+.scale2{
+  transform: scale(2.1);
+}
+.scale3{
+  transform: scale(3.1);
+}
+
+
+.scale1-2:hover{
+  transform: scale(1.2);
+}
+.scale1-5:hover{
+  transform: scale(1.5);
+}
+.scale2:hover{
+  transform: scale(2);
+}
+.scale3:hover{
+  transform: scale(3);
+}
+
+
+
+.primary{
+  color: var(--primary);
+}
+.secondary{
+  color: var(--secondary);
+}
+.danger{
+  color: var(--danger);
+}
+.warn{
+  color: var(--warn);
+}
+.disabled{
+  color: var(--disabled);
+}
+
+.mat-dialog-container {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+mat-form-field{
+  padding-left: 20px;
+  padding-top: 20px;
+  width: 80%;
+}
+.container {
+  width: 100%;
+  text-align: center;
+}
+
+button{
+  width: 10%;
+}
+
+@import 'ngx-toastr/toastr';
+
+@import 'codemirror/lib/codemirror';
+@import 'codemirror/addon/display/fullscreen';
+
+@import 'codemirror/theme/material';
+@import 'codemirror/theme/idea';
+@import 'codemirror/theme/monokai';
+

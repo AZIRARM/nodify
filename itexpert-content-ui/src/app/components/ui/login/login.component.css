@@ -1,0 +1,24 @@
+div{
+  width: 90%;
+  height: 90%;
+  text-align: center;
+  margin-top: 5%;
+  margin-right: auto;
+  margin-left: auto;
+}
+.login-card {
+  max-width: 50vh;
+  max-height: 50vw;
+  margin-right: auto;
+  margin-left: auto;
+}
+.login-card img {
+   max-width: 30vh;
+   max-height: 30vw;
+   margin-right: auto;
+   margin-left: auto;
+ }
+button{
+  margin-right: auto;
+  margin-left: auto;
+}

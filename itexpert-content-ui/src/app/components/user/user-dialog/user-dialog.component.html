@@ -1,0 +1,55 @@
+<p>
+  <mat-toolbar>
+    <span> {{ "USER" | translate }}</span>
+  </mat-toolbar>
+</p>
+<div mat-dialog-content>
+
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "USER_FIRSTNAME" | translate }}</mat-label>
+      <input matInput [(ngModel)]="user.firstname" placeholder="{{ 'USER_FIRSTNAME' | translate }}" required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "USER_LASTNAME" | translate }}</mat-label>
+      <input matInput [(ngModel)]="user.lastname"placeholder="{{ 'USER_LASTNAME' | translate }}"  required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "USER_EMAIL" | translate }}</mat-label>
+      <input matInput [(ngModel)]="user.email" placeholder="{{ 'USER_EMAIL' | translate }}" [disabled]="isAdmin()" required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
+      <input matInput type="password" [(ngModel)]="user.password" placeholder="{{ 'USER_PASSWORD' | translate }}" required>
+    </mat-form-field>
+  </p>
+
+  <p>
+    <mat-form-field>
+      <mat-label>{{ "USER_ROLES" | translate }}</mat-label>
+      <mat-select [(ngModel)]="user.roles" name="selectRoles" [disabled]="isAdmin()"  required>
+        <mat-option *ngFor="let role of roles" [value]="role.code">{{role.code}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+
+  <p>
+    <mat-form-field>
+      <mat-label>{{ "PROJECTS" | translate }}</mat-label>
+      <mat-select [(ngModel)]="user.projects" name="selectProjects"  [disabled]="isAdmin()" required multiple>
+        <mat-option *ngFor="let project of projects" [value]="project.code">{{project.name}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
+  <button mat-button [disabled]="!user || !user.email  || !user.roles|| user.roles.length <=0 " (click)="validate()">{{ "SAVE" | translate }}</button>
+</div>

@@ -1,0 +1,69 @@
+<p>
+  <mat-toolbar>
+    <span> {{ "TRANSLATIONS" | translate }}</span>
+  </mat-toolbar>
+</p>
+<div mat-dialog-content>
+
+  <div fxLayout="row">
+    <mat-form-field style="width: 20%; margin-right: 5px" >
+      <mat-label>{{ "NODE_DEFAULT_LANGUAGE" | translate }}</mat-label>
+      <mat-select [(ngModel)]="current.language" name="selectLanguage" required>
+        <mat-option *ngFor="let lang of languages" [value]="lang.code">{{lang.code}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field style="width: 20%; margin-right: 5px" >
+      <mat-label>{{ "KEY" | translate}}</mat-label>
+      <input matInput placeholder="{{ 'KEY' | translate}}" [(ngModel)]="current.key" required>
+    </mat-form-field>
+    <mat-form-field style="width: 40%; margin-right: 5px" >
+      <mat-label>{{ "VALUE" | translate}}</mat-label>
+      <input matInput placeholder="{{ 'VALUE' | translate}}" [(ngModel)]="current.value" required>
+    </mat-form-field>
+
+    <button mat-button (click)="create()">{{ "UPDATE_VALUE" | translate}}</button>
+  </div>
+
+
+  <table mat-table [dataSource]="dataSource" style="margin-bottom: 50px">
+
+
+    <ng-container matColumnDef="Language">
+      <th mat-header-cell *matHeaderCellDef> {{ "VERSION" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <span title='{{element.language | translate}}'>{{element.language}} </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Key">
+      <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <span title='{{element.key | translate}}'>{{element.key}} </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Value">
+      <th mat-header-cell *matHeaderCellDef> {{ "VERSION" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <span title='{{element.value | translate}}'>{{element.value}} </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Actions">
+      <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
+      <td mat-cell *matCellDef="let element">
+        <mat-icon class="icon-display" (click)="update(element)" inline matTooltip="{{ 'UPDATE' | translate}}">edit</mat-icon>
+        <mat-icon class="icon-display danger" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"></tr>
+  </table>
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
+    <button mat-button (click)="validate()">{{ "SAVE" | translate }}</button>
+  </div>
+
+</div>

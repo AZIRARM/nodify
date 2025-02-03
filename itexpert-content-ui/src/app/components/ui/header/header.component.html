@@ -1,0 +1,42 @@
+<mat-toolbar>
+  <button mat-icon-button (click)="toggleSidenav()" matTooltip="Menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>{{'APP_NAME' | translate}}</span>
+  <span class="toolbar-item-spacer"></span>
+
+
+  <button mat-icon-button (click)="toggleTheme()">
+    <mat-icon>{{ isDarkMode ? 'wb_sunny' : 'nights_stay' }}</mat-icon>
+  </button>
+
+  <span class="form-inline" id="language">
+    <select class="form-control" #selectedLang (change)="changeSiteLanguage(selectedLang.value)">
+      <option *ngFor="let language of languageList" [value]="language.code"
+              [selected]="language.code === selectedLanguage">
+        {{ language.label }}
+      </option>
+    </select>
+  </span>
+
+  <button mat-icon-button routerLink="/notifications" matTooltip="{{'NOTIFICATIONS'| translate}}">
+    <mat-icon matBadge="{{ (nbNotifications < 99) ? nbNotifications : '99+' }}">
+      notifications
+    </mat-icon>
+  </button>
+  <button mat-icon-button matTooltip="{{'MY_ACCOUNT'| translate}}" [matMenuTriggerFor]="userAccountMenu">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+  <mat-menu #userAccountMenu [overlapTrigger]="false" yPosition="below">
+    <button mat-menu-item routerLink="/userInfos">
+      <mat-icon>person</mat-icon><span>{{"MY_ACCOUNT" | translate}}</span>
+    </button>
+    <button mat-menu-item routerLink="/helps">
+      <mat-icon>help</mat-icon><span>{{"HELP" | translate}}</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>exit_to_app</mat-icon>{{"LOGOUT" | translate}}
+    </button>
+  </mat-menu>
+</mat-toolbar>

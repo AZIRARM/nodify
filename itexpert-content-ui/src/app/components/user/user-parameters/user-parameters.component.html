@@ -1,0 +1,10 @@
+<p>
+  <mat-toolbar>
+    <span> {{ "PARAMETERS" | translate}}</span>
+  </mat-toolbar>
+</p>
+<div>
+<p>
+  <mat-slide-toggle [(ngModel)]="parameters.acceptNotifications" (change)="save()" >{{ "ACCEPT_NOTIFICATION" | translate}}</mat-slide-toggle>
+</p>
+</div>
