@@ -62,6 +62,7 @@
 * Summary of key benefits
 * Call to action: Try Nodify today
 
+[INSTALLATION.md](assets/INSTALLATION.md)
 
 ## License
 Nodify is licensed under the Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)**.
