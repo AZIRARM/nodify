@@ -62,14 +62,7 @@
 * Résumé des principaux avantages
 * Appel à l'action : Essayez Nodify dès aujourd'hui
 
-## Installation de Nodify avec Docker Compose
-
-### Prérequis
-
-- **Docker** installé sur votre machine : [Installer Docker](https://docs.docker.com/get-docker/)
-- **Docker Compose** installé : [Installer Docker Compose](https://docs.docker.com/compose/install/)
-
-### Installation
+## Installation
 [INSTALLATION.md](assets/INSTALLATION.md)
 
    
