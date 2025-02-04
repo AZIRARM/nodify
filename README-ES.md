@@ -62,6 +62,9 @@
 * Resumen de los beneficios clave.
 * Llamado a la acción: ¡Prueba Nodify hoy mismo!
 
+## Instalación
+[INSTALLATION.md](assets/INSTALLATION.md)
+    
 ## Licencia
 
 Nodify está bajo la licencia Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)**.

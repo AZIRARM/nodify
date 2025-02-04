@@ -62,6 +62,10 @@
 * Résumé des principaux avantages
 * Appel à l'action : Essayez Nodify dès aujourd'hui
 
+## Installation
+[INSTALLATION.md](assets/INSTALLATION.md)
+
+   
 ## License
 Nodify est sous licence Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)**
 
