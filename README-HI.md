@@ -63,7 +63,7 @@
 * कार्रवाई के लिए कॉल: आज ही Nodify आज़माएँ!
 
 
-### स्थापना
+## स्थापना
 [INSTALLATION.md](assets/INSTALLATION.md)
 
 ## लाइसेंस
