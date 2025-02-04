@@ -62,6 +62,9 @@
 * 关键优势概述。
 * 行动号召：立即试用 Nodify！
 
+## 安装
+[INSTALLATION.md](assets/INSTALLATION.md)
+
 ## 许可协议
 
 Nodify 采用 **知识共享署名-非商业性 4.0 国际许可协议（CC BY-NC 4.0）** 进行授权。
