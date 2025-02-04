@@ -62,6 +62,16 @@
 * Zusammenfassung der wichtigsten Vorteile
 * Handlungsaufforderung: Probieren Sie Nodify noch heute aus!
 
+## Installation von Nodify mit Docker Compose
+
+### Voraussetzungen
+
+- **Docker** auf Ihrem Rechner installiert: [Docker installieren](https://docs.docker.com/get-docker/)
+- **Docker Compose** installiert: [Docker Compose installieren](https://docs.docker.com/compose/install/)
+
+### Installation
+[INSTALLATION.md](assets/INSTALLATION.md)
+
 ## Lizenz
 
 Nodify ist unter der Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)** lizenziert.
