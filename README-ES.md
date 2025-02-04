@@ -62,6 +62,16 @@
 * Resumen de los beneficios clave.
 * Llamado a la acción: ¡Prueba Nodify hoy mismo!
 
+## Instalación de Nodify con Docker Compose
+
+### Requisitos previos
+
+- **Docker** instalado en tu máquina: [Instalar Docker](https://docs.docker.com/get-docker/)
+- **Docker Compose** instalado: [Instalar Docker Compose](https://docs.docker.com/compose/install/)
+
+### Instalación
+[INSTALLATION.md](assets/INSTALLATION.md)
+    
 ## Licencia
 
 Nodify está bajo la licencia Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)**.
