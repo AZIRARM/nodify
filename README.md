@@ -62,6 +62,7 @@
 * Summary of key benefits
 * Call to action: Try Nodify today
 
+## Installation
 [INSTALLATION.md](assets/INSTALLATION.md)
 
 ## License
