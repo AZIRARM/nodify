@@ -1,0 +1,22 @@
+<div name="contentCreationPicture" *ngIf="currentContent.type ==='PICTURE'"  class="viewCode">
+  <app-content-code-actions
+    [title]="'PICTURE'"
+    [currentContent]="currentContent"
+    (close)="closeFactory()"
+    (validate)="validateFactory()"></app-content-code-actions>
+  <div fxLayout="row">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "CODE" | translate }}</mat-label>
+      <input type="text" matInput [(ngModel)]="currentContent.code" disabled placeholder="{{ 'CODE' | translate }}">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "NODE_DESCRIPTION" | translate }}</mat-label>
+      <input matInput [(ngModel)]="currentContent.description" placeholder="{{ 'DESCRIPTION' | translate }}">
+    </mat-form-field>
+  </div>
+  <img src="{{currentContent.file.data}}" width="20%" height="auto"/>
+  <input type="file" (change)="onFileChangeFactory($event)" accept="image/*">
+
+  <br>
+  <app-content-datas [contentNode]="currentContent"></app-content-datas>
+</div>

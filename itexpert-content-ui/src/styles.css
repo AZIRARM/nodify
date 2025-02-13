@@ -94,6 +94,53 @@ button{
   width: 10%;
 }
 
+
+
+.viewCode {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 99.99%;
+  top: 0;
+  left: 0;
+  color: var(--secondary) !important;
+  background-color: black;
+  z-index: 99;
+}
+.code-validation{
+  color: var(--secondary) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  height: 50px !important;
+}
+mat-form-field {
+   padding-left: 20px;
+   padding-top: 20px;
+   width: 30%  ;
+   color: var(--secondary) !important;
+ }
+mat-form-field mat-label {
+  color: var(--secondary) !important;
+}
+mat-form-field input {
+  border-style: solid !important;
+  border-width: 1px !important;
+  height: 50px !important;
+  border-color: var(--primary) !important;
+  color: var(--secondary) !important;
+}
+
+.CodeMirror{
+  height:65vh;
+  font-size: 12px;
+}
+
+h2{
+  color: var(--secondary) !important;
+}
+
+
+
 @import 'ngx-toastr/toastr';
 
 @import 'codemirror/lib/codemirror';

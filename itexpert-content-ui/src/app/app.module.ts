@@ -63,7 +63,9 @@ import {TokenInterceptor} from "./interceptors/TokenInterceptor";
 import {ContentNodeDialogComponent} from './components/content-node/content-node-dialog/content-node-dialog.component';
 import {AccessRoleService} from "./services/AccessRoleService";
 import {ValuesDialogComponent} from './components/commons/values-dialog/values-dialog.component';
-import {NodeAccessRolesDialogComponent} from './components/node/node-access-roles-dialg/node-access-roles-dialog.component';
+import {
+  NodeAccessRolesDialogComponent
+} from './components/node/node-access-roles-dialg/node-access-roles-dialog.component';
 import {
   NodeRulesConditionsDialogComponent
 } from './components/commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component';
@@ -92,14 +94,37 @@ import {MatChipsModule} from "@angular/material/chips";
 import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 import {ContentDatasComponent} from "./components/content-node/content-datas/content-datas.component";
 import {ThemeService} from "./services/ThemeService";
+import {ContentCodeComponent} from "./components/content-node/content-code/content-code.component";
+import {ContentCodeJsComponent} from "./components/content-node/content-code/content-code-js/content-code-js.component";
+import {
+  ContentCodeCssComponent
+} from "./components/content-node/content-code/content-code-css/content-code-css.component";
+import {
+  ContentCodeHtmlComponent
+} from "./components/content-node/content-code/content-code-html/content-code-html.component";
+import {
+  ContentCodeJsonComponent
+} from "./components/content-node/content-code/content-code-json/content-code-json.component";
+import {
+  ContentCodePictureComponent
+} from "./components/content-node/content-code/content-code-picture/content-code-picture.component";
+import {
+  ContentCodeFileComponent
+} from "./components/content-node/content-code/content-code-file/content-code-file.component";
+import {
+  ContentCodeUrlsComponent
+} from "./components/content-node/content-code/content-code-urls/content-code-urls.component";
+import {
+  ContentCodeActionsComponent
+} from "./components/content-node/content-code/content-code-actions/content-code-actions.component";
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
 }
 
-export function defaultLanguage (){
-  let lang:string =  window.localStorage.getItem("defaultLanguage")!;
-  if(!lang) {
+export function defaultLanguage() {
+  let lang: string = window.localStorage.getItem("defaultLanguage")!;
+  if (!lang) {
     lang = "en";
   }
   return lang;
@@ -136,7 +161,16 @@ export function defaultLanguage (){
     UserNamePipe,
     ContentChartsComponent,
     TypeofPipe,
-    ContentDatasComponent
+    ContentDatasComponent,
+    ContentCodeComponent,
+    ContentCodeJsComponent,
+    ContentCodeCssComponent,
+    ContentCodeHtmlComponent,
+    ContentCodeJsonComponent,
+    ContentCodePictureComponent,
+    ContentCodeFileComponent,
+    ContentCodeUrlsComponent,
+    ContentCodeActionsComponent
   ],
   imports: [
     BrowserModule,
