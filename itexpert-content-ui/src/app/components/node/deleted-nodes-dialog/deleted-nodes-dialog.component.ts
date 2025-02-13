@@ -19,7 +19,7 @@ export class DeletedNodesDialogComponent implements OnInit{
 
   user:any;
 
-  displayedColumns: string[] = ['Code', 'Version', 'Last Modification', 'Modified by', 'Actions'];
+  displayedColumns: string[] = ['Name', 'Version', 'Last Modification', 'Modified by', 'Actions'];
 
   dataSource: MatTableDataSource<Node>;
   dialogValidationRef: MatDialogRef<ValidationDialogComponent>;

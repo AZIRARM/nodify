@@ -1,0 +1,36 @@
+<div *ngIf="currentContent">
+  <app-content-code-html
+    (close)="closeFactory()"
+    (validate)="validateFactory()"
+    [currentContent]="currentContent"/>
+
+  <app-content-code-js
+    (close)="closeFactory()"
+    (validate)="validateFactory()"
+    [currentContent]="currentContent"/>
+
+  <app-content-code-css
+    (close)="closeFactory()"
+    (validate)="validateFactory()"
+    [currentContent]="currentContent"/>
+
+  <app-content-code-picture
+    (close)="closeFactory()"
+    (validate)="validateFactory()"
+    (onFileChange)="onFileChangeFactory($event)" [currentContent]="currentContent"/>
+
+  <app-content-code-file
+    (close)="closeFactory()"
+    (validate)="validateFactory()"
+    (onFileChange)="onFileChangeFactory($event)" [currentContent]="currentContent"/>
+
+  <app-content-code-json
+    (close)="closeFactory()"
+    (validate)="validateFactory()"
+    [currentContent]="currentContent"/>
+
+  <app-content-code-urls
+    (close)="closeFactory()"
+    (validate)="validateFactory()"
+    [currentContent]="currentContent"/>
+</div>

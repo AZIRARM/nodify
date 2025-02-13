@@ -19,7 +19,7 @@ import {Env} from "../../../../assets/configurations/environment";
 export class DeletedContentsNodesDialogComponent {
   user:any;
 
-  displayedColumns: string[] = ['Code', 'Version', 'Last Modification', 'Modified by', 'Actions'];
+  displayedColumns: string[] = ['Name', 'Version', 'Last Modification', 'Modified by', 'Actions'];
 
   dataSource: MatTableDataSource<ContentNode>;
   dialogValidationRef: MatDialogRef<ValidationDialogComponent>;
