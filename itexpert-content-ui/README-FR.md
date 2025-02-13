@@ -1,5 +1,5 @@
 ## Documentation Utilisateur : Nodify
-![nodify_transparent.png](../../pictures/nodify_transparent.png)
+![nodify_transparent.png](src/assets/pictures/logos/nodify_transparent.png)
 ### Introduction
 
 Nodify est un système de gestion de contenu headless (CMS) puissant et flexible, conçu pour vous permettre de créer et de gérer votre contenu de manière efficace.

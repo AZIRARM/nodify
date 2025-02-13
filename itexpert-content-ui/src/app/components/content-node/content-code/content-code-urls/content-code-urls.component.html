@@ -1,0 +1,37 @@
+<div name="contentCreationUrls" *ngIf="currentContent.type ==='URLS'" class="viewCode">
+  <app-content-code-actions
+    [title]="'URLS'"
+    (close)="closeFactory()"
+    (validate)="validateFactory()"></app-content-code-actions>
+  <button mat-button class="code-validation" (click)="addUrl()" style="margin-bottom: 20px">{{ "ADD" | translate }}</button>
+
+  <p *ngFor="let url of currentContent.urls">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "URL" | translate }}</mat-label>
+      <input type="text" matInput [(ngModel)]="url.url" placeholder="{{ 'URL' | translate }}">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ "TYPE" | translate }}</mat-label>
+      <mat-select [(ngModel)]="url.type" name="selectUrlType">
+        <mat-option value="API"> {{ "API"| translate }}</mat-option>
+        <mat-option value="PAGE"> {{ "PAGE"| translate }}</mat-option>
+        <mat-option value="SCRIPT"> {{ "SCRIPT"| translate }}</mat-option>
+        <mat-option value="STYLE"> {{ "STYLE"| translate }}</mat-option>
+        <mat-option value="MEDIA"> {{ "MEDIA"| translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
+      <textarea [(ngModel)]="url.description" style="with:120px" matInput rows="1"
+                placeholder="{{'DESCRIPTION' | translate }}"></textarea>
+    </mat-form-field>
+    <button (click)="deleteUrl(url)" mat-icon-button>
+      <mat-icon>delete</mat-icon>
+    </button>
+
+  </p>
+
+  <app-content-datas [contentNode]="currentContent"></app-content-datas>
+</div>

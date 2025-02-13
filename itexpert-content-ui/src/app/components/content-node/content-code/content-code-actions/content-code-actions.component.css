@@ -1,0 +1,17 @@
+
+.dialog-title .mat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  background-color: var(--secondary) !important;;
+}
+
+.dialog-title .spacer {
+  flex: 1;
+}
+
+
+.title-left {
+  text-align: left;
+}
