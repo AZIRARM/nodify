@@ -31,6 +31,48 @@
   </mat-form-field>
 </div>
 
+
+
+<div style="display: flex; justify-content: space-between; gap: 20px;">
+  <div mat-dialog-content style="flex: 1; margin-top: 30px; margin-bottom: 30px;" *ngIf="displayCharts && displayCharts.length > 0">
+    <h1 mat-dialog-title>{{ "DISPLAYS" | translate }}</h1>
+    <span *ngFor="let displayedChart of displayCharts">
+      <h3>{{ displayedChart.name | translate }}</h3>
+      <ngx-charts-pie-chart
+        [view]="viewDisplays"
+        [scheme]="colorScheme"
+        [results]="displayedChart.data"
+        [gradient]="gradient"
+        [legend]="showLegend"
+        [legendPosition]="legendPosition"
+        [labels]="showLabels"
+        [doughnut]="isDoughnut"
+        (activate)="onActivate($event)"
+        (deactivate)="onDeactivate($event)">
+      </ngx-charts-pie-chart>
+    </span>
+  </div>
+
+  <div mat-dialog-content style="flex: 1; margin-top: 30px; margin-bottom: 30px;" *ngIf="clickCharts && clickCharts.length > 0">
+    <h1 mat-dialog-title>{{ "CLICKS" | translate }}</h1>
+    <span *ngFor="let clickChart of clickCharts">
+      <h3>{{ clickChart.name | translate }}</h3>
+      <ngx-charts-pie-chart
+        [view]="viewClicks"
+        [scheme]="colorScheme"
+        [results]="clickChart.data"
+        [gradient]="gradient"
+        [legend]="showLegend"
+        [legendPosition]="legendPosition"
+        [labels]="showLabels"
+        [doughnut]="isDoughnut"
+        (activate)="onActivate($event)"
+        (deactivate)="onDeactivate($event)">
+      </ngx-charts-pie-chart>
+    </span>
+  </div>
+</div>
+
 <div mat-dialog-content style="margin-bottom: 80px"
      *ngIf="feedbackCharts && feedbackCharts && feedbackCharts.length > 0">
 
@@ -99,48 +141,9 @@
   </table>
 </div>
 
-<div mat-dialog-content style="margin-top: 30px;margin-bottom: 30px; margin-right: 30px"  *ngIf="displayCharts && displayCharts.length > 0">
-  <h1 mat-dialog-title>{{ "DISPLAYS" | translate }}</h1>
 
-  <span *ngFor="let displayedChart of displayCharts">
-    <h3>{{ displayedChart.name | translate }}</h3>
 
- <ngx-charts-pie-chart
-   [view]="viewDisplays"
-   [scheme]="colorScheme"
-   [results]="displayedChart.data"
-   [gradient]="gradient"
-   [legend]="showLegend"
-   [legendPosition]="legendPosition"
-   [labels]="showLabels"
-   [doughnut]="isDoughnut"
-   (activate)="onActivate($event)"
-   (deactivate)="onDeactivate($event)">
 
- </ngx-charts-pie-chart>
-  </span>
-</div>
-<br>
-<div mat-dialog-content style="margin-top: 30px;margin-bottom: 30px; margin-right: 30px" *ngIf="clickCharts && clickCharts.length > 0">
-
-  <h1 mat-dialog-title>{{ "CLICKS" | translate }}</h1>
-  <span *ngFor="let clickChart of clickCharts">
-    <h3>{{ clickChart.name | translate}}</h3>
-<ngx-charts-pie-chart
-  [view]="viewClicks"
-  [scheme]="colorScheme"
-  [results]="clickChart.data"
-  [gradient]="gradient"
-  [legend]="showLegend"
-  [legendPosition]="legendPosition"
-  [labels]="showLabels"
-  [doughnut]="isDoughnut"
-  (activate)="onActivate($event)"
-  (deactivate)="onDeactivate($event)"
->
-</ngx-charts-pie-chart>
-  </span>
-</div>
 <div mat-dialog-actions>
   <button mat-button class="warn" (click)="initFilter()">{{ "INIT" | translate }}</button>
 </div>

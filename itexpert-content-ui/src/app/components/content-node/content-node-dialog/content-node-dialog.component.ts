@@ -1,4 +1,4 @@
-import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {Node} from "../../../modeles/Node";
 import {TranslateService} from "@ngx-translate/core";
 import {ToastrService} from "ngx-toastr";
@@ -27,7 +27,6 @@ import {Env} from "../../../../assets/configurations/environment";
 import {
   DeletedContentsNodesDialogComponent
 } from "../deleted-contents-nodes-dialog/deleted-contents-nodes-dialog.component";
-import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
 import {NodeService} from "../../../services/NodeService";
 
 @Component({
