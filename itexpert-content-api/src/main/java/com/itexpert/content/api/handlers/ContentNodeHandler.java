@@ -92,7 +92,7 @@ public class ContentNodeHandler {
     private Mono<ContentNode> findContentNodeByCode(String code,
                                                     StatusEnum status,
                                                     String translation) {
-        return this.contentNodeRepository.findByCodeAndStatus(code,status.name())
+        return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
                 .filter(contentNode -> !contentNode.getType().equals(ContentTypeEnum.FILE) && !contentNode.getType().equals(ContentTypeEnum.PICTURE))
                 .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status))
                 .flatMap(contentNode -> this.contentHelper.fillValues(contentNode, status))
@@ -141,13 +141,21 @@ public class ContentNodeHandler {
     }
 
     public Mono<Value> getValueByContentNodeCodeAndKey(String code, String key, StatusEnum status) {
-        return this.contentNodeRepository.findByCodeAndStatus(code,status.name())
+        return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
                 .filter(contentNode -> ObjectUtils.isNotEmpty(contentNode.getDatas()))
                 .map(contentNode ->
                         contentNode.getDatas().stream()
                                 .filter(value1 -> value1.getKey().equals(key))
                                 .findFirst().get()
                 );
+
+    }
+
+    public Flux<Value> getValueByContentNodeCode(String code, StatusEnum status) {
+        return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
+                .filter(contentNode -> ObjectUtils.isNotEmpty(contentNode.getDatas()))
+                .map(com.itexpert.content.lib.entities.ContentNode::getDatas)
+                .flatMapIterable(values -> values);
 
     }
 
