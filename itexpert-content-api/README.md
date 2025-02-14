@@ -1,90 +1,183 @@
-# Documentation Développeur de l'API Nodify
+# Nodify API Developer Documentation
 
-## Vue d'ensemble
-Bienvenue dans la documentation de l'API Nodify. Cette API fournit des endpoints pour gérer les retours utilisateurs (feedbacks), les nœuds de contenu, les affichages de contenu, les clics sur le contenu et les nœuds. L'API suit les principes RESTful et permet d'interagir avec divers composants du système Nodify.
+## Overview
+Welcome to the Nodify API documentation. This API provides endpoints for managing feedback, content nodes, content displays, content clicks, and nodes. The API follows RESTful principles and allows for interaction with various components of the Nodify system.
 
-**URL de base :** `http://localhost:9080`
+**Base URL:** `http://localhost:9080`
 
 ---
 
 ## Endpoints
 
-### Endpoints de Feedback
-#### Récupérer tous les feedbacks
+### Feedback Endpoints
+#### Retrieve all feedbacks
 `GET /v0/feedbacks`
-- **Réponse:** `200 OK`
-- **Retourne:** Liste des objets feedback.
+- **Response:** `200 OK`
+- **Returns:** List of feedback objects.
 
-#### Créer un nouveau feedback
+#### Create new feedback
 `POST /v0/feedbacks`
-- **Corps de la requête:** Objet feedback.
-- **Réponse:** `200 OK`
-- **Retourne:** L'objet feedback créé.
+- **Request Body:** Feedback object.
+- **Response:** `200 OK`
+- **Returns:** Created feedback object.
 
-#### Récupérer un feedback par ID
+#### Retrieve feedback by ID
 `GET /v0/feedbacks/id/{id}`
-- **Paramètre de chemin:** `id` (UUID)
-- **Réponse:** `200 OK`
-- **Retourne:** Un objet feedback.
+- **Path Parameter:** `id` (UUID)
+- **Response:** `200 OK`
+- **Returns:** A feedback object.
 
-#### Supprimer un feedback par ID
+#### Delete feedback by ID
 `DELETE /v0/feedbacks/id/{id}`
-- **Paramètre de chemin:** `id` (UUID)
-- **Réponse:** `200 OK`
-- **Retourne:** Booléen indiquant le succès.
+- **Path Parameter:** `id` (UUID)
+- **Response:** `200 OK`
+- **Returns:** Boolean indicating success.
 
-#### Récupérer les feedbacks par ID utilisateur
+#### Retrieve feedback by user ID
 `GET /v0/feedbacks/userId/{userId}`
-- **Paramètre de chemin:** `userId` (String)
-- **Réponse:** `200 OK`
-- **Retourne:** Liste des feedbacks.
+- **Path Parameter:** `userId` (String)
+- **Response:** `200 OK`
+- **Returns:** List of feedbacks.
 
-#### Récupérer les feedbacks par code de contenu
+#### Retrieve feedback by content code
 `GET /v0/feedbacks/contentCode/{code}`
-- **Paramètre de chemin:** `code` (String)
-- **Réponse:** `200 OK`
-- **Retourne:** Liste des feedbacks.
+- **Path Parameter:** `code` (String)
+- **Response:** `200 OK`
+- **Returns:** List of feedbacks.
 
 ---
 
-### Endpoints des Nœuds de Contenu
-#### Récupérer les données par code de contenu
+### Content Node Endpoints
+#### Retrieve data by content code
 `GET /v0/contents/code/{code}/data`
-- **Paramètre de chemin:** `code` (String)
-- **Paramètre de requête:** `status` (Optionnel, Par défaut: `PUBLISHED`, Enum: `SNAPSHOT`, `PUBLISHED`, `ARCHIVE`, `DELETED`)
-- **Réponse:** `200 OK`
-- **Retourne:** Liste des valeurs.
+- **Path Parameter:** `code` (String)
+- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`, Enum: `SNAPSHOT`, `PUBLISHED`, `ARCHIVE`, `DELETED`)
+- **Response:** `200 OK`
+- **Returns:** List of values.
 
-#### Sauvegarder les données par code de contenu
+#### Save data by content code
 `PATCH /v0/contents/code/{code}/data`
-- **Paramètre de chemin:** `code` (String)
-- **Corps de la requête:** Objet valeur.
-- **Réponse:** `200 OK`
-- **Retourne:** Objet valeur mis à jour.
+- **Path Parameter:** `code` (String)
+- **Request Body:** Value object.
+- **Response:** `200 OK`
+- **Returns:** Updated value object.
 
-#### Récupérer tous les nœuds de contenu par code de nœud
+#### Retrieve all content nodes by node code
 `GET /v0/contents/node/code/{code}`
-- **Paramètre de chemin:** `code` (String)
-- **Réponse:** `200 OK`
-- **Retourne:** Liste des nœuds de contenu.
+- **Path Parameter:** `code` (String)
+- **Response:** `200 OK`
+- **Returns:** List of content nodes.
 
-#### Récupérer un nœud de contenu par code
+#### Retrieve content node by code
 `GET /v0/contents/code/{code}`
-- **Paramètre de chemin:** `code` (String)
-- **Réponse:** `200 OK`
-- **Retourne:** Objet nœud de contenu.
+- **Path Parameter:** `code` (String)
+- **Response:** `200 OK`
+- **Returns:** Content node object.
 
 ---
 
-### Vérification de l'état de l'API
-#### Vérifier l'état de santé de l'API
+### Content Display Endpoints
+#### Retrieve content display by content code
+`GET /v0/content-displays/contentCode/{code}`
+- **Path Parameter:** `code` (String)
+- **Response:** `200 OK`
+- **Returns:** Content display object.
+
+#### Add display to content code
+`PATCH /v0/content-displays/contentCode/{code}`
+- **Path Parameter:** `code` (String)
+- **Response:** `200 OK`
+- **Returns:** Boolean indicating success.
+
+#### Retrieve all content displays
+`GET /v0/content-displays`
+- **Response:** `200 OK`
+- **Returns:** List of content displays.
+
+#### Retrieve content display by ID
+`GET /v0/content-displays/id/{id}`
+- **Path Parameter:** `id` (UUID)
+- **Response:** `200 OK`
+- **Returns:** Content display object.
+
+#### Delete content display by ID
+`DELETE /v0/content-displays/id/{id}`
+- **Path Parameter:** `id` (UUID)
+- **Response:** `200 OK`
+- **Returns:** Boolean indicating success.
+
+---
+
+### Content Click Endpoints
+#### Retrieve content click by content code
+`GET /v0/content-clicks/contentCode/{code}`
+- **Path Parameter:** `code` (String)
+- **Response:** `200 OK`
+- **Returns:** Content click object.
+
+#### Save content click by content code
+`PATCH /v0/content-clicks/contentCode/{code}`
+- **Path Parameter:** `code` (String)
+- **Response:** `200 OK`
+- **Returns:** Boolean indicating success.
+
+#### Retrieve all content clicks
+`GET /v0/content-clicks`
+- **Response:** `200 OK`
+- **Returns:** List of content clicks.
+
+#### Retrieve content click by ID
+`GET /v0/content-clicks/id/{id}`
+- **Path Parameter:** `id` (UUID)
+- **Response:** `200 OK`
+- **Returns:** Content click object.
+
+#### Delete content click by ID
+`DELETE /v0/content-clicks/id/{id}`
+- **Path Parameter:** `id` (UUID)
+- **Response:** `200 OK`
+- **Returns:** Boolean indicating success.
+
+---
+
+### Node Endpoints
+#### Retrieve all nodes
+`GET /v0/nodes`
+- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`, Enum: `SNAPSHOT`, `PUBLISHED`, `ARCHIVE`, `DELETED`)
+- **Response:** `200 OK`
+- **Returns:** List of nodes.
+
+#### Retrieve node by code
+`GET /v0/nodes/code/{code}`
+- **Path Parameter:** `code` (String)
+- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`)
+- **Response:** `200 OK`
+- **Returns:** Node object.
+
+#### Retrieve parent nodes
+`GET /v0/nodes/parents`
+- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`)
+- **Response:** `200 OK`
+- **Returns:** List of parent nodes.
+
+#### Retrieve child nodes by parent code
+`GET /v0/nodes/childreens/parent/{code}`
+- **Path Parameter:** `code` (String)
+- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`)
+- **Response:** `200 OK`
+- **Returns:** List of child nodes.
+
+---
+
+### Health Check
+#### Check API health status
 `GET /health`
-- **Réponse:** `200 OK`
-- **Retourne:** Chaîne indiquant l'état de santé.
+- **Response:** `200 OK`
+- **Returns:** String indicating health status.
 
 ---
 
-## Modèles de Données
+## Data Models
 ### Feedback
 ```json
 {
@@ -97,7 +190,7 @@ Bienvenue dans la documentation de l'API Nodify. Cette API fournit des endpoints
 }
 ```
 
-### Valeur
+### Value
 ```json
 {
   "id": "uuid",
@@ -106,7 +199,7 @@ Bienvenue dans la documentation de l'API Nodify. Cette API fournit des endpoints
 }
 ```
 
-### Nœud
+### Node
 ```json
 {
   "id": "uuid",
@@ -118,4 +211,5 @@ Bienvenue dans la documentation de l'API Nodify. Cette API fournit des endpoints
 ---
 
 ## Conclusion
-Cette API offre un ensemble robuste d'endpoints pour gérer les feedbacks, les nœuds de contenu, les affichages, les clics et les nœuds dans le système Nodify. Pour toute assistance supplémentaire, contactez l'équipe de développement.
+This API provides a robust set of endpoints for managing feedback, content nodes, displays, clicks, and nodes within the Nodify system. For further assistance, contact the development team.
+
