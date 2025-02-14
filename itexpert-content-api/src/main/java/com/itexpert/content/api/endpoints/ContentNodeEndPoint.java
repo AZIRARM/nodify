@@ -33,22 +33,22 @@ public class ContentNodeEndPoint {
         Flux<ContentNodeView> contentViews = contentNodeHandler.findAllByNodeCode(code, status, translation, fillValues);
         if (payloadOnly)
             return contentViews.map(ContentNodeView::getPayload);
-        return contentViews.map(contentNodeView -> (Object)contentNodeView );
+        return contentViews.map(contentNodeView -> (Object) contentNodeView);
     }
 
     @GetMapping(value = "/code/{code}")
     public Mono<ResponseEntity<Object>> findByCode(@PathVariable String code,
-                                                           @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
-                                                           @RequestParam(required = false) String translation,
-                                                            @RequestParam(required = false) boolean payloadOnly) {
+                                                   @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
+                                                   @RequestParam(required = false) String translation,
+                                                   @RequestParam(required = false) boolean payloadOnly) {
 
         Mono<ContentNodeView> contentView = contentNodeHandler.findByCodeAndStatus(code, status, translation);
-        if (payloadOnly){
+        if (payloadOnly) {
             return contentView.map(ContentNodeView::getPayload).map(ResponseEntity::ok)
                     .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
         return contentView
-                .map(content->(Object)content)
+                .map(content -> (Object) content)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
@@ -90,4 +90,9 @@ public class ContentNodeEndPoint {
         return contentNodeHandler.getValueByContentNodeCodeAndKey(code, key, status);
     }
 
+    @GetMapping(value = "/code/{code}/data")
+    public Flux<Value> findDataByCode(@PathVariable String code,
+                                      @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
+        return contentNodeHandler.getValueByContentNodeCode(code, status);
+    }
 }
