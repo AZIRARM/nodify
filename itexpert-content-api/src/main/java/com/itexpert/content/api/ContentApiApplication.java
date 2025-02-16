@@ -13,7 +13,8 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 @EnableConfigurationProperties
 @EnableReactiveMongoRepositories
-@OpenAPIDefinition(info = @Info(title = "Swagger Nodify", version = "1.0", description = "Documentation APIs v1.0"))
+@OpenAPIDefinition(info = @Info(title = "Swagger Nodify" +
+        " ", version = "1.0", description = "Documentation APIs v1.0"))
 public class ContentApiApplication {
 
     public static void main(String[] args) {
