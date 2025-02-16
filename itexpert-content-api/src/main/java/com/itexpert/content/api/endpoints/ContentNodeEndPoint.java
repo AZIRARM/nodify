@@ -4,6 +4,8 @@ import com.itexpert.content.api.handlers.ContentNodeHandler;
 import com.itexpert.content.api.utils.ContentNodeView;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Value;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,10 +22,16 @@ import java.util.Base64;
 @RestController
 @RequestMapping(value = "/v0/contents")
 @AllArgsConstructor
+@Tag(name = "Content Node Endpoint", description = "APIs for managing content nodes")
+/**
+ * REST controller for managing content nodes.
+ * Provides endpoints to retrieve and manipulate content nodes based on different criteria.
+ */
 public class ContentNodeEndPoint {
 
     private final ContentNodeHandler contentNodeHandler;
 
+    @Operation(summary = "Retrieve all content nodes by node code")
     @GetMapping(value = "/node/code/{code}")
     public Flux<Object> findAllByNodeCode(@PathVariable String code,
                                           @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
@@ -36,6 +44,7 @@ public class ContentNodeEndPoint {
         return contentViews.map(contentNodeView -> (Object) contentNodeView);
     }
 
+    @Operation(summary = "Retrieve a content node by its unique code")
     @GetMapping(value = "/code/{code}")
     public Mono<ResponseEntity<Object>> findByCode(@PathVariable String code,
                                                    @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
@@ -53,7 +62,7 @@ public class ContentNodeEndPoint {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-
+    @Operation(summary = "Retrieve content node file data as a downloadable file")
     @GetMapping(value = "/code/{code}/file")
     public Mono<ResponseEntity<byte[]>> getContentAsFileData(
             @PathVariable String code,
@@ -78,11 +87,13 @@ public class ContentNodeEndPoint {
         });
     }
 
+    @Operation(summary = "Save or update the data of a content node")
     @PatchMapping(value = "/code/{code}/data")
     public Mono<Value> saveData(@PathVariable String code, @RequestBody Value value) {
         return contentNodeHandler.saveData(code, value);
     }
 
+    @Operation(summary = "Retrieve data of a content node by key")
     @GetMapping(value = "/code/{code}/key/{key}/data")
     public Mono<Value> findDataByKey(@PathVariable String code,
                                      @PathVariable String key,
@@ -90,6 +101,7 @@ public class ContentNodeEndPoint {
         return contentNodeHandler.getValueByContentNodeCodeAndKey(code, key, status);
     }
 
+    @Operation(summary = "Retrieve all data of a content node")
     @GetMapping(value = "/code/{code}/data")
     public Flux<Value> findDataByCode(@PathVariable String code,
                                       @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
