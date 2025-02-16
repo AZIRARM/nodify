@@ -21,11 +21,7 @@ export class NodeService extends Service {
     return super.get("deleted");
   }
 
-  getChildreensByCodeParend(code: string) {
-    return super.get("parent/code/" + code);
-  }
-
-  getChildreensByCodeParendAndStatus(code: string, status: string) {
+  getAllByParentCodeAndStatus(code: string, status: string) {
     return super.get("parent/code/" + code + "/status/" + status);
   }
 
@@ -49,10 +45,6 @@ export class NodeService extends Service {
     return super.post("code/" + code + "/user/" + userId + "/activate", null);
   }
 
-  getNodeById(nodeId: string) {
-    return super.get("id/" + nodeId);
-  }
-
   publish(nodeId: string, userId: string) {
     return super.post("id/" + nodeId + "/user/" + userId + "/publish", null);
   }
@@ -65,10 +57,6 @@ export class NodeService extends Service {
     return super.get("code/" + code);
   }
 
-
-  getAllChildrensByParentCodeAndStatus(code: string, status: string) {
-    return super.get("parent/code/" + code+"/all?status="+status);
-  }
   deployVersion(code: string, version: string, userId: string) {
     return super.post("code/" + code + "/version/" + version + "/user/" + userId + "/deploy", null);
   }
@@ -78,7 +66,7 @@ export class NodeService extends Service {
   }
 
   export(code: string, environmentCode: string) {
-    return super.get("code/" + code +"/export?environment=" + environmentCode);
+    return super.get("code/" + code + "/export?environment=" + environmentCode);
   }
 
   import(parentCode: any, node: Node) {
@@ -93,12 +81,12 @@ export class NodeService extends Service {
     return super.get("code/" + code + "/haveContents");
   }
 
-  deploy(code:string, environmentCode: any) {
-    return super.get("code/" + code +"/deploy?environment=" + environmentCode);
+  deploy(code: string, environmentCode: any) {
+    return super.get("code/" + code + "/deploy?environment=" + environmentCode);
   }
 
-  getAllDescendantsByParentCode(code:string) {
-    return super.get("parent/code/" + code +"/descendants");
+  getAllDescendantsByParentCode(code: string) {
+    return super.get("parent/code/" + code + "/descendants");
   }
 
   getAllParentOrigin() {

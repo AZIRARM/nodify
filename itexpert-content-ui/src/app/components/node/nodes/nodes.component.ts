@@ -79,7 +79,7 @@ export class NodesComponent implements OnInit {
 
   init() {
     if (this.parentNode) {
-      this.nodeService.getChildreensByCodeParendAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
+      this.nodeService.getAllByParentCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
           response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
