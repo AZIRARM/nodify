@@ -54,7 +54,7 @@ public class NodeHandler {
                 );
     }
 
-    public Flux<Node> findChildreensByCodeParent(String code, StatusEnum status) {
+    public Flux<Node> findAllByParentCode(String code, StatusEnum status) {
         return nodeRepository.findChildreensByCodeParent(code, status.name())
                 .map(nodeMapper::fromEntity)
                 .flatMap(node -> RulesUtils.evaluateNode(node)
