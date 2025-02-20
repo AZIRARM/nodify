@@ -5,12 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.itexpert.content.core.handlers.ContentNodeHandler;
 import com.itexpert.content.core.handlers.EnvironmentHandler;
 import com.itexpert.content.core.handlers.NodeHandler;
-import com.itexpert.content.core.helpers.RenameCodesHelper;
+import com.itexpert.content.core.helpers.RenameContentNodeCodesHelper;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
-import com.itexpert.content.lib.models.Node;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
@@ -22,26 +22,18 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
 @RestController
 @RequestMapping(value = "/v0/content-node")
+@AllArgsConstructor
 public class ContentNodeEndPoint {
 
     private final ContentNodeHandler contentNodeHandler;
     private final NodeHandler nodeHandler;
     private final EnvironmentHandler environmentHandler;
-    private final RenameCodesHelper renameCodesHelper;
-
-    public ContentNodeEndPoint(ContentNodeHandler contentNodeHandler, NodeHandler nodeHandler, EnvironmentHandler environmentHandler, RenameCodesHelper renameCodesHelper) {
-        this.contentNodeHandler = contentNodeHandler;
-        this.nodeHandler = nodeHandler;
-        this.environmentHandler = environmentHandler;
-        this.renameCodesHelper = renameCodesHelper;
-    }
+    private final RenameContentNodeCodesHelper renameContentNodeCodesHelper;
 
     @GetMapping
     public Flux<ContentNode> findAll() {
@@ -141,12 +133,16 @@ public class ContentNodeEndPoint {
 
     @PostMapping(value = "/import")
     public Mono<ResponseEntity<ContentNode>> importContentNode(@RequestBody ContentNode contentNode,
-                                                        @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode) {
-        return  this.nodeHandler.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
+                                                               @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
+                                                               @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
+        return this.nodeHandler.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
                 .map(node -> ObjectUtils.isEmpty(node.getParentCodeOrigin()) ? node.getCode() : node.getParentCodeOrigin())
-                .flatMap(this.environmentHandler::findByNodeCode)
-                .flatMap(environment->this.renameCodesHelper.changeCodesAndReturnJson(contentNode, environment.getCode()))
-                .map(content-> {
+                .flatMap(codeParentOrigin -> this.nodeHandler.findByCodeAndStatus(codeParentOrigin, StatusEnum.SNAPSHOT.name()))
+                .doOnNext(node -> {
+                    log.debug(node.toString());
+                })
+                .flatMap(environment -> this.renameContentNodeCodesHelper.changeCodesAndReturnJson(contentNode, environment.getCode(), fromFile))
+                .map(content -> {
                     content.setParentCode(nodeParentCode);
                     return content;
                 })

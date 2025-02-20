@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
-import com.itexpert.content.core.helpers.RenameCodesHelper;
+import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
@@ -34,7 +34,6 @@ import java.util.UUID;
 public class NodeEndPoint {
 
     private final NodeHandler nodeHandler;
-    private final RenameCodesHelper renameCodesHelper;
 
     @GetMapping
     public Flux<Node> findAll() {
@@ -166,11 +165,8 @@ public class NodeEndPoint {
 
     @GetMapping(value = "/code/{code}/export")
     public Mono<ResponseEntity<byte[]>> exportAll(@PathVariable String code, @RequestParam(required = false, name = "environment") String environment) {
-        return nodeHandler.exportAll(code)
-                .collectList()
-                .flatMap(nodes -> renameCodesHelper.changeCodesAndReturnJson(nodes, environment))
-                .map(jsons -> {
-                    byte[] bytes = jsons.getBytes();
+        return nodeHandler.exportAll(code, environment)
+                .map(bytes -> {
                     return ResponseEntity.ok()
                             .contentLength(bytes.length)
                             .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -188,8 +184,12 @@ public class NodeEndPoint {
 
     @PostMapping(value = "/importAll")
     public Flux<Node> importNodes(@RequestBody List<Node> nodes,
-                                  @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode) {
-        return nodeHandler.importNodes(nodes, nodeParentCode);
+                                  @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
+                                  @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
+        return nodeHandler.importNodes(
+                nodes,
+                nodeParentCode,
+                fromFile);
     }
 
     @GetMapping(value = "/code/{code}/haveChilds")
@@ -224,7 +224,7 @@ public class NodeEndPoint {
 
                     return nodes;
                 })
-                .map(nodes -> this.importNodes(nodes, environmentCode))
+                .map(nodes -> this.importNodes(nodes, environmentCode, false))
                 .flatMapMany(nodes -> nodes)
                 .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT));
     }
