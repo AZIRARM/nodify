@@ -1,6 +1,6 @@
 package com.itexpert.content.core.handlers;
 
-import com.itexpert.content.core.helpers.RenameCodesHelper;
+import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.enums.NotificationEnum;
@@ -11,7 +11,8 @@ import com.itexpert.content.lib.models.Rule;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.data.convert.EntityConverter;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -25,20 +26,18 @@ import java.util.*;
 @AllArgsConstructor
 @Service
 public class NodeHandler {
+
     private final NodeRepository nodeRepository;
+
     private final NodeMapper nodeMapper;
 
     private final ContentNodeHandler contentNodeHandler;
 
     private final NotificationHandler notificationHandler;
 
-    private final EnvironmentHandler environmentHandler;
-
-    private final RenameCodesHelper renameCodesHelper;
+    private final RenameNodeCodesHelper renameNodeCodesHelper;
 
     private final UserHandler userHandler;
-
-    private final EntityConverter entityConverter;
 
     public Flux<Node> findAll() {
         return nodeRepository.findAll().map(nodeMapper::fromEntity);
@@ -358,7 +357,7 @@ public class NodeHandler {
                 });
     }
 
-    public Flux<Node> exportAll(String code) {
+    public Mono<byte[]> exportAll(String code, String parentCodeOrigin) {
         return this.nodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .map(nodeMapper::fromEntity)
                 .map(node -> {
@@ -372,7 +371,10 @@ public class NodeHandler {
                 .flatMapMany(tuple2 -> {
                     return Flux.merge(tuple2.getT1(), tuple2.getT2());
                 })
-                .flatMap(node -> this.notify(node, NotificationEnum.EXPORT));
+                .flatMap(node -> this.notify(node, NotificationEnum.EXPORT))
+                .collectList()
+                .flatMap(nodes -> renameNodeCodesHelper.changeCodesAndReturnJson(nodes, parentCodeOrigin, false  ))
+                .map(jsons -> jsons.getBytes());
     }
 
     private Flux<Node> findAllDescendants(Node node) {
@@ -435,7 +437,7 @@ public class NodeHandler {
     }
 
     @Transactional
-    public Flux<Node> importNodes(List<Node> nodes, String nodeParentCode) {
+    public Flux<Node> importNodes(List<Node> nodes, String nodeParentCode, Boolean fromFile) {
         // 1. Trouver efficacement le nœud parent (gestion des nœuds manquants de manière gracieuse)
         return this.nodeRepository.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
                 .flatMapMany(nodeParent -> {
@@ -447,7 +449,7 @@ public class NodeHandler {
                                     })
                                     .map(node -> ObjectUtils.isEmpty(node.getParentCodeOrigin()) ? node.getCode() : nodeParent.getParentCodeOrigin())
                                     .map(parentCodeOrigin ->
-                                            this.renameCodesHelper.changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin)
+                                            this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
                                                     .map(node -> {
                                                         // Si le parentCode et parentCodeOrigin sont vides, on les met à jour
                                                         if (ObjectUtils.isEmpty(node.getParentCode())) {
@@ -481,7 +483,7 @@ public class NodeHandler {
                 }).flatMap(Flux::from)
                 .switchIfEmpty(
                         // Si le nœud parent n'est pas trouvé, on cherche chaque nœud dans l'entrepôt et on l'archive si nécessaire
-                        this.renameCodesHelper.changeNodesCodesAndReturnFlux(nodes, "")
+                        this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, "", fromFile)
                                 .flatMap(node ->
                                         nodeRepository.findByCode(node.getCode())
                                                 .flatMap(entity -> Mono.empty()) // Si un entity est trouvé, retourner Mono.empty
