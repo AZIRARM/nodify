@@ -53,7 +53,11 @@ public class ContentNodeEndPoint {
 
         Mono<ContentNodeView> contentView = contentNodeHandler.findByCodeAndStatus(code, status, translation);
         if (payloadOnly) {
-            return contentView.map(ContentNodeView::getPayload).map(ResponseEntity::ok)
+            return contentView
+                    .doOnNext(contentNodeView -> {
+                        log.debug("Found content node with code {}", contentNodeView.getCode());
+                    })
+                    .map(ContentNodeView::getPayload).map(ResponseEntity::ok)
                     .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
         return contentView

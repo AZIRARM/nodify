@@ -45,7 +45,7 @@ export class NodesComponent implements OnInit {
   environments: Node[];
 
   dialogRef: MatDialogRef<NodeDialogComponent>;
-  dialogRefPublish: MatDialogRef<ValidationDialogComponent>;
+  validationModal: MatDialogRef<ValidationDialogComponent>;
   dialogRefValues: MatDialogRef<ValuesDialogComponent>;
   dialogRefRules: MatDialogRef<NodeRulesConditionsDialogComponent>;
   dialogRefAccessRoles: MatDialogRef<NodeAccessRolesDialogComponent>;
@@ -53,7 +53,6 @@ export class NodesComponent implements OnInit {
   dialogRefDeleteds: MatDialogRef<DeletedNodesDialogComponent>;
   dialogRefPublished: MatDialogRef<PublishedNodesDialogComponent>;
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
-  dialogRefDelete: MatDialogRef<ValidationDialogComponent>;
 
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
@@ -168,7 +167,7 @@ export class NodesComponent implements OnInit {
   }
 
   publish(node: Node) {
-    this.dialogRefPublish = this.dialog.open(ValidationDialogComponent, {
+    this.validationModal = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "PUBLISH_PROJECT_TITLE",
         message: "PUBLISH_PROJECT_MESSAGE"
@@ -177,7 +176,7 @@ export class NodesComponent implements OnInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefPublish.afterClosed()
+    this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
           let isSnapshot: boolean = true;
@@ -202,7 +201,7 @@ export class NodesComponent implements OnInit {
   }
 
   delete(node: Node) {
-    this.dialogRefDelete = this.dialog.open(ValidationDialogComponent, {
+    this.validationModal = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_NODE_TITLE",
         message: "DELETE_NODE_MESSAGE"
@@ -211,7 +210,7 @@ export class NodesComponent implements OnInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefDelete.afterClosed()
+    this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
           this.nodeService.delete(node.code, this.userAccessService.getUser().id).subscribe(
