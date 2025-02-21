@@ -4,6 +4,7 @@ import com.itexpert.content.api.handlers.FeedbackHandler;
 import com.itexpert.content.lib.models.Feedback;
 import com.itexpert.content.lib.models.FeedbackCharts;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -29,98 +30,102 @@ public class FeedbackEndPoint {
     private final FeedbackHandler feedbackHandler;
 
     /**
-     * Retrieves all feedback entries.
+     * Retrieves feedback by content code with pagination.
      *
-     * @return a Flux of feedback
+     * @param code        The unique content code.
+     * @param currentPage The current page index (optional, default: 0).
+     * @param limit       The number of items per page (optional, default: 50).
+     * @return A Flux of feedback associated with the content code.
      */
-    @Operation(summary = "Retrieve all feedback entries")
-    @GetMapping
-    public Flux<Feedback> findAll() {
-        return feedbackHandler.findAll();
-    }
-
-    /**
-     * Retrieves feedback by its unique ID.
-     *
-     * @param id the unique identifier of the feedback
-     * @return a Mono containing the feedback if found, or a NOT FOUND response
-     */
-    @Operation(summary = "Retrieve feedback by ID")
-    @GetMapping(value = "/id/{id}")
-    public Mono<ResponseEntity<Feedback>> findById(@PathVariable UUID id) {
-        return feedbackHandler.findById(id)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    /**
-     * Retrieves feedback by content code.
-     *
-     * @param code the unique content code
-     * @return a Flux of feedback associated with the content code
-     */
-    @Operation(summary = "Retrieve feedback by content code")
+    @Operation(summary = "Retrieve feedback by content code", description = "Fetches feedback entries based on a given content code with optional pagination.")
     @GetMapping(value = "/contentCode/{code}")
-    public Flux<Feedback> findByContentCode(@PathVariable String code) {
-        return feedbackHandler.findByContentCode(code);
+    public Flux<Feedback> findByContentCode(@PathVariable String code,
+                                            @Parameter(description = "Current page index", example = "0") @RequestParam(name = "currentPage", required = false, defaultValue = "0") Integer currentPage,
+                                            @Parameter(description = "Limit per page", example = "50") @RequestParam(name = "limit", required = false, defaultValue = "50") Integer limit) {
+        return feedbackHandler.findByContentCode(code, currentPage, limit);
     }
 
     /**
-     * Retrieves feedback by user ID.
+     * Retrieves feedback by user ID with pagination.
      *
-     * @param userId the unique identifier of the user
-     * @return a Flux of feedback associated with the user ID
+     * @param userId      The unique identifier of the user.
+     * @param currentPage The current page index (optional, default: 0).
+     * @param limit       The number of items per page (optional, default: 50).
+     * @return A Flux of feedback associated with the user ID.
      */
-    @Operation(summary = "Retrieve feedback by user ID")
+    @Operation(summary = "Retrieve feedback by user ID", description = "Fetches feedback based on the user's unique identifier with optional pagination.")
     @GetMapping(value = "/userId/{userId}")
-    public Flux<Feedback> findByUserId(@PathVariable String userId) {
-        return feedbackHandler.findByUserId(userId);
+    public Flux<Feedback> findByUserId(@PathVariable String userId,
+                                       @Parameter(description = "Current page index", example = "0") @RequestParam(name = "currentPage", required = false, defaultValue = "0") Integer currentPage,
+                                       @Parameter(description = "Limit per page", example = "50") @RequestParam(name = "limit", required = false, defaultValue = "50") Integer limit) {
+        return feedbackHandler.findByUserId(userId, currentPage, limit);
     }
 
     /**
-     * Retrieves feedback by evaluation score.
+     * Retrieves feedback by evaluation score with pagination.
      *
-     * @param evaluation the evaluation score
-     * @return a Flux of feedback with the specified evaluation score
+     * @param evaluation  The evaluation score.
+     * @param currentPage The current page index (optional, default: 0).
+     * @param limit       The number of items per page (optional, default: 50).
+     * @return A Flux of feedback with the specified evaluation score.
      */
-    @Operation(summary = "Retrieve feedback by evaluation score")
+    @Operation(summary = "Retrieve feedback by evaluation score", description = "Fetches feedback based on evaluation score with optional pagination.")
     @GetMapping(value = "/evaluation/{evaluation}")
-    public Flux<Feedback> findByEvaluation(@PathVariable int evaluation) {
-        return feedbackHandler.findByEvaluation(evaluation);
+    public Flux<Feedback> findByEvaluation(@PathVariable int evaluation,
+                                           @Parameter(description = "Current page index", example = "0") @RequestParam(name = "currentPage", required = false, defaultValue = "0") Integer currentPage,
+                                           @Parameter(description = "Limit per page", example = "50") @RequestParam(name = "limit", required = false, defaultValue = "50") Integer limit) {
+        return feedbackHandler.findByEvaluation(evaluation, currentPage, limit);
     }
 
     /**
-     * Retrieves feedback by verification status.
+     * Retrieves feedback by verification status with pagination.
      *
-     * @param verified the verification status (true or false)
-     * @return a Flux of feedback with the specified verification status
+     * @param verified    The verification status (true or false).
+     * @param currentPage The current page index (optional, default: 0).
+     * @param limit       The number of items per page (optional, default: 50).
+     * @return A Flux of feedback with the specified verification status.
      */
-    @Operation(summary = "Retrieve feedback by verification status")
+    @Operation(summary = "Retrieve feedback by verification status", description = "Fetches feedback based on verification status with optional pagination.")
     @GetMapping(value = "/verified/{verified}")
-    public Flux<Feedback> findByVerified(@PathVariable boolean verified) {
-        return feedbackHandler.findByVerified(verified);
+    public Flux<Feedback> findByVerified(@PathVariable boolean verified,
+                                         @Parameter(description = "Current page index", example = "0") @RequestParam(name = "currentPage", required = false, defaultValue = "0") Integer currentPage,
+                                         @Parameter(description = "Limit per page", example = "50") @RequestParam(name = "limit", required = false, defaultValue = "50") Integer limit) {
+        return feedbackHandler.findByVerified(verified, currentPage, limit);
     }
 
     /**
      * Saves a new feedback entry.
      *
-     * @param feedback the feedback object to save
-     * @return a Mono containing the saved feedback response entity
+     * @param feedback The feedback object to save.
+     * @return A Mono containing the saved feedback response entity.
      */
-    @Operation(summary = "Save a new feedback entry")
+    @Operation(summary = "Save a new feedback entry", description = "Creates a new feedback entry in the system.")
     @PostMapping
-    public Mono<ResponseEntity<Feedback>> save(@RequestBody(required = true) Feedback feedback) {
+    public Mono<ResponseEntity<Feedback>> save(@RequestBody Feedback feedback) {
         return feedbackHandler.save(feedback)
+                .map(ResponseEntity::ok);
+    }
+
+    /**
+     * Deletes all feedback entries by content code.
+     *
+     * @param code The content code.
+     * @return A Mono containing the ResponseEntity with a boolean indicating success.
+     */
+    @Operation(summary = "Delete feedback by content code", description = "Deletes all feedback associated with the given content code.")
+    @DeleteMapping(value = "/contentCode/{code}")
+    public Mono<ResponseEntity<Boolean>> deleteAllByContentNodeCode(@PathVariable String code) {
+        return feedbackHandler.deleteAllByContentNodeCode(code)
                 .map(ResponseEntity::ok);
     }
 
     /**
      * Deletes a feedback entry by its unique ID.
      *
-     * @param id the unique identifier of the feedback to delete
-     * @return a Mono containing the response entity indicating success or failure
+     * @param id The unique identifier of the feedback to delete.
+     * @return A Mono containing the ResponseEntity indicating success or failure.
      */
-    @Operation(summary = "Delete a feedback entry by ID", security = @SecurityRequirement(name = "ADMIN"))
+    @Operation(summary = "Delete feedback by ID", description = "Deletes a feedback entry by its unique identifier.", security = @SecurityRequirement(name = "ADMIN"))
     @DeleteMapping(value = "/id/{id}")
     public Mono<ResponseEntity<Boolean>> delete(@PathVariable String id) {
         return feedbackHandler.delete(UUID.fromString(id))
@@ -128,13 +133,14 @@ public class FeedbackEndPoint {
     }
 
     /**
-     * Retrieves feedback statistics in the form of charts.
+     * Retrieves feedback statistics in chart format.
      *
-     * @return a Flux of feedback chart data
+     * @return A Flux of feedback chart data.
      */
-    @Operation(summary = "Retrieve feedback statistics")
+    @Operation(summary = "Retrieve feedback statistics", description = "Fetches aggregated feedback statistics in chart format.")
     @GetMapping(value = "/charts")
     public Flux<FeedbackCharts> getCharts() {
         return feedbackHandler.getCharts();
     }
 }
+
