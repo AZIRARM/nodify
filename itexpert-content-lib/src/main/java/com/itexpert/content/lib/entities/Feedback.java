@@ -13,6 +13,8 @@ public class Feedback implements Serializable, Cloneable {
     @Id
     private UUID id;
     private String contentCode;
+    private Long createdDate;
+    private Long modifiedDate;
     private int evaluation;
     private String message;
     private String userId;
