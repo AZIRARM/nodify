@@ -12,15 +12,12 @@ import com.itexpert.content.lib.models.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @Slf4j
@@ -33,11 +30,6 @@ public class ContentNodeHandler {
     private final ContentHelper contentHelper;
 
     private final NodeHelper nodeHelper;
-
-    private Resource resourceFromContentNode(com.itexpert.content.lib.entities.ContentNode contentNode) {
-        byte[] decodedBytes = Base64.getDecoder().decode(contentNode.getContent());
-        return new ByteArrayResource(decodedBytes);
-    }
 
     private Mono<ContentNode> addDisplay(ContentNode contentNode) {
         return this.contentDisplayHandler.findByContentCode(contentNode.getCode())
@@ -138,25 +130,6 @@ public class ContentNodeHandler {
                 return i;
         }
         return -1;
-    }
-
-    public Mono<Value> getValueByContentNodeCodeAndKey(String code, String key, StatusEnum status) {
-        return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
-                .filter(contentNode -> ObjectUtils.isNotEmpty(contentNode.getDatas()))
-                .map(contentNode ->
-                        contentNode.getDatas().stream()
-                                .filter(value1 -> value1.getKey().equals(key))
-                                .findFirst().get()
-                );
-
-    }
-
-    public Flux<Value> getValueByContentNodeCode(String code, StatusEnum status) {
-        return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
-                .filter(contentNode -> ObjectUtils.isNotEmpty(contentNode.getDatas()))
-                .map(com.itexpert.content.lib.entities.ContentNode::getDatas)
-                .flatMapIterable(values -> values);
-
     }
 
     public Mono<ContentFile> findResourceByCode(String code, StatusEnum status) {

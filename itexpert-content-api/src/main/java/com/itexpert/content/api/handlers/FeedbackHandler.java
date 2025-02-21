@@ -10,6 +10,8 @@ import com.itexpert.content.lib.models.FeedbackCharts;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,36 +33,33 @@ public class FeedbackHandler {
         );
     }
 
-    public Flux<Feedback> findByContentCode(String code) {
-        return feedbackRepository.findByContentCode(code).map(feedbackMapper::fromEntity
+    public Flux<Feedback> findByContentCode(String code, Integer currentPage, Integer limit) {
+        return feedbackRepository.findByContentCode(code, PageRequest.of(currentPage, limit, Sort.by(Sort.Order.by("creationDate")).descending())).map(feedbackMapper::fromEntity
         );
     }
 
-    public Flux<Feedback> findByUserId(String userId) {
-        return feedbackRepository.findByUserId(userId).map(feedbackMapper::fromEntity
+    public Flux<Feedback> findByUserId(String userId, Integer currentPage, Integer limit) {
+        return feedbackRepository.findByUserId(userId, PageRequest.of(currentPage, limit, Sort.by(Sort.Order.by("creationDate")).descending())).map(feedbackMapper::fromEntity
         );
     }
 
-    public Flux<Feedback> findByEvaluation(int evaluation) {
-        return feedbackRepository.findByEvaluation(evaluation).map(feedbackMapper::fromEntity
+    public Flux<Feedback> findByEvaluation(int evaluation, Integer currentPage, Integer limit) {
+        return feedbackRepository.findByEvaluation(evaluation, PageRequest.of(currentPage, limit, Sort.by(Sort.Order.by("creationDate")).descending())).map(feedbackMapper::fromEntity
         );
     }
 
-    public Flux<Feedback> findByVerified(boolean verified) {
-        return feedbackRepository.findByVerified(verified).map(feedbackMapper::fromEntity
+    public Flux<Feedback> findByVerified(boolean verified, Integer currentPage, Integer limit) {
+        return feedbackRepository.findByVerified(verified, PageRequest.of(currentPage, limit, Sort.by(Sort.Order.by("creationDate")).descending())).map(feedbackMapper::fromEntity
         );
     }
 
-    public Mono<Feedback> findById(UUID uuid) {
-        return feedbackRepository.findById(uuid).map(feedbackMapper::fromEntity);
-    }
 
     public Mono<Feedback> save(Feedback feedback) {
         feedback.setId(UUID.randomUUID());
-        if(ObjectUtils.isEmpty(feedback.isVerified())){
+        if (ObjectUtils.isEmpty(feedback.isVerified())) {
             feedback.setVerified(false);
         }
-        if(ObjectUtils.isEmpty(feedback.getEvaluation())){
+        if (ObjectUtils.isEmpty(feedback.getEvaluation())) {
             feedback.setEvaluation(0);
         }
         return feedbackRepository.save(feedbackMapper.fromModel(feedback))
@@ -111,5 +110,8 @@ public class FeedbackHandler {
                 ).map(feedbackMapper::fromEntity);
     }
 
+    public Mono<Boolean> deleteAllByContentNodeCode(String code) {
+        return this.feedbackRepository.deleteAllByContentCode(code);
+    }
 }
 
