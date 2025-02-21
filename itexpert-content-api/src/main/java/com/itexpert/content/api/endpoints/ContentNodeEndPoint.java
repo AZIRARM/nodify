@@ -91,24 +91,4 @@ public class ContentNodeEndPoint {
         });
     }
 
-    @Operation(summary = "Save or update the data of a content node")
-    @PatchMapping(value = "/code/{code}/data")
-    public Mono<Value> saveData(@PathVariable String code, @RequestBody Value value) {
-        return contentNodeHandler.saveData(code, value);
-    }
-
-    @Operation(summary = "Retrieve data of a content node by key")
-    @GetMapping(value = "/code/{code}/key/{key}/data")
-    public Mono<Value> findDataByKey(@PathVariable String code,
-                                     @PathVariable String key,
-                                     @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
-        return contentNodeHandler.getValueByContentNodeCodeAndKey(code, key, status);
-    }
-
-    @Operation(summary = "Retrieve all data of a content node")
-    @GetMapping(value = "/code/{code}/data")
-    public Flux<Value> findDataByCode(@PathVariable String code,
-                                      @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
-        return contentNodeHandler.getValueByContentNodeCode(code, status);
-    }
 }
