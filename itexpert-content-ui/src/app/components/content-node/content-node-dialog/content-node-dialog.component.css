@@ -1,7 +1,7 @@
 table {
   overflow: auto;
-  max-height: 70%;
-  min-width: 95%;
+  max-height: 60%;
+  min-width: 80%;
   display: block;
   position: absolute;
 }

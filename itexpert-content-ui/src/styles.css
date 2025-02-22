@@ -1,17 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
-  --primary: #6fb506; /* Vert foncé riche pour le rôle principal */
-  --secondary: #609a05; /* Vert légèrement plus clair pour le rôle secondaire */
-  --danger: #ff0707; /* Rouge profond pour signaler un danger */
-  --warn: #f69738; /* Jaune chaud pour un avertissement */
-  --disabled: #686262; /* Gris chaud pour une desactivation */
+  --primary: rgb(200, 102, 182);          /* Rose moyen pour un contraste harmonieux sur blanc et noir */
+  --secondary: rgb(225, 153, 203);         /* Rose poudré, plus doux pour les éléments secondaires */
+  --danger: rgb(204, 51, 63);              /* Rouge framboise, suffisamment vif pour signaler un danger sur tous les fonds */
+  --warn: rgb(255, 140, 105);              /* Orange saumoné, qui ressort bien sans être trop agressif */
+  --disabled: rgb(130, 130, 130);          /* Gris moyen, garantissant une bonne visibilité sur blanc et une discrétion sur noir */
+  --table-row-primary: rgb(255, 204, 229);  /* Rose très clair pour les zones de tableau, lisible et contrasté sur fond blanc et noir */
+  --table-row-secondary: rgb(244, 194, 213);/* Rose pâle, pour alterner avec la ligne primaire sans perturber la lecture */
+  --table-row-header: rgb(180, 82, 128);     /* Rose soutenu, pour marquer les en-têtes de tableau avec distinction */
 }
 
-html, body { height:100%; width: 100%;overflow: hidden; font-size: 10px;}
-body {
-  margin: 5px;
-  font-family: "Verdana Pro", serif;
-  color: var(--primary);
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* empêche le débordement de la page */
 }
 
 mat-toolbar{
@@ -139,6 +143,20 @@ h2{
   color: var(--secondary) !important;
 }
 
+
+.mat-header{
+  background-color: var(--table-row-header);
+}
+
+.mat-row:nth-child(even){
+  background-color: var(--table-row-primary);
+}
+.mat-row:nth-child(odd){
+  background-color:  var(--table-row-secondary);
+}
+.mat-row:hover{
+  background-color: var(--disabled);
+}
 
 
 @import 'ngx-toastr/toastr';

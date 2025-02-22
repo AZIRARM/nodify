@@ -12,3 +12,18 @@
 .contents{
   /*transform: translate(30px);*/
 }
+
+
+
+/* Contenu principal */
+.main-content {
+  position: absolute;
+  top: 60px; /* hauteur du header */
+  width: 100%; /* largeur du sidenav */
+  right: 0;
+  bottom: 60px; /* hauteur du footer */
+  overflow: hidden; /* défilement interne si le contenu dépasse */
+  #background-color: #fff; /* fond par défaut (à adapter pour fond noir si nécessaire) */
+  padding: 20px;
+  box-sizing: border-box;
+}

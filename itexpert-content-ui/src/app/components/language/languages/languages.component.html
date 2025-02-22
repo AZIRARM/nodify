@@ -33,7 +33,7 @@
       <mat-icon class="icon-display scale2 danger" *ngIf="user && user.roles && user.roles.includes('ADMIN')" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
     </td>
   </ng-container>
-  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"></tr>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" class="mat-header"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }" class="mat-row"></tr>
 </table>
 
