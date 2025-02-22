@@ -39,6 +39,7 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     console.log('Paginator:', this.paginator);
+    this.dataSource = new MatTableDataSource();
     this.dataSource.paginator = this.paginator;
   }
 

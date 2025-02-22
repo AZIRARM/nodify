@@ -1,0 +1,13 @@
+
+.datas-table {
+  width: 100%;
+}
+.icon-display {
+  cursor: pointer;
+  margin-right: 10px;
+}
+mat-paginator {
+  display: flex;
+  justify-content: center;
+}
+

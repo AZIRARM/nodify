@@ -7,5 +7,5 @@ export class Notification {
   public date: number;
   public description: string;
   public userId: string;
-  public readers:string[];
+  public readers: string[];
 }

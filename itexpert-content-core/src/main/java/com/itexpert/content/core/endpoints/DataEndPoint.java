@@ -1,6 +1,6 @@
-package com.itexpert.content.api.endpoints;
+package com.itexpert.content.core.endpoints;
 
-import com.itexpert.content.api.handlers.DataHandler;
+import com.itexpert.content.core.handlers.DataHandler;
 import com.itexpert.content.lib.models.Data;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -87,10 +87,25 @@ public class DataEndPoint {
      * @return A Mono containing the ResponseEntity with a boolean indicating success.
      */
     @Operation(summary = "Delete Data by key", description = "Deletes a Data object based on its unique key.")
-    @DeleteMapping(value = "/id/{id}")
+    @DeleteMapping(value = "/id/{uuid}")
     public Mono<ResponseEntity<Boolean>> delete(@Parameter(description = "The uuid of the Data object") @PathVariable String uuid) {
         return dataHandler.delete(UUID.fromString(uuid))
                 .map(ResponseEntity::ok);
+    }
+
+    /**
+     * Count all Datas by content node code.
+     *
+     * @param code The id of the ContentNode.
+     * @return A Mono containing the ResponseEntity with a Long indicating the total off datas objects to the database.
+     */
+    @Operation(summary = "Count all Data by Content Code", description = "Count all Data by Content.")
+    @GetMapping(value = "/contentCode/{code}/count")
+    public Mono<ResponseEntity<Long>> countByContentNodeCode(@PathVariable String code) {
+        return dataHandler.countByContentNodeCode(code)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
     }
 }
 

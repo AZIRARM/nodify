@@ -25,9 +25,7 @@ public class ContentNode implements Serializable, Cloneable {
 
     private String language;
 
-
     private ContentTypeEnum type;
-
 
     private String title;
     private String description;
@@ -39,15 +37,12 @@ public class ContentNode implements Serializable, Cloneable {
 
     private List<ContentUrl> urls;
 
-
     private ContentFile file;
 
     private List<String> tags;
     private List<Value> values;
     private List<String> roles;
     private List<Rule> rules;
-
-    private List<Value> datas;
 
     private Long creationDate;
     private Long modificationDate;
@@ -56,6 +51,8 @@ public class ContentNode implements Serializable, Cloneable {
     private String version;
     private Long publicationDate;
     private StatusEnum status;
+
+    private String publicationStatus;
 
     private List<Translation> translations;
 

@@ -9,10 +9,10 @@ button {
   color: var(--secondary);
 }
 .validation-card img {
-  width: 90%;
+  width: 60%;
 }
 div {
-  width: 100%;
+  width: 80%;
   height: auto;
   text-align: center;
   margin-top: 5%;
@@ -22,11 +22,11 @@ div {
 }
 
 mat-card {
-  max-width: 500px;
+  max-width: 400px;
 }
 
 img {
-  width: 200px;
+  width: 150px;
   height: auto;
   margin-right: auto;
   margin-left: auto;

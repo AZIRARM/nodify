@@ -28,6 +28,8 @@ import {
   DeletedContentsNodesDialogComponent
 } from "../deleted-contents-nodes-dialog/deleted-contents-nodes-dialog.component";
 import {NodeService} from "../../../services/NodeService";
+import {ContentDatasComponent} from "../content-datas/content-datas.component";
+import {DataService} from "../../../services/DataService";
 
 @Component({
   selector: 'app-node-content-dialog',
@@ -38,12 +40,14 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   user: User;
 
   node: Node;
-  publishedContentNodes: ContentNode[];
 
   type: string;
   currentContent: ContentNode;
 
   environments: Node[];
+
+
+  mapDatas: Map<String, boolean> = new Map();
 
   dialogRefPublish: MatDialogRef<ValidationDialogComponent>;
 
@@ -57,11 +61,14 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   dialogRefPublished: MatDialogRef<PublishedContentsNodesDialogComponent>;
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
   dialogRefDelete: MatDialogRef<ValidationDialogComponent>;
+  dialogRefDatas: MatDialogRef<ContentDatasComponent>;
+
 
   constructor(private translate: TranslateService,
               private toast: ToastrService,
               private loggerService: LoggerService,
               private contentNodeService: ContentNodeService,
+              private dataService: DataService,
               public userAccessService: UserAccessService,
               public nodeService: NodeService,
               public dialogRef: MatDialogRef<ContentNodeDialogComponent>,
@@ -88,12 +95,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   init() {
     this.currentContent = null as any;
+    this.mapDatas.clear();
+
     this.contentNodeService.getAllByParentCodeAndStatus(this.node.code, StatusEnum.SNAPSHOT).subscribe(
       (response: any) => {
         //next() callback
         response.map((node: any) => this.setUserName(node)).map((node: any) => this.setUserName(node));
         this.dataSource = new MatTableDataSource(response);
-        this.initPublishedContentNodes();
         this.initEnvironments();
       },
       (error) => {                              //error() callback
@@ -101,21 +109,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       });
   }
 
-
-  private initPublishedContentNodes() {
-    this.contentNodeService.getAllByStatus(StatusEnum.PUBLISHED).subscribe(
-      (response: any) => {
-        this.publishedContentNodes = response
-      },
-      (error) => {
-        console.error('Request failed with error');
-      });
-  }
-
   private initEnvironments() {
     this.nodeService.getAllParentOrigin().subscribe(
       (response: any) => {
-        this.environments = response.filter((env:Node) =>   this.user.roles.includes("ADMIN") || this.user.projects.includes(env.code));
+        this.environments = response.filter((env: Node) => this.user.roles.includes("ADMIN") || this.user.projects.includes(env.code));
       },
       (error) => {
         console.error('Request failed with error');
@@ -141,7 +138,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
           message: "CANCEL_MODIFICATIONS_MESSAGE"
         },
         height: '80vh',
-        width:  '80vw',
+        width: '80vw',
         disableClose: true
       });
       this.dialogRefPublish.afterClosed()
@@ -163,7 +160,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         message: "PUBLISH_PROJECT_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefPublish.afterClosed()
@@ -197,7 +194,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         message: "DELETE_CONTENT_NODE_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefDelete.afterClosed()
@@ -233,7 +230,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.currentContent.parentCode = this.node.code;
     if (this.currentContent && !this.currentContent.id) {
       this.currentContent.code = this.type.replace(/[\W_]+/g, "_").toUpperCase() + '-'
-        + (this.node.parentCode ? this.node.parentCode.split("-")[0] + '-': this.node.code.split("-")[0]+'-')
+        + (this.node.parentCode ? this.node.parentCode.split("-")[0] + '-' : this.node.code.split("-")[0] + '-')
         + (new Date()).getTime();
     }
   }
@@ -257,7 +254,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefRules = this.dialog.open(NodeRulesConditionsDialogComponent, {
       data: content,
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefRules.afterClosed()
@@ -270,7 +267,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefValues = this.dialog.open(ValuesDialogComponent, {
       data: content,
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefValues.afterClosed()
@@ -283,7 +280,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefAccessRoles = this.dialog.open(NodeAccessRolesDialogComponent, {
       data: content,
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefAccessRoles.afterClosed()
@@ -341,22 +338,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-
   getPublishedIcon(element: any) {
-    if (this.publishedContentNodes) {
-      let color: any = this.publishedContentNodes.filter(contentNode => contentNode.code === element.code)
-        .map(contentNode => {
-            if (element.modificationDate === element.publicationDate)
-              return "primary";
-            else
-              return "warn";
-          }
-        );
-      if (!color || color.length <= 0)
-        color = "danger";
-      return color;
-    }
-    return "danger";
+    if (element.publicationStatus === 'PUBLISHED')
+      return "primary";
+    else if (element.publicationStatus === 'SNAPSHOT')
+      return "warn";
+    else
+      return "danger";
   }
 
 
@@ -364,7 +352,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefPublished = this.dialog.open(PublishedContentsNodesDialogComponent, {
       data: content,
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefPublished.afterClosed()
@@ -379,7 +367,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefTranslations = this.dialog.open(TranslationsDialogComponent, {
       data: contentNode,
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefTranslations.afterClosed()
@@ -440,15 +428,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     }).bind(this);
   }
 
-
-  isPublished(element: any) {
-    if (this.publishedContentNodes && this.publishedContentNodes.length > 0 && element && element.code) {
-      let published = this.publishedContentNodes.filter(node => node.code === element.code);
-      return published !== null && published.length > 0;
-    }
-    return false;
-  }
-
   view(element: ContentNode) {
     window.open(Env.EXPERT_CONTENT_API_URL + "/contents/code/"
       + element.code
@@ -459,7 +438,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   deleteds() {
     this.dialogRefDeleteds = this.dialog.open(DeletedContentsNodesDialogComponent, {
         height: '80vh',
-        width:  '80vw',
+        width: '80vw',
         disableClose: true
       }
     );
@@ -476,12 +455,41 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   getEnvironments() {
-    return this.environments.filter((env: Node) =>
-      this.node.parentCodeOrigin ? env.code !== this.node.parentCodeOrigin : env.code !== this.node.code
-    );
+    try {
+      return this.environments.filter((env: Node) =>
+        this.node.parentCodeOrigin ? env.code !== this.node.parentCodeOrigin : env.code !== this.node.code
+      );
+    } catch (error: any) {
+      return null;
+    }
   }
 
   close() {
     this.currentContent = null as any;
+  }
+
+  datas(contentNode: ContentNode) {
+    this.dialogRefDatas = this.dialog.open(ContentDatasComponent, {
+      data: contentNode,
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    });
+    this.dialogRefDatas.afterClosed()
+      .subscribe(result => {
+        this.init();
+      });
+  }
+
+  haveDatas(code: string) {
+    if (this.mapDatas.has(code)) {
+      return this.mapDatas.get(code);
+    } else {
+      return this.dataService.countDatasByContentNodeCode(code).subscribe(
+        (count: any) => {
+          this.mapDatas.set(code, count > 0);
+          return this.mapDatas.get(code);
+        });
+    }
   }
 }
