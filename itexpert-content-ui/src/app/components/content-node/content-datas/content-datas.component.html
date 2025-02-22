@@ -57,11 +57,11 @@
     <!-- Table Rows -->
     <tr
       mat-header-row
-      *matHeaderRowDef="displayedColumns">
+      *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header">
     </tr>
     <tr
       mat-row
-      *matRowDef="let row; columns: displayedColumns;">
+      *matRowDef="let row; columns: displayedColumns;" class="mat-row">
     </tr>
   </table>
 

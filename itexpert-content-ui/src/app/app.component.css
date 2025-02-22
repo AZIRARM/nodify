@@ -1,0 +1,32 @@
+
+app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px; /* hauteur du header */
+  z-index: 1000; /* pour qu'il soit au-dessus des autres éléments */
+  background-color: var(--primary, #c866b6); /* exemple de couleur, ajustable */
+}
+
+app-sidenav {
+  position: fixed;
+  top: 60px; /* en dessous du header */
+  left: 0;
+  bottom: 60px; /* au-dessus du footer */
+  width: 100%; /* largeur du menu latéral */
+  overflow-y: auto; /* défilement interne si besoin */
+  background-color: var(--secondary, #e199cb);
+  z-index: 900;
+}
+
+app-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60px; /* hauteur du footer */
+  z-index: 1000;
+  background-color: var(--primary, #c866b6);
+}
+

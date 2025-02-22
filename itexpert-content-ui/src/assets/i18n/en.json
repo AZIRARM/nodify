@@ -207,6 +207,7 @@
   "MAINTENANCE": "Maintenance",
   "ACTIVATION_DATE": "Activation Date",
   "DEACTIVATION_DATE": "Deactivation Date",
+  "REACTIVATION": "Re-Activation",
   "MARK_AS_READ": "Mark as Read",
   "EXPORT_AS_NEW": "Export as a New Item to Target Environment",
   "EXPORT_TO_UPDATE": "Export for Update on Target Environment",
