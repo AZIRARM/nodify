@@ -1,9 +1,12 @@
 package com.itexpert.content.lib.models;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @lombok.Data
 public class Data implements Serializable, Cloneable {
+
+    private UUID id;
 
     private String contentNodeCode;
 

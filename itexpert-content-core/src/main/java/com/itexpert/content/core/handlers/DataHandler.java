@@ -1,8 +1,8 @@
-package com.itexpert.content.api.handlers;
+package com.itexpert.content.core.handlers;
 
-import com.itexpert.content.api.mappers.DataMapper;
-import com.itexpert.content.api.repositories.ContentNodeRepository;
-import com.itexpert.content.api.repositories.DataRepository;
+import com.itexpert.content.core.mappers.DataMapper;
+import com.itexpert.content.core.repositories.ContentNodeRepository;
+import com.itexpert.content.core.repositories.DataRepository;
 import com.itexpert.content.lib.models.Data;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,5 +58,8 @@ public class DataHandler {
         return dataRepository.deleteById(uuid).then(Mono.fromCallable(() -> true));
     }
 
+    public Mono<Long> countByContentNodeCode(String code) {
+        return this.dataRepository.countByContentNodeCode(code);
+    }
 }
 

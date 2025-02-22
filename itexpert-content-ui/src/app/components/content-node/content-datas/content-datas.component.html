@@ -3,20 +3,78 @@
     <span> {{ "DATAS" | translate }}</span>
   </mat-toolbar>
 </p>
-<mat-card class="card" appearance="outlined"
-          *ngFor="let item  of contentNode.datas">
-  <mat-card-header>
-    <mat-card-title>{{ item.key }}</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
-    <p>{{ item.key }}</p>
-  </mat-card-content>
-  <mat-card-footer class="card-footer">
-    <mat-chip-set aria-label="Chihuahua traits">
-      <mat-chip>
-        <button mat-button (click)="deleteData(contentNode.code, item.key)" class="warn">{{ "DELETE" | translate }}
-        </button>
-      </mat-chip>
-    </mat-chip-set>
-  </mat-card-footer>
-</mat-card>
+<div class="table-container">
+  <table mat-table [dataSource]="dataSource" class="datas-table">
+    <ng-container matColumnDef="Content">
+      <th mat-header-cell *matHeaderCellDef>{{ "CONTENT" | translate }}</th>
+      <td mat-cell *matCellDef="let element" [title]="content.description">
+        {{ content.description + (content.code) }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Type">
+      <th mat-header-cell *matHeaderCellDef>{{ "TYPE" | translate }}</th>
+      <td mat-cell *matCellDef="let element"  [title]="element.dataType | translate">
+        {{ element.dataType | translate }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Key">
+      <th mat-header-cell *matHeaderCellDef>{{ "KEY" | translate }}</th>
+      <td mat-cell *matCellDef="let element"  [title]="element.key | translate">
+        {{ element.key }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Creation">
+      <th mat-header-cell *matHeaderCellDef>{{ "CREATION_DATE" | translate }}</th>
+      <td mat-cell *matCellDef="let element"  [title]="element.creationDate">
+        {{ element.creationDate | date:'dd/MM/YYYY HH:mm' }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="Modification">
+      <th mat-header-cell *matHeaderCellDef>{{ "MODIFICATION_DATE" | translate }}</th>
+      <td mat-cell *matCellDef="let element"  [title]="element.modificationDate">
+        {{ element.modificationDate | date:'dd/MM/YYYY HH:mm'}}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="Data">
+      <th mat-header-cell *matHeaderCellDef>{{ "DATA" | translate }}</th>
+      <td mat-cell *matCellDef="let element" [title]="element.data | translate">
+        {{ element.value | translate }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="Actions">
+      <th mat-header-cell *matHeaderCellDef>{{ "ACTIONS" | translate }}</th>
+      <td mat-cell *matCellDef="let element">
+        <mat-icon class="icon-display danger"  (click)="deleteData(element.id)" inline
+                  matTooltip="{{ 'DELETE' | translate}}">delete
+        </mat-icon>
+      </td>
+    </ng-container>
+
+
+    <!-- Table Rows -->
+    <tr
+      mat-header-row
+      *matHeaderRowDef="displayedColumns">
+    </tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns;">
+    </tr>
+  </table>
+
+  <!-- Paginator -->
+  <mat-paginator #MatPaginator
+                 [length]="total"
+                 [pageSize]="5"
+                 [pageSizeOptions]="[5, 10]"
+                 (page)="gotoNextPage($event)"
+                 [showFirstLastButtons]="true">
+  </mat-paginator>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="close()">{{ "CLOSE" | translate }}</button>
+</div>

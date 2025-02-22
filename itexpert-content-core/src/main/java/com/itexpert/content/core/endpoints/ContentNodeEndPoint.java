@@ -37,32 +37,38 @@ public class ContentNodeEndPoint {
 
     @GetMapping
     public Flux<ContentNode> findAll() {
-        return contentNodeHandler.findAll();
+        return contentNodeHandler.findAll()
+                .flatMap(contentNodeHandler::setPublicationStatus);
     }
 
     @GetMapping("/status/{status}")
     public Flux<ContentNode> findAllByStatus(@PathVariable String status) {
-        return contentNodeHandler.findAllByStatus(status);
+        return contentNodeHandler.findAllByStatus(status)
+                .flatMap(contentNodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/code/{code}")
     public Flux<ContentNode> findAllByCode(@PathVariable String code) {
-        return contentNodeHandler.findAllByCode(code);
+        return contentNodeHandler.findAllByCode(code)
+                .flatMap(contentNodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/node/code/{code}/status/{status}")
     public Flux<ContentNode> findByNodeCodeAndStatus(@PathVariable String code, @PathVariable String status) {
-        return contentNodeHandler.findByNodeCodeAndStatus(code, status);
+        return contentNodeHandler.findByNodeCodeAndStatus(code, status)
+                .flatMap(contentNodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/node/code/{code}")
     public Flux<ContentNode> findAllByNodeCode(@PathVariable String code) {
-        return contentNodeHandler.findAllByNodeCode(code);
+        return contentNodeHandler.findAllByNodeCode(code)
+                .flatMap(contentNodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/id/{uuid}")
     public Mono<ResponseEntity<ContentNode>> findById(@PathVariable String uuid) {
         return contentNodeHandler.findById(UUID.fromString(uuid))
+                .flatMap(contentNodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
@@ -88,18 +94,21 @@ public class ContentNodeEndPoint {
     @PostMapping(value = "/id/{id}/user/{userId}/publish/{publish}")
     public Mono<ResponseEntity<ContentNode>> publish(@PathVariable UUID id, @PathVariable Boolean publish, @PathVariable UUID userId) {
         return contentNodeHandler.publish(id, publish, userId)
+                .flatMap(contentNodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok);
     }
 
     @PostMapping(value = "/code/{code}/version/{version}/user/{userId}/revert")
     public Mono<ContentNode> revert(@PathVariable String code, @PathVariable String version, @PathVariable UUID userId) {
-        return contentNodeHandler.revert(code, version, userId);
+        return contentNodeHandler.revert(code, version, userId)
+                .flatMap(contentNodeHandler::setPublicationStatus);
     }
 
     @PostMapping
     public Mono<ResponseEntity<ContentNode>> save(@RequestBody ContentNode contentNode) {
         try {
             return contentNodeHandler.save(contentNode)
+                    .flatMap(contentNodeHandler::setPublicationStatus)
                     .map(ResponseEntity::ok);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -112,21 +121,18 @@ public class ContentNodeEndPoint {
         var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
-            return contentNodeHandler.findAllByStatus(StatusEnum.DELETED.name());
+            return contentNodeHandler.findAllByStatus(StatusEnum.DELETED.name())
+                    .flatMap(contentNodeHandler::setPublicationStatus);
         }
 
-        return contentNodeHandler.findDeleted(authentication.getPrincipal().toString());
-    }
-
-
-    @DeleteMapping(value = "/code/{code}/key/{key}/data")
-    public Mono<Boolean> delete(@PathVariable String code, @PathVariable String key) {
-        return contentNodeHandler.deleteDataByKy(code, key);
+        return contentNodeHandler.findDeleted(authentication.getPrincipal().toString())
+                .flatMap(contentNodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/code/{code}/status/{status}")
     public Mono<ResponseEntity<ContentNode>> findByCodeAndStatus(@PathVariable String code, @PathVariable String status) {
         return contentNodeHandler.findByCodeAndStatus(code, status)
+                .flatMap(contentNodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
@@ -147,6 +153,7 @@ public class ContentNodeEndPoint {
                     return content;
                 })
                 .flatMap(contentNodeHandler::importContentNode)
+                .flatMap(contentNodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 

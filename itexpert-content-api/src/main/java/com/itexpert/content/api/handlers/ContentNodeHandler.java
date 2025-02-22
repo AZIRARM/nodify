@@ -98,32 +98,6 @@ public class ContentNodeHandler {
                 );
     }
 
-
-    public Mono<Value> saveData(String code, Value value) {
-        return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
-                .map(contentNode -> {
-                    if (ObjectUtils.isEmpty(contentNode.getDatas())) {
-                        contentNode.setDatas(new ArrayList<>());
-                    }
-                    return Tuples.of(contentNode, this.getDatasIndexByKey(contentNode.getDatas(), value.getKey()));
-                })
-                .map(tuple -> {
-                    if (tuple.getT2() >= 0) {
-                        tuple.getT1().getDatas().remove(tuple.getT2().intValue());
-                    }
-                    tuple.getT1().getDatas().add(value);
-                    return tuple.getT1();
-                })
-                .flatMap(this.contentNodeRepository::save)
-                .flatMap(contentNode ->
-                        this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name()).map(contentSnapshot -> {
-                            contentSnapshot.setDatas(contentNode.getDatas());
-                            return contentSnapshot;
-                        }).flatMap(this.contentNodeRepository::save)
-                )
-                .map(contentNode -> value);
-    }
-
     private Integer getDatasIndexByKey(List<Value> datas, String key) {
         for (int i = 0; i < datas.size(); i++) {
             if (datas.get(i).getKey().equals(key))

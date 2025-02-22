@@ -29,6 +29,7 @@ export class Node {
   public publicationDate: number;
   public version: string;
   public status: string;
+  public publicationStatus: string;
 
   public translations: Translation[];
 
