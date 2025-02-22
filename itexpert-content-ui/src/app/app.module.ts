@@ -117,6 +117,7 @@ import {
 import {
   ContentCodeActionsComponent
 } from "./components/content-node/content-code/content-code-actions/content-code-actions.component";
+import {DataService} from "./services/DataService";
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -240,6 +241,7 @@ export function defaultLanguage() {
     ContentDisplayService,
     UserAccessService,
     ThemeService,
+    DataService,
     AuthGuard
   ],
 

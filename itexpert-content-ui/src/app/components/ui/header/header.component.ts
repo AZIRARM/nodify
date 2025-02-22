@@ -6,6 +6,7 @@ import {ValidationDialogComponent} from "../../commons/validation-dialog/validat
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NotificationService} from "../../../services/NotificationService";
 import {ThemeService} from "../../../services/ThemeService";
+import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
   selector: 'app-header',
@@ -43,7 +44,8 @@ export class HeaderComponent {
     private router: Router,
     private dialog: MatDialog,
     private sidenavService: SidenavService,
-    private themeService: ThemeService) {
+    private themeService: ThemeService,
+    private authenticationService: AuthenticationService) {
     this.selectedLanguage = window.localStorage.getItem("defaultLanguage")!;
 
     this.isDarkMode = this.themeService.isDarkModeEnabled();
@@ -52,7 +54,10 @@ export class HeaderComponent {
   }
 
   initCountUreadedNotifications() {
-    setInterval(() => this.countUnreadedNotification(), 2000);
+    try{
+      setInterval(() => this.countUnreadedNotifications(), 2000);
+    } catch(error:any){}
+
   }
 
   toggleSidenav(): void {
@@ -92,8 +97,14 @@ export class HeaderComponent {
     });
   }
 
-  countUnreadedNotification() {
+  countUnreadedNotifications() {
+    if(this.authenticationService.isAuthenticated()) {
+      this.countUnreadedNotificationsFactory();
+    }
+  }
 
+
+  countUnreadedNotificationsFactory(){
     if (!this.lastNotificationUpdate) {
       this.lastNotificationUpdate = (new Date()).getTime();
     }
@@ -129,6 +140,4 @@ export class HeaderComponent {
     this.isDarkMode = !this.isDarkMode;
     this.themeService.toggleTheme(this.isDarkMode ? 'dark' : 'light');
   }
-
-
 }

@@ -1,8 +1,8 @@
 export class FeedbackCharts {
   contentName: string;
   contentCode: string;
-  charts: Chart[],
-  verified: Chart[],
+  charts: Chart[];
+  verified: Chart[];
   notVerified: Chart[]
 }
 

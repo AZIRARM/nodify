@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Service} from "./Service";
-import {Role} from "../modeles/Role";
 import {ContentNode} from "../modeles/ContentNode";
 
 @Injectable()
@@ -12,7 +11,7 @@ export class ContentNodeService extends Service {
   }
 
   deleteDefinitively(code: String) {
-    return super.remove("code/"+code+"/deleteDefinitively");
+    return super.remove("code/" + code + "/deleteDefinitively");
   }
 
   constructor(httpClient: HttpClient) {
@@ -31,13 +30,13 @@ export class ContentNodeService extends Service {
     return super.post("", content);
   }
 
-  delete(code: String, userId:string) {
-    return super.remove("code/"+code+"/user/"+userId);
+  delete(code: String, userId: string) {
+    return super.remove("code/" + code + "/user/" + userId);
   }
 
 
-  activate(code: String, userId:string) {
-    return super.post("code/"+code+"/user/"+userId+"/activate", null);
+  activate(code: String, userId: string) {
+    return super.post("code/" + code + "/user/" + userId + "/activate", null);
   }
 
   getAllByParentCode(code: string) {
@@ -53,7 +52,7 @@ export class ContentNodeService extends Service {
   }
 
   publish(contentNodeId: string, status: boolean, userId: string) {
-    return super.post("id/" + contentNodeId + "/user/"+userId + "/publish/" + status, null);
+    return super.post("id/" + contentNodeId + "/user/" + userId + "/publish/" + status, null);
   }
 
   getAllByCode(code: string) {
@@ -61,26 +60,22 @@ export class ContentNodeService extends Service {
   }
 
   deployVersion(code: string, version: string, userId: string) {
-    return super.post("code/" + code + "/version/" + version + "/user/"+userId+"/deploy", null);
+    return super.post("code/" + code + "/version/" + version + "/user/" + userId + "/deploy", null);
   }
 
   revertToVersion(code: string, version: string, userId: string) {
-    return super.post("code/" + code + "/version/" + version + "/user/"+userId+"/revert", null);
-  }
-
-  deleteData(code: string, key: string) {
-    return super.remove("code/" + code + "/key/" + key + "/data");
+    return super.post("code/" + code + "/version/" + version + "/user/" + userId + "/revert", null);
   }
 
   export(code: string, environmentCode: string) {
-    return super.get("code/" + code +"/export?environment=" + environmentCode);
+    return super.get("code/" + code + "/export?environment=" + environmentCode);
   }
 
   import(parentCode: any, content: ContentNode) {
     return super.post("import?nodeParentCode=" + parentCode, content);
   }
 
-  deploy(code:string, environmentCode: any) {
-    return super.get("code/" + code +"/deploy?environment=" + environmentCode);
+  deploy(code: string, environmentCode: any) {
+    return super.get("code/" + code + "/deploy?environment=" + environmentCode);
   }
 }

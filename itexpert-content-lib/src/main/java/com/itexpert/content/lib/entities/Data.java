@@ -11,6 +11,8 @@ import java.util.UUID;
 @lombok.Data
 public class Data implements Serializable, Cloneable {
     @Id
+    private UUID id;
+
     private String contentNodeCode;
 
     private Long creationDate;

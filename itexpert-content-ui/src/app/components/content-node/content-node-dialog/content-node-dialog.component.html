@@ -138,10 +138,14 @@
         <mat-icon class="icon-display primary" *ngIf="userAccessService.canDelete()" (click)="view(element)" inline
                   matTooltip="{{ 'VIEW' | translate}}">visibility
         </mat-icon>
-        <mat-icon class="icon-display" *ngIf="userAccessService.canEdit()" (click)="update(element)" inline
+
+        <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit()" (click)="update(element)" inline
                   matTooltip="{{ 'EDIT' | translate}}">edit
         </mat-icon>
 
+        <mat-icon class="icon-display secondary" *ngIf="userAccessService.canEdit() && haveDatas(element.code)" (click)="datas(element)" inline
+                  matTooltip="{{ 'DATAS' | translate}}">topic
+        </mat-icon>
 
         <button mat-icon-button matTooltip="{{'EXPORT'| translate}}" *ngIf="userAccessService.canEdit()"
                 (click)="export(element,'')">
@@ -152,6 +156,7 @@
         <button mat-icon-button matTooltip="{{'DEPLOY_ENVIRONMENT'| translate}}" [matMenuTriggerFor]="deployNodeMenu">
           <mat-icon>share</mat-icon>
         </button>
+
         <mat-menu #deployNodeMenu [overlapTrigger]="false" yPosition="below">
           <button mat-menu-item *ngFor="let env of getEnvironments()" (click)="deploy(element, env.code)">
             <small> {{ env.name }}</small>

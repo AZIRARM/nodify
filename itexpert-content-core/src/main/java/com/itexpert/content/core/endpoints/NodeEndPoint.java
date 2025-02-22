@@ -37,12 +37,14 @@ public class NodeEndPoint {
 
     @GetMapping
     public Flux<Node> findAll() {
-        return nodeHandler.findAll();
+        return nodeHandler.findAll()
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @GetMapping("/origin")
     public Flux<Node> findParentOrigin() {
-        return nodeHandler.findParentOrigin();
+        return nodeHandler.findParentOrigin()
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
 
@@ -51,15 +53,18 @@ public class NodeEndPoint {
         var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
-            return nodeHandler.findAllByStatus(status);
+            return nodeHandler.findAllByStatus(status)
+                    .flatMap(nodeHandler::setPublicationStatus);
         }
 
-        return nodeHandler.findAllByStatusAndUser(status, authentication.getPrincipal().toString());
+        return nodeHandler.findAllByStatusAndUser(status, authentication.getPrincipal().toString())
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @GetMapping("/published")
     public Flux<Node> published() {
-        return nodeHandler.findAllByStatus(StatusEnum.PUBLISHED.name());
+        return nodeHandler.findAllByStatus(StatusEnum.PUBLISHED.name())
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @GetMapping("/deleted")
@@ -67,15 +72,18 @@ public class NodeEndPoint {
         var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
-            return nodeHandler.findAllByStatus(StatusEnum.DELETED.name());
+            return nodeHandler.findAllByStatus(StatusEnum.DELETED.name())
+                    .flatMap(nodeHandler::setPublicationStatus);
         }
 
-        return nodeHandler.findDeleted(authentication.getPrincipal().toString());
+        return nodeHandler.findDeleted(authentication.getPrincipal().toString())
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/id/{id}")
     public Mono<ResponseEntity<Node>> findById(@PathVariable String id) {
         return nodeHandler.findById(UUID.fromString(id))
+                .flatMap(nodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
@@ -84,13 +92,15 @@ public class NodeEndPoint {
     @GetMapping(value = "/code/{code}/status/{status}")
     public Mono<ResponseEntity<Node>> findByCodeAndStatus(@PathVariable String code, @PathVariable String status) {
         return nodeHandler.findByCodeAndStatus(code, status)
+                .flatMap(nodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping(value = "/code/{code}")
     public Flux<Node> findByCode(@PathVariable String code) {
-        return nodeHandler.findByCode(code);
+        return nodeHandler.findByCode(code)
+                .flatMap(nodeHandler::setPublicationStatus);
 
     }
 
@@ -115,6 +125,7 @@ public class NodeEndPoint {
     @PostMapping(value = "/id/{id}/user/{userId}/publish")
     public Mono<ResponseEntity<Node>> publish(@PathVariable UUID id, @PathVariable UUID userId) {
         return nodeHandler.publish(id, userId)
+                .flatMap(nodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok);
     }
 
@@ -123,38 +134,45 @@ public class NodeEndPoint {
         var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
-            return nodeHandler.findParentsNodesByStatus(status);
+            return nodeHandler.findParentsNodesByStatus(status)
+                    .flatMap(nodeHandler::setPublicationStatus);
         }
 
-        return nodeHandler.findParentsNodesByStatus(status, authentication.getPrincipal().toString());
+        return nodeHandler.findParentsNodesByStatus(status, authentication.getPrincipal().toString())
+                .flatMap(nodeHandler::setPublicationStatus);
 
 
     }
 
     @GetMapping(value = "/parent/code/{code}/descendants")
     public Flux<Node> findAllDescendants(@PathVariable String code) {
-        return nodeHandler.findAllChildren(code);
+        return nodeHandler.findAllChildren(code)
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
 
     @GetMapping(value = "/parent/code/{code}")
     public Flux<Node> findByCodeParent(@PathVariable String code) {
-        return nodeHandler.findByCodeParent(code);
+        return nodeHandler.findByCodeParent(code)
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/parent/code/{code}/status/{status}")
     public Flux<Node> findChildrenByCodeAndStatus(@PathVariable String code, @PathVariable String status) {
-        return nodeHandler.findChildrenByCodeAndStatus(code, status);
+        return nodeHandler.findChildrenByCodeAndStatus(code, status)
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @PostMapping(value = "/code/{code}/version/{version}/user/{userId}/revert")
     public Mono<Node> revert(@PathVariable String code, @PathVariable String version, @PathVariable UUID userId) {
-        return nodeHandler.revert(code, version, userId);
+        return nodeHandler.revert(code, version, userId)
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @PostMapping()
     public Mono<Node> save(@RequestBody(required = true) Node node) {
-        return nodeHandler.save(node);
+        return nodeHandler.save(node)
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     private Mono<Jwt> jwt() {
@@ -178,6 +196,7 @@ public class NodeEndPoint {
     @PostMapping(value = "/import")
     public Mono<ResponseEntity<Node>> importNode(@RequestBody Node node) {
         return nodeHandler.importNode(node)
+                .flatMap(nodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
@@ -189,7 +208,8 @@ public class NodeEndPoint {
         return nodeHandler.importNodes(
                 nodes,
                 nodeParentCode,
-                fromFile);
+                fromFile)
+                .flatMap(nodeHandler::setPublicationStatus);
     }
 
     @GetMapping(value = "/code/{code}/haveChilds")
@@ -226,6 +246,7 @@ public class NodeEndPoint {
                 })
                 .map(nodes -> this.importNodes(nodes, environmentCode, false))
                 .flatMapMany(nodes -> nodes)
+                .flatMap(nodeHandler::setPublicationStatus)
                 .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT));
     }
 }

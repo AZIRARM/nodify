@@ -1,4 +1,4 @@
-package com.itexpert.content.api.repositories;
+package com.itexpert.content.core.repositories;
 
 import com.itexpert.content.lib.entities.Data;
 import org.springframework.data.domain.Pageable;
@@ -16,4 +16,6 @@ public interface DataRepository extends ReactiveMongoRepository<Data, UUID> {
     Mono<Data> findByKey(String key);
 
     Mono<Boolean> deleteAllByContentNodeCode(String contentNodeCode);
+
+    Mono<Long> countByContentNodeCode(String code);
 }
