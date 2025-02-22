@@ -223,7 +223,7 @@
   "MAINTENANCE": "Maintenance",
   "ACTIVATION_DATE": "Date d'activation",
   "DEACTIVATION_DATE": "Date de désactivation",
-
+  "REACTIVATION": "Réactivation",
   "MARK_AS_READ": "Marquer comme lu(s)",
 
   "EXPORT_AS_NEW": "Exporter comme un nouveau élément sur l'environnement cible",

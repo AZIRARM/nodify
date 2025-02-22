@@ -8,12 +8,12 @@
 }
 
 .read {
-  color: var(--secondary);;
+  color: black;
 }
 
 .unread {
   font-weight: bold;
-  color: var(--danger);;
+  color: var(--danger);
 }
 
 .icon-display {
@@ -25,4 +25,3 @@ mat-paginator {
   display: flex;
   justify-content: center;
 }
-
