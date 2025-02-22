@@ -11,8 +11,6 @@ import com.itexpert.content.lib.models.Rule;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -161,13 +159,33 @@ public class NodeHandler {
                 .map(nodeMapper::fromEntity);
     }
 
+    public Mono<Node> setPublicationStatus(Node node) {
+        return this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.PUBLISHED.name())
+                .map(entity -> {
+                    if (Objects.equals(entity.getModificationDate(), node.getModificationDate())) {
+                        node.setPublicationStatus(StatusEnum.PUBLISHED.name());
+                    } else {
+                        node.setPublicationStatus(StatusEnum.SNAPSHOT.name());
+                    }
+                    return node;
+                })
+                .switchIfEmpty(Mono.just(node))
+                .map(model -> {
+                    if (ObjectUtils.isEmpty(model.getPublicationStatus())) {
+                        model.setPublicationStatus(StatusEnum.NEW.name());
+                    }
+                    return model;
+                });
+    }
+
 
     public Flux<Node> findByCodeParent(String code) {
         return nodeRepository.findByCodeParent(code).map(nodeMapper::fromEntity);
     }
 
     public Flux<Node> findChildrenByCodeAndStatus(String code, String status) {
-        return nodeRepository.findChildrenByCodeAndStatus(code, status).map(nodeMapper::fromEntity);
+        return nodeRepository.findChildrenByCodeAndStatus(code, status)
+                .map(nodeMapper::fromEntity);
     }
 
 
@@ -373,7 +391,7 @@ public class NodeHandler {
                 })
                 .flatMap(node -> this.notify(node, NotificationEnum.EXPORT))
                 .collectList()
-                .flatMap(nodes -> renameNodeCodesHelper.changeCodesAndReturnJson(nodes, parentCodeOrigin, false  ))
+                .flatMap(nodes -> renameNodeCodesHelper.changeCodesAndReturnJson(nodes, parentCodeOrigin, false))
                 .map(jsons -> jsons.getBytes());
     }
 
@@ -550,7 +568,8 @@ public class NodeHandler {
     }
 
     public Flux<Node> findParentOrigin() {
-        return nodeRepository.findAllParentOrigin().map(nodeMapper::fromEntity);
+        return nodeRepository.findAllParentOrigin()
+                .map(nodeMapper::fromEntity);
     }
 }
 

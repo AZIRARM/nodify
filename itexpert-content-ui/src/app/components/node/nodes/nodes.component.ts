@@ -38,7 +38,6 @@ export class NodesComponent implements OnInit {
   dataSource: MatTableDataSource<Node>;
 
   parentNode: Node;
-  publishedNodes: any[];
 
   user: User;
 
@@ -84,7 +83,6 @@ export class NodesComponent implements OnInit {
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
           this.dataSource = new MatTableDataSource(response);
-          this.initPublishedNodes();
           this.initEnvironments();
         },
         (error) => {
@@ -100,7 +98,6 @@ export class NodesComponent implements OnInit {
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
           this.dataSource = new MatTableDataSource(response);
-          this.initPublishedNodes();
           this.initEnvironments();
         },
         (error) => {
@@ -371,36 +368,14 @@ export class NodesComponent implements OnInit {
 
 
   getPublishedIcon(element: any) {
-    if (this.publishedNodes) {
-      let color: any = this.publishedNodes.filter(node => node.code === element.code)
-        .map(node => {
-            if (element.modificationDate === element.publicationDate)
-              return "primary";
-            else
-              return "warn";
-          }
-        );
-      if (!color || color.length <= 0)
-        color = "danger";
-      return color;
-    }
-    return "danger";
+    if (element.publicationStatus === 'PUBLISHED')
+      return "primary";
+    else if (element.publicationStatus === 'SNAPSHOT')
+      return "warn";
+    else
+      return "danger";
   }
 
-  isPublished(element: any) {
-    let published = this.publishedNodes.filter(node => node.code === element.code);
-    return published !== null && published.length > 0;
-  }
-
-  private initPublishedNodes() {
-    this.nodeService.getPublished().subscribe(
-      (response: any) => {
-        this.publishedNodes = response
-      },
-      (error) => {
-        console.error('Request failed with error');
-      });
-  }
 
   private initEnvironments() {
     this.nodeService.getAllParentOrigin().subscribe(

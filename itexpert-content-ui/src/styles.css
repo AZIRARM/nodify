@@ -7,10 +7,10 @@
   --disabled: #686262; /* Gris chaud pour une desactivation */
 }
 
-html, body { height: 92%; width: 100% }
+html, body { height:100%; width: 100%;overflow: hidden; font-size: 10px;}
 body {
-  margin: 0; font-family:
-  Roboto, "Helvetica Neue", sans-serif;
+  margin: 5px;
+  font-family: "Verdana Pro", serif;
   color: var(--primary);
 }
 

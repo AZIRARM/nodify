@@ -6,7 +6,6 @@ import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
-import com.itexpert.content.lib.models.Value;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -19,9 +18,9 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -35,7 +34,7 @@ public class ContentNodeHandler {
 
     private final UserHandler userHandler;
     private final NotificationHandler notificationHandler;
-    private final EnvironmentHandler environmentHandler;
+    private final DataHandler dataHandler;
 
     public Flux<ContentNode> findAll() {
         return contentNodeRepository.findAll().map(contentNode -> {
@@ -47,11 +46,11 @@ public class ContentNodeHandler {
         return contentNodeRepository.findById(uuid).map(contentNodeMapper::fromEntity);
     }
 
-    public Mono save(ContentNode contentNode) throws CloneNotSupportedException {
+    public Mono<ContentNode> save(ContentNode contentNode) throws CloneNotSupportedException {
         return Mono.just(contentNode).filter(model -> ObjectUtils.isEmpty(model.getId()))
                 .flatMap(model ->
                         contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
-                                .map(contentNodeDb -> Mono.error(new Exception("Duplicate Code")).map(o -> (ContentNode) o))
+                                .map(entity -> Mono.empty())
                                 .switchIfEmpty(saveFactory(contentNode, true))
 
                 ).switchIfEmpty(this.saveFactory(contentNode, false));
@@ -170,12 +169,34 @@ public class ContentNodeHandler {
     }
 
     public Flux<ContentNode> findAllByNodeCode(String code) {
-        return contentNodeRepository.findByNodeCode(code).map(contentNodeMapper::fromEntity);
+        return contentNodeRepository
+                .findByNodeCode(code).map(contentNodeMapper::fromEntity);
     }
 
     public Flux<ContentNode> findAllByCode(String code) {
-        return contentNodeRepository.findAllByCode(code).map(contentNodeMapper::fromEntity);
+        return contentNodeRepository.findAllByCode(code)
+                .map(contentNodeMapper::fromEntity);
     }
+
+    public Mono<ContentNode> setPublicationStatus(ContentNode contentNode) {
+        return this.contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.PUBLISHED.name())
+                .map(entity -> {
+                    if (Objects.equals(entity.getModificationDate(), contentNode.getModificationDate())) {
+                        contentNode.setPublicationStatus(StatusEnum.PUBLISHED.name());
+                    } else {
+                        contentNode.setPublicationStatus(StatusEnum.SNAPSHOT.name());
+                    }
+                    return contentNode;
+                })
+                .switchIfEmpty(Mono.just(contentNode))
+                .map(model -> {
+                    if (ObjectUtils.isEmpty(model.getPublicationStatus())) {
+                        model.setPublicationStatus(StatusEnum.NEW.name());
+                    }
+                    return model;
+                });
+    }
+
 
     public Mono<ContentNode> revert(String code, String version, UUID userId) {
         return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
@@ -280,42 +301,9 @@ public class ContentNodeHandler {
                 .map(node -> contentNode);
     }
 
-
-    public Mono<Boolean> deleteDataByKy(String code, String key) {
-        return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
-                .map(contentNode -> {
-                    if (ObjectUtils.isEmpty(contentNode.getDatas())) {
-                        contentNode.setDatas(new ArrayList<>());
-                    }
-                    return Tuples.of(contentNode, this.getDatasIndexByKey(contentNode.getDatas(), key));
-                })
-                .map(tuple -> {
-                    if (tuple.getT2() >= 0) {
-                        tuple.getT1().getDatas().remove(tuple.getT2().intValue());
-                    }
-                    return tuple.getT1();
-                })
-                .flatMap(this.contentNodeRepository::save)
-                .flatMap(contentNode ->
-                        this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name()).map(contentSnapshot -> {
-                            contentSnapshot.setDatas(contentNode.getDatas());
-                            return contentSnapshot;
-                        }).flatMap(this.contentNodeRepository::save)
-                )
-                .flatMap(entity -> this.notify(this.contentNodeMapper.fromEntity(entity), NotificationEnum.DELETION))
-                .map(contentNode -> Boolean.TRUE);
-    }
-
-    private Integer getDatasIndexByKey(List<Value> datas, String key) {
-        for (int i = 0; i < datas.size(); i++) {
-            if (datas.get(i).getKey().equals(key))
-                return i;
-        }
-        return -1;
-    }
-
     public Flux<ContentNode> findAllByNodeCodeAndStatus(String code, String status) {
-        return this.contentNodeRepository.findByNodeCodeAndStatus(code, status).map(contentNodeMapper::fromEntity);
+        return this.contentNodeRepository.findByNodeCodeAndStatus(code, status)
+                .map(contentNodeMapper::fromEntity);
     }
 
     public Flux<ContentNode> saveAll(List<ContentNode> contentNodes) {
@@ -385,7 +373,7 @@ public class ContentNodeHandler {
                 })
                 .switchIfEmpty(Mono.just(model))
                 .flatMap(contentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(contentNode)))
-                .map(this.contentNodeMapper::fromEntity); // Convertir l'entité sauvegardée en modèle
+                .map(this.contentNodeMapper::fromEntity); // Convertir l'entité sauvegardée en modèle;
     }
 
 
@@ -424,10 +412,12 @@ public class ContentNodeHandler {
                 .flatMap(model -> this.notify(model, NotificationEnum.IMPORT));
     }
 
-
     public Mono<Boolean> deleteDefinitively(String code) {
         return contentNodeRepository.findAllByCode(code)
-                .flatMap(node -> this.contentNodeRepository.delete(node).map(response -> node))
+                .flatMap(node -> this.contentNodeRepository.delete(node)
+                        .map(unused -> this.dataHandler.deleteAllByContentNodeCode(code))
+                        .map(response -> node)
+                )
                 .flatMap(model -> this.notify(this.contentNodeMapper.fromEntity(model), NotificationEnum.DELETION_DEFINITIVELY))
                 .collectList()
                 .map(unused -> Boolean.TRUE)
@@ -441,9 +431,9 @@ public class ContentNodeHandler {
     public Mono<Boolean> deployContent(String contentNodeCode, String environmentCode) {
         return this.findByCodeAndStatus(contentNodeCode, StatusEnum.SNAPSHOT.name())
                 .map(model -> {
-                    model.setCode(model.getCode().replace( model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
+                    model.setCode(model.getCode().replace(model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
 
-                    model.setParentCode(model.getParentCode().replace( model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
+                    model.setParentCode(model.getParentCode().replace(model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
 
                     model.setParentCodeOrigin(null);
 

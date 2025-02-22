@@ -43,8 +43,6 @@ public class ContentNode implements Serializable, Cloneable {
     private List<String> roles;
     private List<Rule> rules;
 
-    private List<Value> datas;
-
     private String version;
     private Long publicationDate;
     private StatusEnum status;
