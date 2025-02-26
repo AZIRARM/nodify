@@ -1,25 +1,8 @@
-<div name="contentCreationHtml" *ngIf="currentContent.type ==='HTML'" class="viewCode">
-  <app-content-code-actions
-    [title]="'HTML'"
-    [currentContent]="currentContent"
-    (close)="closeFactory()"
-    (validate)="validateFactory()"></app-content-code-actions>
+<div name="contentCreationHtml" *ngIf="contentNode.type ==='HTML'" >
+  <app-content-code-title
+    [title]="'HTML'"></app-content-code-title>
 
-  <div fxLayout="row">
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "CODE" | translate }}</mat-label>
-      <input type="text" matInput [(ngModel)]="currentContent.code" disabled placeholder="{{ 'CODE' | translate }}">
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "NODE_DESCRIPTION" | translate }}</mat-label>
-      <input matInput [(ngModel)]="currentContent.description" placeholder="{{ 'DESCRIPTION' | translate }}">
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "TARGET_URL" | translate }}</mat-label>
-      <input type="text" matInput [(ngModel)]="currentContent.redirectUrl"
-             placeholder="{{ 'TARGET_URL' | translate }}">
-    </mat-form-field>
-  </div>
+  <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
 
   <button mat-icon-button matTooltip="{{ 'CODE' | translate }}"  (click)="setCodeEdition(false)"  *ngIf="code">
     <mat-icon>code</mat-icon>
@@ -29,8 +12,8 @@
   </button>
 
   <ngx-codemirror *ngIf="code"
-    class="full-height"
-    [(ngModel)]="currentContent.content"
+                  class="viewCode"
+    [(ngModel)]="contentNode.content"
     [options]="{
         lineNumbers: true,
         theme: 'material',
@@ -38,7 +21,7 @@
         scrollbarStyle:'native'
       }"
   ></ngx-codemirror>
-  <div [innerHTML]="currentContent.content" *ngIf="!code"
+  <div [innerHTML]="contentFilled" *ngIf="!code && contentFilled"
            class="htmlViewer"></div>
 
 </div>

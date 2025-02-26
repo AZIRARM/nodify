@@ -1,10 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
-  --primary: rgb(200, 102, 182);          /* Rose moyen pour un contraste harmonieux sur blanc et noir */
-  --secondary: rgb(225, 153, 203);         /* Rose poudré, plus doux pour les éléments secondaires */
-  --danger: rgb(204, 51, 63);              /* Rouge framboise, suffisamment vif pour signaler un danger sur tous les fonds */
-  --warn: rgb(255, 140, 105);              /* Orange saumoné, qui ressort bien sans être trop agressif */
-  --disabled: rgb(130, 130, 130);          /* Gris moyen, garantissant une bonne visibilité sur blanc et une discrétion sur noir */
+  --primary: #6fb506; /* Vert foncé riche pour le rôle principal */
+  --secondary: #609a05; /* Vert légèrement plus clair pour le rôle secondaire */
+  --danger: #ff0707; /* Rouge profond pour signaler un danger */
+  --warn: #f69738; /* Jaune chaud pour un avertissement */
+  --disabled: #686262; /* Gris chaud pour une desactivation */
   --table-row-primary: rgb(255, 204, 229);  /* Rose très clair pour les zones de tableau, lisible et contrasté sur fond blanc et noir */
   --table-row-secondary: rgb(244, 194, 213);/* Rose pâle, pour alterner avec la ligne primaire sans perturber la lecture */
   --table-row-header: rgb(180, 82, 128);     /* Rose soutenu, pour marquer les en-têtes de tableau avec distinction */
@@ -97,20 +97,6 @@ mat-form-field{
 button{
   width: 10%;
 }
-
-
-
-.viewCode {
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 99.99%;
-  top: 0;
-  left: 0;
-  color: var(--secondary) !important;
-  background-color: black;
-  z-index: 99;
-}
 .code-validation{
   color: var(--secondary) !important;
   border-style: solid !important;
@@ -143,21 +129,14 @@ h2{
   color: var(--secondary) !important;
 }
 
-
-.mat-header{
-  background-color: var(--table-row-header);
+.viewCode {
+  width: 100%;
+  color: black;
 }
-
-.mat-row:nth-child(even){
-  background-color: var(--table-row-primary);
+.CodeMirror{
+  height: 70vh;
+  margin-bottom: 15px;
 }
-.mat-row:nth-child(odd){
-  background-color:  var(--table-row-secondary);
-}
-.mat-row:hover{
-  background-color: var(--disabled);
-}
-
 
 @import 'ngx-toastr/toastr';
 
