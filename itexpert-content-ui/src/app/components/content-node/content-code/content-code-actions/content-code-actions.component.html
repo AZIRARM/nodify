@@ -1,11 +1,8 @@
-<div mat-dialog-title class="dialog-title">
-  <mat-toolbar>
-    <span class="spacer"> {{ title | translate }} </span>
-    <button mat-icon-button matTooltip="{{ 'CLOSE' | translate }}"  (click)="closeFactory()">
-      <mat-icon>close</mat-icon>
-    </button>
-    <button mat-icon-button matTooltip="{{ 'SAVE' | translate }}" (click)="validateFactory()">
-      <mat-icon>save</mat-icon>
-    </button>
-  </mat-toolbar>
+<div class="viewCode">
+  <button mat-button (click)="closeFactory()">
+    {{ "CLOSE" | translate }}
+  </button>
+  <button mat-button (click)="validateFactory()">
+    {{ "SAVE" | translate }}
+  </button>
 </div>

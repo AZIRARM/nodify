@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, Input, Output} from '@angular/core';
 import {ContentNode} from "../../../../modeles/ContentNode";
 
 @Component({
@@ -9,17 +9,5 @@ import {ContentNode} from "../../../../modeles/ContentNode";
 export class ContentCodeCssComponent {
   @Output()
   @Input()
-  currentContent: ContentNode;
-
-  @Output() close = new EventEmitter<void>();
-  @Output() validate = new EventEmitter<void>();
-
-
-  closeFactory(): void {
-    this.close.next();
-  }
-
-  validateFactory(): void {
-    this.validate.next();
-  }
+  contentNode: ContentNode;
 }

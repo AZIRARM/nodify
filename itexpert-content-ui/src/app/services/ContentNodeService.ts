@@ -5,6 +5,9 @@ import {ContentNode} from "../modeles/ContentNode";
 
 @Injectable()
 export class ContentNodeService extends Service {
+  constructor(httpClient: HttpClient) {
+    super("content-node", httpClient);
+  }
 
   getDeleted() {
     return super.get("deleted");
@@ -12,18 +15,6 @@ export class ContentNodeService extends Service {
 
   deleteDefinitively(code: String) {
     return super.remove("code/" + code + "/deleteDefinitively");
-  }
-
-  constructor(httpClient: HttpClient) {
-    super("content-node", httpClient);
-  }
-
-  getById(contentId: string) {
-    return super.get("id/" + contentId);
-  }
-
-  getAll() {
-    return super.get("");
   }
 
   save(content: ContentNode) {
@@ -39,16 +30,8 @@ export class ContentNodeService extends Service {
     return super.post("code/" + code + "/user/" + userId + "/activate", null);
   }
 
-  getAllByParentCode(code: string) {
-    return super.get("node/code/" + code);
-  }
-
   getAllByParentCodeAndStatus(code: string, status: string) {
     return super.get("node/code/" + code + "/status/" + status);
-  }
-
-  getAllByStatus(status: string) {
-    return super.get("status/" + status);
   }
 
   publish(contentNodeId: string, status: boolean, userId: string) {
@@ -77,5 +60,9 @@ export class ContentNodeService extends Service {
 
   deploy(code: string, environmentCode: any) {
     return super.get("code/" + code + "/deploy?environment=" + environmentCode);
+  }
+
+  fillAllValuesByContentCodeStatusAndContent(param: { code: string; status: string; content: string }) {
+    return super.post("code/" + param.code + "/status/"+param.status+"/fill", param);
   }
 }

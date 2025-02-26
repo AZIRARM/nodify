@@ -8,17 +8,12 @@ import {ContentNode} from "../../../../modeles/ContentNode";
   styleUrl: './content-code-actions.component.css'
 })
 export class ContentCodeActionsComponent {
-  @Input()
-  title: string;
-
   @Output()
   @Input()
-  currentContent: ContentNode;
+  contentNode: ContentNode;
 
   constructor(private translate: TranslateService) {
   }
-
-
 
   @Output() close = new EventEmitter<void>();
   @Output() validate = new EventEmitter<void>();
