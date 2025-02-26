@@ -1,10 +1,20 @@
+.full-text {
+  min-width: 60%;
+  max-width: 100%;
+  min-height: 200px;
+  max-height: 300px;
+  width: 100%;
+  height: 60%;
+}
+
 table {
   overflow: auto;
   max-height: 60%;
-  min-width: 80%;
+  min-width: 95%;
   display: block;
   position: absolute;
 }
+
 td {
   cursor: pointer;
 }
@@ -33,6 +43,37 @@ span:hover>div {
 .dialog-title .spacer {
   flex: 1;
 }
+
+
 .title-left {
   text-align: left;
 }
+
+mat-form-field {
+  padding-left: 20px;
+  padding-top: 20px;
+  width: 30%  ;
+  color: var(--secondary);
+}
+mat-form-field mat-label {
+  color: var(--secondary);
+}
+mat-form-field input {
+  border-style: solid;
+  border-width: 1px;
+  height: 50px;
+  border-color: var(--primary);
+  color: var(--secondary);
+}
+
+.code-validation{
+  color: var(--secondary);
+  border-style: solid;
+  border-width: 1px;
+  height: 50px;
+  margin: 10px;
+}
+h2{
+  color: var(--secondary);
+}
+

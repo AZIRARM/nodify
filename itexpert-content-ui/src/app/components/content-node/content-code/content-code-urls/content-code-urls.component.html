@@ -1,11 +1,9 @@
-<div name="contentCreationUrls" *ngIf="currentContent.type ==='URLS'" class="viewCode">
-  <app-content-code-actions
-    [title]="'URLS'"
-    (close)="closeFactory()"
-    (validate)="validateFactory()"></app-content-code-actions>
+<div name="contentCreationUrls" *ngIf="contentNode.type ==='URLS'" >
+  <app-content-code-title
+    [title]="'URLS'"></app-content-code-title>
   <button mat-button class="code-validation" (click)="addUrl()" style="margin-bottom: 20px">{{ "ADD" | translate }}</button>
 
-  <p *ngFor="let url of currentContent.urls">
+  <p *ngFor="let url of contentNode.urls">
     <mat-form-field appearance="outline">
       <mat-label>{{ "URL" | translate }}</mat-label>
       <input type="text" matInput [(ngModel)]="url.url" placeholder="{{ 'URL' | translate }}">

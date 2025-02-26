@@ -1,6 +1,8 @@
 package com.itexpert.content.core.handlers;
 
+import com.itexpert.content.core.helpers.ContentHelper;
 import com.itexpert.content.core.mappers.ContentNodeMapper;
+import com.itexpert.content.core.models.ContentNodePayload;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.enums.NotificationEnum;
@@ -35,6 +37,7 @@ public class ContentNodeHandler {
     private final UserHandler userHandler;
     private final NotificationHandler notificationHandler;
     private final DataHandler dataHandler;
+    private final ContentHelper contentHelper;
 
     public Flux<ContentNode> findAll() {
         return contentNodeRepository.findAll().map(contentNode -> {
@@ -472,6 +475,19 @@ public class ContentNodeHandler {
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT))
                 .hasElement();
+    }
+
+    public Mono<ContentNode> fillContent(
+            String code, StatusEnum status,
+            ContentNodePayload contentNode) {
+        return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
+                .map(entity -> {
+                    entity.setContent(contentNode.getContent());
+                    return entity;
+                })
+                .flatMap(entity -> this.contentHelper.fillContents(entity, status))
+                .map(entity -> entity)
+                .map(this.contentNodeMapper::fromEntity);
     }
 }
 

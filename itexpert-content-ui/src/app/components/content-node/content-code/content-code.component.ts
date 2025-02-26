@@ -1,7 +1,12 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, Inject, Input, Output} from '@angular/core';
 import {Node} from "../../../modeles/Node";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {User} from "../../../modeles/User";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {TranslateService} from "@ngx-translate/core";
+import {LoggerService} from "../../../services/LoggerService";
+import {ContentNodeService} from "../../../services/ContentNodeService";
+import {ContentFile} from "../../../modeles/ContentFile";
 
 @Component({
   selector: 'app-code-dialog',
@@ -9,36 +14,76 @@ import {User} from "../../../modeles/User";
   styleUrls: ['./content-code.component.css']
 })
 export class ContentCodeComponent {
+  @Input() @Output() node: Node;
+  @Input() @Output() contentNode: ContentNode;
+  @Input() @Output() type: string;
+  @Input() @Output() user: User;
 
-  @Input()
-  user: User;
-
-  @Input()
-  node: Node;
-
-  @Input()
-  type: string;
-
-
-  @Input()
-  @Output()
-  currentContent: ContentNode;
-
-
-  @Output() close = new EventEmitter<void>();
-  @Output() validate = new EventEmitter<void>();
-  @Output() onFileChange = new EventEmitter<void>();
-
-
-  closeFactory(): void {
-    this.close.next();
+  constructor(
+    private translate: TranslateService,
+    private loggerService: LoggerService,
+    private contentNodeService: ContentNodeService,
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    public dialogRef: MatDialogRef<ContentCodeComponent>,
+  ) {
+    if (data) {
+      this.node = data.node;
+      this.contentNode = data.contentNode;
+      this.type = data.type;
+      this.user = data.user;
+    }
   }
 
-  validateFactory(): void {
-    this.validate.next();
+  close(): void {
+    this.dialogRef.close();
   }
 
-  onFileChangeFactory($event:any): void {
-    this.onFileChange.next($event);
+  validate() {
+
+    if (this.contentNode) {
+      this.contentNode.modifiedBy = this.user.id;
+    }
+
+    this.contentNode.modifiedBy = this.user.id;
+    this.contentNode.parentCode = this.node.code;
+    this.contentNode.parentCodeOrigin = this.node.parentCodeOrigin;
+
+    this.contentNodeService.save(this.contentNode).subscribe(
+      (response: any) => {
+
+        this.contentNode = response;
+        this.translate.get("SAVE_SUCCESS").subscribe(trad => {
+          this.loggerService.success(trad);
+          this.close();
+        })
+
+      },
+      error => {
+        this.translate.get("SAVE_ERROR").subscribe(trad1 => {
+          this.translate.get("CHANGE_PROJECT_CODE_MESSAGE").subscribe(trad2 => {
+            this.loggerService.error(trad1 + ",  " + trad2);
+          })
+        })
+      });
+  }
+
+  onFileChange(event: any) {
+    let file = event.target.files[0];
+    let reader = new FileReader();
+
+    reader.onload = () => {
+      let base64Content: string = reader.result as string;
+
+      this.contentNode.file = new ContentFile();
+
+      this.contentNode.file.data = base64Content;
+      this.contentNode.file.name = file.name;
+      this.contentNode.file.type = file.type;
+      this.contentNode.file.size = file.size;
+    }
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
   }
 }

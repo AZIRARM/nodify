@@ -3,7 +3,8 @@
     <span> {{ "NOTIFICATIONS" | translate }}</span>
   </mat-toolbar>
 </p>
-<div style="text-align: center; width: 100%" class="primary">
+
+<div style="text-align: center; width: 100%;">
   <mat-slide-toggle (change)="markAllAsReaded()"  [disabled]="readed">
     <span class="secondary" style="margin-left: 10px;margin-right: 10px;" *ngIf="!readed">{{ "MARK_AS_READ" | translate }}</span>
     <span class="secondary" style="margin-left: 10px;margin-right: 10px;" *ngIf="readed">{{ "MARK_AS_READ" | translate }}</span>
@@ -14,8 +15,10 @@
   </mat-slide-toggle>
 </div>
 
-<div class="table-container">
-  <table mat-table [dataSource]="dataSource" class="notification-table">
+<div mat-dialog-content>
+
+
+  <table mat-table [dataSource]="dataSource">
     <!-- Date Column -->
     <ng-container matColumnDef="Date">
       <th mat-header-cell *matHeaderCellDef>{{ "DATE" | translate }}</th>
@@ -100,10 +103,10 @@
   <!-- Paginator -->
   <mat-paginator #MatPaginator
     [length]="total"
-    [pageSize]="5"
+    [pageSize]="10"
     [pageSizeOptions]="[5, 10]"
     (page)="gotoNextPage($event)"
-                 [showFirstLastButtons]="true">
+    [showFirstLastButtons]="true">
   </mat-paginator>
-</div>
 
+</div>

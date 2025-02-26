@@ -15,7 +15,6 @@ import {
 } from "../../commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component";
 import {ValuesDialogComponent} from "../../commons/values-dialog/values-dialog.component";
 import {NodeAccessRolesDialogComponent} from "../../node/node-access-roles-dialg/node-access-roles-dialog.component";
-import {ContentFile} from "../../../modeles/ContentFile";
 import {StatusEnum} from "../../../modeles/StatusEnum";
 import {
   PublishedContentsNodesDialogComponent
@@ -30,6 +29,7 @@ import {
 import {NodeService} from "../../../services/NodeService";
 import {ContentDatasComponent} from "../content-datas/content-datas.component";
 import {DataService} from "../../../services/DataService";
+import {ContentCodeComponent} from "../content-code/content-code.component";
 
 @Component({
   selector: 'app-node-content-dialog',
@@ -62,6 +62,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
   dialogRefDelete: MatDialogRef<ValidationDialogComponent>;
   dialogRefDatas: MatDialogRef<ContentDatasComponent>;
+  dialogRefCode: MatDialogRef<ContentCodeComponent>;
 
 
   constructor(private translate: TranslateService,
@@ -117,11 +118,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       (error) => {
         console.error('Request failed with error');
       });
-  }
-
-
-  cancel() {
-    this.dialogRef.close();
   }
 
   validate() {
@@ -219,8 +215,21 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
 
   update(content: ContentNode) {
-    this.type = content.type;
-    this.currentContent = content;
+    this.dialogRefCode = this.dialog.open(ContentCodeComponent, {
+      data: {
+        node: this.node,
+        contentNode: content,
+        type: this.type,
+        user: this.user
+      },
+      height: '100%',
+      width: '90vw',
+      disableClose: true
+    });
+    this.dialogRefCode.afterClosed()
+      .subscribe(value => {
+        this.init();
+      });
   }
 
   private createNewContent() {
@@ -316,26 +325,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
           })
         })
       });
-  }
-
-  onFileChange(event: any) {
-    let file = event.target.files[0];
-    let reader = new FileReader();
-
-    reader.onload = () => {
-      let base64Content: string = reader.result as string;
-
-      this.currentContent.file = new ContentFile();
-
-      this.currentContent.file.data = base64Content;
-      this.currentContent.file.name = file.name;
-      this.currentContent.file.type = file.type;
-      this.currentContent.file.size = file.size;
-    }
-
-    if (file) {
-      reader.readAsDataURL(file);
-    }
   }
 
   getPublishedIcon(element: any) {

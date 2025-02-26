@@ -118,6 +118,13 @@ import {
   ContentCodeActionsComponent
 } from "./components/content-node/content-code/content-code-actions/content-code-actions.component";
 import {DataService} from "./services/DataService";
+import {
+  ContentCodeTitleComponent
+} from "./components/content-node/content-code/content-code-title/content-code-title.component";
+import {
+  ContentCodeInfosComponent
+} from "./components/content-node/content-code/content-code-infos/content-code-infos.component";
+import {FlexModule} from "@angular/flex-layout";
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -171,7 +178,9 @@ export function defaultLanguage() {
     ContentCodePictureComponent,
     ContentCodeFileComponent,
     ContentCodeUrlsComponent,
-    ContentCodeActionsComponent
+    ContentCodeActionsComponent,
+    ContentCodeTitleComponent,
+    ContentCodeInfosComponent
   ],
   imports: [
     BrowserModule,
@@ -220,7 +229,8 @@ export function defaultLanguage() {
     NgxChartsModule,
     CodemirrorModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    FlexModule
   ],
 
   providers: [

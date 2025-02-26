@@ -1,27 +1,16 @@
 .read {
-}
-.unread {
-  font-weight: bold;
-}
-.notification-table {
-  width: 100%;
-}
-
-.read {
   color: black;
 }
-
 .unread {
   font-weight: bold;
   color: var(--danger);
 }
-
-.icon-display {
-  cursor: pointer;
-  margin-right: 10px;
+mat-paginator {
+  justify-content: center;
+  display: flex;
 }
 
-mat-paginator {
+mat-dialog-content{
+  height: 250px;
   display: flex;
-  justify-content: center;
 }
