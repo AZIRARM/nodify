@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {ContentNode} from "../../../../modeles/ContentNode";
 import {ContentUrl} from "../../../../modeles/ContentUrl";
 
@@ -10,37 +10,24 @@ import {ContentUrl} from "../../../../modeles/ContentUrl";
 export class ContentCodeUrlsComponent {
 
   @Input()
-  currentContent: ContentNode;
+  contentNode: ContentNode;
 
   addUrl() {
-    if (!this.currentContent.urls)
-      this.currentContent.urls = [];
+    if (!this.contentNode.urls)
+      this.contentNode.urls = [];
 
     let url: ContentUrl = new ContentUrl();
     url.url = "";
     url.type = "";
     url.description = "";
-    this.currentContent.urls.push(url);
+    this.contentNode.urls.push(url);
 
   }
 
   deleteUrl(url: ContentUrl) {
 
     if (url) {
-      this.currentContent.urls = this.currentContent.urls.filter((v: ContentUrl) => (v.url !== url.url && v.type !== url.type && v.description !== url.description));
+      this.contentNode.urls = this.contentNode.urls.filter((v: ContentUrl) => (v.url !== url.url && v.type !== url.type && v.description !== url.description));
     }
-  }
-
-
-  @Output() close = new EventEmitter<void>();
-  @Output() validate = new EventEmitter<void>();
-
-
-  closeFactory(): void {
-    this.close.next();
-  }
-
-  validateFactory(): void {
-    this.validate.next();
   }
 }

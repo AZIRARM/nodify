@@ -10,18 +10,5 @@ export class ContentCodeJsonComponent {
 
   @Output()
   @Input()
-  currentContent: ContentNode;
-
-
-  @Output() close = new EventEmitter<void>();
-  @Output() validate = new EventEmitter<void>();
-
-
-  closeFactory(): void {
-    this.close.next();
-  }
-
-  validateFactory(): void {
-    this.validate.next();
-  }
+  contentNode: ContentNode;
 }

@@ -1,30 +1,47 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {AfterViewInit, Component, Input, Output} from '@angular/core';
 import {ContentNode} from "../../../../modeles/ContentNode";
+import {ContentNodeService} from "../../../../services/ContentNodeService";
+import {StatusEnum} from "../../../../modeles/StatusEnum";
 
 @Component({
   selector: 'app-content-code-html',
   templateUrl: './content-code-html.component.html',
   styleUrl: './content-code-html.component.css'
 })
-export class ContentCodeHtmlComponent {
+export class ContentCodeHtmlComponent implements AfterViewInit {
 
   @Output()
   @Input()
-  currentContent!: ContentNode;
+  contentNode!: ContentNode;
+  contentFilled!: string;
 
-  @Output() close = new EventEmitter<void>();
-  @Output() validate = new EventEmitter<void>();
   code: boolean = true;
 
-  closeFactory(): void {
-    this.close.next();
+  constructor(private contentService: ContentNodeService) {
+
   }
 
-  validateFactory(): void {
-    this.validate.next();
+  ngAfterViewInit(): void {
+    this.toHtml(this.contentNode.content);
   }
 
   setCodeEdition(codeEdition: boolean) {
     this.code = codeEdition;
   }
+
+  toHtml(content: string) {
+    this.contentService.fillAllValuesByContentCodeStatusAndContent(
+      {
+        code: this.contentNode.code,
+        status: StatusEnum.SNAPSHOT,
+        content: content
+      }).subscribe(
+      (response: any) => {
+        this.contentFilled = response.content;
+      },
+      (error) => {                              //error() callback
+        console.error('Request failed with error');
+      });
+  }
+
 }

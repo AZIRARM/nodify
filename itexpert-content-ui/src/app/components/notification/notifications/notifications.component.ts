@@ -126,6 +126,6 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
     this.readed = !this.readed;
     this.paginator.pageIndex=0;
     this.paginator.pageSize=5;
-    this.nextPage(0, 5);
+    this.nextPage(this.paginator.pageIndex, this.paginator.pageSize);
   }
 }

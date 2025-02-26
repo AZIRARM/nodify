@@ -6,6 +6,7 @@ import com.itexpert.content.core.handlers.ContentNodeHandler;
 import com.itexpert.content.core.handlers.EnvironmentHandler;
 import com.itexpert.content.core.handlers.NodeHandler;
 import com.itexpert.content.core.helpers.RenameContentNodeCodesHelper;
+import com.itexpert.content.core.models.ContentNodePayload;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
@@ -103,6 +104,14 @@ public class ContentNodeEndPoint {
         return contentNodeHandler.revert(code, version, userId)
                 .flatMap(contentNodeHandler::setPublicationStatus);
     }
+
+    @PostMapping(value = "/code/{code}/status/{status}/fill")
+    public Mono<ContentNode> fillContent(@PathVariable String code,
+                                    @PathVariable StatusEnum status,
+                                    @RequestBody ContentNodePayload contentNode) {
+        return contentNodeHandler.fillContent(code, status, contentNode);
+    }
+
 
     @PostMapping
     public Mono<ResponseEntity<ContentNode>> save(@RequestBody ContentNode contentNode) {

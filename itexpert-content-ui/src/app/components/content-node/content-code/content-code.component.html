@@ -1,36 +1,28 @@
-<div *ngIf="currentContent">
+<div *ngIf="contentNode">
   <app-content-code-html
-    (close)="closeFactory()"
-    (validate)="validateFactory()"
-    [currentContent]="currentContent"/>
+    [contentNode]="contentNode"/>
 
   <app-content-code-js
-    (close)="closeFactory()"
-    (validate)="validateFactory()"
-    [currentContent]="currentContent"/>
+    [contentNode]="contentNode"/>
 
   <app-content-code-css
-    (close)="closeFactory()"
-    (validate)="validateFactory()"
-    [currentContent]="currentContent"/>
+    [contentNode]="contentNode"/>
 
   <app-content-code-picture
-    (close)="closeFactory()"
-    (validate)="validateFactory()"
-    (onFileChange)="onFileChangeFactory($event)" [currentContent]="currentContent"/>
+    (onFileChange)="onFileChange($event)" [contentNode]="contentNode"/>
 
   <app-content-code-file
-    (close)="closeFactory()"
-    (validate)="validateFactory()"
-    (onFileChange)="onFileChangeFactory($event)" [currentContent]="currentContent"/>
+    (onFileChange)="onFileChange($event)" [contentNode]="contentNode"/>
 
   <app-content-code-json
-    (close)="closeFactory()"
-    (validate)="validateFactory()"
-    [currentContent]="currentContent"/>
+    [contentNode]="contentNode"/>
 
   <app-content-code-urls
-    (close)="closeFactory()"
-    (validate)="validateFactory()"
-    [currentContent]="currentContent"/>
+    [contentNode]="contentNode"/>
+
 </div>
+<app-content-code-actions
+  [contentNode]="contentNode"
+  (close)="close()"
+  (validate)="validate()">
+</app-content-code-actions>
