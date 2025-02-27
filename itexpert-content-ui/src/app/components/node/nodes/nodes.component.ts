@@ -496,4 +496,9 @@ export class NodesComponent implements OnInit {
     }
     return this.environments.filter((env: Node) => env.code !== this.parentNode.code);
   }
+
+  favorite(element:Node) {
+    element.favorite = !element.favorite;
+    this.save(element);
+  }
 }
