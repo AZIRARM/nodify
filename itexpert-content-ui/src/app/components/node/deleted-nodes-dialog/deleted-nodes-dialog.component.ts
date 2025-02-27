@@ -6,18 +6,16 @@ import {ValidationDialogComponent} from "../../commons/validation-dialog/validat
 import {TranslateService} from "@ngx-translate/core";
 import {NodeService} from "../../../services/NodeService";
 import {LoggerService} from "../../../services/LoggerService";
-import {StatusEnum} from "../../../modeles/StatusEnum";
 import {UserService} from "../../../services/UserService";
-import {Env} from "../../../../assets/configurations/environment";
 
 @Component({
   selector: 'app-deleted-nodes-dialog',
   templateUrl: './deleted-nodes-dialog.component.html',
   styleUrls: ['./deleted-nodes-dialog.component.css']
 })
-export class DeletedNodesDialogComponent implements OnInit{
+export class DeletedNodesDialogComponent implements OnInit {
 
-  user:any;
+  user: any;
 
   displayedColumns: string[] = ['Name', 'Version', 'Last Modification', 'Modified by', 'Actions'];
 
@@ -47,7 +45,7 @@ export class DeletedNodesDialogComponent implements OnInit{
     this.nodeService.getDeleted().subscribe(
       (response: any) => {
         if (response) {
-          response.map((param:any)=>this.setUserName(param));
+          response.map((param: any) => this.setUserName(param));
           this.dataSource = new MatTableDataSource(response);
         }
       },
@@ -66,7 +64,7 @@ export class DeletedNodesDialogComponent implements OnInit{
         message: "ACTIVATE_DELETE_NODE_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogValidationRef.afterClosed()
@@ -86,18 +84,18 @@ export class DeletedNodesDialogComponent implements OnInit{
       });
   }
 
-  setUserName(param:any){
+  setUserName(param: any) {
     this.userService.setUserName(param);
   }
 
-  delete(element:Node) {
+  delete(element: Node) {
     this.dialogValidationRef = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_NODE_TITLE",
         message: "DELETE_NODE_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogValidationRef.afterClosed()

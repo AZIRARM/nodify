@@ -1,10 +1,8 @@
 import {Component, Inject} from '@angular/core';
 import {Node} from "../../../modeles/Node";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {ContentNode} from "../../../modeles/ContentNode";
 import {Value} from "../../../modeles/Value";
 import {MatTableDataSource} from "@angular/material/table";
-import {Translation} from "../../../modeles/Translation";
 
 @Component({
   selector: 'app-values-dialog',
@@ -17,7 +15,7 @@ export class ValuesDialogComponent {
   key: string;
   value: string;
 
-  displayedColumns: string[] = [ 'Key', 'Value', 'Actions'];
+  displayedColumns: string[] = ['Key', 'Value', 'Actions'];
   dataSource: MatTableDataSource<Value>;
 
   constructor(
@@ -67,6 +65,6 @@ export class ValuesDialogComponent {
   }
 
   private init() {
-    this.dataSource = new MatTableDataSource(this.node.values );
+    this.dataSource = new MatTableDataSource(this.node.values);
   }
 }
