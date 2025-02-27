@@ -242,6 +242,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         + (this.node.parentCode ? this.node.parentCode.split("-")[0] + '-' : this.node.code.split("-")[0] + '-')
         + (new Date()).getTime();
     }
+    this.update(this.currentContent);
   }
 
   addUrl() {
