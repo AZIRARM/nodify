@@ -21,6 +21,7 @@ export class ContentCodeActionsComponent {
   closeFactory(): void {
     this.close.next();
   }
+
   validateFactory(): void {
     this.validate.next();
   }

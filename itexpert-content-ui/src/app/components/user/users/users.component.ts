@@ -3,12 +3,10 @@ import {MatTableDataSource} from "@angular/material/table";
 import {User} from "../../../modeles/User";
 import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
-import {ActivatedRoute} from "@angular/router";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {UserService} from "../../../services/UserService";
 import {UserDialogComponent} from "../user-dialog/user-dialog.component";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
-import {Env} from "../../../../assets/configurations/environment";
 
 @Component({
   selector: 'app-users',
@@ -25,7 +23,6 @@ export class UsersComponent {
 
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
-              private route: ActivatedRoute,
               private userService: UserService,
               private dialog: MatDialog) {
   }
@@ -55,7 +52,7 @@ export class UsersComponent {
     this.dialogRef = this.dialog.open(UserDialogComponent, {
         data: user,
         height: '80vh',
-        width:  '80vw',
+        width: '80vw',
         disableClose: true
       }
     );
@@ -72,7 +69,7 @@ export class UsersComponent {
     this.dialogRef = this.dialog.open(UserDialogComponent, {
         data: user,
         height: '80vh',
-        width:  '80vw',
+        width: '80vw',
         disableClose: true
       }
     );
@@ -88,7 +85,7 @@ export class UsersComponent {
   save(user: User) {
     this.userService.save(user).subscribe(
       response => {
-        if(!response){
+        if (!response) {
           this.translate.get("SAVE_ERROR").subscribe(trad => {
             this.loggerService.warn(trad);
           });
@@ -115,7 +112,7 @@ export class UsersComponent {
         message: "DELETE_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogValidationRef.afterClosed()

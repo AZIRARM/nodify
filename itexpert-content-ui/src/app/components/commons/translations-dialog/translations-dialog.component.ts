@@ -1,23 +1,16 @@
-import {Component, Inject} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {TranslateService} from "@ngx-translate/core";
-import {ToastrService} from "ngx-toastr";
-import {ActivatedRoute, Router} from "@angular/router";
-import {NodeService} from "../../../services/NodeService";
-import {LoggerService} from "../../../services/LoggerService";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {LanguageService} from "../../../services/LanguageService";
-import {AccessRoleService} from "../../../services/AccessRoleService";
 import {Language} from "../../../modeles/Language";
 import {Translation} from "../../../modeles/Translation";
-import {Value} from "../../../modeles/Value";
 
 @Component({
   selector: 'app-translations-dialog',
   templateUrl: './translations-dialog.component.html',
   styleUrls: ['./translations-dialog.component.css']
 })
-export class TranslationsDialogComponent {
+export class TranslationsDialogComponent implements  OnInit{
   data: any;
 
   current: any;
@@ -31,15 +24,7 @@ export class TranslationsDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<TranslationsDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public content: any,
-    private translate: TranslateService,
-    private toast: ToastrService,
-    private route: ActivatedRoute,
-    private nodeService: NodeService,
-    private loggerService: LoggerService,
-    private languageService: LanguageService,
-    private accessRoleService: AccessRoleService,
-    private router: Router,
-    private dialog: MatDialog
+    private languageService: LanguageService
   ) {
     if (content) {
       this.data = content;
@@ -92,8 +77,8 @@ export class TranslationsDialogComponent {
   create() {
     if (this.current?.language && this.current?.key && this.current?.value) {
       this.data.translations = this.data.translations?.filter(
-          (trans: Translation) =>
-              !(trans.language === this.current.language && trans.key === this.current.key)
+        (trans: Translation) =>
+          !(trans.language === this.current.language && trans.key === this.current.key)
       ) || [];
 
       this.data.translations.push(this.current);
