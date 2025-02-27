@@ -3,13 +3,10 @@ import {MatTableDataSource} from "@angular/material/table";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {TranslateService} from "@ngx-translate/core";
-import {Router} from "@angular/router";
 import {LoggerService} from "../../../services/LoggerService";
-import {StatusEnum} from "../../../modeles/StatusEnum";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {UserService} from "../../../services/UserService";
-import {Env} from "../../../../assets/configurations/environment";
 
 @Component({
   selector: 'app-deleted-contents-nodes-dialog',
@@ -17,7 +14,7 @@ import {Env} from "../../../../assets/configurations/environment";
   styleUrls: ['./deleted-contents-nodes-dialog.component.css']
 })
 export class DeletedContentsNodesDialogComponent {
-  user:any;
+  user: any;
 
   displayedColumns: string[] = ['Name', 'Version', 'Last Modification', 'Modified by', 'Actions'];
 
@@ -30,7 +27,6 @@ export class DeletedContentsNodesDialogComponent {
     private contentNodeService: ContentNodeService,
     private userService: UserService,
     private loggerService: LoggerService,
-    private router: Router,
     private dialog: MatDialog
   ) {
   }
@@ -49,7 +45,7 @@ export class DeletedContentsNodesDialogComponent {
     this.contentNodeService.getDeleted().subscribe(
       (response: any) => {
         if (response) {
-          response.map((content:any)=>this.setUserName(content));
+          response.map((content: any) => this.setUserName(content));
           this.dataSource = new MatTableDataSource(response);
         }
       },
@@ -68,7 +64,7 @@ export class DeletedContentsNodesDialogComponent {
         message: "ACTIVATE_DELETE_CONTENT_NODE_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogValidationRef.afterClosed()
@@ -88,11 +84,11 @@ export class DeletedContentsNodesDialogComponent {
       });
   }
 
-  setUserName(param:any){
+  setUserName(param: any) {
     this.userService.setUserName(param);
   }
 
-  delete(element:ContentNode) {
+  delete(element: ContentNode) {
 
     this.dialogValidationRef = this.dialog.open(ValidationDialogComponent, {
       data: {
@@ -100,7 +96,7 @@ export class DeletedContentsNodesDialogComponent {
         message: "DELETE_CONTENT_NODE_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogValidationRef.afterClosed()

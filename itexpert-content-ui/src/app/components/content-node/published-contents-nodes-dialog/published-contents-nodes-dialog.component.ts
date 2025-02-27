@@ -1,11 +1,7 @@
-import {Component, Inject} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {TranslateService} from "@ngx-translate/core";
-import {ToastrService} from "ngx-toastr";
-import {ActivatedRoute, Router} from "@angular/router";
 import {LoggerService} from "../../../services/LoggerService";
-import {LanguageService} from "../../../services/LanguageService";
-import {AccessRoleService} from "../../../services/AccessRoleService";
 import {StatusEnum} from "../../../modeles/StatusEnum";
 import {Node} from "../../../modeles/Node";
 import {MatTableDataSource} from "@angular/material/table";
@@ -13,20 +9,19 @@ import {ContentNode} from "../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {UserService} from "../../../services/UserService";
-import {Env} from "../../../../assets/configurations/environment";
 
 @Component({
   selector: 'app-published-contents-nodes-dialog',
   templateUrl: './published-contents-nodes-dialog.component.html',
   styleUrls: ['./published-contents-nodes-dialog.component.css']
 })
-export class PublishedContentsNodesDialogComponent {
+export class PublishedContentsNodesDialogComponent implements OnInit {
 
-  user:any;
+  user: any;
 
   contentNode: ContentNode;
 
-  displayedColumns: string[] = ['Status',  'Version', 'Last Modification', 'Modified by', 'Actions'];
+  displayedColumns: string[] = ['Status', 'Version', 'Last Modification', 'Modified by', 'Actions'];
 
   dataSource: MatTableDataSource<ContentNode>;
 
@@ -36,14 +31,9 @@ export class PublishedContentsNodesDialogComponent {
     public dialogRef: MatDialogRef<PublishedContentsNodesDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public content: ContentNode,
     private translate: TranslateService,
-    private toast: ToastrService,
-    private route: ActivatedRoute,
     private contentNodeService: ContentNodeService,
     private userService: UserService,
     private loggerService: LoggerService,
-    private languageService: LanguageService,
-    private accessRoleService: AccessRoleService,
-    private router: Router,
     private dialog: MatDialog
   ) {
     if (content) {
@@ -72,10 +62,10 @@ export class PublishedContentsNodesDialogComponent {
 
   init() {
     this.contentNodeService.getAllByCode(this.contentNode.code).subscribe(
-      ( response:any) => {
+      (response: any) => {
         if (response) {
-          let filtredNodes:ContentNode[] = response.filter((element:ContentNode)=>(element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED));
-          filtredNodes.map((content:any)=>this.setUserName(content));
+          let filtredNodes: ContentNode[] = response.filter((element: ContentNode) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED));
+          filtredNodes.map((content: any) => this.setUserName(content));
           this.dataSource = new MatTableDataSource(filtredNodes);
         }
       },
@@ -87,22 +77,24 @@ export class PublishedContentsNodesDialogComponent {
 
 
   isPublished(element: Node) {
-    if(element)
+    if (element)
       return element.status === StatusEnum.PUBLISHED;
     return false
   }
+
   isArchived(element: Node) {
-    if(element)
+    if (element)
       return element.status === StatusEnum.ARCHIVE;
     return false
   }
+
   isSnapshot(element: Node) {
-    if(element)
+    if (element)
       return element.status === StatusEnum.SNAPSHOT;
     return false
   }
 
-  deploy(element:ContentNode) {
+  deploy(element: ContentNode) {
 
     this.dialogRefPublish = this.dialog.open(ValidationDialogComponent, {
       data: {
@@ -110,44 +102,18 @@ export class PublishedContentsNodesDialogComponent {
         message: "DEPLOY_VERSION_MESSAGE"
       },
       height: '80vh',
-      width:  '80vw',
+      width: '80vw',
       disableClose: true
     });
     this.dialogRefPublish.afterClosed()
-      .subscribe((result:any) => {
-        if(result && result.data && result.data === "validated"){
-          this.contentNodeService.deployVersion(element.code, element.version, this.user.id).subscribe(()=>{
+      .subscribe((result: any) => {
+        if (result && result.data && result.data === "validated") {
+          this.contentNodeService.deployVersion(element.code, element.version, this.user.id).subscribe(() => {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
             });
-          }, (error)=>{
-            this.translate.get("SAVE_ERROR").subscribe(trad => {
-              this.loggerService.error(trad);
-            });
-          });
-        }
-      });
-  }
-  revert(element:ContentNode) {
-    this.dialogRefPublish = this.dialog.open(ValidationDialogComponent, {
-      data: {
-        title: "REVERT_VERSION_TITLE",
-        message: "REVERT_VERSION_MESSAGE"
-      },
-      height: '80vh',
-      width:  '80vw',
-      disableClose: true
-    });
-    this.dialogRefPublish.afterClosed()
-      .subscribe((result:any) => {
-        if(result && result.data && result.data === "validated"){
-          this.contentNodeService.revertToVersion(element.code, element.version, this.user.id).subscribe(()=>{
-            this.translate.get("SAVE_SUCCESS").subscribe(trad => {
-              this.loggerService.success(trad);
-              this.init();
-            });
-          }, (error)=>{
+          }, (error) => {
             this.translate.get("SAVE_ERROR").subscribe(trad => {
               this.loggerService.error(trad);
             });
@@ -156,7 +122,34 @@ export class PublishedContentsNodesDialogComponent {
       });
   }
 
-  setUserName(param:any){
+  revert(element: ContentNode) {
+    this.dialogRefPublish = this.dialog.open(ValidationDialogComponent, {
+      data: {
+        title: "REVERT_VERSION_TITLE",
+        message: "REVERT_VERSION_MESSAGE"
+      },
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    });
+    this.dialogRefPublish.afterClosed()
+      .subscribe((result: any) => {
+        if (result && result.data && result.data === "validated") {
+          this.contentNodeService.revertToVersion(element.code, element.version, this.user.id).subscribe(() => {
+            this.translate.get("SAVE_SUCCESS").subscribe(trad => {
+              this.loggerService.success(trad);
+              this.init();
+            });
+          }, (error) => {
+            this.translate.get("SAVE_ERROR").subscribe(trad => {
+              this.loggerService.error(trad);
+            });
+          });
+        }
+      });
+  }
+
+  setUserName(param: any) {
     this.userService.setUserName(param);
   }
 }

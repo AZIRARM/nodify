@@ -3,7 +3,6 @@ import {Node} from "../../../modeles/Node";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {NodeService} from "../../../services/NodeService";
 import {User} from "../../../modeles/User";
-import {Role} from "../../../modeles/Role";
 import {RoleService} from "../../../services/RoleService";
 import {StatusEnum} from "../../../modeles/StatusEnum";
 
@@ -15,26 +14,31 @@ import {StatusEnum} from "../../../modeles/StatusEnum";
 export class UserDialogComponent implements OnInit {
 
   user: User;
-
+  connectedUser: User;
 
   roles: any[] = [];
   projects: any[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<UserDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public content: User,
+    @Inject(MAT_DIALOG_DATA) private currentUser: User,
     private nodeService: NodeService,
     private roleService: RoleService,
   ) {
-    if (content) {
-      this.user = content;
+    if (currentUser) {
+      this.user = currentUser;
     }
   }
 
+
   ngOnInit(): void {
+    this.connectedUser = JSON.parse(
+      JSON.parse(
+        JSON.stringify((window.localStorage.getItem('userInfo')))
+      )
+    );
     this.init();
   }
-
 
   cancel() {
     this.dialogRef.close();
@@ -74,7 +78,25 @@ export class UserDialogComponent implements OnInit {
   }
 
   public isAdmin() {
-    return this.user && this.user.roles && this.user.roles.includes("ADMIN");
+    return this.connectedUser
+      && this.connectedUser.roles
+      && this.connectedUser.roles.includes("ADMIN");
   }
 
+  currentUserIsAdmin() {
+    return (
+      this.user
+      && this.user.id
+      && this.user.roles
+      && this.user.roles.includes("ADMIN")
+    ) && this.user.id === this.connectedUser.id;
+  }
+
+  get selectedRole(): string {
+    return this.user.roles.length > 0 ? this.user.roles[0] : '';
+  }
+
+  set selectedRole(value: string) {
+    this.user.roles = [value]; // Met à jour la première valeur du tableau
+  }
 }
