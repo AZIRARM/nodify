@@ -6,19 +6,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
-import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Node;
-import io.jsonwebtoken.Jwt;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,13 +35,15 @@ public class NodeEndPoint {
     @GetMapping
     public Flux<Node> findAll() {
         return nodeHandler.findAll()
-                .flatMap(nodeHandler::setPublicationStatus);
+                .flatMap(nodeHandler::setPublicationStatus)
+                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
     }
 
     @GetMapping("/origin")
     public Flux<Node> findParentOrigin() {
         return nodeHandler.findParentOrigin()
-                .flatMap(nodeHandler::setPublicationStatus);
+                .flatMap(nodeHandler::setPublicationStatus)
+                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
     }
 
 
@@ -54,11 +53,13 @@ public class NodeEndPoint {
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
             return nodeHandler.findAllByStatus(status)
-                    .flatMap(nodeHandler::setPublicationStatus);
+                    .flatMap(nodeHandler::setPublicationStatus)
+                    .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
         }
 
         return nodeHandler.findAllByStatusAndUser(status, authentication.getPrincipal().toString())
-                .flatMap(nodeHandler::setPublicationStatus);
+                .flatMap(nodeHandler::setPublicationStatus)
+                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
     }
 
     @GetMapping("/published")
@@ -135,12 +136,13 @@ public class NodeEndPoint {
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
             return nodeHandler.findParentsNodesByStatus(status)
-                    .flatMap(nodeHandler::setPublicationStatus);
+                    .flatMap(nodeHandler::setPublicationStatus)
+                    .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
         }
 
         return nodeHandler.findParentsNodesByStatus(status, authentication.getPrincipal().toString())
-                .flatMap(nodeHandler::setPublicationStatus);
-
+                .flatMap(nodeHandler::setPublicationStatus)
+                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
 
     }
 
@@ -175,12 +177,6 @@ public class NodeEndPoint {
                 .flatMap(nodeHandler::setPublicationStatus);
     }
 
-    private Mono<Jwt> jwt() {
-        return ReactiveSecurityContextHolder.getContext()
-                .map(context -> context.getAuthentication().getPrincipal())
-                .cast(Jwt.class);
-    }
-
     @GetMapping(value = "/code/{code}/export")
     public Mono<ResponseEntity<byte[]>> exportAll(@PathVariable String code, @RequestParam(required = false, name = "environment") String environment) {
         return nodeHandler.exportAll(code, environment)
@@ -206,9 +202,9 @@ public class NodeEndPoint {
                                   @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
                                   @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
         return nodeHandler.importNodes(
-                nodes,
-                nodeParentCode,
-                fromFile)
+                        nodes,
+                        nodeParentCode,
+                        fromFile)
                 .flatMap(nodeHandler::setPublicationStatus);
     }
 
