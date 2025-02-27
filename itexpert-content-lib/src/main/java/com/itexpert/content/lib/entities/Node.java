@@ -57,6 +57,8 @@ public class Node implements Serializable, Cloneable {
     private Long publicationDate;
     private StatusEnum status;
 
+    private boolean favorite;
+
     private List<Translation> translations;
 
     public Node clone() throws CloneNotSupportedException {

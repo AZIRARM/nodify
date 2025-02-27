@@ -204,6 +204,15 @@
                 *ngIf="(userAccessService.canDelete()  && parentNode ) || (parentNode && userAccessService.isEditor())|| (userAccessService.isAdmin())"
                 (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete
       </mat-icon>
+
+      <mat-icon class="icon-display primary"
+                *ngIf="element.favorite && !element.parentCode"
+                (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
+      </mat-icon>
+      <mat-icon class="icon-display disabled"
+      *ngIf="!element.favorite && !element.parentCode"
+      (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
+    </mat-icon>
     </td>
 
   </ng-container>
