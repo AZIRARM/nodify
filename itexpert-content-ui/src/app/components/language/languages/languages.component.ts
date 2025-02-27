@@ -2,7 +2,6 @@ import {Component, OnInit} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {TranslateService} from "@ngx-translate/core";
 import {ToastrService} from "ngx-toastr";
-import {ActivatedRoute} from "@angular/router";
 import {LanguageService} from "../../../services/LanguageService";
 import {Language} from "../../../modeles/Language";
 import {LanguageDialogComponent} from "../language-dialog/language-dialog.component";
@@ -27,7 +26,6 @@ export class LanguagesComponent implements OnInit {
 
   constructor(private translate: TranslateService,
               private toast: ToastrService,
-              private route: ActivatedRoute,
               private languageService: LanguageService,
               private loggerService: LoggerService,
               private dialog: MatDialog) {

@@ -2,7 +2,6 @@ import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {MatDialogRef} from "@angular/material/dialog";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
-import {TranslateService} from "@ngx-translate/core";
 import {UserService} from "../../../services/UserService";
 import {NotificationService} from "../../../services/NotificationService";
 import {Notification} from "../../../modeles/Notification";
@@ -30,10 +29,8 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   readed: boolean = false;
 
-  constructor(
-    private translate: TranslateService,
-    private notificationService: NotificationService,
-    private userService: UserService,
+  constructor(private notificationService: NotificationService,
+              private userService: UserService,
   ) {
   }
 
@@ -124,8 +121,8 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   allreadyReaded() {
     this.readed = !this.readed;
-    this.paginator.pageIndex=0;
-    this.paginator.pageSize=5;
+    this.paginator.pageIndex = 0;
+    this.paginator.pageSize = 5;
     this.nextPage(this.paginator.pageIndex, this.paginator.pageSize);
   }
 }

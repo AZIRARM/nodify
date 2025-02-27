@@ -1,10 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Parameters} from "../../../modeles/Parameters";
-import {Node} from "../../../modeles/Node";
 import {TranslateService} from "@ngx-translate/core";
-import {ActivatedRoute, Router} from "@angular/router";
 import {LoggerService} from "../../../services/LoggerService";
-import {LanguageService} from "../../../services/LanguageService";
 import {ParametersService} from "../../../services/ParametersService";
 import {User} from "../../../modeles/User";
 
@@ -19,23 +16,20 @@ export class UserParametersComponent implements OnInit {
 
   constructor(
     private translate: TranslateService,
-    private route: ActivatedRoute,
     private parametersService: ParametersService,
-    private loggerService: LoggerService,
-    private languageService: LanguageService,
-    private router: Router
+    private loggerService: LoggerService
   ) {
   }
 
   ngOnInit(): void {
     this.user = JSON.parse(
       JSON.parse(
-        JSON.stringify( ( window.localStorage.getItem('userInfo') ) )
+        JSON.stringify((window.localStorage.getItem('userInfo')))
       )
     );
 
     this.parametersService.getByUserId(this.user.id).subscribe(
-      (data:any) => {
+      (data: any) => {
         if (data) {
           this.parameters = data;
         }
@@ -48,7 +42,7 @@ export class UserParametersComponent implements OnInit {
 
   save() {
     this.parametersService.save(this.parameters).subscribe(
-      (data:any) => {
+      (data: any) => {
         if (data) {
           this.translate.get("SAVE_SUCCESS").subscribe(trad => {
             this.loggerService.success(trad);

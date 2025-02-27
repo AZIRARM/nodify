@@ -1,5 +1,5 @@
-import {AfterViewInit, Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {Component, Inject} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 
 @Component({
   selector: 'app-validation-dialog',
@@ -20,11 +20,11 @@ export class ValidationDialogComponent {
   }
 
   cancel() {
-    this.dialogRef.close({ data: 'canceled' });
+    this.dialogRef.close({data: 'canceled'});
   }
 
   validate() {
-    this.dialogRef.close({ data: 'validated' });
+    this.dialogRef.close({data: 'validated'});
   }
 
 }

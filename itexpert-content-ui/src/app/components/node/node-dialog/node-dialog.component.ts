@@ -1,15 +1,9 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Node} from "../../../modeles/Node";
 import {Language} from "../../../modeles/Language";
-import {TranslateService} from "@ngx-translate/core";
-import {ToastrService} from "ngx-toastr";
-import {ActivatedRoute, Router} from "@angular/router";
 import {NodeService} from "../../../services/NodeService";
-import {LoggerService} from "../../../services/LoggerService";
 import {LanguageService} from "../../../services/LanguageService";
-import {AccessRole} from "../../../modeles/AccessRole";
-import {AccessRoleService} from "../../../services/AccessRoleService";
 
 @Component({
   selector: 'app-node-dialog',
@@ -30,15 +24,8 @@ export class NodeDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<NodeDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public content: Node,
-    private translate: TranslateService,
-    private toast: ToastrService,
-    private route: ActivatedRoute,
     private nodeService: NodeService,
-    private loggerService: LoggerService,
-    private languageService: LanguageService,
-    private accessRoleService: AccessRoleService,
-    private router: Router,
-    private dialog: MatDialog
+    private languageService: LanguageService
   ) {
     if (content) {
       this.node = content;
@@ -94,9 +81,9 @@ export class NodeDialogComponent implements OnInit {
   }
 
   generateCode() {
-    if(this.node && !this.node.id){
-      this.node.code = this.node.name.replace(/[\W_]+/g,"_").toUpperCase()+'-'+
-        (this.isProject ? '': this.node.parentCodeOrigin.split("-")[0]+'-')+
+    if (this.node && !this.node.id) {
+      this.node.code = this.node.name.replace(/[\W_]+/g, "_").toUpperCase() + '-' +
+        (this.isProject ? '' : this.node.parentCodeOrigin.split("-")[0] + '-') +
         (new Date()).getTime();
     }
   }
