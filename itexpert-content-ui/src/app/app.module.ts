@@ -125,6 +125,9 @@ import {
   ContentCodeInfosComponent
 } from "./components/content-node/content-code/content-code-infos/content-code-infos.component";
 import {FlexModule} from "@angular/flex-layout";
+import {
+  ContentCodeXmlComponent
+} from "./components/content-node/content-code/content-code-xml/content-code-xml.component";
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -175,6 +178,7 @@ export function defaultLanguage() {
     ContentCodeCssComponent,
     ContentCodeHtmlComponent,
     ContentCodeJsonComponent,
+    ContentCodeXmlComponent,
     ContentCodePictureComponent,
     ContentCodeFileComponent,
     ContentCodeUrlsComponent,
