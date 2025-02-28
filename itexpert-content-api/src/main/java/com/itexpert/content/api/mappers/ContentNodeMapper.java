@@ -3,6 +3,7 @@ package com.itexpert.content.api.mappers;
 import com.google.gson.Gson;
 import com.itexpert.content.api.utils.ContentNodeView;
 import com.itexpert.content.lib.models.ContentNode;
+import org.apache.commons.lang3.ObjectUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -25,6 +26,9 @@ public interface ContentNodeMapper {
         try {
             Gson gson = new Gson();
             Object json = gson.fromJson(content, Object.class);
+            if(ObjectUtils.isEmpty(json)){
+                json = "";
+            }
             return json;
         } catch (Exception ex) {
             return content;

@@ -1,0 +1,14 @@
+<div name="contentCreationJson" *ngIf="contentNode.type ==='XML'" >
+  <app-content-code-title
+    [title]="'JSON'"></app-content-code-title>
+  <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
+  <ngx-codemirror
+    class="viewCode"
+    [(ngModel)]="contentNode.content"
+    [options]="{
+        lineNumbers: true,
+        theme: 'material',
+        mode: 'xml'
+      }"
+  ></ngx-codemirror>
+</div>
