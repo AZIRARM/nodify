@@ -482,4 +482,9 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         });
     }
   }
+
+  favorite(element:ContentNode) {
+    element.favorite = !element.favorite;
+    this.save(element);
+  }
 }
