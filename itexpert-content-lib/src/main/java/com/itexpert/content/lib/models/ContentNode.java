@@ -52,6 +52,8 @@ public class ContentNode implements Serializable, Cloneable {
     private Long publicationDate;
     private StatusEnum status;
 
+    private boolean favorite;
+
     private String publicationStatus;
 
     private List<Translation> translations;
