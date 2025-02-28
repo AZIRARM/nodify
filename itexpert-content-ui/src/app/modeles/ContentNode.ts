@@ -44,6 +44,7 @@ export class ContentNode {
   public publicationDate: number;
   public version: string;
   public status: string;
+  public favorite: boolean;
   public publicationStatus: string;
 
   public translations: Translation[];

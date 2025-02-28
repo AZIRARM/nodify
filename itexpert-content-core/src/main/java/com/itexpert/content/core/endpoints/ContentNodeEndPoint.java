@@ -39,31 +39,36 @@ public class ContentNodeEndPoint {
     @GetMapping
     public Flux<ContentNode> findAll() {
         return contentNodeHandler.findAll()
-                .flatMap(contentNodeHandler::setPublicationStatus);
+                .flatMap(contentNodeHandler::setPublicationStatus)
+                .sort((content1, content2) -> Boolean.compare(content2.isFavorite(), content1.isFavorite()));
     }
 
     @GetMapping("/status/{status}")
     public Flux<ContentNode> findAllByStatus(@PathVariable String status) {
         return contentNodeHandler.findAllByStatus(status)
-                .flatMap(contentNodeHandler::setPublicationStatus);
+                .flatMap(contentNodeHandler::setPublicationStatus)
+                .sort((content1, content2) -> Boolean.compare(content2.isFavorite(), content1.isFavorite()));
     }
 
     @GetMapping(value = "/code/{code}")
     public Flux<ContentNode> findAllByCode(@PathVariable String code) {
         return contentNodeHandler.findAllByCode(code)
-                .flatMap(contentNodeHandler::setPublicationStatus);
+                .flatMap(contentNodeHandler::setPublicationStatus)
+                .sort((content1, content2) -> Boolean.compare(content2.isFavorite(), content1.isFavorite()));
     }
 
     @GetMapping(value = "/node/code/{code}/status/{status}")
     public Flux<ContentNode> findByNodeCodeAndStatus(@PathVariable String code, @PathVariable String status) {
         return contentNodeHandler.findByNodeCodeAndStatus(code, status)
-                .flatMap(contentNodeHandler::setPublicationStatus);
+                .flatMap(contentNodeHandler::setPublicationStatus)
+                .sort((content1, content2) -> Boolean.compare(content2.isFavorite(), content1.isFavorite()));
     }
 
     @GetMapping(value = "/node/code/{code}")
     public Flux<ContentNode> findAllByNodeCode(@PathVariable String code) {
         return contentNodeHandler.findAllByNodeCode(code)
-                .flatMap(contentNodeHandler::setPublicationStatus);
+                .flatMap(contentNodeHandler::setPublicationStatus)
+                .sort((content1, content2) -> Boolean.compare(content2.isFavorite(), content1.isFavorite()));
     }
 
     @GetMapping(value = "/id/{uuid}")

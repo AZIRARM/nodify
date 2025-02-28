@@ -166,19 +166,18 @@
         <mat-icon class="icon-display danger" *ngIf="userAccessService.canDelete()" (click)="delete(element)" inline
                   matTooltip="{{ 'DELETE' | translate}}">delete
         </mat-icon>
+        <mat-icon class="icon-display primary"
+                  *ngIf="element.favorite"
+                  (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
+        </mat-icon>
+        <mat-icon class="icon-display disabled"
+                  *ngIf="!element.favorite"
+                  (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
+        </mat-icon>
       </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header-cell"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }" class="mat-row"></tr>
   </table>
-
-  <!--app-code-dialog--
-    [currentContent]="currentContent"
-    [node]="node"
-    [type]="type"
-    (close)="close()"
-    (validate)="validate()"
-    (onFileChange)="onFileChange($event)"
-    [user]="user"></app-code-dialog-->
 </div>
