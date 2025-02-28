@@ -157,6 +157,7 @@
   "PICTURE": "Image",
   "FILE": "File",
   "JSON": "JSON Content",
+  "XML": "XML Content",
   "URLS": "URLs",
   "TYPE": "Type",
   "DELETE_TRANSLATION_TITLE": "Delete Translation",
