@@ -101,10 +101,10 @@
       <th mat-header-cell *matHeaderCellDef> {{ "RULES" | translate }}</th>
       <td mat-cell *matCellDef="let element">
         <mat-icon *ngIf="!element.rules || element.rules.length <= 0" class="icon-display" (click)="rules(element)"
-                  inline matTooltip="{{element.rules}}">list
+                  inline matTooltip="{{'RULES'|translate}}">list
         </mat-icon>
         <mat-icon *ngIf="element.rules && element.rules.length > 0" class="icon-display danger" (click)="rules(element)"
-                  inline matTooltip="{{element.rules}}">list
+                  inline matTooltip="{{'RULES'|translate}}">list
         </mat-icon>
       </td>
     </ng-container>

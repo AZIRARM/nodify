@@ -108,10 +108,10 @@
     <th mat-header-cell *matHeaderCellDef> {{ "RULES" | translate }}</th>
     <td mat-cell *matCellDef="let element">
       <mat-icon *ngIf="!element.rules || element.rules.length <= 0" class="icon-display" (click)="rules(element)" inline
-                matTooltip="{{element.rules}}">list
+                matTooltip="{{'RULES'|translate}}">list
       </mat-icon>
       <mat-icon *ngIf="element.rules && element.rules.length > 0" class="icon-display danger"
-                (click)="rules(element)" inline matTooltip="{{element.rules}}">list
+                (click)="rules(element)" inline matTooltip="{{'RULES'|translate}}">list
       </mat-icon>
     </td>
   </ng-container>
@@ -166,7 +166,7 @@
   <ng-container matColumnDef="Actions">
     <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
     <td mat-cell *matCellDef="let element">
-      <mat-icon class="icon-display  primary"
+      <mat-icon class="icon-display primary"
                 *ngIf="(userAccessService.canDelete()  && parentNode ) || (parentNode && userAccessService.isEditor())|| (userAccessService.isAdmin())"
                 (click)="view(element)" inline matTooltip="{{ 'VIEW' | translate}}">visibility
       </mat-icon>
