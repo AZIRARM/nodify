@@ -3,7 +3,9 @@ package com.itexpert.content.core.handlers;
 import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.NodeRepository;
+import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.lib.enums.NotificationEnum;
+import com.itexpert.content.lib.enums.OperatorEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.enums.TypeEnum;
 import com.itexpert.content.lib.models.Node;
@@ -81,8 +83,9 @@ public class NodeHandler {
                     }
 
                     if (ObjectUtils.isEmpty(node.getRules())) {
-                        node.setRules(getDefaultRules());
+                        node.setRules(RulesUtils.getDefaultRules());
                     }
+
                     return node;
                 })
                 .map(nodeMapper::fromModel)
@@ -90,39 +93,6 @@ public class NodeHandler {
                 .map(nodeMapper::fromEntity)
                 .flatMap(node -> this.notify(node, isCreation ? NotificationEnum.CREATION : NotificationEnum.UPDATE));
 
-    }
-
-    private List<Rule> getDefaultRules() {
-        Rule ruleMaintenance = new Rule();
-        ruleMaintenance.setName("MAINTENANCE");
-        ruleMaintenance.setCode("MAINTENANCE");
-        ruleMaintenance.setType(TypeEnum.BOOL);
-        ruleMaintenance.setValue("false");
-        ruleMaintenance.setBehavior(Boolean.FALSE);
-        ruleMaintenance.setEnable(Boolean.FALSE);
-        ruleMaintenance.setEditable(false);
-        ruleMaintenance.setErasable(false);
-
-
-        Rule activationDate = new Rule();
-        activationDate.setName("ACTIVATION_DATE");
-        activationDate.setCode("ACTIVATION_CODE");
-        activationDate.setType(TypeEnum.DATE);
-        activationDate.setBehavior(Boolean.FALSE);
-        activationDate.setEnable(Boolean.FALSE);
-        activationDate.setEditable(false);
-        activationDate.setErasable(false);
-
-        Rule endDate = new Rule();
-        endDate.setName("DEACTIVATION_DATE");
-        endDate.setCode("DEACTIVATION_CODE");
-        endDate.setType(TypeEnum.DATE);
-        endDate.setBehavior(Boolean.FALSE);
-        endDate.setEnable(Boolean.FALSE);
-        endDate.setEditable(false);
-        endDate.setErasable(false);
-
-        return List.of(ruleMaintenance, activationDate, endDate);
     }
 
     public Mono<Boolean> delete(String code, UUID userId) {
