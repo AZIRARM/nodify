@@ -3,93 +3,45 @@
     <span> {{ "RULES" | translate }}</span>
   </mat-toolbar>
 </p>
-<div mat-dialog-content>
+<div class="container">
 
+  <label for="ruleType">{{'TYPE'| translate}}</label>
+  <select id="ruleType" name="ruleType" [(ngModel)]="ruleType" required class="rulesTypes">
+    <option value="BOOL" selected>BOOL</option>
+    <option value="DATE">DATE</option>
+  </select>
 
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-select  name="type" [(ngModel)]="ruleType" required>
-        <mat-option value="BOOL">{{ "BOOL" | translate}}</mat-option>
-        <mat-option value="DATE">{{ "DATE" | translate}}</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <button [disabled]="!ruleType" (click)="create()">{{'ADD' | translate}}</button>
 
-    <button mat-button [disabled]="!ruleType" (click)="create()">{{ "ADD" | translate }}</button>
-  </p>
+  <div *ngIf="rulesConditions && rulesConditions.length > 0">
+    <div *ngFor="let selected of rulesConditions" class="rule-row">
+      <input type="text" placeholder="Rule Name" [(ngModel)]="selected.name"
+             [disabled]="!selected.editable">
+      <select [(ngModel)]="selected.operator" name="selectOperator" *ngIf="selected.type !== 'BOOL'">
+        <option value="EQ">=</option>
+        <option value="SUP">&gt;</option>
+        <option value="LOW">&lt;</option>
+        <option value="SUP_EQ">≥</option>
+        <option value="LOW_EQ">≤</option>
+        <option value="DIF">≠</option>
+      </select>
+      <input *ngIf="selected.type === 'DATE'" type="datetime-local" [(ngModel)]="selected.value" (ngModelChange)="updateBehavior(selected)" placeholder="Value">
+      <select [(ngModel)]="selected.behavior" name="selectBehavior">
+        <option *ngIf="node.hasOwnProperty('contents')" [value]="true">Enable Node</option>
+        <option *ngIf="node.hasOwnProperty('contents')" [value]="false">Disable Node</option>
+        <option *ngIf="!node.hasOwnProperty('contents')" [value]="true">Enable Content</option>
+        <option *ngIf="!node.hasOwnProperty('contents')" [value]="false">Disable Content</option>
+      </select>
+      <div class="checkbox-container">
+        <input *ngIf="(selected.type=='BOOL')
+        || ( selected.operator && selected.value && selected.type=='DATE')" type="checkbox" [(ngModel)]="selected.enable"> Activate Rule
+      </div>
+      <button *ngIf="selected.erasable" (click)="remove(selected)">X</button>
+    </div>
+  </div>
+</div>
 
-  <p *ngIf="rulesConditions && rulesConditions.length > 0">
-  {{ "BEHAVIOR_HELP" | translate }}
-  </p>
-
-  <table>
-   <tr *ngFor="let selected of rulesConditions">
-     <td>
-       <mat-form-field appearance="outline">
-         <mat-label>{{ "RULE_NAME" | translate }}</mat-label>
-         <input matInput  [(ngModel)]="selected.name"   (ngModelChange)="generateCode(selected)"  value="{{ selected.name | translate  }}" [disabled]="!selected.editable">
-       </mat-form-field>
-     </td>
-     <td>
-       <mat-form-field appearance="outline">
-         <mat-label>{{ "RULE_CODE" | translate }}</mat-label>
-         <input matInput   [(ngModel)]="selected.code" value="{{ selected.code | translate }}" disabled>
-       </mat-form-field>
-     </td>
-     <td>
-       <mat-form-field appearance="outline" *ngIf="selected.type !== 'BOOL'">
-         <mat-label>{{ "OPERATOR" | translate }}</mat-label>
-           <mat-select [(ngModel)]="selected.operator"  name="selectOperator">
-             <mat-option value="EQ"> {{"="}} </mat-option>
-             <mat-option value="SUP"> {{">"}} </mat-option>
-             <mat-option value="LOW"> {{"<"}} </mat-option>
-             <mat-option value="SUP_EQ"> {{"≥"}} </mat-option>
-             <mat-option value="LOW_EQ"> {{"≤"}} </mat-option>
-             <mat-option value="DIF"> {{"#"}} </mat-option>
-           </mat-select>
-       </mat-form-field>
-     </td>
-     <td>
-
-       <mat-form-field appearance="outline" *ngIf="selected.type === 'STRING'" >
-         <mat-label>{{ "RULE_VALUE" | translate }}</mat-label>
-         <input type="text"  matInput [(ngModel)]="selected.value"  placeholder="{{ 'VALUE' | translate }}">
-       </mat-form-field>
-
-       <mat-form-field appearance="outline" *ngIf="selected.type === 'FLOAT'">
-         <mat-label>{{ "RULE_VALUE" | translate }}</mat-label>
-         <input type="number" matInput [(ngModel)]="selected.value" placeholder="{{ 'VALUE' | translate }}">
-       </mat-form-field>
-
-       <mat-form-field appearance="outline" *ngIf="selected.type === 'NUM'">
-         <mat-label>{{ "RULE_VALUE" | translate }}</mat-label>
-         <input type="number"  matInput [(ngModel)]="selected.value" placeholder="{{ 'VALUE' | translate }}">
-       </mat-form-field>
-
-       <mat-form-field appearance="outline" *ngIf="selected.type === 'DATE'">
-         <mat-label>{{ "RULE_VALUE" | translate }}</mat-label>
-         <input type="datetime-local"  matInput  [(ngModel)]="selected.value" [checked]="selected.value === 'true'" placeholder="{{ 'VALUE' | translate }}">
-       </mat-form-field>
-     </td>
-     <td>
-       <mat-form-field appearance="outline" class="backspace">
-         <mat-label>{{ "BEHAVIOR" | translate }}</mat-label>
-         <mat-select [(ngModel)]="selected.behavior"  name="selectOperator">
-           <mat-option *ngIf="node.hasOwnProperty('contents')" [value]="true"> {{"ENABLE_NODE" | translate}} </mat-option>
-           <mat-option *ngIf="node.hasOwnProperty('contents')" [value]="false"> {{"DISABLE_NODE" | translate}} </mat-option>
-           <mat-option *ngIf="!node.hasOwnProperty('contents')" [value]="true"> {{"ENABLE_CONTENT" | translate}} </mat-option>
-           <mat-option *ngIf="!node.hasOwnProperty('contents')" [value]="false"> {{"DISABLE_CONTENT" | translate}} </mat-option>
-         </mat-select>
-       </mat-form-field>
-     </td>
-     <td>
-       <mat-slide-toggle [(ngModel)]="selected.enable">{{ 'ACTIVATE_RULE' | translate}}</mat-slide-toggle>
-     </td>
-     <td>
-         <mat-icon  *ngIf="selected.erasable"  (click)="remove(selected)">remove_circle_outline</mat-icon>
-     </td>
-   </tr>
-</table>
-<div mat-dialog-actions>
-  <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-  <button mat-button (click)="validate()">{{ "SAVE" | translate }}</button>
+<div>
+  <button (click)="cancel()">{{ "CANCEL" | translate }}</button>
+  <button *ngIf="canSave()" (click)="validate()">{{ "SAVE" | translate }}</button>
 </div>

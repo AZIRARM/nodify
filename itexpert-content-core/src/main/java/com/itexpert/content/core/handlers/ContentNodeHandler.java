@@ -5,6 +5,7 @@ import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.models.ContentNodePayload;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
+import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
@@ -69,6 +70,10 @@ public class ContentNodeHandler {
                         contentNode.setModificationDate(contentNode.getCreationDate());
                     } else {
                         contentNode.setModificationDate(Instant.now().toEpochMilli());
+                    }
+
+                    if (ObjectUtils.isEmpty(contentNode.getRules())) {
+                        contentNode.setRules(RulesUtils.getDefaultRules());
                     }
 
                     return contentNode;
