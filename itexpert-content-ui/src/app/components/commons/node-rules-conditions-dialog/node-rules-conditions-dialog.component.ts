@@ -2,6 +2,8 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Rule} from "../../../modeles/Rule";
 import {ContentNode} from "../../../modeles/ContentNode";
+import {TranslateService} from "@ngx-translate/core";
+import {LoggerService} from "../../../services/LoggerService";
 
 @Component({
   selector: 'app-node-rules-conditions-dialog',
@@ -15,11 +17,12 @@ export class NodeRulesConditionsDialogComponent implements OnInit {
 
   rulesConditions: Rule[] = [];
 
-  ruleType: string;
+  ruleType: string = "BOOL";
 
-  constructor(
-    public dialogRef: MatDialogRef<NodeRulesConditionsDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public content: any
+  constructor(private translate: TranslateService,
+              private loggerService: LoggerService,
+              public dialogRef: MatDialogRef<NodeRulesConditionsDialogComponent>,
+              @Inject(MAT_DIALOG_DATA) public content: any
   ) {
     if (content) {
       this.node = content;
@@ -49,9 +52,17 @@ export class NodeRulesConditionsDialogComponent implements OnInit {
     ruleCondition.type = this.ruleType;
     ruleCondition.editable = true;
     ruleCondition.erasable = true;
+
+    if(this.ruleType == 'DATE'){
+      ruleCondition.operator = '=';
+    }
+
+    ruleCondition.code = this.generateString(this.node.code.split("-")[0]+"-"+this.ruleType, 20);
+    ruleCondition.name = this.generateString(this.ruleType, 5);
+    ruleCondition.behavior = false;
+
     if (this.ruleType === "BOOL")
       ruleCondition.value = 'true';
-
     if (!this.rulesConditions) {
       this.rulesConditions = [];
     }
@@ -64,12 +75,54 @@ export class NodeRulesConditionsDialogComponent implements OnInit {
     })
   }
 
-  generateCode(selected: any) {
-    if (selected) {
-      selected.code = selected.name.replace(/[\W_]+/g, "_").toUpperCase() + '-' + (new Date()).getTime();
-    }
+  generateString(template:string, length: number) {
+    const characters = '012345679';
+    const charactersLength = characters.length;
+    const array = new Uint32Array(length);
+    window.crypto.getRandomValues(array);
+    return  template+ "-" + Array.from(array, (num) => characters[num % charactersLength]).join('');
   }
 
   protected readonly Node = Node;
   protected readonly ContentNode = ContentNode;
+
+  canSave() {
+    let check: boolean = true;
+    this.rulesConditions.forEach((rule: Rule) => {
+      if (check) {
+        if (!this.checkRule(rule)) {
+          check = false;
+        }
+      }
+    })
+
+    return check;
+  }
+
+  private checkRule(rule: Rule) {
+    if (rule.type == 'BOOL') {
+      return this.checkCommonsFields(rule);
+    } else {
+      return this.checkCommonsFields(rule) && this.checkTypeDateFields(rule);
+    }
+  }
+
+  private checkTypeDateFields(rule: Rule) {
+    return true;
+  }
+
+  private checkCommonsFields(rule: Rule) {
+    if (!rule.name) {
+      this.translate.get("NEED_RULE_NAME").subscribe((message:string)=>{
+        this.loggerService.warn(message);
+      });
+    }
+    return true;
+  }
+
+  updateBehavior(selected: Rule) {
+    if(!selected.value){
+      selected.enable = false;
+    }
+  }
 }

@@ -230,7 +230,7 @@
   "EXPORT_AS_NEW": "Exporter comme un nouveau élément sur l'environnement cible",
   "EXPORT_TO_UPDATE":"Exporter pour une mise à jour sur l'environnement cible",
   "VIEW": "Voire/Consulter le résultat",
-  "UPDATE_VALUE": "Ajouter / Mettee à jour",
+  "UPDATE_VALUE": "Ajout / Mise à jour",
   "ENVIRONMENTS": "Environnements",
   "ENVIRONMENTS_MANAGEMENT": "Gestion des environnements",
   "NODE_ALREADY_AFFECTED_TO_ANOTHER_ENVIRONMENT": "Le code projet/noeud est déjà affecté à un autre environnement.",

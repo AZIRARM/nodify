@@ -1,5 +1,6 @@
 package com.itexpert.content.core.utils;
 
+import com.itexpert.content.lib.enums.OperatorEnum;
 import com.itexpert.content.lib.enums.TypeEnum;
 import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
@@ -84,4 +85,40 @@ public class RulesUtils {
         }
         return evaluation;
     }
+
+    public static List<Rule> getDefaultRules() {
+        Rule ruleMaintenance = new Rule();
+        ruleMaintenance.setName("MAINTENANCE");
+        ruleMaintenance.setCode("MAINTENANCE");
+        ruleMaintenance.setType(TypeEnum.BOOL);
+        ruleMaintenance.setValue("false");
+        ruleMaintenance.setBehavior(Boolean.FALSE);
+        ruleMaintenance.setEnable(Boolean.FALSE);
+        ruleMaintenance.setEditable(false);
+        ruleMaintenance.setErasable(false);
+
+
+        Rule activationDate = new Rule();
+        activationDate.setName("ACTIVATION_DATE");
+        activationDate.setCode("ACTIVATION_CODE");
+        activationDate.setOperator(OperatorEnum.SUP_EQ);
+        activationDate.setType(TypeEnum.DATE);
+        activationDate.setBehavior(Boolean.FALSE);
+        activationDate.setEnable(Boolean.FALSE);
+        activationDate.setEditable(false);
+        activationDate.setErasable(false);
+
+        Rule endDate = new Rule();
+        endDate.setName("DEACTIVATION_DATE");
+        endDate.setCode("DEACTIVATION_CODE");
+        endDate.setOperator(OperatorEnum.SUP_EQ);
+        endDate.setType(TypeEnum.DATE);
+        endDate.setBehavior(Boolean.FALSE);
+        endDate.setEnable(Boolean.FALSE);
+        endDate.setEditable(false);
+        endDate.setErasable(false);
+
+        return List.of(ruleMaintenance, activationDate, endDate);
+    }
+
 }
