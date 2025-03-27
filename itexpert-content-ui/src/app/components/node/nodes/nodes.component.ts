@@ -272,7 +272,9 @@ export class NodesComponent implements OnInit {
       }
     );
     this.dialogRefDeleteds.afterClosed()
-      .subscribe();
+      .subscribe(result => {
+        this.init();
+      });
   }
 
 
