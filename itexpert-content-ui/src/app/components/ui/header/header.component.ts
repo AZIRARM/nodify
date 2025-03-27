@@ -120,11 +120,11 @@ export class HeaderComponent {
         )
       );
       if (this.user && this.user.id) {
-       /* this.notificationService.countUnreadedNotification(this.user.id).subscribe(
+        this.notificationService.countUnreadedNotification(this.user.id).subscribe(
           (data: any) => {
             this.nbNotifications = data;
           }
-        );*/
+        );
       }
     }
   }
