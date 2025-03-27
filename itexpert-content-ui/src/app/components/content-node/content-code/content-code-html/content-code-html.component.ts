@@ -1,7 +1,8 @@
-import {AfterViewInit, Component, Input, Output} from '@angular/core';
+import {AfterViewInit, Component, Input, Output, ViewChild} from '@angular/core';
 import {ContentNode} from "../../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../../services/ContentNodeService";
 import {StatusEnum} from "../../../../modeles/StatusEnum";
+import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
 
 @Component({
   selector: 'app-content-code-html',
@@ -21,8 +22,15 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
 
   }
 
+  @ViewChild(CodemirrorComponent) codeMirrorComponent!: CodemirrorComponent;
+
   ngAfterViewInit(): void {
     this.toHtml(this.contentNode.content);
+    setTimeout(() => {
+      if (this.codeMirrorComponent?.codeMirror) {
+        this.codeMirrorComponent.codeMirror.refresh();
+      }
+    }, 300);
   }
 
   setCodeEdition(codeEdition: boolean) {
@@ -43,5 +51,4 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
         console.error('Request failed with error');
       });
   }
-
 }
