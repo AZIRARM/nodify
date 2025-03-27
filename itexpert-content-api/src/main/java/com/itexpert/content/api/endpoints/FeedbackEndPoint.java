@@ -100,7 +100,7 @@ public class FeedbackEndPoint {
      * @return A Mono containing the saved feedback response entity.
      */
     @Operation(summary = "Save a new feedback entry", description = "Creates a new feedback entry in the system.")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<Feedback>> save(@RequestBody Feedback feedback) {
         return feedbackHandler.save(feedback)
                 .map(ResponseEntity::ok);

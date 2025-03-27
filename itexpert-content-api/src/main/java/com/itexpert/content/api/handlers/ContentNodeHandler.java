@@ -88,7 +88,9 @@ public class ContentNodeHandler {
                 .filter(contentNode -> !contentNode.getType().equals(ContentTypeEnum.FILE) && !contentNode.getType().equals(ContentTypeEnum.PICTURE))
                 .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status))
                 .flatMap(contentNode -> this.contentHelper.fillValues(contentNode, status))
-                .flatMap(contentNode -> this.contentHelper.translate(contentNode, ObjectUtils.isNotEmpty(translation) ? translation : contentNode.getLanguage(), status))
+                .flatMap(contentNode -> {
+                    return this.contentHelper.translate(contentNode, ObjectUtils.isNotEmpty(translation) ? translation : contentNode.getLanguage(), status);
+                })
                 .filter(ObjectUtils::isNotEmpty)
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)

@@ -61,7 +61,7 @@ public class DataEndPoint {
      * @return A Mono containing the ResponseEntity with the saved Data object.
      */
     @Operation(summary = "Save Data", description = "Saves a new Data object in the system.")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<Data>> save(@RequestBody Data data) {
         return dataHandler.save(data)
                 .map(ResponseEntity::ok);
