@@ -35,12 +35,16 @@ public class CodesUtils {
         String codeBegin = parts[0];
         String codeEnding = fromFile ? generateRandomCode() : parts[parts.length - 1];
 
-        return codeBegin + '-' + environment.split("-")[0] + "-" + codeEnding;
+        return (codeBegin + '-' + environment.split("-")[0] + "-" + codeEnding).replace("--", "-");
     }
 
     private static String generateRandomCode() {
+       return generateRandomCodeFactory(CODE_LENGTH);
+    }
+
+    public static String generateRandomCodeFactory(int length) {
         StringBuilder sb = new StringBuilder(CODE_LENGTH);
-        for (int i = 0; i < CODE_LENGTH; i++) {
+        for (int i = 0; i < length; i++) {
             sb.append(DIGITS.charAt(RANDOM.nextInt(DIGITS.length())));
         }
         return sb.toString();

@@ -19,7 +19,7 @@ public class HealthEndPoint {
      * @return a simple OK response indicating the service is running
      */
     @Operation(summary = "Check service health status")
-    @GetMapping
+    @GetMapping("/")
     public String health() {
         return "OK";
     }

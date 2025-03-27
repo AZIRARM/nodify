@@ -22,7 +22,7 @@ public class NotificationEndPoint {
     }
 
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<Notification> findAll() {
         return notificationHandler.findAll();
     }
@@ -36,7 +36,7 @@ public class NotificationEndPoint {
     }
 
     // @RolesAllowed("ADMIN")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<Notification>> save(@RequestBody(required = true) Notification notification) {
         return notificationHandler.save(notification)
                 .map(ResponseEntity::ok);

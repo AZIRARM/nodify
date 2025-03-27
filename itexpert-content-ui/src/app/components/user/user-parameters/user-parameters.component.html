@@ -5,6 +5,8 @@
 </p>
 <div>
 <p>
-  <mat-slide-toggle [(ngModel)]="parameters.acceptNotifications" (change)="save()" >{{ "ACCEPT_NOTIFICATION" | translate}}</mat-slide-toggle>
+  <!-- mat-slide-toggle *ngIf="parameters" [(ngModel)]="parameters.acceptNotifications" (change)="save()" >{{ "ACCEPT_NOTIFICATION" | translate}}</mat-slide-toggle -->
+  <mat-slide-toggle *ngIf="parameters" [(ngModel)]="darkMode" (change)="changeTheme()" >{{ "DARK_MODE" | translate}}</mat-slide-toggle><br/>
+
 </p>
 </div>
