@@ -36,7 +36,7 @@ public class ContentNodeEndPoint {
     private final EnvironmentHandler environmentHandler;
     private final RenameContentNodeCodesHelper renameContentNodeCodesHelper;
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<ContentNode> findAll() {
         return contentNodeHandler.findAll()
                 .flatMap(contentNodeHandler::setPublicationStatus)
@@ -118,7 +118,7 @@ public class ContentNodeEndPoint {
     }
 
 
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<ContentNode>> save(@RequestBody ContentNode contentNode) {
         try {
             return contentNodeHandler.save(contentNode)

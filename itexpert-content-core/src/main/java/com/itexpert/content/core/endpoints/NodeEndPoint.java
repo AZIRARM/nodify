@@ -32,7 +32,7 @@ public class NodeEndPoint {
 
     private final NodeHandler nodeHandler;
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<Node> findAll() {
         return nodeHandler.findAll()
                 .flatMap(nodeHandler::setPublicationStatus)
@@ -171,7 +171,7 @@ public class NodeEndPoint {
                 .flatMap(nodeHandler::setPublicationStatus);
     }
 
-    @PostMapping()
+    @PostMapping("/")
     public Mono<Node> save(@RequestBody(required = true) Node node) {
         return nodeHandler.save(node)
                 .flatMap(nodeHandler::setPublicationStatus);

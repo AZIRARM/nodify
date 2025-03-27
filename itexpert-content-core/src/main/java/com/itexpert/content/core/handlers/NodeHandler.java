@@ -5,11 +5,8 @@ import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.lib.enums.NotificationEnum;
-import com.itexpert.content.lib.enums.OperatorEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
-import com.itexpert.content.lib.enums.TypeEnum;
 import com.itexpert.content.lib.models.Node;
-import com.itexpert.content.lib.models.Rule;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -67,6 +64,13 @@ public class NodeHandler {
                     log.info("{} saved ", node1.getCode());
                 });
 
+    }
+
+    public Flux<Node> saveAll(List<Node> nodes) {
+        if (ObjectUtils.isEmpty(nodes)) {
+            return Flux.empty();
+        }
+        return Flux.fromIterable(nodes).flatMap(this::save);
     }
 
 

@@ -35,7 +35,7 @@ public class ContentClickEndPoint {
      * @return a Flux of content clicks
      */
     @Operation(summary = "Retrieve all content clicks")
-    @GetMapping
+    @GetMapping("/")
     public Flux<ContentClick> findAll() {
         return contentClickHandler.findAll();
     }
