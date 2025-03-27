@@ -227,8 +227,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       disableClose: true
     });
     this.dialogRefCode.afterClosed()
-      .subscribe(value => {
-        this.init();
+      .subscribe((data:any) => {
+        if(data.refresh) {
+          this.init();
+        }
       });
   }
 
