@@ -435,7 +435,9 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       }
     );
     this.dialogRefDeleteds.afterClosed()
-      .subscribe();
+      .subscribe(result => {
+        this.init();
+      });
   }
 
   deploy(element: any, environmentCode: string) {
