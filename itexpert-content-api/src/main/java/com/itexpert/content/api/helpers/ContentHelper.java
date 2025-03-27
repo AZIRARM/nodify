@@ -1,5 +1,6 @@
 package com.itexpert.content.api.helpers;
 
+import com.itexpert.content.api.handlers.ContentDisplayHandler;
 import com.itexpert.content.api.mappers.ContentNodeMapper;
 import com.itexpert.content.api.repositories.ContentNodeRepository;
 import com.itexpert.content.api.repositories.NodeRepository;
@@ -7,6 +8,7 @@ import com.itexpert.content.api.utils.RulesUtils;
 import com.itexpert.content.lib.entities.ContentNode;
 import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
+import com.itexpert.content.lib.models.ContentDisplay;
 import com.itexpert.content.lib.models.Translation;
 import com.itexpert.content.lib.models.Value;
 import lombok.AllArgsConstructor;
@@ -29,6 +31,7 @@ public class ContentHelper {
     private final NodeRepository nodeRepository;
     private final ContentNodeRepository contentNodeRepository;
     private final ContentNodeMapper contentNodeMapper;
+    private final ContentDisplayHandler contentDisplayHandler;
 
     public Mono<ContentNode> translate(ContentNode element, String translation, StatusEnum status) {
         return Mono.just(element)
@@ -120,6 +123,7 @@ public class ContentHelper {
 
     private Mono<ContentNode> fillContent(ContentNode element, String contentCode, StatusEnum status) {
         return this.contentNodeRepository.findByCodeAndStatus(contentCode, status.name())
+                .flatMap(this::addDisplay)
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)
                         .filter(aBoolean -> aBoolean)
@@ -187,4 +191,15 @@ public class ContentHelper {
     }
 
 
+    private Mono<ContentNode> addDisplay(ContentNode contentNode) {
+        return this.contentDisplayHandler.findByContentCode(contentNode.getCode())
+                .switchIfEmpty(Mono.just(new ContentDisplay()))
+                .map(contentDisplay -> {
+                    if (ObjectUtils.isEmpty(contentDisplay.getContentCode())) {
+                        contentDisplay.setContentCode(contentNode.getCode());
+                    }
+                    return this.contentDisplayHandler.addDisplay(contentDisplay.getContentCode())
+                            .map(contentDisplayMono -> contentNode);
+                }).flatMap(Mono::from);
+    }
 }
