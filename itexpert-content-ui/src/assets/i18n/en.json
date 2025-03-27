@@ -225,5 +225,15 @@
   "MESSAGE": "Message",
   "MESSAGES": "Messages",
   "DELETE_TITLE": "Deletion",
-  "DELETE_MESSAGE": "Do you confirm the deletion of this data?"
+  "DELETE_MESSAGE": "Do you confirm the deletion of this data?",
+
+  "BOT.INPUT_PLACEHOLDER": "Your request ...",
+  "BOT.HEADER_TITLE": "Nodify Assistant",
+  "BOT.TOGGLE_MESSAGE": "I'm here to help you",
+
+
+  "AI_OPTION": "AI",
+  "ENTER_PROMPT": "TTTt",
+  "GENERATE_AI_CONTENT": "Submit"
+
 }

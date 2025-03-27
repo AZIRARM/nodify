@@ -32,7 +32,7 @@ public class NodeEndPoint {
      * @return a Flux of nodes matching the specified status
      */
     @Operation(summary = "Retrieve all nodes", description = "Fetch all nodes, optionally filtered by status")
-    @GetMapping
+    @GetMapping("/")
     public Flux<Node> findAll(@RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
         return nodeHandler.findAll(status);
     }
