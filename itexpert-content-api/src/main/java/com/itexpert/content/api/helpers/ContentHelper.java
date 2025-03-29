@@ -102,7 +102,6 @@ public class ContentHelper {
 
 
     public Mono<ContentNode> fillContents(ContentNode element, StatusEnum status) {
-
         return this.fillContentFactory(element, status)
                 .onErrorReturn(element);
     }
