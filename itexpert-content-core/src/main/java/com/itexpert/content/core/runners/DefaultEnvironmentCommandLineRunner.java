@@ -68,11 +68,19 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                         )
                 )
                 .filter(node -> node.getCode().equals("DEV-01"))
-                .flatMap(this::importBlogTemplate)
+                .flatMap(node ->
+                        Flux.merge(
+                                this.importTemplate(node, "templates/Nodify-Blog.json"),
+                                this.importTemplate(node, "templates/Nodify-Landingpage.json")
+                        )
+                )
                 .subscribe(
-                        node -> log.info("Defaults environments initialized successfully"),
-                        error -> log.error("Error initializing environments", error)
+                        importedNode -> log.info("Imported node: {}", importedNode.getCode()),
+                        error -> log.error("Error initializing environments", error),
+                        () -> log.info("Defaults environments initialized successfully")
                 );
+
+
     }
 
     private Node createNode(String name, String description, String code, Value baseUrl) {
@@ -84,16 +92,16 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
         node.setCode(code);
         node.setValues(List.of(baseUrl));
 
-        if(code.equals("DEV-01")) {
+        if (code.equals("DEV-01")) {
             node.setFavorite(true);
         }
 
         return node;
     }
 
-    private Flux<Node> importBlogTemplate(Node environment) {
+    private Flux<Node> importTemplate(Node environment, String template) {
         return Mono.fromCallable(() -> {
-                    ClassPathResource resource = new ClassPathResource("templates/Nodify-Blog.json");
+                    ClassPathResource resource = new ClassPathResource(template);
                     InputStreamReader reader = new InputStreamReader(resource.getInputStream());
                     Type listType = new TypeToken<List<Node>>() {
                     }.getType();
@@ -103,7 +111,7 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                         .collectList()
                         .flatMapMany(existingNodes -> {
                             if (existingNodes.isEmpty()) {
-                                log.info("No blog nodes found, importing...");
+                                log.info("No template nodes found, importing...");
                                 return nodeHandler.importNodes(nodes, "DEV-01", true) // nodes est bien une List<Node>
                                         .doOnNext(node -> log.info("Added node: {}, parent: {}", node.getCode(), node.getParentCode()))
                                         .collectList()
@@ -113,7 +121,7 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                                                         .thenMany(Flux.fromIterable(importedNodes))
                                         );
                             } else {
-                                log.info("Blog nodes already exist, skipping import.");
+                                log.info("Template nodes already exist, skipping import.");
                                 return Flux.empty();
                             }
                         })
