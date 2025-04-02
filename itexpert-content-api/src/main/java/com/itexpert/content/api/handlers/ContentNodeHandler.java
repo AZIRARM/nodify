@@ -15,9 +15,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -58,7 +56,9 @@ public class ContentNodeHandler {
                                                 .map(aBoolean -> contentNode)
                                         )
                                         .flatMap(Mono::from)
-                                        .flatMap(this::addDisplay)
+                                        .map(this.contentNodeMapper::fromModel)
+                                        .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status, translation))
+                                        .map(this.contentNodeMapper::fromEntity)
                                         .map(this.contentNodeMapper::toView).collectList()
                         ).flatMap(Mono::from).flatMapIterable(contentNodeViews -> contentNodeViews);
     }
@@ -86,11 +86,11 @@ public class ContentNodeHandler {
                                                     String translation) {
         return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
                 .filter(contentNode -> !contentNode.getType().equals(ContentTypeEnum.FILE) && !contentNode.getType().equals(ContentTypeEnum.PICTURE))
-                .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status))
-                .flatMap(contentNode -> this.contentHelper.fillValues(contentNode, status))
+                .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status, translation))
+                /*.flatMap(contentNode -> this.contentValuesHelper.fillValues(contentNode, status))
                 .flatMap(contentNode -> {
-                    return this.contentHelper.translate(contentNode, ObjectUtils.isNotEmpty(translation) ? translation : contentNode.getLanguage(), status);
-                })
+                    return this.contentTranslationsHelper.translate(contentNode, ObjectUtils.isNotEmpty(translation) ? translation : contentNode.getLanguage(), status);
+                })*/
                 .filter(ObjectUtils::isNotEmpty)
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)
