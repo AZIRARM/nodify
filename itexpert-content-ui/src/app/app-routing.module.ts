@@ -14,6 +14,7 @@ import {
 import {NotificationsComponent} from "./components/notification/notifications/notifications.component";
 import {ContentChartsComponent} from "./components/analytics/content-charts/content-charts.component";
 import {AuthGuard} from "./services/AuthGuard";
+import {PluginComponent} from "./components/plugins/plugin/plugin.component";
 
 const routes: Routes =
   [
@@ -74,6 +75,12 @@ const routes: Routes =
     {
       path: 'charts',
       component: ContentChartsComponent,
+      canActivate: [AuthGuard]
+    },
+
+    {
+      path: 'plugins',
+      component: PluginComponent,
       canActivate: [AuthGuard]
     },
 
