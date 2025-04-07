@@ -4,6 +4,7 @@ import {Rule} from "../../../modeles/Rule";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-node-rules-conditions-dialog',
@@ -21,6 +22,7 @@ export class NodeRulesConditionsDialogComponent implements OnInit {
 
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
+              public userAccessService: UserAccessService,
               public dialogRef: MatDialogRef<NodeRulesConditionsDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public content: any
   ) {

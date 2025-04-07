@@ -4,6 +4,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {LanguageService} from "../../../services/LanguageService";
 import {Language} from "../../../modeles/Language";
 import {Translation} from "../../../modeles/Translation";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-translations-dialog',
@@ -23,6 +24,7 @@ export class TranslationsDialogComponent implements  OnInit{
 
   constructor(
     public dialogRef: MatDialogRef<TranslationsDialogComponent>,
+    public userAccessService: UserAccessService,
     @Inject(MAT_DIALOG_DATA) public content: any,
     private languageService: LanguageService
   ) {

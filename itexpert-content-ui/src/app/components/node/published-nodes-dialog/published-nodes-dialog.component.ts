@@ -8,6 +8,7 @@ import {Node} from "../../../modeles/Node";
 import {MatTableDataSource} from "@angular/material/table";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {UserService} from "../../../services/UserService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-published-nodes-dialog',
@@ -26,6 +27,7 @@ export class PublishedNodesDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<PublishedNodesDialogComponent>,
+    public userAccessService: UserAccessService,
     @Inject(MAT_DIALOG_DATA) public content: Node,
     private translate: TranslateService,
     private nodeService: NodeService,

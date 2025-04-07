@@ -93,7 +93,7 @@ export class UserDialogComponent implements OnInit {
   }
 
   get selectedRole(): string {
-    return this.user.roles.length > 0 ? this.user.roles[0] : '';
+    return this.user && this.user.roles && this.user.roles.length > 0 ? this.user.roles[0] : '';
   }
 
   set selectedRole(value: string) {
