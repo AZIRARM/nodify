@@ -1,1 +1,27 @@
-<p>plugin-dialog works!</p>
+<div name="pluginScript" *ngIf="plugin && plugin.code">
+<app-content-code-title
+  [title]="'PLUGIN'">
+</app-content-code-title>
+  <div fxLayout="row" class="infos-container">
+    <input type="text" class="input-field" matInput [(ngModel)]="plugin.name"  placeholder="{{ 'NAME' | translate }}">
+    <input type="text" class="input-field" matInput [(ngModel)]="plugin.description" placeholder="{{ 'DESCRIPTION' | translate }}">
+  </div>
+
+  <ngx-codemirror
+  class="viewCode"
+  [(ngModel)]="plugin.code"
+  [options]="{
+        lineNumbers: true,
+        theme: 'material',
+        mode: 'javascript'
+      }"
+></ngx-codemirror>
+<div class="code-editor-actions">
+  <button class="code-editor-action-button" (click)="close()">
+    {{ "CLOSE" | translate }}
+  </button>
+  <button class="code-editor-action-button" (click)="validate()">
+    {{ "SAVE" | translate }}
+  </button>
+</div>
+</div>
