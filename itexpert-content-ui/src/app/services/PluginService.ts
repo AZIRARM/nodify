@@ -17,26 +17,45 @@ export class PluginService extends Service {
     return super.get("id/" + id);
   }
 
-  getAllByStatus(enable: boolean) {
-    return super.get("?enabled=" + enable);
+  getNotDeleted() {
+    return super.get("");
   }
   getAll() {
     return super.get("");
   }
 
-  disable(name: string) {
-    return super.put("name/" + name + "/disable", null);
+  disable(name: string, userId:string) {
+    return super.put("name/" + name +"/user/"+userId+ "/disable", null);
   }
 
-  enable(name: string) {
-    return super.put("name/" + name + "/enable", null);
+  enable(name: string, userId:string) {
+    return super.put("name/" + name  +"/user/"+userId+  "/enable", null);
   }
 
-  delete(id: string) {
-    return super.remove("id/" + id);
+  activate(name: string, userId:string) {
+    return super.put("name/" + name  +"/user/"+userId+  "/activate", null);
+  }
+
+  delete(id: string, userId: string) {
+    return super.remove("id/" + id+"/user/"+userId);
   }
 
   save(plugin: Plugin) {
     return super.post("", plugin);
   }
+
+  getDeleted() {
+    return super.get("deleteds");
+  }
+
+  deleteDefinitively(id: string, userId: string) {
+    return super.remove("id/" + id+"/user/"+userId+"/deleteDefinitively");
+  }
+  export(name:string) {
+    return super.get("name/"+name+"/export");
+  }
+  import(plugin:Plugin) {
+    return super.post("import", plugin);
+  }
+
 }

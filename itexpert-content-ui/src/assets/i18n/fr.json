@@ -238,5 +238,19 @@
   "CLEAN_UP_WITH_IA": "Nettoyer/Refactorisation avec l'IA",
   "GENERATE_WITH_IA": "Générer avec l'IA",
   "ACTIVATE_AI": " Activer l'IA",
-  "DARK_MODE": "Mode sombre"
+  "DARK_MODE": "Mode sombre",
+
+  "PLUGIN": "Plugin",
+  "PLUGINS": "Plugins",
+  "DELETE_PlUGIN_TITLE": "Suppression de plugin",
+  "DELETE_PlUGIN_MESSAGE": "Confirmez vous la suppression de ce plugin ?",
+
+  "DELETE_PlUGIN_FILE_TITLE": "Suppression ressource de plugin",
+  "DELETE_PlUGIN_FILE_MESSAGE": "Confirmez vous la suppression de cette ressource ?",
+  "ASSETS": "Assets",
+  "FILE_NAME": "Nom de la ressource",
+  "PLUGIN_ASSETS": "Ressources du Plugin",
+  "DELETED_PLUGINS": "Plugins supprimés",
+  "ACTIVATE_DELETE_PLUGIN_TITLE": "Activation du plugin supprimé",
+  "ACTIVATE_DELETE_PLUGIN_MESSAGE": "Voulez vous ré-activer ce plugin ?"
 }

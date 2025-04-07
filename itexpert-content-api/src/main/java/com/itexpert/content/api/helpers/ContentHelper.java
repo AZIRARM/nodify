@@ -4,8 +4,10 @@ import com.itexpert.content.api.handlers.ContentDisplayHandler;
 import com.itexpert.content.api.mappers.ContentNodeMapper;
 import com.itexpert.content.api.repositories.ContentNodeRepository;
 import com.itexpert.content.api.repositories.NodeRepository;
+import com.itexpert.content.api.repositories.PluginRepository;
 import com.itexpert.content.lib.entities.ContentNode;
 import com.itexpert.content.lib.entities.Node;
+import com.itexpert.content.lib.entities.Plugin;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentDisplay;
 import com.itexpert.content.lib.models.Translation;
@@ -18,8 +20,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +36,7 @@ public class ContentHelper {
     private final ContentDisplayHandler contentDisplayHandler;
     private final ContentNodeRepository contentNodeRepository;
     private final NodeRepository nodeRepository;
+    private final PluginRepository pluginRepository;
 
     /**
      * Fills the content of a given ContentNode, handling nested content, translations, and values.
@@ -77,7 +82,6 @@ public class ContentHelper {
 
                                     element.setContent(this.translate(element, element.getTranslations(), ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
                                     element.setContent(this.fillValues(element, element.getValues()));
-
                                     tuplesContentsAndNodes.getT2().forEach(node -> {
                                         element.setContent(this.translate(element, node.getTranslations(), ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
                                         element.setContent(this.fillValues(element, node.getValues()));
@@ -104,7 +108,18 @@ public class ContentHelper {
                         return element;
                     });
         }
-        return Mono.just(element);
+        return Mono.just(element).flatMap(contentNode -> getContentPlugin(contentNode)
+                .flatMap(this.pluginRepository::findByName)
+                .map(plugin -> this.fillPlugin(plugin, contentNode))
+                .collectList()
+                .thenReturn(element));
+    }
+
+    private ContentNode fillPlugin(Plugin plugin, ContentNode content) {
+        if(ObjectUtils.isNotEmpty(content) && ObjectUtils.isNotEmpty(plugin) && ObjectUtils.isNotEmpty(plugin.getCode()) && ObjectUtils.isNotEmpty(content.getContent())) {
+           content.setContent(content.getContent().replace("$with("+plugin.getName()+")", "\n<script>\n" +plugin.getCode()+"\n</script>\n"));
+        }
+         return content;
     }
 
     /**
@@ -221,6 +236,17 @@ public class ContentHelper {
             codes.add(code);
         }
         return codes;
+    }
+
+    private  Flux<String> getContentPlugin(ContentNode element) {
+        Matcher matcher = Pattern.compile("\\$with\\(.*\\)").matcher(element.getContent());
+        List<String> plugins = new LinkedList<>();
+        while (matcher.find()) {
+            String fragment = matcher.group();
+            String code = fragment.replace("$with(", "").replace(")", "");
+            plugins.add(code);
+        }
+        return Flux.fromIterable(plugins);
     }
 
     /**

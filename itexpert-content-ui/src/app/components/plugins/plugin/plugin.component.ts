@@ -10,6 +10,8 @@ import {PluginDialogComponent} from "../plugin-dialog/plugin-dialog.component";
 import {Plugin} from "../../../modeles/Plugin";
 import {PluginService} from "../../../services/PluginService";
 import {UserAccessService} from "../../../services/UserAccessService";
+import {DeletedPluginsDialogComponent} from "../deleted-plugins-dialog/deleted-plugins-dialog.component";
+import {PluginFilesDialogComponent} from "../plugin-files-dialog/plugin-files-dialog.component";
 
 @Component({
   selector: 'app-plugin',
@@ -21,8 +23,10 @@ export class PluginComponent implements OnInit {
 
   dialogRefPlugin: MatDialogRef<PluginDialogComponent>;
   dialogRefValidation: MatDialogRef<ValidationDialogComponent>;
+  dialogRefDeleted: MatDialogRef<DeletedPluginsDialogComponent>;
+  dialogRefFiles: MatDialogRef<PluginFilesDialogComponent>;
 
-  displayedColumns: string[] = ['Status', 'Name', 'Description', 'Actions'];
+  displayedColumns: string[] = ['Status', 'Name', 'Description', 'ModifiedBy', 'CreationDate', 'ModificationDate', 'Actions'];
 
   dataSource: MatTableDataSource<Plugin>;
 
@@ -46,7 +50,7 @@ export class PluginComponent implements OnInit {
 
 
   init() {
-    this.pluginService.getAll().subscribe(
+    this.pluginService.getNotDeleted().subscribe(
       (response: any) => {
         //next() callback
         this.dataSource = new MatTableDataSource(response);
@@ -57,33 +61,32 @@ export class PluginComponent implements OnInit {
   }
 
 
-  enable(plugin: Plugin) {
-    plugin.enabled = true;
-    this.save(plugin);
-  }
-
-  disable(plugin: Plugin) {
-    plugin.enabled = false;
+  status(plugin: Plugin) {
+    if (!plugin.enabled) {
+      this.pluginService.enable(plugin.name, this.user.id).subscribe(
+        (response: any) => {
+          //next() callback
+          this.init();
+        },
+        (error) => {                              //error() callback
+          this.toast.error('Request failed with error');
+        });
+    } else {
+      this.pluginService.disable(plugin.name, this.user.id).subscribe(
+        (response: any) => {
+          //next() callback
+          this.init();
+        },
+        (error) => {                              //error() callback
+          this.toast.error('Request failed with error');
+        });
+    }
     this.save(plugin);
   }
 
 
   create() {
-    this.dialogRefPlugin = this.dialog.open(PluginDialogComponent, {
-      data: {
-        title: "CANCEL_MODIFICATIONS_TITLE",
-        message: "CANCEL_MODIFICATIONS_MESSAGE"
-      },
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    });
-    this.dialogRefPlugin.afterClosed()
-      .subscribe(result => {
-        if (result.data === 'validated') {
-          this.save(result.plugin);
-        }
-      });
+    this.update(new Plugin());
   }
 
   update(plugin: Plugin) {
@@ -98,8 +101,8 @@ export class PluginComponent implements OnInit {
     });
     this.dialogRefPlugin.afterClosed()
       .subscribe((data: any) => {
-        if (data.refresh) {
-          this.init();
+        if (data.validate) {
+          this.save(data.plugin);
         }
       });
   }
@@ -118,8 +121,9 @@ export class PluginComponent implements OnInit {
     });
     this.dialogRefValidation.afterClosed()
       .subscribe(result => {
-        if (result && result.plugin && result.data !== 'canceled') {
-          this.pluginService.delete(plugin.id).subscribe(
+        if (result && result.data !== 'canceled') {
+
+          this.pluginService.delete(plugin.id, this.user.id).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -153,4 +157,87 @@ export class PluginComponent implements OnInit {
       });
   }
 
+
+  getPublishedIcon(element: Plugin) {
+    if (element.enabled)
+      return "primary";
+    else
+      return "danger";
+  }
+
+
+  deleteds() {
+    this.dialogRefDeleted = this.dialog.open(DeletedPluginsDialogComponent, {
+        height: '80vh',
+        width: '80vw',
+        disableClose: true
+      }
+    );
+    this.dialogRefDeleted.afterClosed()
+      .subscribe(result => {
+        this.init();
+      });
+  }
+
+  assets(element: Plugin) {
+    this.dialogRefFiles = this.dialog.open(PluginFilesDialogComponent, {
+        data: element,
+        height: '80vh',
+        width: '80vw',
+        disableClose: true
+      }
+    );
+    this.dialogRefFiles.afterClosed()
+      .subscribe(result => {
+        this.init();
+      });
+  }
+
+  export(element: Plugin) {
+    this.pluginService.export(element.name).subscribe((data: any) => {
+      const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2); // Beautifié avec indentation
+      const blob: Blob = new Blob([jsonString], { type: 'application/json' });
+      const a = document.createElement('a');
+      const objectUrl = URL.createObjectURL(blob);
+      a.href = objectUrl;
+      a.download = element.name + ".json";
+      a.click();
+      URL.revokeObjectURL(objectUrl);
+    });
+  }
+
+
+
+  import(event: Event) {
+    const input = event.target as HTMLInputElement;
+
+    if (input?.files?.length) {
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        try {
+          const plugin: Plugin = JSON.parse(reader.result as string);
+          console.log('Plugin to import:', plugin);
+
+          this.pluginService.import(plugin).subscribe({
+            next: (res) => {
+              console.log('Plugin successfully imported:', res);
+              this.init();
+            },
+            error: (err) => {
+              console.error('Import failed:', err);
+            }
+          });
+
+        } catch (error) {
+          console.error('Invalid JSON file:', error);
+        }
+      };
+
+      reader.readAsText(file);
+    } else {
+      console.warn('No file selected or input is invalid.');
+    }
+  }
 }
