@@ -2,6 +2,7 @@ package com.itexpert.content.api.handlers;
 
 import com.itexpert.content.api.helpers.ContentHelper;
 import com.itexpert.content.api.helpers.NodeHelper;
+import com.itexpert.content.api.helpers.PluginHelper;
 import com.itexpert.content.api.mappers.ContentNodeMapper;
 import com.itexpert.content.api.repositories.ContentNodeRepository;
 import com.itexpert.content.api.utils.ContentNodeView;
@@ -26,6 +27,7 @@ public class ContentNodeHandler {
     private final ContentNodeMapper contentNodeMapper;
     private final ContentDisplayHandler contentDisplayHandler;
     private final ContentHelper contentHelper;
+    private final PluginHelper pluginHelper;
 
     private final NodeHelper nodeHelper;
 
@@ -86,11 +88,10 @@ public class ContentNodeHandler {
                                                     String translation) {
         return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
                 .filter(contentNode -> !contentNode.getType().equals(ContentTypeEnum.FILE) && !contentNode.getType().equals(ContentTypeEnum.PICTURE))
-                .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status, translation))
-                /*.flatMap(contentNode -> this.contentValuesHelper.fillValues(contentNode, status))
-                .flatMap(contentNode -> {
-                    return this.contentTranslationsHelper.translate(contentNode, ObjectUtils.isNotEmpty(translation) ? translation : contentNode.getLanguage(), status);
-                })*/
+                .flatMap(contentNode ->
+                        this.contentHelper.fillContents(contentNode, status, translation)
+                                .flatMap(this.pluginHelper::fillPlugin)
+                )
                 .filter(ObjectUtils::isNotEmpty)
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)
