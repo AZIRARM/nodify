@@ -8,12 +8,12 @@
 <div mat-dialog-content>
   <p>
 
-    <mat-icon class="icon-display scale2 danger"
+    <mat-icon class="icon-display scale2 danger" *ngIf="userAccessService.canEdit()"
               inline matTooltip="{{ 'DELETED_CONTENTS_NODES' | translate}}"
               (click)="deleteds()">delete
     </mat-icon>
 
-    <mat-icon class="icon-display scale2"
+    <mat-icon class="icon-display scale2" *ngIf="userAccessService.canEdit()"
               inline matTooltip="{{ 'IMPORT' | translate }}"
               (click)="fileInput.click()">downloading</mat-icon>
 
@@ -21,7 +21,7 @@
            (change)="import($event)">
 
 
-    <button mat-fab aria-label="create new project" class="icon-display" *ngIf="userAccessService.isAdmin()" (click)="create()">
+    <button mat-fab aria-label="create new project" class="icon-display" *ngIf="userAccessService.canEdit()" (click)="create()">
       <mat-icon>add</mat-icon>
     </button>
   </p>
@@ -80,11 +80,11 @@
                   matTooltip="{{ 'EDIT' | translate}}">edit
         </mat-icon>
 
-        <mat-icon class="icon-display primary"  (click)="export(element)" *ngIf="userAccessService.canEdit() && element.isEditable" inline
+        <mat-icon class="icon-display primary"  (click)="export(element)" *ngIf="userAccessService.canEdit()" inline
                   matTooltip="{{ 'EXPORT' | translate}}">ios_share
         </mat-icon>
 
-        <mat-icon class="icon-display danger" *ngIf="userAccessService.canDelete() && element.isEditable"  (click)="delete(element)" inline
+        <mat-icon class="icon-display danger" *ngIf="userAccessService.isAdmin()"  (click)="delete(element)" inline
                   matTooltip="{{ 'DELETE' | translate}}">delete
         </mat-icon>
       </td>
