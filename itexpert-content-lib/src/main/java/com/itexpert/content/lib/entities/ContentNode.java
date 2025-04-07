@@ -4,6 +4,7 @@ import com.itexpert.content.lib.enums.ContentTypeEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.*;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Document(collection = "content-nodes")
 @Data
 public class ContentNode implements Serializable, Cloneable {
-
+    @Id
     private UUID id;
 
     private String parentCode;

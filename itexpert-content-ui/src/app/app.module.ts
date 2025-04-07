@@ -131,6 +131,11 @@ import {
 import {PluginService} from "./services/PluginService";
 import {PluginComponent} from "./components/plugins/plugin/plugin.component";
 import {PluginDialogComponent} from "./components/plugins/plugin-dialog/plugin-dialog.component";
+import {
+  DeletedPluginsDialogComponent
+} from "./components/plugins/deleted-plugins-dialog/deleted-plugins-dialog.component";
+import {PluginFileService} from "./services/PluginFileService";
+import {PluginFilesDialogComponent} from "./components/plugins/plugin-files-dialog/plugin-files-dialog.component";
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -189,7 +194,9 @@ export function defaultLanguage() {
     ContentCodeTitleComponent,
     ContentCodeInfosComponent,
     PluginComponent,
-    PluginDialogComponent
+    PluginDialogComponent,
+    DeletedPluginsDialogComponent,
+    PluginFilesDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -262,6 +269,7 @@ export function defaultLanguage() {
     ThemeService,
     DataService,
     PluginService,
+    PluginFileService,
     AuthGuard
   ],
 
