@@ -44,7 +44,7 @@
         <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit()" (click)="edit(element)" inline
                   matTooltip="{{ 'EDIT' | translate}}">edit
         </mat-icon>
-        <mat-icon class="icon-display danger" *ngIf="userAccessService.canDelete()" (click)="delete(element)" inline
+        <mat-icon class="icon-display danger" *ngIf="userAccessService.canEdit()" (click)="delete(element)" inline
                   matTooltip="{{ 'DELETE' | translate}}">delete
         </mat-icon>
       </td>
@@ -57,9 +57,6 @@
   <div class="code-editor-actions">
     <button class="code-editor-action-button" (click)="close()">
       {{ "CLOSE" | translate }}
-    </button>
-    <button class="code-editor-action-button" (click)="validate()">
-      {{ "SAVE" | translate }}
     </button>
   </div>
 
