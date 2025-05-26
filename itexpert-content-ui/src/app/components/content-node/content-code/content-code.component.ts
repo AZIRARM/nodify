@@ -18,6 +18,7 @@ export class ContentCodeComponent {
   @Input() @Output() contentNode: ContentNode;
   @Input() @Output() type: string;
   @Input() @Output() user: User;
+  @Input() @Output() hasChanged: boolean = false;
 
   constructor(
     private translate: TranslateService,
@@ -34,8 +35,8 @@ export class ContentCodeComponent {
     }
   }
 
-  close(): void {
-    this.dialogRef.close();
+  close(refesh: boolean): void {
+    this.dialogRef.close({refresh: refesh});
   }
 
   validate() {
@@ -54,7 +55,7 @@ export class ContentCodeComponent {
         this.contentNode = response;
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
-          this.close();
+          this.close(true);
         })
 
       },

@@ -23,7 +23,7 @@ public class UserParametersEndPoint {
     }
 
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<UserParameters> findAll() {
         return userParametersHandler.findAll();
     }
@@ -43,7 +43,7 @@ public class UserParametersEndPoint {
 
     }
     // @RolesAllowed("ADMIN")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<UserParameters>> save(@RequestBody(required = true) UserParameters userParameters) {
         return userParametersHandler.save(userParameters)
                 .map(ResponseEntity::ok);

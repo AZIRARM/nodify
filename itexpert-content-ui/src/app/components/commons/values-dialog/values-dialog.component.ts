@@ -3,6 +3,7 @@ import {Node} from "../../../modeles/Node";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Value} from "../../../modeles/Value";
 import {MatTableDataSource} from "@angular/material/table";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-values-dialog',
@@ -20,6 +21,7 @@ export class ValuesDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ValuesDialogComponent>,
+    public userAccessService: UserAccessService,
     @Inject(MAT_DIALOG_DATA) public content: any
   ) {
     if (content) {

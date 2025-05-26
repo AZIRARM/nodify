@@ -23,7 +23,7 @@ public class FeedbackEndPoint {
         this.feedbackHandler = feedbackHandler;
     }
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<Feedback> findAll() {
         return feedbackHandler.findAll();
     }
@@ -57,7 +57,7 @@ public class FeedbackEndPoint {
     }
 
     //@RolesAllowed("ADMIN")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<Feedback>> save(@PathVariable(required = true) Feedback user) {
         return feedbackHandler.save(user)
                 .map(ResponseEntity::ok);

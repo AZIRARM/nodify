@@ -59,7 +59,7 @@ public class ContentHelper {
 
     private Translation setTranslation(ContentNode element, String language, Translation tr) {
         if (language.equalsIgnoreCase(tr.getLanguage())) {
-            element.setContent(element.getContent().replace("$trans(" + tr.getKey().trim() + ")", tr.getValue()));
+            element.setContent(element.getContent().replace("$translate(" + tr.getKey().trim() + ")", tr.getValue()));
         }
         return tr;
     }
@@ -93,7 +93,7 @@ public class ContentHelper {
     }
 
     private ContentNode setValue(ContentNode element, Value val) {
-        element.setContent(element.getContent().replace("$val(" + val.getKey() + ")", val.getValue()));
+        element.setContent(element.getContent().replace("$value(" + val.getKey() + ")", val.getValue()));
         return element;
     }
 
