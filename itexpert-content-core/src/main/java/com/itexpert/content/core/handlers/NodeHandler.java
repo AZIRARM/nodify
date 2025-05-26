@@ -1,7 +1,9 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
+import com.itexpert.content.core.helpers.TreeNodeHelper;
 import com.itexpert.content.core.mappers.NodeMapper;
+import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.lib.enums.NotificationEnum;
@@ -29,6 +31,8 @@ public class NodeHandler {
     private final NodeMapper nodeMapper;
 
     private final ContentNodeHandler contentNodeHandler;
+
+    private final TreeNodeHelper treeNodeHelper;
 
     private final NotificationHandler notificationHandler;
 
@@ -546,12 +550,27 @@ public class NodeHandler {
                 .map(nodeMapper::fromEntity);
     }
 
-    public Mono<Boolean> slugAlreadyExists(String code, String slug){
+    public Mono<Boolean> slugAlreadyExists(String code, String slug) {
         return this.nodeRepository.findBySlugAndStatusAndCodeNotIn(slug, StatusEnum.SNAPSHOT.name(), List.of(code))
                 .doOnNext(node -> {
                     log.info(node.getCode());
                 })
                 .hasElements();
+    }
+
+    public Mono<TreeNode> generateTreeView(String code) {
+        return this.findChildrenByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                .flatMap(node -> this.contentNodeHandler.findAllByNodeCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                        .collectList().map(contentNodes -> {
+                            node.setContents(contentNodes);
+                            return node;
+                        })
+                )
+                .collectList()
+                .flatMap(nodes ->
+                        this.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                                .flatMap(node -> this.treeNodeHelper.buildTreeWithContent(nodes, node))
+                );
     }
 }
 

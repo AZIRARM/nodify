@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
+import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
@@ -264,6 +265,11 @@ public class NodeEndPoint {
     @GetMapping(value = "/code/{code}/slug/{slug}/exists")
     public Mono<Boolean> slugExists(@PathVariable String code, @PathVariable String slug) {
         return nodeHandler.slugAlreadyExists(code, slug);
+    }
+
+    @GetMapping(value = "/code/{code}/tree-view")
+    public Mono<TreeNode> generateTreeView(@PathVariable String code) {
+        return nodeHandler.generateTreeView(code);
     }
 
 }

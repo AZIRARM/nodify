@@ -26,6 +26,7 @@ import {UserAccessService} from "../../../services/UserAccessService";
 import {ToastrService} from "ngx-toastr";
 import {Env} from "../../../../assets/configurations/environment";
 import {DeletedNodesDialogComponent} from "../deleted-nodes-dialog/deleted-nodes-dialog.component";
+import {NodesViewDialogComponent} from "../nodes-view-dialog/nodes-view-dialog.component";
 
 @Component({
   selector: 'app-nodes',
@@ -52,6 +53,7 @@ export class NodesComponent implements OnInit {
   dialogRefDeleteds: MatDialogRef<DeletedNodesDialogComponent>;
   dialogRefPublished: MatDialogRef<PublishedNodesDialogComponent>;
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
+  dialogRefTreeNode: MatDialogRef<NodesViewDialogComponent>;
 
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
@@ -503,5 +505,19 @@ export class NodesComponent implements OnInit {
   favorite(element:Node) {
     element.favorite = !element.favorite;
     this.save(element);
+  }
+
+  viewTreeNode(element:Node) {
+    this.dialogRefTreeNode = this.dialog.open(NodesViewDialogComponent, {
+        height: '80vh',
+        width: '80vw',
+        disableClose: true,
+        data: element
+      }
+    );
+    this.dialogRefTreeNode.afterClosed()
+      .subscribe(result => {
+        this.init();
+      });
   }
 }
