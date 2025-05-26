@@ -2,6 +2,7 @@ package com.itexpert.content.api.handlers;
 
 import com.itexpert.content.api.helpers.ContentHelper;
 import com.itexpert.content.api.helpers.NodeHelper;
+import com.itexpert.content.api.helpers.PluginHelper;
 import com.itexpert.content.api.mappers.ContentNodeMapper;
 import com.itexpert.content.api.repositories.ContentNodeRepository;
 import com.itexpert.content.api.utils.ContentNodeView;
@@ -15,9 +16,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -28,6 +27,7 @@ public class ContentNodeHandler {
     private final ContentNodeMapper contentNodeMapper;
     private final ContentDisplayHandler contentDisplayHandler;
     private final ContentHelper contentHelper;
+    private final PluginHelper pluginHelper;
 
     private final NodeHelper nodeHelper;
 
@@ -58,7 +58,9 @@ public class ContentNodeHandler {
                                                 .map(aBoolean -> contentNode)
                                         )
                                         .flatMap(Mono::from)
-                                        .flatMap(this::addDisplay)
+                                        .map(this.contentNodeMapper::fromModel)
+                                        .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status, translation))
+                                        .map(this.contentNodeMapper::fromEntity)
                                         .map(this.contentNodeMapper::toView).collectList()
                         ).flatMap(Mono::from).flatMapIterable(contentNodeViews -> contentNodeViews);
     }
@@ -81,14 +83,30 @@ public class ContentNodeHandler {
                 ).flatMap(Mono::from);
     }
 
+    public Mono<ContentNodeView> findBySlugAndStatus(String slug,
+                                                     StatusEnum status,
+                                                     String translation) {
+        return
+                this.contentNodeRepository.findBySlugAndStatus(slug, status.name())
+                        .map(contentNode -> contentNode.getCode())
+                        .flatMap(code ->
+                                this.evaluateNodeByCodeContent(code, status)
+                                        .map(node ->
+                                                this.findContentNodeByCode(code, status, translation)
+                                                        .flatMap(this::addDisplay)
+                                                        .map(this.contentNodeMapper::toView)
+                                        )).flatMap(Mono::from);
+    }
+
     private Mono<ContentNode> findContentNodeByCode(String code,
                                                     StatusEnum status,
                                                     String translation) {
         return this.contentNodeRepository.findByCodeAndStatus(code, status.name())
                 .filter(contentNode -> !contentNode.getType().equals(ContentTypeEnum.FILE) && !contentNode.getType().equals(ContentTypeEnum.PICTURE))
-                .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status))
-                .flatMap(contentNode -> this.contentHelper.fillValues(contentNode, status))
-                .flatMap(contentNode -> this.contentHelper.translate(contentNode, ObjectUtils.isNotEmpty(translation) ? translation : contentNode.getLanguage(), status))
+                .flatMap(contentNode ->
+                        this.contentHelper.fillContents(contentNode, status, translation)
+                                .flatMap(this.pluginHelper::fillPlugin)
+                )
                 .filter(ObjectUtils::isNotEmpty)
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)
@@ -120,6 +138,25 @@ public class ContentNodeHandler {
                                         .flatMap(this::addDisplay)
                                         .map(ContentNode::getFile)
                         ).flatMap(Mono::from);
+    }
+
+    public Mono<ContentFile> findResourceBySlug(String slug, StatusEnum status) {
+        return
+                this.contentNodeRepository.findBySlugAndStatus(slug, status.name())
+                        .map(contentNode -> contentNode.getCode())
+                        .flatMap(code ->
+                                this.evaluateNodeByCodeContent(code, status)
+                                        .map(node ->
+                                                this.contentNodeRepository.findByCodeAndStatus(node.getCode(), status.name())
+                                                        .map(contentNodeMapper::fromEntity)
+                                                        .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)
+                                                                .filter(aBoolean -> aBoolean)
+                                                                .map(aBoolean -> contentNode)
+                                                        )
+                                                        .filter(contentNode -> ObjectUtils.isNotEmpty(contentNode.getFile()))
+                                                        .flatMap(this::addDisplay)
+                                                        .map(ContentNode::getFile)
+                                        )).flatMap(Mono::from);
     }
 }
 

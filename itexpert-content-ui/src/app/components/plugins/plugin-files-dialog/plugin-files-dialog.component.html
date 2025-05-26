@@ -1,0 +1,63 @@
+<div mat-dialog-title class="dialog-title">
+  <mat-toolbar>
+    <span>{{ "PLUGIN_ASSETS" | translate }}</span>
+    <span class="spacer"></span>
+  </mat-toolbar>
+</div>
+
+<div mat-dialog-content>
+  <div fxLayout="row" class="infos-container">
+    <input type="text" class="input-field" matInput [(ngModel)]="currentPluginFile.fileName" disabled
+           placeholder="{{ 'NAME' | translate }}">
+    <input type="text" class="input-field" matInput [(ngModel)]="currentPluginFile.description"
+           placeholder="{{ 'DESCRIPTION' | translate }}">
+
+
+    <input type="file" (change)="onFileChange($event)" accept="*/*">
+
+    <button *ngIf="currentPluginFile && !currentPluginFile.id && currentPluginFile.data" mat-button class="code-validation" (click)="save()" style="margin-bottom: 20px">{{ "ADD" | translate }}</button>
+  </div>
+
+  <table mat-table [dataSource]="dataSource" *ngIf="userAccessService.getUser()">
+
+    <ng-container matColumnDef="PluginName">
+      <th mat-header-cell *matHeaderCellDef> {{ "PLUGIN" | translate }}</th>
+      <td mat-cell *matCellDef="let element">
+        {{ plugin.name | slice:0:30 }}
+    </ng-container>
+    <ng-container matColumnDef="FileName">
+      <th mat-header-cell *matHeaderCellDef> {{ "FILE_NAME" | translate }}</th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.fileName }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="Description">
+      <th mat-header-cell *matHeaderCellDef> {{ "DESCRIPTION" | translate }}</th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.description }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Actions">
+      <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
+      <td mat-cell *matCellDef="let element">
+        <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit()" (click)="edit(element)" inline
+                  matTooltip="{{ 'EDIT' | translate}}">edit
+        </mat-icon>
+        <mat-icon class="icon-display danger" *ngIf="userAccessService.canEdit()" (click)="delete(element)" inline
+                  matTooltip="{{ 'DELETE' | translate}}">delete
+        </mat-icon>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header-cell"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"
+        class="mat-row"></tr>
+  </table>
+  <div class="code-editor-actions">
+    <button class="code-editor-action-button" (click)="close()">
+      {{ "CLOSE" | translate }}
+    </button>
+  </div>
+
+</div>

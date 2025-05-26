@@ -8,16 +8,16 @@
     <name>itexpert-content-parent</name>
     <description>ITExpert Content Parent</description>
     <packaging>pom</packaging>
-<properties>
-    <lombok.version>1.18.30</lombok.version>
-    <org.springframework.boot>2.7.12</org.springframework.boot>
-    <springdoc-openapi-webflux>1.7.0</springdoc-openapi-webflux>
-    <mapstruct>1.5.3.Final</mapstruct>
-    <commons-lang3>3.12.0</commons-lang3>
-    <io.projectreactor>3.4.29</io.projectreactor>
-    <jdk-version>20</jdk-version>
-    <maven-compiler-plugin>3.13.0</maven-compiler-plugin>
-</properties>
+    <properties>
+        <lombok.version>1.18.30</lombok.version>
+        <org.springframework.boot>3.3.4</org.springframework.boot>
+        <springdoc-openapi-webflux>2.3.0</springdoc-openapi-webflux>
+        <mapstruct>1.5.3.Final</mapstruct>
+        <commons-lang3>3.12.0</commons-lang3>
+        <io.projectreactor>3.4.29</io.projectreactor>
+        <jdk-version>20</jdk-version>
+        <maven-compiler-plugin>3.13.0</maven-compiler-plugin>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -80,12 +80,7 @@
 
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-webflux-ui</artifactId>
-                <version>${springdoc-openapi-webflux}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-webflux-core</artifactId>
+                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
                 <version>${springdoc-openapi-webflux}</version>
             </dependency>
             <dependency>
@@ -111,15 +106,12 @@
                 <version>2.10</version>
             </dependency>
 
-
         </dependencies>
     </dependencyManagement>
-
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
-
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin}</version>
@@ -138,6 +130,10 @@
                                 <version>${mapstruct}</version>
                             </path>
                         </annotationProcessorPaths>
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
+                        <parameters>true</parameters>
                     </configuration>
                 </plugin>
                 <plugin>

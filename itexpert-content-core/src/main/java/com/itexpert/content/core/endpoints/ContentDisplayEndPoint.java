@@ -23,7 +23,7 @@ public class ContentDisplayEndPoint {
         this.contentDisplayHandler = contentDisplayHandler;
     }
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<ContentDisplay> findAll() {
         return contentDisplayHandler.findAll();
     }
@@ -42,7 +42,7 @@ public class ContentDisplayEndPoint {
     }
 
     //@RolesAllowed("ADMIN")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<ContentDisplay>> save(@RequestBody(required = true) ContentDisplay contentClick) {
         return contentDisplayHandler.save(contentClick)
                 .map(ResponseEntity::ok);

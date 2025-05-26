@@ -12,6 +12,7 @@ import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -32,7 +34,7 @@ public class NodeEndPoint {
 
     private final NodeHandler nodeHandler;
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<Node> findAll() {
         return nodeHandler.findAll()
                 .flatMap(nodeHandler::setPublicationStatus)
@@ -69,16 +71,29 @@ public class NodeEndPoint {
     }
 
     @GetMapping("/deleted")
-    public Flux<Node> getDeleted(Authentication authentication) {
+    public Flux<Node> getDeleted(Authentication authentication, @RequestParam(required = false, name = "parent") String parent) {
         var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
             return nodeHandler.findAllByStatus(StatusEnum.DELETED.name())
-                    .flatMap(nodeHandler::setPublicationStatus);
+                    .flatMap(nodeHandler::setPublicationStatus)
+                    .filter(node -> {
+                      return   (
+                                        ( ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent) )
+                                                ||  ( ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                                );
+                            }
+                    );
         }
 
         return nodeHandler.findDeleted(authentication.getPrincipal().toString())
-                .flatMap(nodeHandler::setPublicationStatus);
+                .flatMap(nodeHandler::setPublicationStatus) .filter(node -> {
+                    return (
+                                    ( ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent) )
+                                            ||  ( ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                            );
+                        }
+                );
     }
 
     @GetMapping(value = "/id/{id}")
@@ -171,7 +186,7 @@ public class NodeEndPoint {
                 .flatMap(nodeHandler::setPublicationStatus);
     }
 
-    @PostMapping()
+    @PostMapping("/")
     public Mono<Node> save(@RequestBody(required = true) Node node) {
         return nodeHandler.save(node)
                 .flatMap(nodeHandler::setPublicationStatus);
@@ -245,4 +260,10 @@ public class NodeEndPoint {
                 .flatMap(nodeHandler::setPublicationStatus)
                 .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT));
     }
+
+    @GetMapping(value = "/code/{code}/slug/{slug}/exists")
+    public Mono<Boolean> slugExists(@PathVariable String code, @PathVariable String slug) {
+        return nodeHandler.slugAlreadyExists(code, slug);
+    }
+
 }

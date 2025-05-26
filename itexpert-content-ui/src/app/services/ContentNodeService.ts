@@ -9,8 +9,9 @@ export class ContentNodeService extends Service {
     super("content-node", httpClient);
   }
 
-  getDeleted() {
-    return super.get("deleted");
+  getDeleted(parent: string) {
+    const url = parent !== null ? `deleted?parent=${parent}` : 'deleted';
+    return super.get(url);
   }
 
   deleteDefinitively(code: String) {
@@ -63,6 +64,10 @@ export class ContentNodeService extends Service {
   }
 
   fillAllValuesByContentCodeStatusAndContent(param: { code: string; status: string; content: string }) {
-    return super.post("code/" + param.code + "/status/"+param.status+"/fill", param);
+    return super.post("code/" + param.code + "/status/" + param.status + "/fill", param);
+  }
+
+  slugExists(code: string, slug: string) {
+    return super.get("code/" + code + "/slug/" + slug + "/exists");
   }
 }

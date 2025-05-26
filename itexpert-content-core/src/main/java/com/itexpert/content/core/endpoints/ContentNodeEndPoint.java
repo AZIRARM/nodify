@@ -36,7 +36,7 @@ public class ContentNodeEndPoint {
     private final EnvironmentHandler environmentHandler;
     private final RenameContentNodeCodesHelper renameContentNodeCodesHelper;
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<ContentNode> findAll() {
         return contentNodeHandler.findAll()
                 .flatMap(contentNodeHandler::setPublicationStatus)
@@ -118,7 +118,7 @@ public class ContentNodeEndPoint {
     }
 
 
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<ContentNode>> save(@RequestBody ContentNode contentNode) {
         try {
             return contentNodeHandler.save(contentNode)
@@ -131,16 +131,30 @@ public class ContentNodeEndPoint {
     }
 
     @GetMapping("/deleted")
-    public Flux<ContentNode> getDeleted(Authentication authentication) {
+    public Flux<ContentNode> getDeleted(Authentication authentication, @RequestParam(required = false, name = "parent") String parent) {
         var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
 
         if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
             return contentNodeHandler.findAllByStatus(StatusEnum.DELETED.name())
-                    .flatMap(contentNodeHandler::setPublicationStatus);
+                    .flatMap(contentNodeHandler::setPublicationStatus)
+                    .filter(contentNode -> {
+                                return   (
+                                        ( ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent) )
+                                                ||  ( ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                                );
+                            }
+                    );
         }
 
         return contentNodeHandler.findDeleted(authentication.getPrincipal().toString())
-                .flatMap(contentNodeHandler::setPublicationStatus);
+                .flatMap(contentNodeHandler::setPublicationStatus)
+                .filter(contentNode -> {
+                            return   (
+                                    ( ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent) )
+                                            ||  ( ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                            );
+                        }
+                );
     }
 
     @GetMapping(value = "/code/{code}/status/{status}")
@@ -203,4 +217,8 @@ public class ContentNodeEndPoint {
         return this.contentNodeHandler.deployContent(code, environmentCode);
     }
 
+    @GetMapping(value = "/code/{code}/slug/{slug}/exists")
+    public Mono<Boolean> slugExists(@PathVariable String code, @PathVariable String slug) {
+        return contentNodeHandler.slugAlreadyExists(code, slug);
+    }
 }

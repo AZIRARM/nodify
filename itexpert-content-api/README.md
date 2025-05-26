@@ -1,215 +1,197 @@
-# Nodify API Developer Documentation
+# Nodify API Documentation
 
-## Overview
-Welcome to the Nodify API documentation. This API provides endpoints for managing feedback, content nodes, content displays, content clicks, and nodes. The API follows RESTful principles and allows for interaction with various components of the Nodify system.
+This document provides a comprehensive overview of the Nodify Headless CMS API, designed to manage content, data, feedback, and nodes.
 
-**Base URL:** `http://localhost:9080`
+## Table of Contents
 
----
+1.  Introduction
+2.  Base URL
+3.  API Endpoints
+    * Content Display Endpoint
+    * Content Click Endpoint
+    * Data Controller
+    * Content Node Endpoint
+    * Feedback Endpoint
+    * Health Endpoint
+    * Node Endpoint
+4.  Data Models
+5.  Usage Examples
+6.  Error Handling
+7.  Authentication (if applicable)
 
-## Endpoints
+## 1. Introduction
 
-### Feedback Endpoints
-#### Retrieve all feedbacks
-`GET /v0/feedbacks`
-- **Response:** `200 OK`
-- **Returns:** List of feedback objects.
+The Nodify API allows developers to interact with the Nodify Headless CMS programmatically. It provides endpoints to manage content displays, clicks, data objects, content nodes, feedback, and nodes. This document outlines the available endpoints, request/response formats, and usage examples.
 
-#### Create new feedback
-`POST /v0/feedbacks`
-- **Request Body:** Feedback object.
-- **Response:** `200 OK`
-- **Returns:** Created feedback object.
+## 2. Base URL
 
-#### Retrieve feedback by ID
-`GET /v0/feedbacks/id/{id}`
-- **Path Parameter:** `id` (UUID)
-- **Response:** `200 OK`
-- **Returns:** A feedback object.
+The base URL for the Nodify API is: `http://localhost:9080`
 
-#### Delete feedback by ID
-`DELETE /v0/feedbacks/id/{id}`
-- **Path Parameter:** `id` (UUID)
-- **Response:** `200 OK`
-- **Returns:** Boolean indicating success.
+## 3. API Endpoints
 
-#### Retrieve feedback by user ID
-`GET /v0/feedbacks/userId/{userId}`
-- **Path Parameter:** `userId` (String)
-- **Response:** `200 OK`
-- **Returns:** List of feedbacks.
+### Content Display Endpoint
 
-#### Retrieve feedback by content code
-`GET /v0/feedbacks/contentCode/{code}`
-- **Path Parameter:** `code` (String)
-- **Response:** `200 OK`
-- **Returns:** List of feedbacks.
+* **`GET /v0/content-displays/contentCode/{code}`**
+    * Retrieve a content display entry by content code.
+    * Parameters:
+        * `code` (path, string, required): The content code.
+    * Response: `ContentDisplay` object.
+* **`PATCH /v0/content-displays/contentCode/{code}`**
+    * Increment the display count for a content code.
+    * Parameters:
+        * `code` (path, string, required): The content code.
+    * Response: boolean
 
----
+### Content Click Endpoint
 
-### Content Node Endpoints
-#### Retrieve data by content code
-`GET /v0/contents/code/{code}/data`
-- **Path Parameter:** `code` (String)
-- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`, Enum: `SNAPSHOT`, `PUBLISHED`, `ARCHIVE`, `DELETED`)
-- **Response:** `200 OK`
-- **Returns:** List of values.
+* **`GET /v0/content-clicks/contentCode/{code}`**
+    * Retrieve a content click by content code.
+    * Parameters:
+        * `code` (path, string, required): The content code.
+    * Response: `ContentClick` object.
+* **`PATCH /v0/content-clicks/contentCode/{code}`**
+    * Record a content click.
+    * Parameters:
+        * `code` (path, string, required): The content code.
+    * Response: boolean
 
-#### Save data by content code
-`PATCH /v0/contents/code/{code}/data`
-- **Path Parameter:** `code` (String)
-- **Request Body:** Value object.
-- **Response:** `200 OK`
-- **Returns:** Updated value object.
+### Data Controller
 
-#### Retrieve all content nodes by node code
-`GET /v0/contents/node/code/{code}`
-- **Path Parameter:** `code` (String)
-- **Response:** `200 OK`
-- **Returns:** List of content nodes.
+* **`POST /v0/datas/`**
+    * Save a new Data object.
+    * Request Body: `Data` object (required).
+    * Response: `Data` object.
+* **`GET /v0/datas/key/{key}`**
+    * Find Data by key.
+    * Parameters:
+        * `key` (path, string, required): The key of the Data object.
+    * Response: `Data` object.
+* **`GET /v0/datas/contentCode/{code}`**
+    * Find Data by content code.
+    * Parameters:
+        * `code` (path, string, required): The content code.
+        * `currentPage` (query, integer, optional, default: 0): Current page index.
+        * `limit` (query, integer, optional, default: 50): Limit per page.
+    * Response: array of `Data` objects.
+* **`DELETE /v0/datas/contentCode/{code}`**
+    * Delete Data by content code.
+    * Parameters:
+        * `code` (path, string, required): The content code.
+    * Response: boolean.
 
-#### Retrieve content node by code
-`GET /v0/contents/code/{code}`
-- **Path Parameter:** `code` (String)
-- **Response:** `200 OK`
-- **Returns:** Content node object.
+### Content Node Endpoint
 
----
+* **`GET /v0/contents/node/code/{code}`**
+    * Retrieve all content nodes by node code.
+    * Parameters:
+        * `code` (path, string, required): The node code.
+        * `status` (query, string, optional, default: "PUBLISHED", enum: ["SNAPSHOT", "PUBLISHED", "ARCHIVE", "DELETED", "NEW"]).
+        * `translation` (query, string, optional).
+        * `fillValues` (query, boolean, optional).
+        * `payloadOnly` (query, boolean, optional).
+    * Response: array of `ContentNode` objects.
 
-### Content Display Endpoints
-#### Retrieve content display by content code
-`GET /v0/content-displays/contentCode/{code}`
-- **Path Parameter:** `code` (String)
-- **Response:** `200 OK`
-- **Returns:** Content display object.
+### Feedback Endpoint
 
-#### Add display to content code
-`PATCH /v0/content-displays/contentCode/{code}`
-- **Path Parameter:** `code` (String)
-- **Response:** `200 OK`
-- **Returns:** Boolean indicating success.
+* **`POST /v0/feedbacks/`**
+    * Save a new feedback entry.
+    * Request Body: `Feedback` object (required).
+    * Response: `Feedback` object.
+* **`GET /v0/feedbacks/verified/{verified}`**
+    * Retrieve feedback by verification status.
+    * Parameters:
+        * `verified` (path, boolean, required).
+        * `currentPage` (query, integer, optional, default: 0): Current page index.
+        * `limit` (query, integer, optional, default: 50): Limit per page.
+    * Response: array of `Feedback` objects.
+* **`GET /v0/feedbacks/userId/{userId}`**
+    * Retrieve feedback by user ID.
+    * Parameters:
+        * `userId` (path, string, required).
+        * `currentPage` (query, integer, optional, default: 0): Current page index.
+        * `limit` (query, integer, optional, default: 50): Limit per page.
+    * Response: array of `Feedback` objects.
+* **`GET /v0/feedbacks/evaluation/{evaluation}`**
+    * Retrieve feedback by evaluation score.
+    * Parameters:
+        * `evaluation` (path, integer, required).
+        * `currentPage` (query, integer, optional, default: 0): Current page index.
+        * `limit` (query, integer, optional, default: 50): Limit per page.
+    * Response: array of `Feedback` objects.
+* **`GET /v0/feedbacks/contentCode/{code}`**
+    * Retrieve feedback by content code.
+    * Parameters:
+        * `code` (path, string, required).
+        * `currentPage` (query, integer, optional, default: 0): Current page index.
+        * `limit` (query, integer, optional, default: 50): Limit per page.
+    * Response: array of `Feedback` objects.
+* **`DELETE /v0/feedbacks/contentCode/{code}`**
+    * Delete feedback by content code.
+    * Parameters:
+        * `code` (path, string, required).
+    * Response: boolean.
+* **`GET /v0/feedbacks/charts`**
+    * Retrieve feedback statistics.
+    * Response: array of `FeedbackCharts` objects.
 
-#### Retrieve all content displays
-`GET /v0/content-displays`
-- **Response:** `200 OK`
-- **Returns:** List of content displays.
+### Node Endpoint
 
-#### Retrieve content display by ID
-`GET /v0/content-displays/id/{id}`
-- **Path Parameter:** `id` (UUID)
-- **Response:** `200 OK`
-- **Returns:** Content display object.
+* **`GET /v0/nodes/`**
+    * Retrieve all nodes.
+    * Parameters:
+        * `status` (query, string, optional, default: "PUBLISHED", enum: ["SNAPSHOT", "PUBLISHED", "ARCHIVE", "DELETED", "NEW"]).
+    * Response: array of `Node` objects.
+* **`GET /v0/nodes/parents`**
+    * Retrieve all parent nodes.
+    * Parameters:
+        * `status` (query, string, optional, default: "PUBLISHED", enum: ["SNAPSHOT", "PUBLISHED", "ARCHIVE", "DELETED", "NEW"]).
+    * Response: array of `Node` objects.
+* **`GET /v0/nodes/parent/{code}`**
+    * Retrieve child nodes by parent code.
+    * Parameters:
+        * `code` (path, string, required).
+        * `status` (query, string, optional, default: "PUBLISHED", enum: ["SNAPSHOT", "PUBLISHED", "ARCHIVE", "DELETED", "NEW"]).
+    * Response: array of `Node` objects.
+* **`GET /v0/nodes/code/{code}`**
+    * Retrieve a node by code.
+    * Parameters:
+        * `code` (path, string, required).
+        * `status` (query, string, optional, default: "PUBLISHED", enum: ["SNAPSHOT", "PUBLISHED", "ARCHIVE", "DELETED", "NEW"]).
+    * Response: `Node` object.
 
-#### Delete content display by ID
-`DELETE /v0/content-displays/id/{id}`
-- **Path Parameter:** `id` (UUID)
-- **Response:** `200 OK`
-- **Returns:** Boolean indicating success.
+### Health Endpoint
 
----
+* This endpoint is not detailed within the swagger file provided. It is assumed that this endpoint exists to check the health of the application.
 
-### Content Click Endpoints
-#### Retrieve content click by content code
-`GET /v0/content-clicks/contentCode/{code}`
-- **Path Parameter:** `code` (String)
-- **Response:** `200 OK`
-- **Returns:** Content click object.
+## 4. Data Models
 
-#### Save content click by content code
-`PATCH /v0/content-clicks/contentCode/{code}`
-- **Path Parameter:** `code` (String)
-- **Response:** `200 OK`
-- **Returns:** Boolean indicating success.
+Refer to the Swagger/OpenAPI documentation for detailed schema information for `Feedback`, `Data`, `ContentDisplay`, `ContentClick`, `ContentNode`, `Node`, and `FeedbackCharts`.
 
-#### Retrieve all content clicks
-`GET /v0/content-clicks`
-- **Response:** `200 OK`
-- **Returns:** List of content clicks.
+## 5. Usage Examples
 
-#### Retrieve content click by ID
-`GET /v0/content-clicks/id/{id}`
-- **Path Parameter:** `id` (UUID)
-- **Response:** `200 OK`
-- **Returns:** Content click object.
+(Add code snippets for various API calls, using tools like `curl` or language-specific HTTP clients)
 
-#### Delete content click by ID
-`DELETE /v0/content-clicks/id/{id}`
-- **Path Parameter:** `id` (UUID)
-- **Response:** `200 OK`
-- **Returns:** Boolean indicating success.
+## 6. Error Handling
 
----
+(Describe common error codes and how to handle them)
 
-### Node Endpoints
-#### Retrieve all nodes
-`GET /v0/nodes`
-- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`, Enum: `SNAPSHOT`, `PUBLISHED`, `ARCHIVE`, `DELETED`)
-- **Response:** `200 OK`
-- **Returns:** List of nodes.
+## 7. Authentication
 
-#### Retrieve node by code
-`GET /v0/nodes/code/{code}`
-- **Path Parameter:** `code` (String)
-- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`)
-- **Response:** `200 OK`
-- **Returns:** Node object.
+(If applicable, provide details on authentication methods and how to use them)
 
-#### Retrieve parent nodes
-`GET /v0/nodes/parents`
-- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`)
-- **Response:** `200 OK`
-- **Returns:** List of parent nodes.
+### API Key Authentication Example
 
-#### Retrieve child nodes by parent code
-`GET /v0/nodes/childreens/parent/{code}`
-- **Path Parameter:** `code` (String)
-- **Query Parameter:** `status` (Optional, Default: `PUBLISHED`)
-- **Response:** `200 OK`
-- **Returns:** List of child nodes.
+If the API requires API key authentication, you'll need to include the key in the header of each request.
 
----
-
-### Health Check
-#### Check API health status
-`GET /health`
-- **Response:** `200 OK`
-- **Returns:** String indicating health status.
-
----
-
-## Data Models
-### Feedback
-```json
-{
-  "id": "uuid",
-  "contentCode": "string",
-  "evaluation": 0,
-  "message": "string",
-  "userId": "string",
-  "verified": true
-}
 ```
-
-### Value
-```json
-{
-  "id": "uuid",
-  "key": "string",
-  "value": "string"
-}
+Authorization: Bearer VOTRE_CLE_API
 ```
+* **Where to get the API Key:** Describe how developers can obtain their API keys.
+* **Security:** Emphasize the importance of keeping API keys secure and not including them in client-side code.
 
-### Node
-```json
-{
-  "id": "uuid",
-  "code": "string",
-  "status": "PUBLISHED"
-}
-```
+### OAuth 2.0 Authentication Example
 
----
+If the API uses OAuth 2.0, describe the steps to obtain an access token.
 
-## Conclusion
-This API provides a robust set of endpoints for managing feedback, content nodes, displays, clicks, and nodes within the Nodify system. For further assistance, contact the development team.
-
+1.  **Obtain an Authorization Token:** Explain how developers can obtain an authorization token.
+2.  **Use the Access Token:** Show how to include the access token in the header of each request.

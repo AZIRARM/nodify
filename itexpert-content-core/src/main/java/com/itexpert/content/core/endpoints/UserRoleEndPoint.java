@@ -22,7 +22,7 @@ public class UserRoleEndPoint {
         this.roleRoleHandler = roleRoleHandler;
     }
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<UserRole> findAll() {
         return roleRoleHandler.findAll();
     }
@@ -36,7 +36,7 @@ public class UserRoleEndPoint {
     }
 
    // @RolesAllowed("ADMIN")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<UserRole>> save(@RequestBody(required = true) UserRole role) {
         return roleRoleHandler.save(role)
                 .map(ResponseEntity::ok);

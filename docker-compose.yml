@@ -8,7 +8,7 @@ services:
       - mongo-conf:/data/configdb
 
   nodify-core:
-    image: azirar/nodify-core:latest
+    image: nodify-core:latest
     depends_on:
       - mongo
     environment:
@@ -18,7 +18,7 @@ services:
       - "8080"
 
   nodify-api:
-    image: azirar/nodify-api:latest
+    image: nodify-api:latest
     depends_on:
       - mongo
     environment:
@@ -27,7 +27,7 @@ services:
       - "9080"
 
   nodify-ui:
-    image: azirar/nodify-ui:latest
+    image: nodify-ui:latest
     depends_on:
       - nodify-core
       - nodify-api

@@ -4,6 +4,7 @@ import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
 import {ParametersService} from "../../../services/ParametersService";
 import {User} from "../../../modeles/User";
+import {ThemeService} from "../../../services/ThemeService";
 
 @Component({
   selector: 'app-user-parameters',
@@ -13,9 +14,11 @@ import {User} from "../../../modeles/User";
 export class UserParametersComponent implements OnInit {
   parameters: Parameters;
   user: User;
+  darkMode: boolean = false;
 
   constructor(
     private translate: TranslateService,
+    private themeService: ThemeService,
     private parametersService: ParametersService,
     private loggerService: LoggerService
   ) {
@@ -32,6 +35,7 @@ export class UserParametersComponent implements OnInit {
       (data: any) => {
         if (data) {
           this.parameters = data;
+          this.darkMode = this.parameters.theme === "dark"
         }
       },
       error => {
@@ -43,6 +47,7 @@ export class UserParametersComponent implements OnInit {
   save() {
     this.parametersService.save(this.parameters).subscribe(
       (data: any) => {
+        this.themeService.toggleTheme(this.parameters.theme);
         if (data) {
           this.translate.get("SAVE_SUCCESS").subscribe(trad => {
             this.loggerService.success(trad);
@@ -55,5 +60,11 @@ export class UserParametersComponent implements OnInit {
         })
       }
     );
+  }
+
+  changeTheme() {
+    this.darkMode = !this.darkMode;
+    this.parameters.theme = !this.darkMode ? 'dark' : 'light';
+    this.save();
   }
 }
