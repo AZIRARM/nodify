@@ -57,4 +57,6 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
 
     @Query(value = "{ 'code' : {$in:?0}}", delete = true)
     Mono<?> deleteAllByCode(List<String> strings);
+
+    Flux<Node> findBySlugAndStatusAndCodeNotIn(String slug, String status,  List<String> excludedCodes);
 }
