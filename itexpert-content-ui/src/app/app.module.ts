@@ -136,6 +136,13 @@ import {
 } from "./components/plugins/deleted-plugins-dialog/deleted-plugins-dialog.component";
 import {PluginFileService} from "./services/PluginFileService";
 import {PluginFilesDialogComponent} from "./components/plugins/plugin-files-dialog/plugin-files-dialog.component";
+import {NgxEchartsModule} from "ngx-echarts";
+import * as echarts from 'echarts/core';
+import {BarChart, TreeChart} from "echarts/charts";
+import {GridComponent, TitleComponent, TooltipComponent} from "echarts/components";
+import {CanvasRenderer} from "echarts/renderers";
+import {NodesViewDialogComponent} from "./components/node/nodes-view-dialog/nodes-view-dialog.component";
+echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -196,7 +203,8 @@ export function defaultLanguage() {
     PluginComponent,
     PluginDialogComponent,
     DeletedPluginsDialogComponent,
-    PluginFilesDialogComponent
+    PluginFilesDialogComponent,
+    NodesViewDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -218,6 +226,8 @@ export function defaultLanguage() {
         deps: [HttpClient],
       },
     }),
+
+    NgxEchartsModule.forRoot({ echarts }),
 
     FormsModule,
     ReactiveFormsModule,
