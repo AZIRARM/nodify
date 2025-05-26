@@ -13,5 +13,6 @@ public class UserParameters {
 
     private boolean acceptNotifications;
     private String defaultLanguage;
-    private boolean darkMode;
+    private String theme;
+    private boolean ai;
 }

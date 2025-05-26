@@ -16,13 +16,16 @@
 
 
 <mat-icon class="icon-display scale2 danger"
+          *ngIf="userAccessService.canEdit()"
           inline matTooltip="{{ 'DELETED_NODES' | translate}}"
-          (click)="deleteds()">delete</mat-icon>
+          (click)="deleteds()">delete
+</mat-icon>
 
 <mat-icon class="icon-display scale2"
-          *ngIf="this.parentNode"
+          *ngIf="this.parentNode && userAccessService.canEdit()"
           inline matTooltip="{{ 'IMPORT' | translate}}"
-          (click)="fileInput.click()">downloading</mat-icon>
+          (click)="fileInput.click()">downloading
+</mat-icon>
 <input hidden #fileInput type="file"
        id="file"
        (change)="import($event.target)">
@@ -32,19 +35,18 @@
 </button>
 
 
-<button mat-fab aria-label="create new project" class="icon-display" *ngIf="userAccessService.isAdmin()" (click)="create()">
+<button mat-fab aria-label="create new project" class="icon-display" *ngIf="!parentNode && userAccessService.isAdmin()"
+        (click)="create()">
   <mat-icon>add</mat-icon>
 </button>
 
-
-
 <button mat-fab aria-label="create new project"
-        *ngIf="parentNode && !userAccessService.isAdmin() && userAccessService.isEditor()" (click)="create()">
+        *ngIf="parentNode && userAccessService.canEdit()" (click)="create()">
   <mat-icon>add</mat-icon>
 </button>
 
 <span class="form-group" style="margin-left: 90%"
-      *ngIf="parentNode && !userAccessService.isAdmin() && userAccessService.isEditor()">
+      *ngIf="parentNode && userAccessService.canEdit()">
   <mat-icon class="icon-display" style="scale: 2" inline matTooltip="{{ 'IMPORT' | translate}}"
             (click)="fileInput.click()">downloading</mat-icon>
   <input hidden #fileInput type="file"
@@ -154,7 +156,7 @@
   <ng-container matColumnDef="Publication">
     <th mat-header-cell *matHeaderCellDef> {{ "PUBLICATION" | translate }}</th>
     <td mat-cell *matCellDef="let element">
-      <button mat-icon-button *ngIf="userAccessService.canEdit()"
+      <button mat-icon-button [disabled]="!userAccessService.canEdit()"
               matTooltip="{{'DEPLOY_VERSION'| translate}}"
               (click)="publish(element)">
         <mat-icon>play_arrow</mat-icon>
@@ -167,56 +169,53 @@
     <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
     <td mat-cell *matCellDef="let element">
       <mat-icon class="icon-display primary"
-                *ngIf="(userAccessService.canDelete()  && parentNode ) || (parentNode && userAccessService.isEditor())|| (userAccessService.isAdmin())"
+                *ngIf="(parentNode && userAccessService.canEdit()) || (userAccessService.isAdmin())"
                 (click)="view(element)" inline matTooltip="{{ 'VIEW' | translate}}">visibility
       </mat-icon>
 
       <mat-icon class="icon-display"
-                *ngIf="( userAccessService.canEdit()  && parentNode )|| (userAccessService.canEdit() && userAccessService.isAdmin())|| (parentNode && userAccessService.isEditor())"
+                *ngIf="(parentNode && userAccessService.canEdit()) || (userAccessService.isAdmin())"
                 (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit
       </mat-icon>
 
       <button
-        *ngIf="( userAccessService.canEdit()  && parentNode )
-        || (userAccessService.canEdit() && userAccessService.isAdmin() && parentNode )
-        || (parentNode && userAccessService.isEditor() && parentNode )"
+        *ngIf="userAccessService.canEdit()"
         mat-icon-button matTooltip="{{'EXPORT'| translate}}"
-              (click)="export(element,'')">
+        (click)="export(element,'')">
         <mat-icon>ios_share</mat-icon>
       </button>
 
       <button
-        *ngIf="( userAccessService.canEdit()  && parentNode )
-        || (userAccessService.canEdit() && userAccessService.isAdmin() && parentNode )
-        || (parentNode && userAccessService.isEditor() && parentNode )"
-
+        *ngIf="userAccessService.canEdit() && parentNode"
         mat-icon-button matTooltip="{{'DEPLOY_ENVIRONMENT'| translate}}"
-              [matMenuTriggerFor]="deployNodeMenu">
+        [matMenuTriggerFor]="deployNodeMenu">
         <mat-icon>share</mat-icon>
       </button>
       <mat-menu #deployNodeMenu [overlapTrigger]="false" yPosition="below">
         <button mat-menu-item *ngFor="let env of getEnvironments()" (click)="deploy(element, env.code)">
-            <small> {{ env.name }}</small>
+          <small> {{ env.name }}</small>
         </button>
       </mat-menu>
 
       <mat-icon class="icon-display danger"
-                *ngIf="(userAccessService.canDelete()  && parentNode ) || (parentNode && userAccessService.isEditor())|| (userAccessService.isAdmin())"
+                *ngIf="(parentNode && userAccessService.canEdit()) || (userAccessService.isAdmin())"
                 (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete
       </mat-icon>
 
+
       <mat-icon class="icon-display primary"
-                *ngIf="element.favorite && !element.parentCode"
+                *ngIf="element.favorite && ((userAccessService.canEdit() && parentNode) || (userAccessService.isAdmin()))"
                 (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
       </mat-icon>
       <mat-icon class="icon-display disabled"
-      *ngIf="!element.favorite && !element.parentCode"
-      (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
-    </mat-icon>
+                *ngIf="!element.favorite && ((userAccessService.canEdit() && parentNode) || (userAccessService.isAdmin()))"
+                (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
+      </mat-icon>
     </td>
 
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" class="mat-header"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }" class="mat-row"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"
+      class="mat-row"></tr>
 </table>

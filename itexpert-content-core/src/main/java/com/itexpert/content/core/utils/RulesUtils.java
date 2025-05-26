@@ -89,7 +89,6 @@ public class RulesUtils {
     public static List<Rule> getDefaultRules() {
         Rule ruleMaintenance = new Rule();
         ruleMaintenance.setName("MAINTENANCE");
-        ruleMaintenance.setCode("MAINTENANCE");
         ruleMaintenance.setType(TypeEnum.BOOL);
         ruleMaintenance.setValue("false");
         ruleMaintenance.setBehavior(Boolean.FALSE);
@@ -100,7 +99,6 @@ public class RulesUtils {
 
         Rule activationDate = new Rule();
         activationDate.setName("ACTIVATION_DATE");
-        activationDate.setCode("ACTIVATION_CODE");
         activationDate.setOperator(OperatorEnum.SUP_EQ);
         activationDate.setType(TypeEnum.DATE);
         activationDate.setBehavior(Boolean.FALSE);
@@ -110,7 +108,6 @@ public class RulesUtils {
 
         Rule endDate = new Rule();
         endDate.setName("DEACTIVATION_DATE");
-        endDate.setCode("DEACTIVATION_CODE");
         endDate.setOperator(OperatorEnum.SUP_EQ);
         endDate.setType(TypeEnum.DATE);
         endDate.setBehavior(Boolean.FALSE);

@@ -14,7 +14,6 @@ public class Rule implements Serializable, Cloneable {
 
     private TypeEnum type;
     private String name;
-    private String code;
     private String value;
     private boolean editable;
     private boolean erasable;

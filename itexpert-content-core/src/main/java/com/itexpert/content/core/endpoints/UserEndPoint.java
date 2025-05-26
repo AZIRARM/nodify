@@ -25,7 +25,7 @@ public class UserEndPoint {
         this.userHandler = userHandler;
     }
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<UserPost> findAll(Authentication authentication) {
         var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
 
@@ -51,7 +51,7 @@ public class UserEndPoint {
     }
 
     //@RolesAllowed("ADMIN")
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<UserPost>> save(@RequestBody(required = true) UserPost user) {
         return userHandler.save(user)
                 .map(ResponseEntity::ok);

@@ -43,6 +43,19 @@ public class NodeHandler {
                 ).flatMap(Mono::from);
     }
 
+    public Mono<Node> findBySlugAndStatus(String slug, StatusEnum status) {
+
+        return this.nodeRepository.findBySlugAndStatus(slug, status.name())
+                .map(node -> node.getCode())
+                .flatMap(code -> this.nodeHelper.evaluateNode(code, status).map(Node::getCode)
+                        .map(nodeCode -> nodeRepository.findByCodeAndStatus(code, status.name())
+                                .map(nodeMapper::fromEntity)
+                                .flatMap(node -> RulesUtils.evaluateNode(node)
+                                        .filter(aBoolean -> aBoolean)
+                                        .map(aBoolean -> node)
+                                )
+                        )).flatMap(Mono::from);
+    }
 
     public Flux<Node> findParentsNodes(StatusEnum status) {
         return nodeRepository.findParentsNodesByStatus(status.name())

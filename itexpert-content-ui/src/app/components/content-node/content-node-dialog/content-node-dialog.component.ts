@@ -183,7 +183,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   delete(node: Node) {
-
     this.dialogRefDelete = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_CONTENT_NODE_TITLE",
@@ -227,8 +226,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       disableClose: true
     });
     this.dialogRefCode.afterClosed()
-      .subscribe(value => {
-        this.init();
+      .subscribe((data: any) => {
+        if (data.refresh) {
+          this.init();
+        }
       });
   }
 
@@ -241,6 +242,12 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       this.currentContent.code = this.type.replace(/[\W_]+/g, "_").toUpperCase() + '-'
         + (this.node.parentCode ? this.node.parentCode.split("-")[0] + '-' : this.node.code.split("-")[0] + '-')
         + (new Date()).getTime();
+
+
+      this.currentContent.slug = this.type.replace(/[\W_]+/g, "-").toUpperCase()
+        + (new Date()).getDay() + "-"
+        + (new Date()).getMonth() + "-"
+        + (new Date()).getFullYear();
     }
     this.update(this.currentContent);
   }
@@ -429,11 +436,14 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefDeleteds = this.dialog.open(DeletedContentsNodesDialogComponent, {
         height: '80vh',
         width: '80vw',
-        disableClose: true
+        disableClose: true,
+        data: this.node
       }
     );
     this.dialogRefDeleteds.afterClosed()
-      .subscribe();
+      .subscribe(result => {
+        this.init();
+      });
   }
 
   deploy(element: any, environmentCode: string) {
@@ -483,7 +493,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-  favorite(element:ContentNode) {
+  favorite(element: ContentNode) {
     element.favorite = !element.favorite;
     this.save(element);
   }
