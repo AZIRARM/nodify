@@ -11,6 +11,7 @@ export class ContentNode {
   public parentCodeOrigin: string;
 
   public code: string;
+  public slug: string;
 
   public environmentCode: string;
 

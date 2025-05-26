@@ -9,6 +9,7 @@ export class Node {
   public parentCodeOrigin: string;
   public name: string;
   public code: string;
+  public slug: string;
   public environmentCode: string;
   public description: string;
   public defaultLanguage: string;

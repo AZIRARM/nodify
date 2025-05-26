@@ -545,5 +545,13 @@ public class NodeHandler {
         return nodeRepository.findAllParentOrigin()
                 .map(nodeMapper::fromEntity);
     }
+
+    public Mono<Boolean> slugAlreadyExists(String code, String slug){
+        return this.nodeRepository.findBySlugAndStatusAndCodeNotIn(slug, StatusEnum.SNAPSHOT.name(), List.of(code))
+                .doOnNext(node -> {
+                    log.info(node.getCode());
+                })
+                .hasElements();
+    }
 }
 

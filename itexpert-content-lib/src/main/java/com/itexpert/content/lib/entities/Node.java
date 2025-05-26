@@ -6,6 +6,7 @@ import com.itexpert.content.lib.models.Translation;
 import com.itexpert.content.lib.models.Value;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -20,6 +21,8 @@ public class Node implements Serializable, Cloneable {
     private UUID id;
 
     private String code;
+
+    private String slug;
 
     private String parentCode;
 

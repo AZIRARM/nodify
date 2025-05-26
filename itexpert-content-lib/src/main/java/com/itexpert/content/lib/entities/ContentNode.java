@@ -5,6 +5,7 @@ import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.*;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -22,6 +23,8 @@ public class ContentNode implements Serializable, Cloneable {
     private String parentCodeOrigin;
 
     private String code;
+
+    private String slug;
 
     private String language;
 
