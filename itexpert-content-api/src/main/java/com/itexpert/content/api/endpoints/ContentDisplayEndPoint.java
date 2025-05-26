@@ -35,7 +35,7 @@ public class ContentDisplayEndPoint {
      * @return a Flux of content display entries
      */
     @Operation(summary = "Retrieve all content display entries")
-    @GetMapping
+    @GetMapping("/")
     public Flux<ContentDisplay> findAll() {
         return contentDisplayHandler.findAll();
     }

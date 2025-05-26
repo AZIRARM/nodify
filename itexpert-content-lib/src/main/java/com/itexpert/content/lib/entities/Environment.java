@@ -1,6 +1,7 @@
 package com.itexpert.content.lib.entities;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
 @Document(collection = "content-environments")
 @Data
 public class Environment implements Serializable, Cloneable {
-
+    @Id
     private UUID id;
 
     private String description;

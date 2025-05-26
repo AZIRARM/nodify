@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, Output} from '@angular/core';
 import {ContentNode} from "../../../../modeles/ContentNode";
 import {ContentUrl} from "../../../../modeles/ContentUrl";
 
@@ -25,7 +25,6 @@ export class ContentCodeUrlsComponent {
   }
 
   deleteUrl(url: ContentUrl) {
-
     if (url) {
       this.contentNode.urls = this.contentNode.urls.filter((v: ContentUrl) => (v.url !== url.url && v.type !== url.type && v.description !== url.description));
     }

@@ -23,7 +23,7 @@ public class EnvironmentEndPoint {
         this.environmentHandler = environmentHandler;
     }
 
-    @GetMapping
+    @GetMapping("/")
     public Flux<Environment> findAll() {
         return environmentHandler.findAll();
     }
@@ -36,7 +36,7 @@ public class EnvironmentEndPoint {
 
     }
 
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<Environment>> save(@RequestBody Environment environment) {
         return environmentHandler.save(environment)
                 .map(ResponseEntity::ok);

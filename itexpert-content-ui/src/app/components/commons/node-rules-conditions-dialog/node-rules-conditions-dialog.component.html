@@ -5,19 +5,19 @@
 </p>
 <div class="container">
 
-  <label for="ruleType">{{'TYPE'| translate}}</label>
-  <select id="ruleType" name="ruleType" [(ngModel)]="ruleType" required class="rulesTypes">
+  <label for="ruleType">{{ 'TYPE'| translate }}</label>
+  <select id="ruleType" name="ruleType" [(ngModel)]="ruleType" required class="rulesTypes"  *ngIf="userAccessService.canEdit()">
     <option value="BOOL" selected>BOOL</option>
     <option value="DATE">DATE</option>
   </select>
 
-  <button [disabled]="!ruleType" (click)="create()">{{'ADD' | translate}}</button>
+  <button [disabled]="!ruleType" (click)="create()"  *ngIf="userAccessService.canEdit()">{{ 'ADD' | translate }}</button>
 
   <div *ngIf="rulesConditions && rulesConditions.length > 0">
     <div *ngFor="let selected of rulesConditions" class="rule-row">
       <input type="text" placeholder="Rule Name" [(ngModel)]="selected.name"
              [disabled]="!selected.editable">
-      <select [(ngModel)]="selected.operator" name="selectOperator" *ngIf="selected.type !== 'BOOL'">
+      <select [(ngModel)]="selected.operator" name="selectOperator" *ngIf="selected.type !== 'BOOL'"  [disabled]="!userAccessService.canEdit()">
         <option value="EQ">=</option>
         <option value="SUP">&gt;</option>
         <option value="LOW">&lt;</option>
@@ -25,8 +25,9 @@
         <option value="LOW_EQ">≤</option>
         <option value="DIF">≠</option>
       </select>
-      <input *ngIf="selected.type === 'DATE'" type="datetime-local" [(ngModel)]="selected.value" (ngModelChange)="updateBehavior(selected)" placeholder="Value">
-      <select [(ngModel)]="selected.behavior" name="selectBehavior">
+      <input *ngIf="selected.type === 'DATE'" type="datetime-local" [(ngModel)]="selected.value"  [disabled]="!userAccessService.canEdit()"
+             (ngModelChange)="updateBehavior(selected)" placeholder="Value">
+      <select [(ngModel)]="selected.behavior" name="selectBehavior"  [disabled]="!userAccessService.canEdit()">
         <option *ngIf="node.hasOwnProperty('contents')" [value]="true">Enable Node</option>
         <option *ngIf="node.hasOwnProperty('contents')" [value]="false">Disable Node</option>
         <option *ngIf="!node.hasOwnProperty('contents')" [value]="true">Enable Content</option>
@@ -34,7 +35,8 @@
       </select>
       <div class="checkbox-container">
         <input *ngIf="(selected.type=='BOOL')
-        || ( selected.operator && selected.value && selected.type=='DATE')" type="checkbox" [(ngModel)]="selected.enable"> Activate Rule
+        || ( selected.operator && selected.value && selected.type=='DATE')" type="checkbox"
+               [(ngModel)]="selected.enable" [disabled]="!userAccessService.canEdit()"> Activate Rule
       </div>
       <button *ngIf="selected.erasable" (click)="remove(selected)">X</button>
     </div>
@@ -43,5 +45,5 @@
 
 <div>
   <button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-  <button *ngIf="canSave()" (click)="validate()">{{ "SAVE" | translate }}</button>
+  <button *ngIf="canSave() && userAccessService.canEdit()" (click)="validate()">{{ "SAVE" | translate }}</button>
 </div>

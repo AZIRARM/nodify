@@ -128,6 +128,14 @@ import {FlexModule} from "@angular/flex-layout";
 import {
   ContentCodeXmlComponent
 } from "./components/content-node/content-code/content-code-xml/content-code-xml.component";
+import {PluginService} from "./services/PluginService";
+import {PluginComponent} from "./components/plugins/plugin/plugin.component";
+import {PluginDialogComponent} from "./components/plugins/plugin-dialog/plugin-dialog.component";
+import {
+  DeletedPluginsDialogComponent
+} from "./components/plugins/deleted-plugins-dialog/deleted-plugins-dialog.component";
+import {PluginFileService} from "./services/PluginFileService";
+import {PluginFilesDialogComponent} from "./components/plugins/plugin-files-dialog/plugin-files-dialog.component";
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -184,7 +192,11 @@ export function defaultLanguage() {
     ContentCodeUrlsComponent,
     ContentCodeActionsComponent,
     ContentCodeTitleComponent,
-    ContentCodeInfosComponent
+    ContentCodeInfosComponent,
+    PluginComponent,
+    PluginDialogComponent,
+    DeletedPluginsDialogComponent,
+    PluginFilesDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -234,7 +246,7 @@ export function defaultLanguage() {
     CodemirrorModule,
     MatIconModule,
     MatTooltipModule,
-    FlexModule
+    FlexModule,
   ],
 
   providers: [
@@ -256,6 +268,8 @@ export function defaultLanguage() {
     UserAccessService,
     ThemeService,
     DataService,
+    PluginService,
+    PluginFileService,
     AuthGuard
   ],
 

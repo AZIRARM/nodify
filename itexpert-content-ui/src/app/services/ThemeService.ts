@@ -1,11 +1,12 @@
 import {Injectable} from "@angular/core";
+import {ParametersService} from "./ParametersService";
 
 
 @Injectable()
 export class ThemeService {
 
 
-  constructor() {
+  constructor(parameters: ParametersService) {
   }
 
   setTheme() {

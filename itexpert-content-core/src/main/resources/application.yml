@@ -10,7 +10,7 @@ spring:
   main:
     web-application-type: reactive
     allow-bean-definition-overriding: true
-    lazy-initialization: true
+    #lazy-initialization: true
 
   jackson:
     default-property-inclusion: non_empty
@@ -20,6 +20,7 @@ spring:
     use-management-port: true
     show-login-endpoint: true
     webjars.prefix: ""
+
 
 management:
   server:
@@ -45,3 +46,10 @@ springbootwebfluxjjwt:
       keylength:  256
 server:
   port : 8080
+logging:
+  level:
+    org:
+      springframework:
+        web:  DEBUG
+ai:
+  base-url: ${OLLAMA_BASE_URL:http://localhost:5000}

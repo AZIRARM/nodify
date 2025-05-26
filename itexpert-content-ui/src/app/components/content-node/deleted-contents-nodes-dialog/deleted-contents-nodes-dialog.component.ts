@@ -1,12 +1,13 @@
-import {Component} from '@angular/core';
+import {Component, Inject} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {UserService} from "../../../services/UserService";
+import {Node} from "../../../modeles/Node";
 
 @Component({
   selector: 'app-deleted-contents-nodes-dialog',
@@ -27,7 +28,8 @@ export class DeletedContentsNodesDialogComponent {
     private contentNodeService: ContentNodeService,
     private userService: UserService,
     private loggerService: LoggerService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    @Inject(MAT_DIALOG_DATA) private parentNode: Node
   ) {
   }
 
@@ -42,7 +44,7 @@ export class DeletedContentsNodesDialogComponent {
   }
 
   init() {
-    this.contentNodeService.getDeleted().subscribe(
+    this.contentNodeService.getDeleted(this.parentNode.code).subscribe(
       (response: any) => {
         if (response) {
           response.map((content: any) => this.setUserName(content));

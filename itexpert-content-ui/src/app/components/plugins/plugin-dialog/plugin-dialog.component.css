@@ -1,0 +1,108 @@
+
+/* Container */
+.infos-container {
+  align-items: center;
+  gap: 12px;
+}
+
+/* Inputs */
+.input-field {
+  width: 80%;
+  margin: 5px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focus state */
+.input-field:focus {
+  border-color: #3f51b5;
+  box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
+  outline: none;
+}
+
+/* Disabled state */
+.input-field:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Placeholder styling */
+.input-field::placeholder {
+  color: #bbb;
+}
+
+.code-editor-actions {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.code-editor-action-button {
+  padding: 8px 12px;
+  margin-right: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.code-editor-ai-select-main {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border: 1px solid #007bff;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.code-editor-ai-options-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.code-editor-ai-label {
+  margin-right: 5px;
+  font-weight: bold;
+}
+
+.code-editor-ai-select {
+  padding: 6px 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.code-editor-ai-input {
+  padding: 6px 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.code-editor-ai-generate-button {
+  padding: 8px 20px;
+  min-width: 150px;
+  border: 1px solid #28a745;
+  border-radius: 3px;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+}
+
+.code-editor-ai-cleanup{
+  display: inline-flex;
+  align-items: center;
+}
+
+.code-editor-ai-cleanup-button {
+  padding: 8px 12px;
+  border: 1px solid #28a745;
+  border-radius: 3px;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+}
