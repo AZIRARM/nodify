@@ -99,4 +99,7 @@ export class NodeService extends Service {
     return super.get("code/" + code + "/slug/" + slug + "/exists");
   }
 
+  getNodeView(code: string) {
+    return super.get("code/" + code + "/tree-view");
+  }
 }
