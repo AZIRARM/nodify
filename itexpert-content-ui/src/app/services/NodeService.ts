@@ -17,8 +17,9 @@ export class NodeService extends Service {
     return super.get("published/");
   }
 
-  getDeleted() {
-    return super.get("deleted");
+  getDeleted(parent: string) {
+    const url = parent !== null ? `deleted?parent=${parent}` : 'deleted';
+    return super.get(url);
   }
 
   getAllByParentCodeAndStatus(code: string, status: string) {
@@ -92,4 +93,10 @@ export class NodeService extends Service {
   getAllParentOrigin() {
     return super.get("origin");
   }
+
+
+  slugExists(code: string, slug: string) {
+    return super.get("code/" + code + "/slug/" + slug + "/exists");
+  }
+
 }

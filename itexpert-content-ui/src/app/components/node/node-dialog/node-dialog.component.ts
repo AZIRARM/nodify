@@ -4,6 +4,8 @@ import {Node} from "../../../modeles/Node";
 import {Language} from "../../../modeles/Language";
 import {NodeService} from "../../../services/NodeService";
 import {LanguageService} from "../../../services/LanguageService";
+import {LoggerService} from "../../../services/LoggerService";
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: 'app-node-dialog',
@@ -25,7 +27,9 @@ export class NodeDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<NodeDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public content: Node,
     private nodeService: NodeService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private translateService: TranslateService,
+    private loggerService: LoggerService
   ) {
     if (content) {
       this.node = content;
@@ -44,7 +48,17 @@ export class NodeDialogComponent implements OnInit {
   }
 
   validate() {
-    this.dialogRef.close({data: this.node});
+    this.nodeService.slugExists(this.node.code, this.node.slug)
+      .subscribe((exists: any) => {
+        if (exists) {
+          this.translateService.get('SLUG ALREADY EXISTS')
+            .subscribe(translation => {
+              this.loggerService.error(translation);
+            });
+        } else {
+          this.dialogRef.close({data: this.node});
+        }
+      });
   }
 
 
@@ -85,6 +99,8 @@ export class NodeDialogComponent implements OnInit {
       this.node.code = this.node.name.replace(/[\W_]+/g, "_").toUpperCase() + '-' +
         (this.isProject ? '' : this.node.parentCodeOrigin.split("-")[0] + '-') +
         (new Date()).getTime();
+
+      this.node.slug = this.node.name.replace(/[\W_]+/g, "-").toUpperCase();
     }
   }
 }

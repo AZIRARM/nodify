@@ -54,6 +54,21 @@ public class NodeEndPoint {
     }
 
     /**
+     * Retrieves a node by its unique slug and status.
+     *
+     * @param slug the unique identifier of the node
+     * @param status the status of the node to retrieve (default is PUBLISHED)
+     * @return a Mono containing the node if found, or a NOT FOUND response
+     */
+    @Operation(summary = "Retrieve a node by slug", description = "Fetch a node by its unique slug and status")
+    @GetMapping(value = "/{slug}")
+    public Mono<ResponseEntity<Node>> findBySlug(@PathVariable String slug,
+                                                 @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
+        return nodeHandler.findBySlugAndStatus(slug, status)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+    /**
      * Retrieves all parent nodes with an optional status filter.
      *
      * @param status the status of the parent nodes to retrieve (default is PUBLISHED)
