@@ -268,7 +268,8 @@ export class NodesComponent implements OnInit {
     this.dialogRefDeleteds = this.dialog.open(DeletedNodesDialogComponent, {
         height: '80vh',
         width: '80vw',
-        disableClose: true
+        disableClose: true,
+        data: this.parentNode
       }
     );
     this.dialogRefDeleteds.afterClosed()

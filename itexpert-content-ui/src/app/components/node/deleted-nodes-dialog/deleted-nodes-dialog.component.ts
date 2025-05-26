@@ -1,7 +1,7 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {Node} from "../../../modeles/Node";
 import {MatTableDataSource} from "@angular/material/table";
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {TranslateService} from "@ngx-translate/core";
 import {NodeService} from "../../../services/NodeService";
@@ -28,6 +28,7 @@ export class DeletedNodesDialogComponent implements OnInit {
     private nodeService: NodeService,
     private userService: UserService,
     private loggerService: LoggerService,
+    @Inject(MAT_DIALOG_DATA) private parentNode: Node,
     private dialog: MatDialog
   ) {
   }
@@ -42,7 +43,7 @@ export class DeletedNodesDialogComponent implements OnInit {
   }
 
   init() {
-    this.nodeService.getDeleted().subscribe(
+    this.nodeService.getDeleted(this.parentNode?.code ?? null).subscribe(
       (response: any) => {
         if (response) {
           response.map((param: any) => this.setUserName(param));

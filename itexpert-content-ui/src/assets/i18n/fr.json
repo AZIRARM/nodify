@@ -252,5 +252,6 @@
   "PLUGIN_ASSETS": "Ressources du Plugin",
   "DELETED_PLUGINS": "Plugins supprimés",
   "ACTIVATE_DELETE_PLUGIN_TITLE": "Activation du plugin supprimé",
-  "ACTIVATE_DELETE_PLUGIN_MESSAGE": "Voulez vous ré-activer ce plugin ?"
+  "ACTIVATE_DELETE_PLUGIN_MESSAGE": "Voulez vous ré-activer ce plugin ?",
+  "SLUG": "Alias (Partie Url plus lisible)"
 }

@@ -5,10 +5,12 @@ import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.lib.enums.StatusEnum;
+import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
 import com.itexpert.content.lib.models.Value;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -41,11 +43,11 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
         baseUrlDev.setValue("/v0");
 
         List<Node> environments = List.of(
-                createNode("Development", "Development environment", "DEV-01", baseUrlDev),
-                createNode("Integration", "Integration environment", "INT-02", baseUrl),
-                createNode("Staging", "Staging environment", "INT-03", baseUrl),
-                createNode("PreProduction", "Pre-Production environment", "PREP-04", baseUrl),
-                createNode("Production", "Production environment", "PROD-05", baseUrl)
+                createNode("Development", "Development environment", "DEV-01", "development", baseUrlDev),
+                createNode("Integration", "Integration environment", "INT-02", "integration", baseUrl),
+                createNode("Staging", "Staging environment", "INT-03", "staging", baseUrl),
+                createNode("PreProduction", "Pre-Production environment", "PREP-04", "pre-production", baseUrl),
+                createNode("Production", "Production environment", "PROD-05", "production", baseUrl)
         );
 
         nodeHandler.findAll()
@@ -83,13 +85,14 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
     }
 
-    private Node createNode(String name, String description, String code, Value baseUrl) {
+    private Node createNode(String name, String description, String code, String slug, Value baseUrl) {
         Node node = new Node();
         node.setName(name);
         node.setDescription(description);
         node.setVersion("1");
         node.setDefaultLanguage("EN");
         node.setCode(code);
+        node.setSlug(slug);
         node.setValues(List.of(baseUrl));
 
         if (code.equals("DEV-01")) {
@@ -108,6 +111,19 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                     return (List<Node>) new Gson().fromJson(reader, listType); // <-- Ajout du cast ici
                 })
                 .flatMapMany(nodes -> nodeHandler.findChildrenByCodeAndStatus("DEV-01", StatusEnum.SNAPSHOT.name())
+                        .map(node -> {
+                            if (ObjectUtils.isEmpty(node.getSlug())) {
+                                node.setSlug(node.getCode());
+                            }
+                            if (ObjectUtils.isNotEmpty(node.getContents())) {
+                                for (ContentNode content : node.getContents()) {
+                                    if (ObjectUtils.isEmpty(content.getSlug())) {
+                                        content.setSlug(content.getCode());
+                                    }
+                                }
+                            }
+                            return node;
+                        })
                         .collectList()
                         .flatMapMany(existingNodes -> {
                             if (existingNodes.isEmpty()) {

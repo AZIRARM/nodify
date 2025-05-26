@@ -29,6 +29,12 @@
   </p>
   <p>
     <mat-form-field appearance="outline">
+      <mat-label>{{ "SLUG" | translate }}</mat-label>
+      <input matInput [(ngModel)]="node.slug" placeholder="{{ 'SLUG' | translate }}" required>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
       <mat-label>{{ "NODE_DESCRIPTION" | translate }}</mat-label>
       <input matInput [(ngModel)]="node.description" placeholder="{{ 'NODE_DESCRIPTION' | translate }}">
     </mat-form-field>
@@ -61,5 +67,7 @@
 
 <div mat-dialog-actions>
   <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-  <button mat-button [disabled]="!node.defaultLanguage || !node.code || !node.name|| node.name.trim().length<4" (click)="validate()">{{ "SAVE" | translate }}</button>
+  <button mat-button [disabled]="!node.defaultLanguage
+                                || !node.code
+                                || !node.name || node.name.trim().length<4" (click)="validate()">{{ "SAVE" | translate }}</button>
 </div>

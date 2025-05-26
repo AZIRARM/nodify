@@ -1,3 +1,4 @@
+# Étape 1 : build Angular
 FROM node:current-slim AS builder
 
 WORKDIR /app

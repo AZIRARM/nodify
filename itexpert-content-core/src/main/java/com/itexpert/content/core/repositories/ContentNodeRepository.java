@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -40,4 +41,6 @@ public interface ContentNodeRepository extends ReactiveMongoRepository<ContentNo
 
     @Query("{_id: ?0, status:  ?1}")
     Mono<ContentNode> findByIdAndStatus(UUID contentNodeUuid, StatusEnum statusEnum);
+
+    Flux<ContentNode> findBySlugAndStatusAndCodeNotIn(String slug, String status, List<String> code);
 }

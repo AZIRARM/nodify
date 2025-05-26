@@ -35,7 +35,18 @@ export class ContentCodeActionsComponent implements AfterViewInit {
   }
 
   validateFactory(): void {
-    this.validate.next();
+
+    this.contentNodeService.slugExists(this.contentNode.code, this.contentNode.slug)
+      .subscribe((exists: any) => {
+        if (exists) {
+          this.translate.get('SLUG ALREADY EXISTS')
+            .subscribe(translation => {
+              this.logger.error(translation);
+            });
+        } else {
+          this.validate.next();
+        }
+      });
   }
 
   initContentNodeModels() {

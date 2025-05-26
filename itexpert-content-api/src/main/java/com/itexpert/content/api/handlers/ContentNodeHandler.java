@@ -83,6 +83,21 @@ public class ContentNodeHandler {
                 ).flatMap(Mono::from);
     }
 
+    public Mono<ContentNodeView> findBySlugAndStatus(String slug,
+                                                     StatusEnum status,
+                                                     String translation) {
+        return
+                this.contentNodeRepository.findBySlugAndStatus(slug, status.name())
+                        .map(contentNode -> contentNode.getCode())
+                        .flatMap(code ->
+                                this.evaluateNodeByCodeContent(code, status)
+                                        .map(node ->
+                                                this.findContentNodeByCode(code, status, translation)
+                                                        .flatMap(this::addDisplay)
+                                                        .map(this.contentNodeMapper::toView)
+                                        )).flatMap(Mono::from);
+    }
+
     private Mono<ContentNode> findContentNodeByCode(String code,
                                                     StatusEnum status,
                                                     String translation) {
@@ -123,6 +138,25 @@ public class ContentNodeHandler {
                                         .flatMap(this::addDisplay)
                                         .map(ContentNode::getFile)
                         ).flatMap(Mono::from);
+    }
+
+    public Mono<ContentFile> findResourceBySlug(String slug, StatusEnum status) {
+        return
+                this.contentNodeRepository.findBySlugAndStatus(slug, status.name())
+                        .map(contentNode -> contentNode.getCode())
+                        .flatMap(code ->
+                                this.evaluateNodeByCodeContent(code, status)
+                                        .map(node ->
+                                                this.contentNodeRepository.findByCodeAndStatus(node.getCode(), status.name())
+                                                        .map(contentNodeMapper::fromEntity)
+                                                        .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)
+                                                                .filter(aBoolean -> aBoolean)
+                                                                .map(aBoolean -> contentNode)
+                                                        )
+                                                        .filter(contentNode -> ObjectUtils.isNotEmpty(contentNode.getFile()))
+                                                        .flatMap(this::addDisplay)
+                                                        .map(ContentNode::getFile)
+                                        )).flatMap(Mono::from);
     }
 }
 

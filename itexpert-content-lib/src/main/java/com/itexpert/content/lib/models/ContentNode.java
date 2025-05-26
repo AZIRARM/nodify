@@ -21,6 +21,8 @@ public class ContentNode implements Serializable, Cloneable {
 
     private String code;
 
+    private String slug;
+
     private String environmentCode;
 
     private String language;
