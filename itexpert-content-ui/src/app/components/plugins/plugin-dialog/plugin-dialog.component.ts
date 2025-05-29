@@ -25,6 +25,7 @@ export class PluginDialogComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     if (!this.plugin ) {
       this.plugin = new Plugin();
+      this.plugin.editable = true;
     }
     if(!this.plugin.code){
       this.plugin.code = "(function () { \n" +
