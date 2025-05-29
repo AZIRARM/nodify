@@ -1,1 +1,12 @@
-<echarts [options]="options" class="echart-container"></echarts>
+<div mat-dialog-title class="dialog-title">
+  <mat-toolbar>
+    <span>{{ "NODES_VIEW" | translate }}</span>
+    <span class="spacer" style="flex: 1 1 auto;"></span>
+
+    <button mat-icon-button aria-label="close dialog" mat-dialog-close class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-toolbar>
+</div>
+
+<echarts [options]="options | async" class="echart-container"></echarts>
