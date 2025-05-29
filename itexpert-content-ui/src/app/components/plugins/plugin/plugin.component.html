@@ -31,7 +31,7 @@
     <ng-container matColumnDef="Status">
       <th mat-header-cell *matHeaderCellDef> {{ "ACTIVE" | translate }}</th>
       <td mat-cell *matCellDef="let element">
-        <button (click)="status(element)" mat-icon-button>
+        <button disabled="{{!userAccessService.canEdit()}}"  (click)="status(element)" mat-icon-button>
           <mat-icon class="{{getPublishedIcon(element)}}">fiber_manual_record</mat-icon>
         </button>
       </td>
@@ -84,7 +84,7 @@
                   matTooltip="{{ 'EXPORT' | translate}}">ios_share
         </mat-icon>
 
-        <mat-icon class="icon-display danger" *ngIf="userAccessService.isAdmin()"  (click)="delete(element)" inline
+        <mat-icon class="icon-display danger" *ngIf="userAccessService.canEdit()"  (click)="delete(element)" inline
                   matTooltip="{{ 'DELETE' | translate}}">delete
         </mat-icon>
       </td>
