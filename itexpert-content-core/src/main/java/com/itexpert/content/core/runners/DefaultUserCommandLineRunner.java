@@ -7,6 +7,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -35,7 +36,6 @@ public class DefaultUserCommandLineRunner implements CommandLineRunner {
         if (ObjectUtils.isNotEmpty(password)) {
 
             UserPost userDB = new UserPost();
-
             userDB.setEmail(ADMIN_USER);
             userDB.setFirstname(ADMIN_USER);
             userDB.setLastname(ADMIN_USER);
@@ -43,11 +43,23 @@ public class DefaultUserCommandLineRunner implements CommandLineRunner {
             userDB.setRoles(List.of("ADMIN"));
 
             this.userHandler.findAll()
-                    .switchIfEmpty(this.userHandler.save(userDB))
-                    .onErrorResume(throwable -> Mono.empty())
-                    .subscribe(result -> log.info("{} Default user saved", result));
+                    .hasElements()
+                    .flatMapMany(hasUsers -> {
+                        if (!hasUsers) {
+                            return this.userHandler.save(userDB)
+                                    .doOnNext(result -> log.info("{} Default user saved", result))
+                                    .onErrorResume(throwable -> {
+                                        log.warn("Error to create default admin user", throwable);
+                                        return Mono.empty();
+                                    });
+                        } else {
+                            log.info("Users already exists.");
+                            return Flux.empty();
+                        }
+                    })
+                    .subscribe();
         }
-
     }
+
 
 }

@@ -44,10 +44,10 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
         List<Node> environments = List.of(
                 createNode("Development", "Development environment", "DEV-01", "development", baseUrlDev),
-                createNode("Integration", "Integration environment", "INT-02", "integration", baseUrl),
-                createNode("Staging", "Staging environment", "INT-03", "staging", baseUrl),
-                createNode("PreProduction", "Pre-Production environment", "PREP-04", "pre-production", baseUrl),
-                createNode("Production", "Production environment", "PROD-05", "production", baseUrl)
+                createNode("Integration", "Integration environment", "INT-01", "integration", baseUrl),
+                createNode("Staging", "Staging environment", "STG-01", "staging", baseUrl),
+                createNode("PreProduction", "Pre-Production environment", "PREP-01", "pre-production", baseUrl),
+                createNode("Production", "Production environment", "PROD-01", "production", baseUrl)
         );
 
         nodeHandler.findAll()
