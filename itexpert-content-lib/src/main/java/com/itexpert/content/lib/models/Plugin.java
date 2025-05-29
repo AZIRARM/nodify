@@ -15,7 +15,7 @@ public class Plugin implements Serializable, Cloneable {
 
     private boolean enabled;
 
-    private boolean isEditable;
+    private boolean editable;
 
     private String description;
 
