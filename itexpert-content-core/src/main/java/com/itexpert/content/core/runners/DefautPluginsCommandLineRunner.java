@@ -29,7 +29,7 @@ public class DefautPluginsCommandLineRunner implements CommandLineRunner {
                 this.importPlugin("plugins/jquery3.7.1.json"),
                 this.importPlugin("plugins/bootstrap5.0.2.json")
         ).collectList().subscribe(list -> {
-            log.info("Loaded plugins: {}", list);
+            log.info("Plugins Imported");
         });
 
     }
@@ -38,11 +38,20 @@ public class DefautPluginsCommandLineRunner implements CommandLineRunner {
         return Mono.fromCallable(() -> {
                     ClassPathResource resource = new ClassPathResource(template);
                     InputStreamReader reader = new InputStreamReader(resource.getInputStream());
-                    Plugin plugin = new Gson().fromJson(reader, Plugin.class);
-                    plugin.setEditable(false);
-                    return plugin;
+                    return new Gson().fromJson(reader, Plugin.class);
                 })
-                .flatMap(pluginHandler::importPlugin);
+                .flatMap(plugin -> {
+                    plugin.setEditable(false);
+                    return pluginHandler.findByName(plugin.getName())
+                            .switchIfEmpty(pluginHandler.importPlugin(plugin))
+                            .doOnNext(existing -> {
+                                if (existing.getId() != null) {
+                                    log.info("Plugin already exists : {}", plugin.getName());
+                                }
+                            });
+                })
+                .doOnError(e -> log.warn("Error importing plugin: {}", e.getMessage()));
     }
+
 
 }
