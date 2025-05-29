@@ -2,10 +2,13 @@ package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.mappers.NodeMapper;
+import com.itexpert.content.core.models.ContentStatsDTO;
+import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
+import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -546,12 +549,65 @@ public class NodeHandler {
                 .map(nodeMapper::fromEntity);
     }
 
-    public Mono<Boolean> slugAlreadyExists(String code, String slug){
+    public Mono<Boolean> slugAlreadyExists(String code, String slug) {
         return this.nodeRepository.findBySlugAndStatusAndCodeNotIn(slug, StatusEnum.SNAPSHOT.name(), List.of(code))
                 .doOnNext(node -> {
                     log.info(node.getCode());
                 })
                 .hasElements();
+    }
+
+    public Mono<TreeNode> generateTreeView(String code) {
+        return findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                .flatMap(node -> this.setContentsNodeWithStatus(node, StatusEnum.SNAPSHOT.name()))
+                .flatMap(this::buildTreeFromNode);
+    }
+
+    private Mono<TreeNode> buildTreeFromNode(Node node) {
+        TreeNode treeNode = new TreeNode();
+        treeNode.setName(node.getName());
+        treeNode.setCode(node.getCode());
+        if(ObjectUtils.isEmpty(node.getParentCode())) {
+                treeNode.setType("NODIFY");
+        }
+
+        List<TreeNode> children = new ArrayList<>();
+
+        if (node.getContents() != null) {
+            for (ContentNode content : node.getContents()) {
+                TreeNode leaf = new TreeNode();
+                leaf.setName(ObjectUtils.isEmpty(content.getDescription()) ? content.getCode() : content.getDescription());
+                leaf.setCode(content.getCode());
+                leaf.setChildren(Collections.emptyList());
+                leaf.setType(content.getType().name());
+                leaf.setLeaf(Boolean.TRUE);
+                children.add(leaf);
+            }
+        }
+
+        return this.findAllByParentCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                .flatMap(parent -> setContentsNodeWithStatus(parent, StatusEnum.SNAPSHOT.name()))
+                .flatMap(this::buildTreeFromNode)
+                .collectList()
+                .map(subTrees -> {
+                    children.addAll(subTrees);
+                    treeNode.setChildren(children);
+                    return treeNode;
+                });
+    }
+
+    private Mono<Node> setContentsNodeWithStatus(Node node, String status) {
+        return contentNodeHandler.findAllByNodeCodeAndStatus(node.getCode(), status)
+                .collectList()
+                .map(contents -> {
+                    node.setContents(contents);
+                    return node;
+                });
+    }
+
+    public Flux<Node> findAllByParentCodeAndStatus(String code, String name) {
+        return this.nodeRepository.findAllByParentCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                .map(this.nodeMapper::fromEntity);
     }
 }
 
