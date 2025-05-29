@@ -3,7 +3,7 @@ import {PluginFile} from "./PluginFile";
 export class Plugin {
   id: string;
   enabled: boolean;
-  isEditable: boolean;
+  editable: boolean;
   description: string;
   name: string;
   code: string;

@@ -90,6 +90,7 @@ export class PluginComponent implements OnInit {
   }
 
   update(plugin: Plugin) {
+    plugin.editable = true;
     this.dialogRefPlugin = this.dialog.open(PluginDialogComponent, {
       data: {
         plugin: plugin,
