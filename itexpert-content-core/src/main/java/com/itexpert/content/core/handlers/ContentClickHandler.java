@@ -65,7 +65,7 @@ public class ContentClickHandler {
         return contentNodeRepository.findAllByStatus(StatusEnum.PUBLISHED.name())
                 .flatMap(
                         content -> {
-                            return ContentClickHandler.this.contentClickRepository.countClicks(content.getCode())
+                            return this.contentClickRepository.countClicks(content.getCode())
                                     .map(contentClick -> {
                                         return new ContentClickCharts(contentClick.getContentCode(), contentClick.getClicks().toString());
                                     });

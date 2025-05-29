@@ -181,9 +181,9 @@
   "DELETE_RULE_MESSAGE": "Souhaitez vous publier cette régle ?",
   "RULE_C0NDITION_ERROR_TITLE": "Erreur de saisie",
   "RULE_C0NDITION_ERROR_MESSAGE": "Erreur dans la saisie d'une ou plusieurs conditions",
-  "DISPLAYS": "Affichages",
+  "DISPLAYED": "Affichages",
   "CHARTS": "Analytics",
-  "CLICKS": "Clics",
+  "CLICKED": "Clics",
   "FEEDBACKS": "Avis",
   "ALL": "Tout",
   "VERIFIED": "Vérifié(s)",
@@ -253,5 +253,9 @@
   "DELETED_PLUGINS": "Plugins supprimés",
   "ACTIVATE_DELETE_PLUGIN_TITLE": "Activation du plugin supprimé",
   "ACTIVATE_DELETE_PLUGIN_MESSAGE": "Voulez vous ré-activer ce plugin ?",
-  "SLUG": "Alias (Partie Url plus lisible)"
+  "SLUG": "Alias (Partie Url plus lisible)",
+  "FEEDBACK_ALL": "Tous les avis",
+  "FEEDBACK_VERIFIED": "Avis vérifiés",
+  "FEEDBACK_NOT_VERIFIED": "Avis non vérifiés",
+  "NODES_VIEW": "Visaulisation des noeuds"
 }
