@@ -2,9 +2,14 @@ import {Component, Inject, OnInit} from '@angular/core';
 import type {EChartsCoreOption} from 'echarts/core';
 import {NodeService} from "../../../services/NodeService";
 import {Node} from "../../../modeles/Node";
-import {MAT_DIALOG_DATA, MatDialog} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {map} from 'rxjs/operators';
 import {Observable} from "rxjs";
+import {ContentCodeComponent} from "../../content-node/content-code/content-code.component";
+import {ContentNode} from "../../../modeles/ContentNode";
+import {ContentNodeService} from "../../../services/ContentNodeService";
+import {StatusEnum} from "../../../modeles/StatusEnum";
+import {User} from "../../../modeles/User";
 
 @Component({
   selector: 'app-nodes-view-dialog',
@@ -16,14 +21,23 @@ export class NodesViewDialogComponent implements OnInit {
 
   options: Observable<EChartsCoreOption>;
 
+  user: User;
+
   constructor(
     private nodeService: NodeService,
+    private contentNodeService: ContentNodeService,
     @Inject(MAT_DIALOG_DATA) private node: Node,
     private dialog: MatDialog) {
   }
 
 
   ngOnInit(): void {
+    this.user = JSON.parse(
+      JSON.parse(
+        JSON.stringify((window.localStorage.getItem('userInfo')))
+      )
+    );
+
     this.options = this.nodeService.getNodeView(this.node.code).pipe(
       map(treeNode => this.buildChartOptions(treeNode))
     );
@@ -79,7 +93,7 @@ export class NodesViewDialogComponent implements OnInit {
 
 
   getIconForType(node: any): string {
-    if (!node.leaf) return 'image://assets/icons/node.svg';
+    if (!node.leaf && node.type && !node.type.includes('NODIFY')) return 'image://assets/icons/node.svg';
     switch (node.type) {
       case 'XML':
         return 'image://assets/icons/xml.svg';
@@ -97,10 +111,53 @@ export class NodesViewDialogComponent implements OnInit {
         return 'image://assets/icons/file.svg';
       case 'URLS':
         return 'image://assets/icons/url.svg';
+      case 'NODIFY':
+        return 'image://assets/icons/nodify_ai.png';
 
       default:
-         return 'image://assets/icons/node.svg'; // Par défaut
+        return 'image://assets/icons/node.svg'; // Par défaut
     }
+  }
+
+
+  chartInstance: any;
+  dialogRefCode: MatDialogRef<ContentCodeComponent>;
+
+  onChartInit(ec: any): void {
+    this.chartInstance = ec;
+    this.chartInstance.on('dblclick', (params: any) => {
+      const type = params.data?.type;
+      const code = params.data?.code;
+
+      if (type && code) {
+        this.contentNodeService.getByCodeAndStatus(code, StatusEnum.SNAPSHOT).subscribe((content: any) => {
+          this.nodeService.getNodeByCodeAndStatus(content.parentCode, StatusEnum.SNAPSHOT).subscribe((node: any) => {
+            this.gotoElement(content, node);
+          });
+        });
+      }
+    });
+  }
+
+  gotoElement(content: ContentNode, node: Node) {
+
+    this.dialogRefCode = this.dialog.open(ContentCodeComponent, {
+      data: {
+        node: node,
+        contentNode: content,
+        type: content.type,
+        user: this.user
+      },
+      height: '100%',
+      width: '90vw',
+      disableClose: true
+    });
+    this.dialogRefCode.afterClosed()
+      .subscribe((data: any) => {
+        if (data.refresh) {
+          //this.init();
+        }
+      });
   }
 
 }
