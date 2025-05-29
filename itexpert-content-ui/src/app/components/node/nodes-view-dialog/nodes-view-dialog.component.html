@@ -9,4 +9,6 @@
   </mat-toolbar>
 </div>
 
-<echarts [options]="options | async" class="echart-container"></echarts>
+<echarts [options]="options | async"
+         class="echart-container"
+         (chartInit)="onChartInit($event)"></echarts>

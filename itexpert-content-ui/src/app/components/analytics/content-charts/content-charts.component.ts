@@ -144,7 +144,7 @@ export class ContentChartsComponent implements OnInit {
   }
 
   private getIconForType(node: any): string {
-    if (!node.leaf && !node.type.includes('FEEDBACK')) return 'image://assets/icons/node.svg';
+    if (!node.leaf && !node.type.includes('FEEDBACK') && !node.type.includes('NODIFY')) return 'image://assets/icons/node.svg';
 
     switch (node.type) {
       case 'XML':
@@ -187,6 +187,8 @@ export class ContentChartsComponent implements OnInit {
         return 'image://assets/icons/4.svg';
       case '5':
         return 'image://assets/icons/5.svg';
+      case 'NODIFY':
+        return 'image://assets/icons/nodify_ai.png';
       default:
         return 'image://assets/icons/node.svg';
     }

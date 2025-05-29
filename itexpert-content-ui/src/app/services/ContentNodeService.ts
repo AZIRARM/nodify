@@ -70,4 +70,8 @@ export class ContentNodeService extends Service {
   slugExists(code: string, slug: string) {
     return super.get("code/" + code + "/slug/" + slug + "/exists");
   }
+
+  getByCodeAndStatus(code: string, status: string) {
+    return super.get("code/" + code + "/status/" + status);
+  }
 }
