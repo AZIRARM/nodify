@@ -1,0 +1,26 @@
+.dialog-title {
+  padding: 0 !important;
+
+  mat-toolbar {
+    padding: 0 16px;
+    background-color: transparent;
+
+    .spacer {
+      flex: 1 1 auto;
+    }
+
+    .close-button {
+      margin-right: -8px;
+    }
+  }
+}
+.echart-container {
+  width: 100%;
+  overflow-x: hidden;     /* Empêche le scroll horizontal */
+  overflow-y: auto;       /* Permet le scroll vertical si nécessaire */
+  max-width: 100vw;       /* Ne dépasse jamais la largeur de l’écran */
+  height: 600px;          /* Ajuste selon ton besoin */
+  box-sizing: border-box;
+  margin: 10px;
+}
+

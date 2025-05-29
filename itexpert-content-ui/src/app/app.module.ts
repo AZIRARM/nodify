@@ -82,7 +82,6 @@ import {
 import {UserNamePipe} from './pipes/user-name.pipe';
 import {MatBadgeModule} from "@angular/material/badge";
 import {FeedbackService} from "./services/FeedbackService";
-import {NgxChartsModule} from "@swimlane/ngx-charts";
 import {ContentClickService} from "./services/ContentClickService";
 import {ContentChartsComponent} from './components/analytics/content-charts/content-charts.component';
 import {ContentDisplayService} from "./services/ContentDisplayService";
@@ -142,6 +141,7 @@ import {BarChart, TreeChart} from "echarts/charts";
 import {GridComponent, TitleComponent, TooltipComponent} from "echarts/components";
 import {CanvasRenderer} from "echarts/renderers";
 import {NodesViewDialogComponent} from "./components/node/nodes-view-dialog/nodes-view-dialog.component";
+import {ChartService} from "./services/ChartService";
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -252,7 +252,6 @@ export function defaultLanguage() {
     MatBadgeModule,
     MatCardModule,
     MatChipsModule,
-    NgxChartsModule,
     CodemirrorModule,
     MatIconModule,
     MatTooltipModule,
@@ -280,6 +279,7 @@ export function defaultLanguage() {
     DataService,
     PluginService,
     PluginFileService,
+    ChartService,
     AuthGuard
   ],
 
