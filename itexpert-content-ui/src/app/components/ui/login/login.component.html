@@ -1,5 +1,3 @@
-
-
 <div class="login-container">
   <mat-card appearance="outlined">
     <img mat-card-image src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'LOGIN' | translate }}"/>
@@ -8,13 +6,17 @@
         <p>
           <mat-form-field appearance="outline">
             <mat-label>{{ "EMAIL" | translate }}</mat-label>
-            <input matInput type="email" [(ngModel)]="userLogin.email" placeholder="{{ 'EMAIL' | translate }}" required>
+            <input matInput type="email" [(ngModel)]="userLogin.email"
+                   placeholder="{{ 'EMAIL' | translate }}" required
+                   (keydown.enter)="login()">
           </mat-form-field>
         </p>
         <p>
           <mat-form-field appearance="outline">
             <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
-            <input matInput type="password" [(ngModel)]="userLogin.password" placeholder="{{ 'USER_PASSWORD' | translate }}" required>
+            <input matInput type="password" [(ngModel)]="userLogin.password"
+                   placeholder="{{ 'USER_PASSWORD' | translate }}" required
+                   (keydown.enter)="login()">
           </mat-form-field>
         </p>
       </div>
