@@ -1,21 +1,17 @@
 package com.itexpert.content.core.models;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class TreeNode {
     private String name;
-    private List<TreeNode> children = new ArrayList<>();
-
-    public TreeNode(String name) {
-        this.name = name;
-    }
-
-    public void addChild(TreeNode child) {
-        this.children.add(child);
-    }
-
+    private String code;
+    private String type;
+    private boolean isLeaf = false;
+    private String value;
+    private List<TreeNode> children;
 }
