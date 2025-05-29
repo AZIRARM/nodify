@@ -567,6 +567,9 @@ public class NodeHandler {
         TreeNode treeNode = new TreeNode();
         treeNode.setName(node.getName());
         treeNode.setCode(node.getCode());
+        if(ObjectUtils.isEmpty(node.getParentCode())) {
+                treeNode.setType("NODIFY");
+        }
 
         List<TreeNode> children = new ArrayList<>();
 
