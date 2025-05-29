@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -59,4 +60,7 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     Mono<?> deleteAllByCode(List<String> strings);
 
     Flux<Node> findBySlugAndStatusAndCodeNotIn(String slug, String status,  List<String> excludedCodes);
+
+    @Query("{ 'parentCode' : ?0, 'status': ?1 }")
+    Flux<Node> findAllByParentCodeAndStatus(String parentCode, String status);
 }

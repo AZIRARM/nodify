@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
+import com.itexpert.content.core.models.ContentStatsDTO;
 import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
@@ -271,5 +272,4 @@ public class NodeEndPoint {
     public Mono<TreeNode> generateTreeView(@PathVariable String code) {
         return nodeHandler.generateTreeView(code);
     }
-
-}
+    }
