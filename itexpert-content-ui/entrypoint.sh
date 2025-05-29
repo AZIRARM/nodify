@@ -6,6 +6,7 @@ mv_folders() {
     mv "/usr/share/nginx/html/i18n" "/usr/share/nginx/html/assets/"
     mv "/usr/share/nginx/html/pictures" "/usr/share/nginx/html/assets/"
     mv "/usr/share/nginx/html/themes" "/usr/share/nginx/html/assets/"
+    mv "/usr/share/nginx/html/icons" "/usr/share/nginx/html/assets/"
 }
 
 # Fonction pour obtenir une configuration depuis une variable d'environnement
