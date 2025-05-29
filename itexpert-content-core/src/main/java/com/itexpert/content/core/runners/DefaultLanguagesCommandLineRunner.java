@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,17 +34,34 @@ public class DefaultLanguagesCommandLineRunner implements CommandLineRunner {
 
     private void start() {
         if (ObjectUtils.isNotEmpty(defaultLanguages)) {
-            List<String> languagesCodes = (List<String>) CollectionUtils.arrayToList(defaultLanguages.trim().split(";"));
-            List<Language> languages = languagesCodes.stream().map(code -> {
-                Language language = new Language();
-                language.setId(UUID.randomUUID());
-                language.setCode(code);
-                return language;
-            }).collect(Collectors.toList());
-            languageHandler.findAll().switchIfEmpty(languageHandler.saveAll(languages))
-                    .subscribe(result -> log.info("{} languages saved", result));
-        }
+            List<String> languageCodes = (List<String>) CollectionUtils.arrayToList(defaultLanguages.trim().split(";"));
+            List<Language> languages = languageCodes.stream()
+                    .map(code -> {
+                        Language language = new Language();
+                        language.setId(UUID.randomUUID());
+                        language.setCode(code);
+                        return language;
+                    })
+                    .collect(Collectors.toList());
 
+            languageHandler.findAll()
+                    .hasElements()
+                    .flatMapMany(hasLanguages -> {
+                        if (!hasLanguages) {
+                            return languageHandler.saveAll(languages)
+                                    .doOnNext(lang -> log.info("Language '{}' saved", lang.getCode()))
+                                    .onErrorResume(e -> {
+                                        log.warn("Error while saving default languages", e);
+                                        return Mono.empty();
+                                    });
+                        } else {
+                            log.info("Default languages already exist, skipping initialization.");
+                            return Flux.empty();
+                        }
+                    })
+                    .subscribe();
+        }
     }
+
 
 }
