@@ -61,6 +61,7 @@ public class ContentNodeHandler {
                                         .map(this.contentNodeMapper::fromModel)
                                         .flatMap(contentNode -> this.contentHelper.fillContents(contentNode, status, translation))
                                         .map(this.contentNodeMapper::fromEntity)
+                                        .flatMap(this::addDisplay)
                                         .map(this.contentNodeMapper::toView).collectList()
                         ).flatMap(Mono::from).flatMapIterable(contentNodeViews -> contentNodeViews);
     }
