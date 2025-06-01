@@ -7,10 +7,10 @@ import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
-import com.itexpert.content.lib.models.Value;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -23,31 +23,30 @@ import java.util.List;
 
 @Slf4j
 @Component
-@AllArgsConstructor
 public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
+
+    @Value("${app.api-url}")
+    private String apiUrl;
 
     private final NodeHandler nodeHandler;
     private final UserHandler userHandler;
+
+    public DefaultEnvironmentCommandLineRunner(NodeHandler nodeHandler, UserHandler userHandler) {
+        this.nodeHandler = nodeHandler;
+        this.userHandler = userHandler;
+    }
 
     public void run(String... args) {
         this.start();
     }
 
     private void start() {
-        Value baseUrl = new Value();
-        baseUrl.setKey("BASE_URL");
-        baseUrl.setValue("/api");
-
-        Value baseUrlDev = new Value();
-        baseUrlDev.setKey("BASE_URL");
-        baseUrlDev.setValue("/v0");
-
         List<Node> environments = List.of(
-                createNode("Development", "Development environment", "DEV-01", "development", baseUrlDev),
-                createNode("Integration", "Integration environment", "INT-01", "integration", baseUrl),
-                createNode("Staging", "Staging environment", "STG-01", "staging", baseUrl),
-                createNode("PreProduction", "Pre-Production environment", "PREP-01", "pre-production", baseUrl),
-                createNode("Production", "Production environment", "PROD-01", "production", baseUrl)
+                createNode("Development", "Development environment", "DEV-01", "development"),
+                createNode("Integration", "Integration environment", "INT-01", "integration"),
+                createNode("Staging", "Staging environment", "STG-01", "staging"),
+                createNode("PreProduction", "Pre-Production environment", "PREP-01", "pre-production"),
+                createNode("Production", "Production environment", "PROD-01", "production")
         );
 
         nodeHandler.findAll()
@@ -85,7 +84,12 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
     }
 
-    private Node createNode(String name, String description, String code, String slug, Value baseUrl) {
+    private Node createNode(String name, String description, String code, String slug) {
+
+        com.itexpert.content.lib.models.Value baseUrl = new com.itexpert.content.lib.models.Value();
+        baseUrl.setValue(apiUrl);
+        baseUrl.setKey("BASE_URL");
+
         Node node = new Node();
         node.setName(name);
         node.setDescription(description);

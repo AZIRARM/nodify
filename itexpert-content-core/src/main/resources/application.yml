@@ -34,6 +34,7 @@ app:
   defaultLanguages: EN;FR;ES
   admin-user: admin
   admin-password: ${ADMIN_PWD}
+  api-url: ${API_URL}
 
 springbootwebfluxjjwt:
   jjwt:
@@ -51,5 +52,3 @@ logging:
     org:
       springframework:
         web:  DEBUG
-ai:
-  base-url: ${OLLAMA_BASE_URL:http://localhost:5000}

@@ -19,7 +19,7 @@ import java.util.Base64;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/v0/contents")
+@RequestMapping(value = "/contents")
 @AllArgsConstructor
 @Tag(name = "Content Node Endpoint", description = "APIs for managing content nodes")
 /**
