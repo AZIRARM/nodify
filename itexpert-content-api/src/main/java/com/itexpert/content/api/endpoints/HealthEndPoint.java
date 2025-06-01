@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/health")
+    @RequestMapping(value = "/health")
 @Tag(name = "Health Endpoint", description = "API for checking service health status")
 public class HealthEndPoint {
 
@@ -19,7 +19,7 @@ public class HealthEndPoint {
      * @return a simple OK response indicating the service is running
      */
     @Operation(summary = "Check service health status")
-    @GetMapping("/")
+    @GetMapping("")
     public String health() {
         return "OK";
     }
