@@ -23,7 +23,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping(value = "/v0/content-clicks")
+@RequestMapping(value = "/content-clicks")
 @Tag(name = "Content Click Endpoint", description = "APIs for managing content clicks")
 public class ContentClickEndPoint {
 

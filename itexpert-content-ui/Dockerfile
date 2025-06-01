@@ -11,10 +11,6 @@ RUN npm run build-prod
 
 FROM nginx:alpine
 
-
-ENV EXPERT_CONTENT_CORE_URL=http://expert_content_core:8080
-ENV EXPERT_CONTENT_API_URL=http://expert_content_api:9080
-
 COPY --from=builder /app/dist/content-ui/* /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/
 COPY entrypoint.sh  /etc/nginx/entrypoint.sh
