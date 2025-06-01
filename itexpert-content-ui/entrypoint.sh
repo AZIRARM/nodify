@@ -2,14 +2,15 @@
 
 mv_folders() {
     mkdir -p "/usr/share/nginx/html/assets"
-    mv "/usr/share/nginx/html/configurations" "/usr/share/nginx/html/assets/"
     mv "/usr/share/nginx/html/i18n" "/usr/share/nginx/html/assets/"
     mv "/usr/share/nginx/html/pictures" "/usr/share/nginx/html/assets/"
     mv "/usr/share/nginx/html/themes" "/usr/share/nginx/html/assets/"
     mv "/usr/share/nginx/html/icons" "/usr/share/nginx/html/assets/"
 }
 
-# Fonction pour obtenir une configuration depuis une variable d'environnement
+mv_folders
+
+# Get environment variables
 get_config() {
     key=$1
     default_value=$2
@@ -19,49 +20,50 @@ get_config() {
         value="$default_value"
     fi
 
-    # Validation optionnelle (non applicable pour `sh`)
     echo "$value"
 }
 
-# Exemple d'utilisation
-api_url_key=$(get_config "EXPERT_CONTENT_API_URL" "")
-core_url_key=$(get_config "EXPERT_CONTENT_CORE_URL" "")
+api_url_key=$(get_config "API_URL" "")
+core_url_key=$(get_config "CORE_URL" "")
 
-echo "EXPERT_CONTENT_CORE_URL : $core_url_key"
-echo "EXPERT_CONTENT_API_URL : $api_url_key"
+echo "CORE_URL : $core_url_key"
+echo "API_URL : $api_url_key"
 
 if [ -z "$api_url_key" ]; then
-    echo "Variable d'environnement EXPERT_CONTENT_API_URL manquante !"
+    echo "Missing environment variable: API_URL!"
     api_url_key="$core_url_key"
 fi
 
 if [ -z "$core_url_key" ]; then
-    echo "Variable d'environnement EXPERT_CONTENT_CORE_URL manquante !"
+    echo "Missing environment variable: CORE_URL!"
     exit 1
 fi
 
-# Variables personnalisables
-#fichier_nginx="/etc/nginx/conf.d/default.conf" # Adaptez au chemin de votre fichier
-fichier_nginx="/etc/nginx/nginx.conf" # Adaptez au chemin de votre fichier
+# Files
+nginx_file="/etc/nginx/nginx.conf"
 
-echo "fichier_nginx : $fichier_nginx"
+echo "nginx_file : $nginx_file"
 
-# Vérification de l'existence du fichier
-if [ ! -f "$fichier_nginx" ]; then
-    echo "Le fichier de configuration Nginx '$fichier_nginx' n'existe pas."
+if [ ! -f "$nginx_file" ]; then
+    echo "Nginx configuration file '$nginx_file' does not exist."
     exit 1
 fi
 
-# Sauvegarde du fichier
-cp -p "$fichier_nginx" "${fichier_nginx}.bak"
+cp -p "$nginx_file" "${nginx_file}.bak"
 
-# Remplacement avec sed
-sed -i 's@EXPERT_CONTENT_CORE_URL@'"${core_url_key}"'@g' "$fichier_nginx"
-sed -i 's@EXPERT_CONTENT_API_URL@'"${api_url_key}"'@g' "$fichier_nginx"
+# Replace placeholders in nginx config
+sed -i 's@CORE_URL@'"${core_url_key}"'@g' "$nginx_file"
 
-mv_folders
+# Replace _API_URL_ in JS files
+echo "Searching for _API_URL_ in JS files..."
+find /usr/share/nginx/html -type f -name "*.js" | while read -r js_file; do
+    if grep -q "_API_URL_" "$js_file"; then
+        echo "Replacing _API_URL_ in $js_file"
+        cp -p "$js_file" "${js_file}.bak"
+        sed -i 's@_API_URL_@'"${api_url_key}"'@g' "$js_file"
+    fi
+done
 
-# Relance de Nginx
-echo "Relance de Nginx"
+# Start Nginx (for Docker)
+echo "Starting Nginx"
 nginx -g "daemon off;"
-echo "Nginx Relancé avec succès"

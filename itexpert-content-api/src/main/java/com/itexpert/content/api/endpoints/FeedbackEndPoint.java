@@ -22,7 +22,7 @@ import java.util.UUID;
  * Provides endpoints to retrieve, create, and delete feedback entries.
  */
 @RestController
-@RequestMapping(value = "/v0/feedbacks")
+@RequestMapping(value = "/feedbacks")
 @AllArgsConstructor
 @Tag(name = "Feedback Endpoint", description = "APIs for managing feedback")
 public class FeedbackEndPoint {
