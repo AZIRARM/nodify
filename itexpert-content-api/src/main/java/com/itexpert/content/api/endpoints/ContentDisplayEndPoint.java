@@ -22,7 +22,7 @@ import java.util.UUID;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/v0/content-displays")
+@RequestMapping(value = "/content-displays")
 @AllArgsConstructor
 @Tag(name = "Content Display Endpoint", description = "APIs for managing content display")
 public class ContentDisplayEndPoint {
