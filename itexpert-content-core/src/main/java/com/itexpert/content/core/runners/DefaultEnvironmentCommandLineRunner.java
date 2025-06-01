@@ -7,7 +7,6 @@ import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +16,12 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
@@ -106,45 +108,50 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
         return node;
     }
 
+    private final AtomicBoolean importInProgress = new AtomicBoolean(false);
+
     private Flux<Node> importTemplate(Node environment, String template) {
+        if (!importInProgress.compareAndSet(false, true)) {
+            log.info("Import déjà en cours, skipping.");
+            return Flux.empty();
+        }
+
+        return realImportTemplate(environment, template)
+                .doFinally(signal -> importInProgress.set(false));
+    }
+
+    private Flux<Node> realImportTemplate(Node environment, String template) {
         return Mono.fromCallable(() -> {
                     ClassPathResource resource = new ClassPathResource(template);
-                    InputStreamReader reader = new InputStreamReader(resource.getInputStream());
-                    Type listType = new TypeToken<List<Node>>() {
-                    }.getType();
-                    return (List<Node>) new Gson().fromJson(reader, listType); // <-- Ajout du cast ici
+                    try (InputStreamReader reader = new InputStreamReader(resource.getInputStream())) {
+                        Type listType = new TypeToken<List<Node>>() {}.getType();
+                        // Désérialisation explicite avec cast
+                        List<Node> nodes = new Gson().fromJson(reader, listType);
+                        return nodes;
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
                 })
-                .flatMapMany(nodes -> nodeHandler.findChildrenByCodeAndStatus("DEV-01", StatusEnum.SNAPSHOT.name())
-                        .map(node -> {
-                            if (ObjectUtils.isEmpty(node.getSlug())) {
-                                node.setSlug(node.getCode());
-                            }
-                            if (ObjectUtils.isNotEmpty(node.getContents())) {
-                                for (ContentNode content : node.getContents()) {
-                                    if (ObjectUtils.isEmpty(content.getSlug())) {
-                                        content.setSlug(content.getCode());
+                .flatMapMany(nodes ->
+                        nodeHandler.findChildrenByCodeAndStatus("DEV-01", StatusEnum.SNAPSHOT.name())
+                                // ... suite du code ...
+                                .collectList()
+                                .flatMapMany(existingNodes -> {
+                                    if (existingNodes.isEmpty()) {
+                                        log.info("No template nodes found, importing...");
+                                        return nodeHandler.importNodes(nodes, "DEV-01", true)
+                                                .doOnNext(node -> log.info("Added node: {}, parent: {}", node.getCode(), node.getParentCode()))
+                                                .collectList()
+                                                .flatMapMany(importedNodes ->
+                                                        userHandler.findByEmail("admin")
+                                                                .flatMap(userPost -> nodeHandler.publish(environment.getId(), userPost.getId()))
+                                                                .thenMany(Flux.fromIterable(importedNodes))
+                                                );
+                                    } else {
+                                        log.info("Template nodes already exist, skipping import.");
+                                        return Flux.empty();
                                     }
-                                }
-                            }
-                            return node;
-                        })
-                        .collectList()
-                        .flatMapMany(existingNodes -> {
-                            if (existingNodes.isEmpty()) {
-                                log.info("No template nodes found, importing...");
-                                return nodeHandler.importNodes(nodes, "DEV-01", true) // nodes est bien une List<Node>
-                                        .doOnNext(node -> log.info("Added node: {}, parent: {}", node.getCode(), node.getParentCode()))
-                                        .collectList()
-                                        .flatMapMany(importedNodes ->
-                                                userHandler.findByEmail("admin")
-                                                        .flatMap(userPost -> nodeHandler.publish(environment.getId(), userPost.getId()))
-                                                        .thenMany(Flux.fromIterable(importedNodes))
-                                        );
-                            } else {
-                                log.info("Template nodes already exist, skipping import.");
-                                return Flux.empty();
-                            }
-                        })
+                                })
                 );
     }
 
