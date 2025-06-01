@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/health")
 public class HealthEndPoint {
-    @GetMapping("/")
+    @GetMapping("")
     public String health() {
         return "OK";
     }
