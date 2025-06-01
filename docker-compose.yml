@@ -14,6 +14,7 @@ services:
     environment:
       MONGO_URL: "mongodb://mongo:27017/nodify"
       ADMIN_PWD: Admin13579++
+      API_URL: "http://localhost:9080"
     expose:
       - "8080"
 
@@ -25,6 +26,8 @@ services:
       MONGO_URL: "mongodb://mongo:27017/nodify"
     expose:
       - "9080"
+    ports:
+      - 9080:9080
 
   nodify-ui:
     image: azirar/nodify-ui:latest
@@ -34,8 +37,8 @@ services:
     ports:
       - 80:80
     environment:
-      EXPERT_CONTENT_CORE_URL: "http://nodify-core:8080"
-      EXPERT_CONTENT_API_URL: "http://nodify-api:9080"
+      CORE_URL: "http://nodify-core:8080"
+      API_URL: "http://localhost:9080"
 
 volumes:
   mongo:

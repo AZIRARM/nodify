@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping(value = "/v0/nodes")
+@RequestMapping(value = "/nodes")
 @Tag(name = "Node Endpoint", description = "APIs for managing nodes")
 /**
  * REST controller for managing nodes.

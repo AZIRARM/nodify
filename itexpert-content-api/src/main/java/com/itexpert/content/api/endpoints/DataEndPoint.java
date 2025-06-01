@@ -16,7 +16,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/v0/datas")
+@RequestMapping("/datas")
 @AllArgsConstructor
 @Tag(name = "Data Controller", description = "API for managing Data objects")
 public class DataEndPoint {
