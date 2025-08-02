@@ -19,12 +19,12 @@ export class AuthenticationService extends Service {
   }
 
   isAuthenticated(): boolean {
-    const jwtStr = localStorage.getItem('nodifyUserToken');
+    const jwtStr = localStorage.getItem('userToken');
     if (!jwtStr) return false;
 
     try {
       const jwt = JSON.parse(jwtStr);
-      const decoded: any = jwtDecode(jwt.accessToken);
+      const decoded: any = jwtDecode(jwt.token);
       const now = Math.floor(Date.now() / 1000);
       return decoded.exp > now;
     } catch (error) {
@@ -33,37 +33,22 @@ export class AuthenticationService extends Service {
   }
 
   getAccessToken(): string {
-    const jwtStr: any = localStorage.getItem('nodifyUserToken');
-    return jwtStr ? JSON.parse(jwtStr).accessToken : '';
+    const jwtStr: any = localStorage.getItem('userToken');
+    return jwtStr ? JSON.parse(jwtStr).token : '';
   }
 
   getConnectedUser(): Observable<any> {
-    return this.refresh().pipe(
-      switchMap(() => {
-        const email: string = this.decodeJwt().sub;
-        return this.userService.getByEmail(email);
-      })
-    );
-  }
-
-  getRefreshToken(): string {
-    const jwtStr = localStorage.getItem('nodifyUserToken');
-    return jwtStr ? JSON.parse(jwtStr).refreshToken : '';
+     const email: string = this.decodeJwt().sub;
+     return this.userService.getByEmail(email);
   }
 
   setTokens(accessToken: string, refreshToken: string): void {
-    localStorage.setItem("userInfo", JSON.stringify({
-      token: accessToken,
-      refreshToken: refreshToken
-    }));
+    localStorage.setItem("userToken", JSON.stringify({
+      token: accessToken
+     }));
   }
-
-  refresh(): Observable<any> {
-    return super.refreshToken(this.getRefreshToken());
-  }
-
   logout(): void {
-    localStorage.removeItem('userInfo');
+    localStorage.removeItem('userToken');
   }
 
   decodeJwt(): any {
