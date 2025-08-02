@@ -99,8 +99,6 @@ export class NodeDialogComponent implements OnInit {
       this.node.code = this.node.name.replace(/[\W_]+/g, "_").toUpperCase() + '-' +
         (this.isProject ? '' : this.node.parentCodeOrigin.split("-")[0] + '-') +
         (new Date()).getTime();
-
-      this.node.slug = this.node.name.replace(/[\W_]+/g, "-").toUpperCase();
     }
   }
 }

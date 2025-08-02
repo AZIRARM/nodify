@@ -5,6 +5,7 @@ import {LoggerService} from "../../../services/LoggerService";
 import {ParametersService} from "../../../services/ParametersService";
 import {User} from "../../../modeles/User";
 import {ThemeService} from "../../../services/ThemeService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-user-parameters',
@@ -20,18 +21,15 @@ export class UserParametersComponent implements OnInit {
     private translate: TranslateService,
     private themeService: ThemeService,
     private parametersService: ParametersService,
+    private userAccessService: UserAccessService,
     private loggerService: LoggerService
   ) {
   }
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+   this.user =  this.userAccessService.getUser();
 
-    this.parametersService.getByUserId(this.user.id).subscribe(
+    this.parametersService.getByUserId(this.user!.id).subscribe(
       (data: any) => {
         if (data) {
           this.parameters = data;

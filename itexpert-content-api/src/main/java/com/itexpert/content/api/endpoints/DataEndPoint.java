@@ -29,12 +29,24 @@ public class DataEndPoint {
      * @param key The key of the Data object.
      * @return A Mono containing the ResponseEntity with the Data object if found, or NOT_FOUND if not found.
      */
-    @Operation(summary = "Find Data by key", description = "Retrieves a Data object based on its unique key.")
-    @GetMapping(value = "/key/{key}")
-    public Mono<ResponseEntity<Data>> findByKey(@Parameter(description = "The key of the Data object") @PathVariable String key) {
-        return dataHandler.findByKey(key)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @Operation(summary = "Find Data by conten code and key", description = "Retrieves a Data object based on its unique key and content code.")
+    @GetMapping(value = "/contents/{code}/key/{key}")
+    public Mono<Data> findByContentCodeAndKey(@Parameter(description = "The code of the the contentNode object") @PathVariable String code,
+                                                              @Parameter(description = "The key of the Data object") @PathVariable String key) {
+        return dataHandler.findByContentNodeCodeAndKey(code, key);
+    }
+
+    /**
+     * Retrieves a Data objects by theirs name.
+     *
+     * @param name The key of the Data object.
+     * @return A Mono containing the ResponseEntity with the Data object if found, or NOT_FOUND if not found.
+     */
+    @Operation(summary = "Find Data by conten code and name", description = "Retrieves a Data object based on its unique name and content code.")
+    @GetMapping(value = "/contents/{code}/name/{name}")
+    public Flux<Data> findByContentCodeAndName(@Parameter(description = "The code of the the contentNode object") @PathVariable String code,
+                                              @Parameter(description = "The name of the Data object") @PathVariable String name) {
+        return dataHandler.findByContentNodeCodeAndName(code, name);
     }
 
     /**

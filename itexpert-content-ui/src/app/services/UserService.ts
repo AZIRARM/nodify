@@ -29,19 +29,32 @@ export class UserService extends Service {
     return super.get("id/" + userId);
   }
 
-  setUserName(content: any) {
-    if(content && !content.userName){
-      try {
-        this.getById(content.userId ? content.userId : content.modifiedBy).subscribe((user: any) => {
-          content.userName = user.firstname + " " + user.lastname;
-        });
-      }catch (error:any){
-        console.error(error);
+  setUserName(content: any): void {
+    if (content && !content.userName) {
+      const userId = content.userId ?? content.modifiedBy;
+
+      if (!userId) {
+        console.warn("No userId provided in the content.");
+        return;
       }
 
+      this.getById(userId).subscribe({
+        next: (user: any) => {
+          if (user?.firstname && user?.lastname) {
+            content.userName = `${user.firstname} ${user.lastname}`;
+          } else {
+            content.userName = 'Unknown User';
+            console.warn(`User data incomplete for ID ${userId}`);
+          }
+        },
+        error: (err: any) => {
+          // Fallback name and log error
+          content.userName = 'Unknown User';
+          //console.error(`Failed to fetch user with ID ${userId}:`, err);
+        }
+      });
     }
   }
-
 
   delete(userId: string) {
     return super.remove("id/" + userId);
