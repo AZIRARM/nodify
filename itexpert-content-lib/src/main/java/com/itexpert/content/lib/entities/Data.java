@@ -23,6 +23,8 @@ public class Data implements Serializable, Cloneable {
 
     private String name;
 
+    private String user;
+
     @Indexed(unique=true)
     private String key;
 

@@ -1,0 +1,14 @@
+{
+  "id": "78625207-c5e7-411e-be90-9046ac216dd6",
+  "enabled": true,
+  "editable": false,
+  "description": "Nodify plugin for content clicks  only html/js content",
+  "name": "clicks",
+  "code": "/**\n * Initializes a silent click tracking on a specific element by ID\n * @param {string} ELEMENT_ID - The ID of the HTML element to track\n * @param {string} CONTENT_CODE - Unique content code, used as path parameter\n * @param {string} API_URL - Base API URL for registering the click\n */\nfunction initClick(ELEMENT_ID, CONTENT_CODE, API_URL) {\n  const element = document.getElementById(ELEMENT_ID);\n  if (!element) {\n    console.warn(`Element with ID \"${ELEMENT_ID}\" not found.`);\n    return;\n  }\n\n  element.addEventListener('click', () => {\n    fetch(`${API_URL}/content-clicks/contentCode/${encodeURIComponent(CONTENT_CODE)}`, {\n      method: 'PATCH',\n      headers: { 'Content-Type': 'application/json' },\n      body: null // No payload required for this PATCH request\n    }).catch(() => {\n      // Fail silently, no user feedback\n    });\n  }, { once: true });\n}\n",
+  "entrypoint": null,
+  "creationDate": 1749231898278,
+  "modificationDate": 1749382641713,
+  "modifiedBy": null,
+  "deleted": false,
+  "resources": []
+}

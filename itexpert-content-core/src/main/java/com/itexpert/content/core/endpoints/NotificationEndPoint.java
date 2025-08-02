@@ -2,6 +2,7 @@ package com.itexpert.content.core.endpoints;
 
 import com.itexpert.content.core.handlers.NotificationHandler;
 import com.itexpert.content.lib.models.Notification;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +14,10 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
+@AllArgsConstructor
 @RequestMapping(value = "/v0/notifications")
 public class NotificationEndPoint {
     private final NotificationHandler notificationHandler;
-
-    public NotificationEndPoint(NotificationHandler notificationHandler) {
-        this.notificationHandler = notificationHandler;
-    }
-
 
     @GetMapping("/")
     public Flux<Notification> findAll() {

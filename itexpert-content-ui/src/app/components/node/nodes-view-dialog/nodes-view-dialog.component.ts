@@ -10,6 +10,7 @@ import {ContentNode} from "../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {StatusEnum} from "../../../modeles/StatusEnum";
 import {User} from "../../../modeles/User";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-nodes-view-dialog',
@@ -26,17 +27,14 @@ export class NodesViewDialogComponent implements OnInit {
   constructor(
     private nodeService: NodeService,
     private contentNodeService: ContentNodeService,
+    private userAccessService: UserAccessService,
     @Inject(MAT_DIALOG_DATA) private node: Node,
     private dialog: MatDialog) {
   }
 
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+   this.user =  this.userAccessService.getUser();
 
     this.options = this.nodeService.getNodeView(this.node.code).pipe(
       map(treeNode => this.buildChartOptions(treeNode))

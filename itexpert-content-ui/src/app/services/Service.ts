@@ -30,5 +30,9 @@ export class Service {
     let body = JSON.stringify(userLogin);
     return this.http.post(Env.EXPERT_CONTENT_AUTHENTICATION_URL + "/login", body);
   }
+  refreshToken(refreshToken: String) {
+    let body = JSON.stringify({refreshToken: refreshToken});
+    return this.http.post(Env.EXPERT_CONTENT_AUTHENTICATION_URL  +"/refresh", body);
+  }
 
 }
