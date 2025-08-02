@@ -1,7 +1,7 @@
 {
   "id": "c993bb6f-833a-4ba0-82cb-2891692fe7a8",
   "enabled": true,
-  "isEditable": false,
+  "editable": false,
   "description": "JQuery3.7.1 plugin",
   "name": "jquery3.7.1",
   "code": "function insertJQuery3_7_1Script(callback) {\n    const script = document.createElement('script');\n    const baseUrl = `${window.location.protocol}//${window.location.host}`;\n    script.src = `${baseUrl}/plugins/name/jquery3.7.1/file/jquery-3.7.1.min.js`;\n\n    script.onload = function () {\n      console.log('✅ jQuery chargé');\n      if (typeof window.startApp === 'function') {\n        window.startApp();\n      } else {\n        console.warn('⚠️ startApp() not defined at load time');\n      }\n    };\n\n    document.head.appendChild(script);\n}\n\ninsertJQuery3_7_1Script(function () {\n  console.log('Version de jQuery :', $.fn.jquery);\n});\n",

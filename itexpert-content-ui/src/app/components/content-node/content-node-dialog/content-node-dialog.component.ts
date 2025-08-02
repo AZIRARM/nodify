@@ -83,11 +83,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+   this.user =  this.userAccessService.getUser();
     this.init();
   }
 
@@ -113,7 +109,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   private initEnvironments() {
     this.nodeService.getAllParentOrigin().subscribe(
       (response: any) => {
-        this.environments = response.filter((env: Node) => this.user.roles.includes("ADMIN") || this.user.projects.includes(env.code));
+        this.environments = response.filter((env: Node) => this.user!.roles.includes("ADMIN") || this.user!.projects.includes(env.code));
       },
       (error) => {
         console.error('Request failed with error');
@@ -163,7 +159,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       .subscribe(result => {
 
         if (result && result.data !== 'canceled') {
-          this.contentNodeService.publish(content.id, true, this.user.id).subscribe(
+          this.contentNodeService.publish(content.id, true, this.user!.id).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -195,7 +191,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefDelete.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.contentNodeService.delete(node.code, this.user.id).subscribe(
+          this.contentNodeService.delete(node.code, this.user!.id).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -242,12 +238,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       this.currentContent.code = this.type.replace(/[\W_]+/g, "_").toUpperCase() + '-'
         + (this.node.parentCode ? this.node.parentCode.split("-")[0] + '-' : this.node.code.split("-")[0] + '-')
         + (new Date()).getTime();
-
-
-      this.currentContent.slug = this.type.replace(/[\W_]+/g, "-").toUpperCase()
-        + (new Date()).getDay() + "-"
-        + (new Date()).getMonth() + "-"
-        + (new Date()).getFullYear();
     }
     this.update(this.currentContent);
   }
@@ -308,11 +298,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   private save(content: ContentNode) {
 
-    if (this.content) {
-      this.content.modifiedBy = this.user.id;
-    }
-
-    content.modifiedBy = this.user.id;
+    content.modifiedBy = this.user!.id;
     content.parentCode = this.node.code;
     content.parentCodeOrigin = this.node.parentCodeOrigin;
 

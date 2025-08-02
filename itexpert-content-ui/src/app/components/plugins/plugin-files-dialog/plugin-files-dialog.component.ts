@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {User} from "../../../modeles/User";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
@@ -17,7 +17,7 @@ import {ContentFile} from "../../../modeles/ContentFile";
   templateUrl: './plugin-files-dialog.component.html',
   styleUrl: './plugin-files-dialog.component.css'
 })
-export class PluginFilesDialogComponent {
+export class PluginFilesDialogComponent implements  OnInit{
   user: User;
 
   plugin: Plugin;
@@ -47,11 +47,7 @@ export class PluginFilesDialogComponent {
   }
 
   ngOnInit() {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+   this.user =  this.userAccessService.getUser();
 
     this.currentPluginFile = new PluginFile();
     this.currentPluginFile.pluginId = this.plugin.id;

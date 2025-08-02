@@ -7,11 +7,11 @@ import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -25,15 +25,17 @@ import java.util.List;
 @Component
 public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
+    private final Environment environment;
     @Value("${app.api-url}")
     private String apiUrl;
 
     private final NodeHandler nodeHandler;
     private final UserHandler userHandler;
 
-    public DefaultEnvironmentCommandLineRunner(NodeHandler nodeHandler, UserHandler userHandler) {
+    public DefaultEnvironmentCommandLineRunner(NodeHandler nodeHandler, UserHandler userHandler, Environment environment) {
         this.nodeHandler = nodeHandler;
         this.userHandler = userHandler;
+        this.environment = environment;
     }
 
     public void run(String... args) {
@@ -51,38 +53,36 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
         nodeHandler.findAll()
                 .collectList()
-                .flatMap(existingNodes -> {
+                .flatMapMany(existingNodes -> {
                     if (existingNodes.isEmpty()) {
                         log.info("No environments found, creating defaults...");
                         return nodeHandler.saveAll(environments)
                                 .doOnNext(node -> log.info("Node saved, code: {}", node.getCode()))
-                                .then(Mono.just(environments));
+                                .flatMap(environment ->
+                                        userHandler.findByEmail("admin")
+                                                .flatMap(userPost -> nodeHandler.publish(environment.getId(), userPost.getId()))
+                                                .doOnNext(published -> log.info("Published environment: {}", environment.getCode()))
+                                                .thenReturn(environment)
+                                );
                     } else {
                         log.info("Environments already exist, skipping creation.");
-                        return Mono.empty();
+                        return Flux.empty();
                     }
                 })
-                .flatMapMany(nodes -> Flux.fromIterable(nodes)
-                        .flatMap(node -> userHandler.findByEmail("admin")
-                                .flatMap(userPost -> nodeHandler.publish(node.getId(), userPost.getId()))
-                                .doOnNext(savedNode -> log.info("Published node: {}", savedNode.getCode()))
-                        )
-                )
-                .filter(node -> node.getCode().equals("DEV-01"))
-                .flatMap(node ->
-                        Flux.merge(
-                                this.importTemplate(node, "templates/Nodify-Blog.json"),
-                                this.importTemplate(node, "templates/Nodify-Landingpage.json")
-                        )
+                .filter(environment -> environment.getCode().equals("DEV-01"))
+                .flatMap(node -> Flux.fromIterable(List.of(
+                                        "templates/Nodify-Blog.json",
+                                        "templates/Nodify-Landingpage.json"
+                                ))
+                                .flatMap(template -> this.importTemplate(node, template))
                 )
                 .subscribe(
                         importedNode -> log.info("Imported node: {}", importedNode.getCode()),
                         error -> log.error("Error initializing environments", error),
-                        () -> log.info("Defaults environments initialized successfully")
+                        () -> log.info("Default environments initialized successfully")
                 );
-
-
     }
+
 
     private Node createNode(String name, String description, String code, String slug) {
 

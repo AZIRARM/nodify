@@ -1,7 +1,7 @@
 {
   "id": "616364d5-9ff7-4447-84ef-c3fa579bf56d",
   "enabled": true,
-  "isEditable": false,
+  "editable": false,
   "description": "Bootstrap 5.0.2 plugin",
   "name": "bootstrap5.0.2",
   "code": "function insertBootstap5_0_2CSS() {\n  \n  var baseUrl = `${window.location.protocol}//${window.location.host}`;\n  var url = baseUrl+'/plugins/name/bootstrap5.0.2/file/bootstrap.min.css';\n  \n  var lien = document.createElement('link');\n  lien.rel = 'stylesheet';\n  lien.type = 'text/css';\n  lien.media = 'all'\n  lien.href = url;\n  document.head.appendChild(lien);\n}\n\nfunction insertBootstrap5_0_2ScriptDefer() {\n  var baseUrl = `${window.location.protocol}//${window.location.host}`;\n  var url = baseUrl+'/plugins/name/bootstrap5.0.2/file/bootstrap.bundle.min.js';\n  \n  var script = document.createElement('script');\n  script.src = url;\n  script.defer = true;\n  document.head.appendChild(script);\n}\n\ninsertBootstap5_0_2CSS();\ninsertBootstrap5_0_2ScriptDefer();",

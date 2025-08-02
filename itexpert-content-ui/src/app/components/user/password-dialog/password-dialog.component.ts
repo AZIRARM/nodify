@@ -4,6 +4,7 @@ import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
 import {User} from "../../../modeles/User";
 import {UserService} from "../../../services/UserService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-password-dialog',
@@ -15,15 +16,17 @@ export class PasswordDialogComponent implements OnInit {
   password: String;
   newPassword: String;
   confirmNewPassword: string;
-  userId: String;
+
+
+  user: User;
 
   constructor(
     public dialogRef: MatDialogRef<PasswordDialogComponent>,
     private translate: TranslateService,
     private loggerService: LoggerService,
+    private userAccessService: UserAccessService,
     private userService: UserService
   ) {
-
   }
 
 
@@ -33,26 +36,25 @@ export class PasswordDialogComponent implements OnInit {
 
   validate() {
 
-    if(this.password && this.newPassword && this.userId && (this.newPassword === this.confirmNewPassword) ) {
+    if(this.password && this.newPassword && this.user?.id && (this.newPassword === this.confirmNewPassword) ) {
 
       this.userService.changePassword({
         'password': this.password,
         'newPassword': this.newPassword,
-        'userId': this.userId,
+        'userId': this.user?.id,
       }).subscribe(
         (data: any) => {
           if (data) {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.dialogRef.close();
-              window.localStorage.removeItem("userToken");
-              window.localStorage.removeItem("userInfo");
+              window.localStorage.removeItem("nodifyUserToken");
             })
           }
         },
         error => {
           this.translate.get("SAVE_ERROR").subscribe(trad => {
-            this.loggerService.success(trad);
+            this.loggerService.error(trad);
           })
         }
       );
@@ -63,13 +65,8 @@ export class PasswordDialogComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    let user: User = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
-    this.userId = user.id;
+  ngOnInit() {
+    this.user =  this.userAccessService.getUser();
   }
 
 
