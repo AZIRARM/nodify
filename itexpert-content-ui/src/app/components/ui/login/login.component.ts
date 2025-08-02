@@ -22,7 +22,7 @@ export class LoginComponent {
         .subscribe(
           (response) => {
             console.log('Réponse du login :', response);
-            window.localStorage.setItem("nodifyUserToken", JSON.stringify(response));
+            window.localStorage.setItem("userToken", JSON.stringify(response));
             this.router.navigateByUrl('/nodes');
           },
         );
