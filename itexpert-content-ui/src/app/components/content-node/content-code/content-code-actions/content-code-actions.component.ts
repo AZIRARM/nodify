@@ -47,6 +47,7 @@ export class ContentCodeActionsComponent implements AfterViewInit {
           this.validate.next();
         }
       });
+
   }
 
   initContentNodeModels() {

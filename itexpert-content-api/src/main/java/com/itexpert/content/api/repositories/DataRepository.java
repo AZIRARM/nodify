@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -16,4 +17,8 @@ public interface DataRepository extends ReactiveMongoRepository<Data, UUID> {
     Mono<Data> findByKey(String key);
 
     Mono<Boolean> deleteAllByContentNodeCode(String contentNodeCode);
+
+    Mono<Data>  findByContentNodeCodeAndKey(String code, String key);
+
+    Flux<Data>  findByContentNodeCodeAndName(String code, String name);
 }

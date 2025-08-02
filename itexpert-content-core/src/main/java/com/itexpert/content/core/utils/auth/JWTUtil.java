@@ -70,4 +70,32 @@ public class JWTUtil implements InitializingBean {
     public Boolean validateToken(String token) {
         return !isTokenExpired(token);
     }
+
+    @Value("${springbootwebfluxjjwt.jjwt.expiration}")
+    private String refreshExpirationTime; // durée en secondes, ex: 604800 (7 jours)
+
+    public String generateRefreshToken(UserPost user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRoles());
+        claims.put("project", user.getProjects());
+        // Optionnel : tu peux ajouter un flag ou un claim spécial pour distinguer refresh token
+        claims.put("type", "refresh");
+
+        return doGenerateRefreshToken(claims, user.getEmail());
+    }
+
+    private String doGenerateRefreshToken(Map<String, Object> claims, String username) {
+        Long expirationTimeLong = Long.parseLong(refreshExpirationTime); // en secondes
+        final Date createdDate = new Date();
+        final Date expirationDate = new Date(createdDate.getTime() + expirationTimeLong * 1000);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(createdDate)
+                .setExpiration(expirationDate)
+                .signWith(key)
+                .compact();
+    }
+
 }

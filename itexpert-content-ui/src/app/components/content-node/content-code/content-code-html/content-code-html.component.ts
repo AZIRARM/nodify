@@ -38,17 +38,19 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
   }
 
   toHtml(content: string) {
-    this.contentService.fillAllValuesByContentCodeStatusAndContent(
-      {
-        code: this.contentNode.code,
-        status: StatusEnum.SNAPSHOT,
-        content: content
-      }).subscribe(
-      (response: any) => {
-        this.contentFilled = response.content;
-      },
-      (error) => {                              //error() callback
-        console.error('Request failed with error');
-      });
+    if (content) {
+      this.contentService.fillAllValuesByContentCodeStatusAndContent(
+        {
+          code: this.contentNode.code,
+          status: StatusEnum.SNAPSHOT,
+          content: content
+        }).subscribe(
+        (response: any) => {
+          this.contentFilled = response.content;
+        },
+        (error) => {                              //error() callback
+          console.error('Request failed with error');
+        });
+    }
   }
 }

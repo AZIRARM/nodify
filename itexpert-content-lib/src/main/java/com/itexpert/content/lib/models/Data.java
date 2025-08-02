@@ -18,6 +18,8 @@ public class Data implements Serializable, Cloneable {
 
     private String name;
 
+    private String user;
+
     private String key;
 
     private String value;

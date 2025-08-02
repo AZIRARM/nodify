@@ -40,7 +40,7 @@ export class NodesComponent implements OnInit {
 
   parentNode: Node;
 
-  user: User;
+  user: any;
 
   environments: Node[];
 
@@ -68,11 +68,7 @@ export class NodesComponent implements OnInit {
 
 
   ngOnInit() {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+    this.user =  this.userAccessService.getUser();
 
     this.init();
   }
@@ -94,8 +90,9 @@ export class NodesComponent implements OnInit {
       this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
           console.log('response received : ' + response);
-          if (!this.user.roles.includes("ADMIN"))
-            response = response.filter((node: Node) => this.user.projects.includes(node.code));
+          if (!this.userAccessService.isAdmin()) {
+            response = response.filter((node: Node) => this.user!.projects.includes(node.code));
+          }
           response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
@@ -127,7 +124,7 @@ export class NodesComponent implements OnInit {
 
 
   save(node: Node) {
-    node.modifiedBy = this.userAccessService.getUser().id;
+    node.modifiedBy = this.user.id;
     this.nodeService.save(node).subscribe(
       response => {
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
@@ -180,7 +177,7 @@ export class NodesComponent implements OnInit {
         if (result && result.data !== 'canceled') {
           let isSnapshot: boolean = true;
 
-          this.nodeService.publish(node.id, this.userAccessService.getUser().id).subscribe(
+          this.nodeService.publish(node.id, this.user.id).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -212,7 +209,7 @@ export class NodesComponent implements OnInit {
     this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.nodeService.delete(node.code, this.userAccessService.getUser().id).subscribe(
+          this.nodeService.delete(node.code, this.user.id).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -386,8 +383,8 @@ export class NodesComponent implements OnInit {
     this.nodeService.getAllParentOrigin().subscribe(
       (response: any) => {
         this.environments = response.filter(
-          (env: Node) => this.user.roles.includes("ADMIN")
-            || this.user.projects.includes(env.code));
+          (env: Node) => this.user!.roles.includes("ADMIN")
+            || this.user!.projects.includes(env.code));
       },
       (error) => {
         console.error('Request failed with error');
@@ -502,12 +499,12 @@ export class NodesComponent implements OnInit {
     return this.environments.filter((env: Node) => env.code !== this.parentNode.code);
   }
 
-  favorite(element:Node) {
+  favorite(element: Node) {
     element.favorite = !element.favorite;
     this.save(element);
   }
 
-  viewTreeNode(element:Node) {
+  viewTreeNode(element: Node) {
     this.dialogRefTreeNode = this.dialog.open(NodesViewDialogComponent, {
         height: '80vh',
         width: '80vw',

@@ -7,6 +7,7 @@ import {TranslateService} from "@ngx-translate/core";
 import {NodeService} from "../../../services/NodeService";
 import {LoggerService} from "../../../services/LoggerService";
 import {UserService} from "../../../services/UserService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-deleted-nodes-dialog',
@@ -27,18 +28,15 @@ export class DeletedNodesDialogComponent implements OnInit {
     private translate: TranslateService,
     private nodeService: NodeService,
     private userService: UserService,
+    private userAccessService: UserAccessService,
     private loggerService: LoggerService,
     @Inject(MAT_DIALOG_DATA) private parentNode: Node,
     private dialog: MatDialog
   ) {
   }
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+   this.user =  this.userAccessService.getUser();
     this.init();
   }
 
@@ -71,7 +69,7 @@ export class DeletedNodesDialogComponent implements OnInit {
     this.dialogValidationRef.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.nodeService.activate(element.code, this.user.id).subscribe(() => {
+          this.nodeService.activate(element.code, this.user!.id).subscribe(() => {
             this.translate.get("ACTIVATION_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
