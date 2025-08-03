@@ -66,7 +66,9 @@ export class PasswordDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.user =  this.userAccessService.getUser();
+    this.userAccessService.user$.subscribe((user: User) => {
+  this.user = user;
+});
   }
 
 

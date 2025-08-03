@@ -20,7 +20,9 @@ export class UserInfosComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.user =  this.userAccessService.getUser();
+   this.userAccessService.user$.subscribe((user: User) => {
+  this.user = user;
+});
   }
 
   changePassword() {

@@ -115,7 +115,9 @@ export class HeaderComponent {
 
       this.lastNotificationUpdate = (new Date()).getTime();
 
-      this.user =  this.userAccessService.getUser();
+      this.userAccessService.user$.subscribe((user: any) => {
+        this.user = user;
+      });
 
       if (this.user && this.user!.id) {
         this.notificationService.countUnreadedNotification(this.user!.id).subscribe(
