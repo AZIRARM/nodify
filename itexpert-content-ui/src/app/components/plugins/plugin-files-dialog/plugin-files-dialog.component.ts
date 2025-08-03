@@ -47,7 +47,9 @@ export class PluginFilesDialogComponent implements  OnInit{
   }
 
   ngOnInit() {
-   this.user =  this.userAccessService.getUser();
+   this.userAccessService.user$.subscribe((user: User) => {
+  this.user = user;
+});
 
     this.currentPluginFile = new PluginFile();
     this.currentPluginFile.pluginId = this.plugin.id;

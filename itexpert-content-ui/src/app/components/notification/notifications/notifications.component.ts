@@ -43,7 +43,9 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-   this.user =  this.userAccessService.getUser();
+   this.userAccessService.user$.subscribe((user: any) => {
+      this.user = user;
+    });
     this.init();
   }
 

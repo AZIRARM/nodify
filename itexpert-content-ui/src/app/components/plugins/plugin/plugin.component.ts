@@ -40,7 +40,9 @@ export class PluginComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.user =  this.userAccessService.getUser();
+   this.userAccessService.user$.subscribe((user: User) => {
+  this.user = user;
+});
     this.init();
   }
 
