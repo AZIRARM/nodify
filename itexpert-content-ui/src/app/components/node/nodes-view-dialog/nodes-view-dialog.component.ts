@@ -34,7 +34,9 @@ export class NodesViewDialogComponent implements OnInit {
 
 
   ngOnInit() {
-   this.user =  this.userAccessService.getUser();
+   this.userAccessService.user$.subscribe((user: User) => {
+  this.user = user;
+});
 
     this.options = this.nodeService.getNodeView(this.node.code).pipe(
       map(treeNode => this.buildChartOptions(treeNode))

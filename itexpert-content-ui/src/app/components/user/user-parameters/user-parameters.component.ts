@@ -27,7 +27,9 @@ export class UserParametersComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.user =  this.userAccessService.getUser();
+   this.userAccessService.user$.subscribe((user: User) => {
+  this.user = user;
+});
 
     this.parametersService.getByUserId(this.user!.id).subscribe(
       (data: any) => {
