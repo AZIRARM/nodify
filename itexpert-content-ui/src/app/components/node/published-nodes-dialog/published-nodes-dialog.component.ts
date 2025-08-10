@@ -40,12 +40,10 @@ export class PublishedNodesDialogComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+   this.userAccessService.user$.subscribe((user: any) => {
+      this.user = user;
+    });
     this.init();
   }
 
@@ -108,7 +106,7 @@ export class PublishedNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.nodeService.deployVersion(element.code, element.version, this.user.id).subscribe(() => {
+          this.nodeService.deployVersion(element.code, element.version, this.user!.id).subscribe(() => {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
@@ -135,7 +133,7 @@ export class PublishedNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.nodeService.revertToVersion(element.code, element.version, this.user.id).subscribe(() => {
+          this.nodeService.revertToVersion(element.code, element.version, this.user!.id).subscribe(() => {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();

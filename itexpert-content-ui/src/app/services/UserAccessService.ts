@@ -1,27 +1,34 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
+import { UserService } from './UserService';
+import { AuthenticationService } from './AuthenticationService';
+import { User } from '../modeles/User';
+import { Observable, switchMap } from 'rxjs';
+import { UserStoreService } from '../stores/UserStoreService';
+import { tap } from 'rxjs/operators';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class UserAccessService {
-  user: any;
+  private user: any = null;
 
-  getUser() {
-    if (!this.user) {
-      this.user = JSON.parse(
-        JSON.parse(
-          JSON.stringify((window.localStorage.getItem('userInfo')))
-        )
-      );
-    }
-    return this.user;
+  constructor(private userStore: UserStoreService) {
+    this.userStore.loadUser().pipe(
+      tap(user => this.user = user)
+    ).subscribe();
   }
 
-  canEdit() {
-    let can: boolean = this.user && this.user.roles
-      && (this.user.roles.includes('ADMIN') || this.user.roles.includes('EDITOR'));
-    return can;
+  get user$(): Observable<any> {
+    return this.userStore.user$;
   }
 
-  isAdmin() {
-    return this.user && this.user.roles && this.user.roles.includes('ADMIN');
+  canEdit(): boolean {
+    return !!this.user &&
+      !!this.user.roles &&
+      (this.user.roles.includes('ADMIN') || this.user.roles.includes('EDITOR'));
+  }
+
+  isAdmin(): boolean {
+    return !!this.user &&
+      !!this.user.roles &&
+      this.user.roles.includes('ADMIN');
   }
 }

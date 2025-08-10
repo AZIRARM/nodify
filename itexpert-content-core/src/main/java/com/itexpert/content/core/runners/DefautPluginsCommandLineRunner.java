@@ -27,7 +27,10 @@ public class DefautPluginsCommandLineRunner implements CommandLineRunner {
     private void start() {
         Flux.merge(
                 this.importPlugin("plugins/jquery3.7.1.json"),
-                this.importPlugin("plugins/bootstrap5.0.2.json")
+                this.importPlugin("plugins/bootstrap5.0.2.json"),
+                this.importPlugin("plugins/feedbacks.json"),
+                this.importPlugin("plugins/clicks.json"),
+                this.importPlugin("plugins/comments.json")
         ).collectList().subscribe(list -> {
             log.info("Plugins Imported");
         });

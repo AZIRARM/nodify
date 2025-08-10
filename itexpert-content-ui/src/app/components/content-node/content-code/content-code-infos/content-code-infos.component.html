@@ -1,5 +1,22 @@
 <div fxLayout="row" class="infos-container">
   <input type="text" class="input-field" matInput [(ngModel)]="contentNode.code" disabled placeholder="{{ 'CODE' | translate }}">
-  <input type="text" class="input-field" matInput [(ngModel)]="contentNode.slug" placeholder="{{ 'SLUG' | translate }}">
+  
+  <input
+    type="text"
+    class="input-field"
+    matInput
+    [(ngModel)]="contentNode.slug"
+    (ngModelChange)="onSlugChange($event)"
+    placeholder="{{ 'SLUG' | translate }}"
+  >
   <input type="text" class="input-field" matInput [(ngModel)]="contentNode.description" placeholder="{{ 'DESCRIPTION' | translate }}">
+</div>
+<div>
+  
+  <ng-container *ngIf="slugAvailable === true">
+    ✅ {{'SLUG_AVAILABLE' | translate}}
+  </ng-container>
+  <ng-container *ngIf="slugAvailable === false">
+    ❌ {{'SLUG_ALREADY_USED' | translate}}
+  </ng-container>
 </div>

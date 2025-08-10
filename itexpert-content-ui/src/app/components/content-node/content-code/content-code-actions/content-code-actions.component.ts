@@ -4,6 +4,7 @@ import {ContentNode} from "../../../../modeles/ContentNode";
 import {StatusEnum} from "../../../../modeles/StatusEnum";
 import {LoggerService} from "../../../../services/LoggerService";
 import {ContentNodeService} from "../../../../services/ContentNodeService";
+import { SlugService } from 'src/app/services/SlugService';
 
 @Component({
   selector: 'app-content-code-actions',
@@ -20,7 +21,8 @@ export class ContentCodeActionsComponent implements AfterViewInit {
   constructor(
     private translate: TranslateService,
     private logger: LoggerService,
-    private contentNodeService: ContentNodeService) {
+    private contentNodeService: ContentNodeService,
+    private slugService: SlugService) {
   }
 
   ngAfterViewInit(): void {
@@ -35,18 +37,27 @@ export class ContentCodeActionsComponent implements AfterViewInit {
   }
 
   validateFactory(): void {
+    this.slugService.exists(this.contentNode.slug)
+    .subscribe((exists: any)=>{
+      if(exists) {
+        this.contentNodeService.slugExists(this.contentNode.code, this.contentNode.slug)
+          .subscribe((existsForContent: any) => {
+            if (existsForContent === false) {
+              this.translate.get('SLUG_ALREADY_USED')
+                .subscribe(translation => {
+                  this.logger.error(translation);
+                });
+            } else {
+              this.validate.next();
+            }
+         });
+      } else {
+        this.validate.next();
+      }
 
-    this.contentNodeService.slugExists(this.contentNode.code, this.contentNode.slug)
-      .subscribe((exists: any) => {
-        if (exists) {
-          this.translate.get('SLUG ALREADY EXISTS')
-            .subscribe(translation => {
-              this.logger.error(translation);
-            });
-        } else {
-          this.validate.next();
-        }
-      });
+    });
+
+     
   }
 
   initContentNodeModels() {

@@ -40,12 +40,7 @@ export class ContentCodeComponent {
   }
 
   validate() {
-
-    if (this.contentNode) {
-      this.contentNode.modifiedBy = this.user.id;
-    }
-
-    this.contentNode.modifiedBy = this.user.id;
+    this.contentNode.modifiedBy = this.user!.id;
     this.contentNode.parentCode = this.node.code;
     this.contentNode.parentCodeOrigin = this.node.parentCodeOrigin;
 

@@ -30,8 +30,23 @@
   <p>
     <mat-form-field appearance="outline">
       <mat-label>{{ "SLUG" | translate }}</mat-label>
-      <input matInput [(ngModel)]="node.slug" placeholder="{{ 'SLUG' | translate }}" required>
+      <input
+        matInput
+        [(ngModel)]="currentSlug"
+        (ngModelChange)="onSlugChange($event)"
+        placeholder="{{ 'SLUG' | translate }}"
+        required
+      >
     </mat-form-field>
+  </p>
+  <p>
+
+      <ng-container *ngIf="slugAvailable === true">
+        ✅ {{'SLUG_AVAILABLE' | translate}}
+      </ng-container>
+      <ng-container *ngIf="slugAvailable === false">
+        ❌ {{'SLUG_ALREADY_USED' | translate}}
+      </ng-container>
   </p>
   <p>
     <mat-form-field appearance="outline">
@@ -69,5 +84,6 @@
   <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
   <button mat-button [disabled]="!node.defaultLanguage
                                 || !node.code
+                                || !slugAvailable
                                 || !node.name || node.name.trim().length<4" (click)="validate()">{{ "SAVE" | translate }}</button>
 </div>

@@ -8,6 +8,7 @@ import {LanguageDialogComponent} from "../language-dialog/language-dialog.compon
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {LoggerService} from "../../../services/LoggerService";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-languages',
@@ -27,17 +28,16 @@ export class LanguagesComponent implements OnInit {
   constructor(private translate: TranslateService,
               private toast: ToastrService,
               private languageService: LanguageService,
+              public userAccessService: UserAccessService,
               private loggerService: LoggerService,
               private dialog: MatDialog) {
   }
 
 
   ngOnInit() {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+    this.userAccessService.user$.subscribe((user: any) => {
+      this.user = user;
+    });
     this.init();
   }
 

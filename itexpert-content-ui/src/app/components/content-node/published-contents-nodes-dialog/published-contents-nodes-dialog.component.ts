@@ -9,6 +9,7 @@ import {ContentNode} from "../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {UserService} from "../../../services/UserService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-published-contents-nodes-dialog',
@@ -33,6 +34,7 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
     private translate: TranslateService,
     private contentNodeService: ContentNodeService,
     private userService: UserService,
+    private userAccessService: UserAccessService,
     private loggerService: LoggerService,
     private dialog: MatDialog
   ) {
@@ -41,12 +43,10 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+   this.userAccessService.user$.subscribe((user: any) => {
+      this.user = user;
+    });
     this.init();
   }
 
@@ -108,7 +108,7 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.contentNodeService.deployVersion(element.code, element.version, this.user.id).subscribe(() => {
+          this.contentNodeService.deployVersion(element.code, element.version, this.user!.id).subscribe(() => {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
@@ -135,7 +135,7 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.contentNodeService.revertToVersion(element.code, element.version, this.user.id).subscribe(() => {
+          this.contentNodeService.revertToVersion(element.code, element.version, this.user!.id).subscribe(() => {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
