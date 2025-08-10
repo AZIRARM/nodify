@@ -250,5 +250,8 @@
   "FEEDBACK_ALL": "Todas as Avaliações",
   "FEEDBACK_VERIFIED": "Avaliações Verificadas",
   "FEEDBACK_NOT_VERIFIED": "Avaliações Não Verificadas",
-  "NODES_VIEW": "Visualização de Nós"
+  "NODES_VIEW": "Visualização de Nós",
+
+  "SLUG_ALREADY_USED": "Este alias não está disponível",
+  "SLUG_AVAILABLE": "Este alias está disponível"
 }
