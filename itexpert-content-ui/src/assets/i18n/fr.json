@@ -257,5 +257,8 @@
   "FEEDBACK_ALL": "Tous les avis",
   "FEEDBACK_VERIFIED": "Avis vérifiés",
   "FEEDBACK_NOT_VERIFIED": "Avis non vérifiés",
-  "NODES_VIEW": "Visaulisation des noeuds"
+  "NODES_VIEW": "Visaulisation des noeuds",
+
+  "SLUG_ALREADY_USED": "Cet alias n'est pas disponible",
+  "SLUG_AVAILABLE": "Cet alias est disponible"
 }

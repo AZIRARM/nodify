@@ -142,6 +142,7 @@ import {GridComponent, TitleComponent, TooltipComponent} from "echarts/component
 import {CanvasRenderer} from "echarts/renderers";
 import {NodesViewDialogComponent} from "./components/node/nodes-view-dialog/nodes-view-dialog.component";
 import {ChartService} from "./services/ChartService";
+import { SlugService } from './services/SlugService';
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -280,6 +281,7 @@ export function defaultLanguage() {
     PluginService,
     PluginFileService,
     ChartService,
+    SlugService,
     AuthGuard
   ],
 

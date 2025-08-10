@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
@@ -8,13 +8,14 @@ import {ContentNode} from "../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {UserService} from "../../../services/UserService";
 import {Node} from "../../../modeles/Node";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-deleted-contents-nodes-dialog',
   templateUrl: './deleted-contents-nodes-dialog.component.html',
   styleUrls: ['./deleted-contents-nodes-dialog.component.css']
 })
-export class DeletedContentsNodesDialogComponent {
+export class DeletedContentsNodesDialogComponent implements OnInit{
   user: any;
 
   displayedColumns: string[] = ['Name', 'Version', 'Last Modification', 'Modified by', 'Actions'];
@@ -27,19 +28,18 @@ export class DeletedContentsNodesDialogComponent {
     private translate: TranslateService,
     private contentNodeService: ContentNodeService,
     private userService: UserService,
+    private userAccessService: UserAccessService,
     private loggerService: LoggerService,
     private dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) private parentNode: Node
   ) {
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
 
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+   this.userAccessService.user$.subscribe((user: any) => {
+      this.user = user;
+    });
     this.init();
   }
 
@@ -72,7 +72,7 @@ export class DeletedContentsNodesDialogComponent {
     this.dialogValidationRef.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.contentNodeService.activate(element.code, this.user.id).subscribe(() => {
+          this.contentNodeService.activate(element.code, this.user!.id).subscribe(() => {
             this.translate.get("ACTIVATION_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();

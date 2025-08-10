@@ -1,21 +1,23 @@
 <p>
   <mat-toolbar>
-    <span> {{ "USER_INFOS" | translate}}</span>
+    <span> {{ "USER_INFOS" | translate }}</span>
   </mat-toolbar>
 </p>
-<div>
-<p>
-  {{ "USER_FIRSTNAME" | translate }} : {{user.firstname}}
-</p>
-<p>
-  {{ "USER_LASTNAME" | translate }} : {{user.lastname}}
-</p>
-<p>
-  {{ "USER_EMAIL" | translate }} : {{user.email}}
-</p>
+@if (user) {
+  <div>
+    <p>
+      {{ "USER_FIRSTNAME" | translate }} : {{ user!.firstname }}
+    </p>
+    <p>
+      {{ "USER_LASTNAME" | translate }} : {{ user!.lastname }}
+    </p>
+    <p>
+      {{ "USER_EMAIL" | translate }} : {{ user!.email }}
+    </p>
 
-<p>
-  {{ "ROLES" | translate }} : {{user.roles}}
-</p>
-  <button mat-button (click)="changePassword()">{{ "CHANGE_PASSWORD" | translate }}</button>
-</div>
+    <p>
+      {{ "ROLES" | translate }} : {{ user!.roles }}
+    </p>
+    <button mat-button (click)="changePassword()">{{ "CHANGE_PASSWORD" | translate }}</button>
+  </div>
+}
