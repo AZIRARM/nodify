@@ -29,8 +29,12 @@ public class DataHandler {
         );
     }
 
-    public Mono<Data> findByKey(String key) {
-        return dataRepository.findByKey(key).map(dataMapper::fromEntity);
+    public Mono<Data> findByContentNodeCodeAndKey(String contentCode, String key) {
+        return dataRepository.findByContentNodeCodeAndKey(contentCode, key).map(dataMapper::fromEntity);
+    }
+
+    public Flux<Data> findByContentNodeCodeAndName(String contentCode, String Name) {
+        return dataRepository.findByContentNodeCodeAndName(contentCode, Name).map(dataMapper::fromEntity);
     }
 
     public Mono<Data> save(Data data) {

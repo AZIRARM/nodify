@@ -5,6 +5,7 @@ import {NodeService} from "../../../services/NodeService";
 import {User} from "../../../modeles/User";
 import {RoleService} from "../../../services/RoleService";
 import {StatusEnum} from "../../../modeles/StatusEnum";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-user-dialog',
@@ -22,6 +23,7 @@ export class UserDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<UserDialogComponent>,
     @Inject(MAT_DIALOG_DATA) private currentUser: User,
+    private userAccessService: UserAccessService,
     private nodeService: NodeService,
     private roleService: RoleService,
   ) {
@@ -31,12 +33,10 @@ export class UserDialogComponent implements OnInit {
   }
 
 
-  ngOnInit(): void {
-    this.connectedUser = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+    this.userAccessService.user$.subscribe((user: User) => {
+  this.connectedUser = user;
+});
     this.init();
   }
 
@@ -45,10 +45,10 @@ export class UserDialogComponent implements OnInit {
   }
 
   validate() {
-    if (!Array.isArray(this.user.roles)) {
-      let role: string = this.user.roles;
-      this.user.roles = [];
-      this.user.roles.push(role);
+    if (!Array.isArray(this.user!.roles)) {
+      let role: string = this.user!.roles;
+      this.user!.roles = [];
+      this.user!.roles.push(role);
     }
     this.dialogRef.close({data: this.user});
   }
@@ -77,26 +77,27 @@ export class UserDialogComponent implements OnInit {
     );
   }
 
-  public isAdmin() {
-    return this.connectedUser
+  public isAdmin(): boolean {
+    return !!(this.connectedUser
       && this.connectedUser.roles
-      && this.connectedUser.roles.includes("ADMIN");
+      && this.connectedUser.roles.includes("ADMIN"));
+
   }
 
   currentUserIsAdmin() {
     return (
       this.user
-      && this.user.id
-      && this.user.roles
-      && this.user.roles.includes("ADMIN")
-    ) && this.user.id === this.connectedUser.id;
+      && this.user!.id
+      && this.user!.roles
+      && this.user!.roles.includes("ADMIN")
+    ) && this.user!.id === this.connectedUser!.id;
   }
 
   get selectedRole(): string {
-    return this.user && this.user.roles && this.user.roles.length > 0 ? this.user.roles[0] : '';
+    return this.user && this.user!.roles && this.user.roles.length > 0 ? this.user.roles[0] : '';
   }
 
   set selectedRole(value: string) {
-    this.user.roles = [value]; // Met à jour la première valeur du tableau
+    this.user!.roles = [value]; // Met à jour la première valeur du tableau
   }
 }

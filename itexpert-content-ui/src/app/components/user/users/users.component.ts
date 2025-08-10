@@ -1,19 +1,20 @@
-import {Component} from '@angular/core';
-import {MatTableDataSource} from "@angular/material/table";
-import {User} from "../../../modeles/User";
-import {TranslateService} from "@ngx-translate/core";
-import {LoggerService} from "../../../services/LoggerService";
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {UserService} from "../../../services/UserService";
-import {UserDialogComponent} from "../user-dialog/user-dialog.component";
-import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
+import { Component, OnInit } from '@angular/core';
+import { MatTableDataSource } from "@angular/material/table";
+import { User } from "../../../modeles/User";
+import { TranslateService } from "@ngx-translate/core";
+import { LoggerService } from "../../../services/LoggerService";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { UserService } from "../../../services/UserService";
+import { UserDialogComponent } from "../user-dialog/user-dialog.component";
+import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
+import { UserAccessService } from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css']
 })
-export class UsersComponent {
+export class UsersComponent implements OnInit {
   displayedColumns: string[] = ['Firstname', 'Lastname', 'Email', 'Role', 'Actions'];
   dataSource: MatTableDataSource<User>;
   dialogRef: MatDialogRef<UserDialogComponent>;
@@ -22,17 +23,16 @@ export class UsersComponent {
   dialogValidationRef: MatDialogRef<ValidationDialogComponent>;
 
   constructor(private translate: TranslateService,
-              private loggerService: LoggerService,
-              private userService: UserService,
-              private dialog: MatDialog) {
+    private loggerService: LoggerService,
+    private userService: UserService,
+    private userAccessService: UserAccessService,
+    private dialog: MatDialog) {
   }
 
   ngOnInit() {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+    this.userAccessService.user$.subscribe((user: User) => {
+      this.user = user;
+    });
     this.init();
   }
 
@@ -50,11 +50,11 @@ export class UsersComponent {
   create() {
     let user: User = new User();
     this.dialogRef = this.dialog.open(UserDialogComponent, {
-        data: user,
-        height: '80vh',
-        width: '80vw',
-        disableClose: true
-      }
+      data: user,
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    }
     );
     this.dialogRef.afterClosed()
       .subscribe(result => {
@@ -67,11 +67,11 @@ export class UsersComponent {
 
   update(user: User) {
     this.dialogRef = this.dialog.open(UserDialogComponent, {
-        data: user,
-        height: '80vh',
-        width: '80vw',
-        disableClose: true
-      }
+      data: user,
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    }
     );
     this.dialogRef.afterClosed()
       .subscribe(result => {

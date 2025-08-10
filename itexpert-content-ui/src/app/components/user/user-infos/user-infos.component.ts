@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {User} from "../../../modeles/User";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {PasswordDialogComponent} from "../password-dialog/password-dialog.component";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-user-infos',
@@ -12,17 +13,16 @@ export class UserInfosComponent implements OnInit {
   user: User;
   dialogRef: MatDialogRef<PasswordDialogComponent>;
 
-  constructor(private dialog: MatDialog
+  constructor(private dialog: MatDialog,
+              private userAccessService: UserAccessService
   ) {
 
   }
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+   this.userAccessService.user$.subscribe((user: User) => {
+  this.user = user;
+});
   }
 
   changePassword() {

@@ -43,4 +43,8 @@ public interface ContentNodeRepository extends ReactiveMongoRepository<ContentNo
     Mono<ContentNode> findByIdAndStatus(UUID contentNodeUuid, StatusEnum statusEnum);
 
     Flux<ContentNode> findBySlugAndStatusAndCodeNotIn(String slug, String status, List<String> code);
+
+    Mono<Boolean> existsBySlug(String slug);
+
+    Flux<ContentNode> findBySlugAndCode(String slug, String code);
 }

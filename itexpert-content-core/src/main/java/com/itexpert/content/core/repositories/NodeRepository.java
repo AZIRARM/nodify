@@ -63,4 +63,7 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
 
     @Query("{ 'parentCode' : ?0, 'status': ?1 }")
     Flux<Node> findAllByParentCodeAndStatus(String parentCode, String status);
+
+    Mono<Boolean> existsBySlug(String slug);
+
 }
