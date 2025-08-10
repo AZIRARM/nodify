@@ -25,10 +25,10 @@ RUN mkdir -p ${APP_HOME}/bin ${APP_HOME}/config ${APP_HOME}/logs
 # Copier uniquement le jar Core généré
 COPY --from=build /app/itexpert-content-core/target/*.jar ${APP_HOME}/bin/app.jar
 
-COPY itexpert-content-core/entrypoint.sh /
-RUN chmod +x /entrypoint.sh
+COPY itexpert-content-core/entrypoint.sh ${APP_HOME}
+RUN chmod +x ${APP_HOME}/entrypoint.sh
 
-EXPOSE 9080
-ENTRYPOINT ["/entrypoint.sh"]
+EXPOSE 8080
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 HEALTHCHECK CMD curl --fail http://localhost:8080/health || exit 1
