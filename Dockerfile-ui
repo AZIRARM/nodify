@@ -1,0 +1,34 @@
+# Étape 1 : build Angular
+FROM node:current-slim AS builder
+
+WORKDIR /app
+
+# Copier package.json et package-lock.json (si présent) pour installer les dépendances
+COPY itexpert-content-ui/package.json itexpert-content-ui/package-lock.json* ./
+
+RUN npm install
+
+# Copier tout le code source
+COPY itexpert-content-ui/ .
+
+# Build production
+RUN npm run build-prod
+
+# Étape 2 : servir avec nginx
+FROM nginx:alpine
+
+# Copier les fichiers build dans le dossier de nginx
+COPY --from=builder /app/dist/content-ui/* /usr/share/nginx/html/
+
+# Copier la config nginx personnalisée (optionnel)
+COPY itexpert-content-ui/nginx.conf /etc/nginx/
+
+# Copier le script d'entrée (optionnel)
+COPY itexpert-content-ui/entrypoint.sh /etc/nginx/entrypoint.sh
+RUN chmod +x /etc/nginx/entrypoint.sh
+
+ENTRYPOINT ["/etc/nginx/entrypoint.sh"]
+
+# Healthcheck pour vérifier que le serveur est vivant
+HEALTHCHECK --start-period=15s --interval=1m --timeout=10s --retries=5 \
+  CMD curl --silent --fail --request GET http://localhost/health || exit 1

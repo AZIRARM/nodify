@@ -1,14 +1,13 @@
-version: '3.8'
-
 services:
   mongo:
-    image: "mongo:latest"
+    image: mongo:latest
     volumes:
       - mongo:/data/db
       - mongo-conf:/data/configdb
 
   nodify-core:
-    image: azirar/nodify-core:latest
+    build:
+      dockerfile: Dockerfile-core
     depends_on:
       - mongo
     environment:
@@ -19,7 +18,8 @@ services:
       - "8080"
 
   nodify-api:
-    image: azirar/nodify-api:latest
+    build:
+      dockerfile: Dockerfile-api
     depends_on:
       - mongo
     environment:
@@ -30,7 +30,8 @@ services:
       - 9080:9080
 
   nodify-ui:
-    image: azirar/nodify-ui:latest
+    build:
+      dockerfile: Dockerfile-ui
     depends_on:
       - nodify-core
       - nodify-api
@@ -43,4 +44,3 @@ services:
 volumes:
   mongo:
   mongo-conf:
-

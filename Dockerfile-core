@@ -1,0 +1,34 @@
+FROM maven:3.9.4-eclipse-temurin-21 AS build
+
+WORKDIR /app
+
+# Copier le pom parent et tous les modules nécessaires pour Maven multi-modules
+COPY pom.xml .
+COPY itexpert-content-parent ./itexpert-content-parent
+COPY itexpert-content-lib ./itexpert-content-lib
+COPY itexpert-content-core ./itexpert-content-core
+COPY itexpert-content-api ./itexpert-content-api
+COPY itexpert-content-ui ./itexpert-content-ui
+
+# Tu peux copier itexpert-content-ui si tu veux build le frontend ici, sinon non
+# COPY itexpert-content-ui ./itexpert-content-ui
+
+# Build complet Maven (cela construira tous les modules)
+RUN mvn clean package -DskipTests
+
+# Ensuite, image finale runtime (exemple pour core)
+FROM eclipse-temurin:21
+
+ENV APP_HOME=/app
+RUN mkdir -p ${APP_HOME}/bin ${APP_HOME}/config ${APP_HOME}/logs
+
+# Copier uniquement le jar Core généré
+COPY --from=build /app/itexpert-content-core/target/*.jar ${APP_HOME}/bin/app.jar
+
+COPY itexpert-content-core/entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 9080
+ENTRYPOINT ["/entrypoint.sh"]
+
+HEALTHCHECK CMD curl --fail http://localhost:8080/health || exit 1
