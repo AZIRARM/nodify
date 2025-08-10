@@ -5,6 +5,21 @@
 
 <img src="assets/pictures/nodify_transparent.png" width="50%"/>
 
+## 🚀 Demostración
+
+Puedes probar una demostración en vivo de **Nodify Headless CMS** aquí:  
+🔗 [Nodify Demo](https://azirar.ovh:7822)
+
+**Credenciales:**
+- **Usuario:** `admin`
+- **Contraseña:** `Admin123`
+
+**Disponibilidad:**  
+El servidor de demostración está disponible todos los días de **10:00 AM** a **12:00 AM** (UTC+1).
+
+> ⚠️ Este es un entorno de demostración compartido. Los datos pueden restablecerse en cualquier momento.
+
+
 ## ¿Qué es un Headless CMS?
 
 * Separa el frontend (capa de presentación) del backend (gestión de contenido).
