@@ -5,6 +5,21 @@
 
 <img src="assets/pictures/nodify_transparent.png" width="50%"/>
 
+## 🚀 演示
+
+您可以在此体验 **Nodify Headless CMS** 的在线演示：  
+🔗 [Nodify Demo](https://azirar.ovh:7822)
+
+**登录信息：**
+- **用户名：** `admin`
+- **密码：** `Admin123`
+
+**开放时间：**  
+演示服务器每日开放时间为 **上午10:00** 至 **午夜12:00**（UTC+1）。
+
+> ⚠️ 这是一个共享的演示环境，数据可能随时被重置。
+
+
 ## 什么是无头 CMS（Headless CMS）？
 
 * 将前端（展示层）与后端（内容管理）分离。
