@@ -11,9 +11,9 @@ services:
     depends_on:
       - mongo
     environment:
-      MONGO_URL: "${MONGO_URL}"
-      ADMIN_PWD: "${ADMIN_PWD}"
-      API_URL: "${API_URL}"
+      MONGO_URL: "${MONGO_URL:-mongodb://mongo:27017/nodify}"
+      ADMIN_PWD: "${ADMIN_PWD:-Admin123}"
+      API_URL: "${API_URL:-http://localhost:9080}"
     expose:
       - "8080"
 
@@ -23,7 +23,7 @@ services:
     depends_on:
       - mongo
     environment:
-      MONGO_URL: "${MONGO_URL}"
+      MONGO_URL: "${MONGO_URL:-mongodb://mongo:27017/nodify}
     expose:
       - "9080"
     ports:
@@ -38,8 +38,8 @@ services:
     ports:
       - 80:80
     environment:
-      CORE_URL: "${CORE_URL}"
-      API_URL: "${API_URL}"
+      CORE_URL: "${CORE_URL:-http://nodify-core:8080}"
+      API_URL: "${API_URL:-http://localhost:9080}"
 
 volumes:
   mongo:
