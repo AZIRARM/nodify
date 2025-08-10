@@ -62,3 +62,6 @@ HELP.md
 **/node_modules/
 itexpert-content-ui/node/
 **/package-lock.json
+
+
+**/.env
