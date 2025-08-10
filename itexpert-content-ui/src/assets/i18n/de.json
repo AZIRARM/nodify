@@ -250,5 +250,8 @@
   "FEEDBACK_ALL": "Alle Bewertungen",
   "FEEDBACK_VERIFIED": "Verifizierte Bewertungen",
   "FEEDBACK_NOT_VERIFIED": "Nicht verifizierte Bewertungen",
-  "NODES_VIEW": "Knotenansicht"
+  "NODES_VIEW": "Knotenansicht",
+
+  "SLUG_ALREADY_USED": "Dieser Alias ist nicht verfügbar",
+  "SLUG_AVAILABLE": "Dieser Alias ist verfügbar"
 }
