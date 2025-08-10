@@ -250,5 +250,8 @@
   "FEEDBACK_ALL": "All Feedback",
   "FEEDBACK_VERIFIED": "Verified Feedback",
   "FEEDBACK_NOT_VERIFIED": "Unverified Feedback",
-  "NODES_VIEW": "Nodes View"
+  "NODES_VIEW": "Nodes View",
+
+  "SLUG_ALREADY_USED": "This alias is not available",
+  "SLUG_AVAILABLE": "This alias is available"
 }
