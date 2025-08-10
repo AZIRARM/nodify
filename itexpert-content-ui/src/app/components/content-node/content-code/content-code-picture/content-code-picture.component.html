@@ -2,7 +2,10 @@
   <app-content-code-title
     [title]="'PICTURE'"></app-content-code-title>
   <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
-  <img src="{{contentNode.file.data}}" width="20%" height="auto"/>
+  @if(contentNode && contentNode.file){
+    <img src="{{contentNode.file.data}}" width="20%" height="auto"/>
+  }
+
   <input type="file" (change)="onFileChangeFactory($event)" accept="image/*">
 
 </div>

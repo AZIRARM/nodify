@@ -70,9 +70,11 @@
       <td mat-cell *matCellDef="let element">
         <span title='{{element.version | translate}}'>
           {{ element.version }}
-          <div>
-            <img src="{{element.file.data}}" *ngIf="element.type === 'PICTURE'"/>
-          </div>
+          @if(element && element.file && element.file.data) {
+            <div>
+              <img src="{{element.file.data}}" *ngIf="element.type === 'PICTURE'"/>
+            </div>
+          }
         </span>
       </td>
     </ng-container>
