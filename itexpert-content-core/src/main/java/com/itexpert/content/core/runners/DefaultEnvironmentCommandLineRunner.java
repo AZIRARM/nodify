@@ -51,11 +51,11 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                 createNode("Production", "Production environment", "PROD-01", "production")
         );
 
-        nodeHandler.findAll()
-                .collectList()
-                .flatMapMany(existingNodes -> {
-                    if (existingNodes.isEmpty()) {
-                        log.info("No environments found, creating defaults...");
+        nodeHandler.findByCode("DEV-01")
+                .hasElements()  // renvoie Mono<Boolean> true s'il existe au moins un node avec ce code
+                .flatMapMany(exists -> {
+                    if (!exists) {
+                        log.info("No Development environment found, creating default environments...");
                         return nodeHandler.saveAll(environments)
                                 .doOnNext(node -> log.info("Node saved, code: {}", node.getCode()))
                                 .flatMap(environment ->
@@ -65,7 +65,7 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                                                 .thenReturn(environment)
                                 );
                     } else {
-                        log.info("Environments already exist, skipping creation.");
+                        log.info("Development environment already exists, skipping creation.");
                         return Flux.empty();
                     }
                 })
