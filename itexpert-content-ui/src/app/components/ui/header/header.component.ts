@@ -7,6 +7,7 @@ import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NotificationService} from "../../../services/NotificationService";
 import {ThemeService} from "../../../services/ThemeService";
 import {AuthenticationService} from "../../../services/AuthenticationService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-header',
@@ -45,7 +46,8 @@ export class HeaderComponent {
     private dialog: MatDialog,
     private sidenavService: SidenavService,
     private themeService: ThemeService,
-    private authenticationService: AuthenticationService) {
+    private authenticationService: AuthenticationService,
+    private userAccessService: UserAccessService) {
     this.selectedLanguage = window.localStorage.getItem("defaultLanguage")!;
 
     this.isDarkMode = this.themeService.isDarkModeEnabled();
@@ -86,8 +88,7 @@ export class HeaderComponent {
         this.dialogRef.afterClosed()
           .subscribe(result => {
             if (result.data === 'validated') {
-              window.localStorage.removeItem("userToken");
-              window.localStorage.removeItem("userInfo");
+              window.localStorage.removeItem("nodifyUserToken");
               this.router.navigate(["/login"]);
               window.location.reload();
             }
@@ -104,7 +105,7 @@ export class HeaderComponent {
   }
 
 
-  countUnreadedNotificationsFactory(){
+  async countUnreadedNotificationsFactory(){
     if (!this.lastNotificationUpdate) {
       this.lastNotificationUpdate = (new Date()).getTime();
     }
@@ -114,13 +115,12 @@ export class HeaderComponent {
 
       this.lastNotificationUpdate = (new Date()).getTime();
 
-      this.user = JSON.parse(
-        JSON.parse(
-          JSON.stringify((window.localStorage.getItem('userInfo')))
-        )
-      );
-      if (this.user && this.user.id) {
-        this.notificationService.countUnreadedNotification(this.user.id).subscribe(
+      this.userAccessService.user$.subscribe((user: any) => {
+        this.user = user;
+      });
+
+      if (this.user && this.user!.id) {
+        this.notificationService.countUnreadedNotification(this.user!.id).subscribe(
           (data: any) => {
             this.nbNotifications = data;
           }

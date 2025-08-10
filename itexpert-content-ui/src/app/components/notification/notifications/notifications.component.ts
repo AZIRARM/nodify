@@ -6,6 +6,7 @@ import {UserService} from "../../../services/UserService";
 import {NotificationService} from "../../../services/NotificationService";
 import {Notification} from "../../../modeles/Notification";
 import {MatPaginator} from "@angular/material/paginator";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-notifications',
@@ -31,6 +32,7 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   constructor(private notificationService: NotificationService,
               private userService: UserService,
+              private userAccessService: UserAccessService
   ) {
   }
 
@@ -40,12 +42,10 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
     this.dataSource.paginator = this.paginator;
   }
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+   this.userAccessService.user$.subscribe((user: any) => {
+      this.user = user;
+    });
     this.init();
   }
 
@@ -59,10 +59,10 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   nextPage(nbPage: number, limit: number) {
     if (!this.readed) {
-      this.notificationService.countUnreadedNotification(this.user.id).subscribe(
+      this.notificationService.countUnreadedNotification(this.user!.id).subscribe(
         (data: any) => {
           this.total = data;
-          this.notificationService.findPaginated(this.user.id, nbPage, limit).subscribe(
+          this.notificationService.findPaginated(this.user!.id, nbPage, limit).subscribe(
             (response: any) => {
               if (response) {
                 response.map((param: any) => this.setUserName(param));
@@ -75,10 +75,10 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
           );
         });
     } else {
-      this.notificationService.countReadedNotification(this.user.id).subscribe(
+      this.notificationService.countReadedNotification(this.user!.id).subscribe(
         (data: any) => {
           this.total = data;
-          this.notificationService.findReadedByUserId(this.user.id, nbPage, limit).subscribe(
+          this.notificationService.findReadedByUserId(this.user!.id, nbPage, limit).subscribe(
             (response: any) => {
               if (response) {
                 response.map((param: any) => this.setUserName(param));
@@ -97,7 +97,7 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   markAsReaded(element: Notification) {
-    this.notificationService.markAsReaded(element.id, this.user.id).subscribe((user: any) => {
+    this.notificationService.markAsReaded(element.id, this.user!.id).subscribe((user: any) => {
       this.init();
     }, (error: any) => {
 
@@ -105,7 +105,7 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   markAsNotReaded(element: Notification) {
-    this.notificationService.markAsNotReaded(element.id, this.user.id).subscribe((user: any) => {
+    this.notificationService.markAsNotReaded(element.id, this.user!.id).subscribe((user: any) => {
       this.init();
     }, (error: any) => {
 
@@ -113,7 +113,7 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   markAllAsReaded() {
-    this.notificationService.markAllReaded(this.user.id).subscribe((user: any) => {
+    this.notificationService.markAllReaded(this.user!.id).subscribe((user: any) => {
       this.init();
     }, (error: any) => {
     });

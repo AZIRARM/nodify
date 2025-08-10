@@ -94,9 +94,9 @@ export class NodeService extends Service {
     return super.get("origin");
   }
 
-
   slugExists(code: string, slug: string) {
-    return super.get("code/" + code + "/slug/" + slug + "/exists");
+    const safeSlug = slug?.trim() || "null";
+    return super.get(`code/${encodeURIComponent(code)}/slug/${encodeURIComponent(safeSlug)}/exists`);
   }
 
   getNodeView(code: string) {

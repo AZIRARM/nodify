@@ -495,11 +495,16 @@ public class ContentNodeHandler {
                 .map(this.contentNodeMapper::fromEntity);
     }
 
-    public Mono<Boolean> slugAlreadyExists(String code, String slug){
+    /*public Mono<Boolean> slugAlreadyExists(String code, String slug){
         return this.contentNodeRepository.findBySlugAndStatusAndCodeNotIn(slug, StatusEnum.SNAPSHOT.name(), List.of(code))
                 .doOnNext(node -> {
                     log.info(node.getCode());
                 })
+                .hasElements();
+    }*/
+
+    public Mono<Boolean> slugAlreadyExists(String code, String slug){
+        return this.contentNodeRepository.findBySlugAndCode(slug, code)
                 .hasElements();
     }
 }

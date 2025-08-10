@@ -1,5 +1,6 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {SidenavService} from "../../../services/SidenavService";
+import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-sidenav',
@@ -12,15 +13,14 @@ export class SidenavComponent implements OnInit {
 
   @ViewChild('sideNav', {static: true}) sideNav: any;
 
-  constructor(private sidenavService: SidenavService) {
+  constructor(private sidenavService: SidenavService,
+              private userAccessService: UserAccessService) {
   }
 
-  ngOnInit(): void {
-    this.user = JSON.parse(
-      JSON.parse(
-        JSON.stringify((window.localStorage.getItem('userInfo')))
-      )
-    );
+  ngOnInit() {
+    this.userAccessService.user$.subscribe((user: any) => {
+      this.user = user;
+    });
     this.sidenavService.setSidenav(this.sideNav);
   }
 
