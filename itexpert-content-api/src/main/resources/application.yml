@@ -15,4 +15,4 @@ spring:
   jackson:
     default-property-inclusion: non_empty
 server:
-  port: 8090
+  port: 9080
