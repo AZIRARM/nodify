@@ -5,6 +5,21 @@
 
 <img src="assets/pictures/nodify_transparent.png" width="50%"/>
 
+## 🚀 Demo
+
+You can explore a live demo of **Nodify Headless CMS** here:  
+🔗 [Nodify Demo](https://azirar.ovh:7822)
+
+**Credentials:**
+- **Username:** `admin`
+- **Password:** `Admin123`
+
+**Availability:**  
+The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
+
+> ⚠️ This is a shared demo environment. Data may be reset at any time.
+
+
 ## Understanding Headless CMS
 
 * Separates the front-end (presentation layer) from the back-end (content management)
