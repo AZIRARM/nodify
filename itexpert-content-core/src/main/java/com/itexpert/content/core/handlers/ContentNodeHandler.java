@@ -12,8 +12,6 @@ import com.itexpert.content.lib.models.ContentNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -21,7 +19,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.time.Instant;
-import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -102,16 +99,6 @@ public class ContentNodeHandler {
                 .flatMap(model -> this.notify(model, NotificationEnum.DELETION))
                 .map(unused -> Boolean.TRUE)
                 .onErrorReturn(Boolean.FALSE);
-    }
-
-    public Mono<Resource> getContentAsFile(UUID fromString) {
-        return this.contentNodeRepository.findById(fromString)
-                .map(this::resourceFromContentNode);
-    }
-
-    private Resource resourceFromContentNode(com.itexpert.content.lib.entities.ContentNode contentNode) {
-        byte[] decodedBytes = Base64.getDecoder().decode(contentNode.getContent());
-        return new ByteArrayResource(decodedBytes);
     }
 
     public Flux<ContentNode> findByNodeCodeAndStatus(String nodeCode, String status) {
@@ -230,25 +217,6 @@ public class ContentNodeHandler {
 
     }
 
-    public Mono<ContentNode> deploy(String code, String version, UUID userId) {
-        return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
-                .map(contentNode -> {
-                    contentNode.setStatus(StatusEnum.ARCHIVE);
-                    contentNode.setModifiedBy(userId);
-                    contentNode.setModificationDate(Instant.now().toEpochMilli());
-                    return contentNode;
-                }).flatMap(contentNodeRepository::save)
-                .flatMap(contentNode -> contentNodeRepository.findByCodeAndVersion(code, version))
-                .map(contentNode -> {
-                    contentNode.setStatus(StatusEnum.PUBLISHED);
-                    contentNode.setModifiedBy(userId);
-                    contentNode.setModificationDate(Instant.now().toEpochMilli());
-                    return contentNode;
-                }).flatMap(contentNodeRepository::save)
-                .map(contentNodeMapper::fromEntity)
-                .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
-    }
-
     public Mono<Boolean> activate(String code, UUID userId) {
         return contentNodeRepository.findByCodeAndStatus(code, StatusEnum.DELETED.name())
                 .map(contentNode -> {
@@ -273,16 +241,6 @@ public class ContentNodeHandler {
                             model.getVersion())
                     .map(notification -> contentNode);
         });
-    }
-
-
-    public Flux<ContentNode> findAllByStatusAndUser(String status, String userEmail) {
-        return Flux.from(
-                userHandler.findByEmail(userEmail)
-                        .map(userPost -> this.contentNodeRepository.findAllByStatus(status)
-                                .filter(node -> userPost.getProjects().contains(node.getParentCodeOrigin()))
-                                .map(contentNodeMapper::fromEntity))
-        ).flatMap(Mono::from);
     }
 
     public Flux<ContentNode> findDeleted(String userEmail) {
@@ -348,40 +306,6 @@ public class ContentNodeHandler {
 
     public Mono<ContentNode> findByCodeAndStatus(String code, String status) {
         return contentNodeRepository.findByCodeAndStatus(code, status).map(contentNodeMapper::fromEntity);
-    }
-
-    @Transactional
-    public Mono<ContentNode> importContentNodeSav(ContentNode model, String nodeParentCode) {
-
-        model.setVersion("0");
-        model.setStatus(StatusEnum.SNAPSHOT);
-        model.setParentCode(ObjectUtils.isNotEmpty(nodeParentCode) ? nodeParentCode : null);
-        model.setCreationDate(Instant.now().toEpochMilli());
-        model.setModificationDate(model.getCreationDate());
-
-
-        return this.findByCodeAndStatus(model.getCode(), StatusEnum.SNAPSHOT.name())
-                .flatMap(existingContentNode -> {
-
-                    model.setId(UUID.randomUUID());
-                    model.setParentCode(nodeParentCode);
-                    model.setVersion(String.valueOf(Integer.parseInt(existingContentNode.getVersion()) + 1));
-                    model.setStatus(StatusEnum.SNAPSHOT);
-                    model.setCreationDate(existingContentNode.getCreationDate());
-                    model.setModificationDate(Instant.now().toEpochMilli());
-
-                    existingContentNode.setStatus(StatusEnum.ARCHIVE);
-                    existingContentNode.setModificationDate(Instant.now().toEpochMilli());
-
-                    // Sauvegarder l'ancien contenu en ARCHIVE et le nouveau SNAPSHOT
-                    return this.contentNodeRepository.save(contentNodeMapper.fromModel(existingContentNode))
-                            .map(savedExistingContent -> model);
-
-
-                })
-                .switchIfEmpty(Mono.just(model))
-                .flatMap(contentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(contentNode)))
-                .map(this.contentNodeMapper::fromEntity); // Convertir l'entité sauvegardée en modèle;
     }
 
 
@@ -495,15 +419,7 @@ public class ContentNodeHandler {
                 .map(this.contentNodeMapper::fromEntity);
     }
 
-    /*public Mono<Boolean> slugAlreadyExists(String code, String slug){
-        return this.contentNodeRepository.findBySlugAndStatusAndCodeNotIn(slug, StatusEnum.SNAPSHOT.name(), List.of(code))
-                .doOnNext(node -> {
-                    log.info(node.getCode());
-                })
-                .hasElements();
-    }*/
-
-    public Mono<Boolean> slugAlreadyExists(String code, String slug){
+    public Mono<Boolean> slugAlreadyExists(String code, String slug) {
         return this.contentNodeRepository.findBySlugAndCode(slug, code)
                 .hasElements();
     }
