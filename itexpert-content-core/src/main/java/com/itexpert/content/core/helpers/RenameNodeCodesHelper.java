@@ -42,17 +42,17 @@ public class RenameNodeCodesHelper {
                     node.setId(UUID.randomUUID());
 
                     return node;
-                }).collectList() // Collecte tous les nœuds dans une liste
+                }).collectList()
                 .map(nodesList -> CodesUtils.changeCodes(gson.toJson(nodesList), parentCodeOrigin, fromFile))
                 .map(modifiedJson -> gson.fromJson(modifiedJson, new TypeToken<List<Node>>() {
                 }.getType())).flatMapMany(o -> Flux.fromIterable((List<Node>) o)); // Convertir la liste de nœuds en Flux<Node>
     }
 
     public Mono<String> changeCodesAndReturnJson(List<Node> nodes, String parentCodeOrigin, Boolean fromFile) {
-        // Initialisation de Gson
         Gson gson = new GsonBuilder().create();
 
-        return Flux.fromIterable(nodes).map(node -> {
+        return Flux.fromIterable(nodes)
+                .map(node -> {
                     if (ObjectUtils.isEmpty(parentCodeOrigin)) {
                         node.setId(UUID.randomUUID());
                         for (ContentNode contentNode : node.getContents()) {
@@ -60,7 +60,7 @@ public class RenameNodeCodesHelper {
                         }
                     }
                     return node;
-                }).map(gson::toJson)
+                })
                 .collectList()
                 .map(gson::toJson)
                 .map(jsons -> CodesUtils.changeCodes(jsons, parentCodeOrigin, fromFile));
