@@ -2,6 +2,7 @@ package com.itexpert.content.core.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.itexpert.content.core.helpers.NodeSlugHelper;
 import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.NodeRepository;
@@ -12,6 +13,8 @@ import com.itexpert.content.lib.models.Notification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.core.io.ClassPathResource;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -41,6 +44,8 @@ public class NodeHandlerTest {
 
     private NodeHandler nodeHandler;
 
+    private NodeSlugHelper nodeSlugHelper;
+
 
     private Node parentSnapshotEntity;
     private Node childNode;
@@ -53,14 +58,6 @@ public class NodeHandlerTest {
         userHandler = mock(UserHandler.class);
         notificationHandler = mock(NotificationHandler.class);
         renameNodeCodesHelper = new RenameNodeCodesHelper();
-        nodeHandler = new NodeHandler(
-                nodeRepository,
-                nodeMapper,
-                contentNodeHandler,
-                notificationHandler,
-                renameNodeCodesHelper,
-                userHandler
-        );
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
@@ -97,6 +94,19 @@ public class NodeHandlerTest {
         when(nodeRepository.save(any()))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
+        nodeSlugHelper = mock(NodeSlugHelper.class);
+
+        this.updateConfiguration(nodeSlugHelper);
+
+        when(nodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
+                        node.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(node);
+                    }
+                });
         // WHEN
         Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
                 List.of(nodeMapper.fromEntity(cloneNode(childNode))), // Liste à importer
@@ -126,6 +136,20 @@ public class NodeHandlerTest {
         when(nodeRepository.save(any()))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
+        nodeSlugHelper = mock(NodeSlugHelper.class);
+
+        this.updateConfiguration(nodeSlugHelper);
+
+        when(nodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
+                        node.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(node);
+                    }
+                });
+
         // WHEN
         Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
                 List.of(nodeMapper.fromEntity(cloneNode(childNode))),
@@ -151,6 +175,20 @@ public class NodeHandlerTest {
                 .thenReturn(Flux.empty());
         when(nodeRepository.save(any()))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        nodeSlugHelper = mock(NodeSlugHelper.class);
+
+        this.updateConfiguration(nodeSlugHelper);
+
+        when(nodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
+                        node.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(node);
+                    }
+                });
 
         // WHEN
         Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
@@ -180,6 +218,21 @@ public class NodeHandlerTest {
 
         com.itexpert.content.lib.models.Node model = nodeMapper.fromEntity(cloneNode(childNode));
         model.setSlug("my-beautifull-node-slug");
+
+
+        nodeSlugHelper = mock(NodeSlugHelper.class);
+
+        this.updateConfiguration(nodeSlugHelper);
+
+        when(nodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
+                        node.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(node);
+                    }
+                });
 
         // WHEN
         Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
@@ -213,6 +266,20 @@ public class NodeHandlerTest {
         when(nodeRepository.save(any()))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
+        nodeSlugHelper = mock(NodeSlugHelper.class);
+
+        this.updateConfiguration(nodeSlugHelper);
+
+        when(nodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
+                        node.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(node);
+                    }
+                });
+
         Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
                 this.getFromFile("tests/templates/BLOG-DEV.json"), // Liste à importer
                 "PARENT-DEV",
@@ -241,6 +308,20 @@ public class NodeHandlerTest {
 
         when(nodeRepository.save(any()))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        nodeSlugHelper = mock(NodeSlugHelper.class);
+
+        this.updateConfiguration(nodeSlugHelper);
+
+        when(nodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
+                        node.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(node);
+                    }
+                });
 
         List<com.itexpert.content.lib.models.Node> nodes = this.getFromFile("tests/templates/LANDINGPAGE-DEV.json");
         Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
@@ -273,16 +354,28 @@ public class NodeHandlerTest {
         return clone;
     }
 
-    private List<com.itexpert.content.lib.models.Node> getFromFile(String template){
-            ClassPathResource resource = new ClassPathResource(template);
+    private List<com.itexpert.content.lib.models.Node> getFromFile(String template) {
+        ClassPathResource resource = new ClassPathResource(template);
         InputStreamReader reader = null;
         try {
             reader = new InputStreamReader(resource.getInputStream());
         } catch (IOException e) {
-           return List.of();
+            return List.of();
         }
         Type listType = new TypeToken<List<com.itexpert.content.lib.models.Node>>() {
-            }.getType();
-            return (List<com.itexpert.content.lib.models.Node>) new Gson().fromJson(reader, listType);
+        }.getType();
+        return (List<com.itexpert.content.lib.models.Node>) new Gson().fromJson(reader, listType);
+    }
+
+    private void updateConfiguration(NodeSlugHelper nodeSlugHelper) {
+        nodeHandler = new NodeHandler(
+                nodeRepository,
+                nodeMapper,
+                contentNodeHandler,
+                notificationHandler,
+                renameNodeCodesHelper,
+                userHandler,
+                nodeSlugHelper
+        );
     }
 }

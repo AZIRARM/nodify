@@ -1,6 +1,7 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.helpers.ContentHelper;
+import com.itexpert.content.core.helpers.ContentNodeSlugHelper;
 import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.models.ContentNodePayload;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
@@ -36,6 +37,7 @@ public class ContentNodeHandler {
     private final NotificationHandler notificationHandler;
     private final DataHandler dataHandler;
     private final ContentHelper contentHelper;
+    private final ContentNodeSlugHelper contentNodeSlugHelper;
 
     public Flux<ContentNode> findAll() {
         return contentNodeRepository.findAll().map(contentNode -> {
@@ -337,6 +339,7 @@ public class ContentNodeHandler {
                     contentNode.setModificationDate(contentNode.getCreationDate());
                     return Mono.just(contentNode);
                 }))
+                .flatMap(content->this.contentNodeSlugHelper.update(content, content.getParentCode()))
                 .flatMap(model ->
                         this.contentNodeRepository.save(this.contentNodeMapper.fromModel(contentNode))
                 )
@@ -385,12 +388,6 @@ public class ContentNodeHandler {
                                     existingContentNode.setStatus(StatusEnum.ARCHIVE);
                                     existingContentNode.setModificationDate(Instant.now().toEpochMilli());
 
-                                    if (ObjectUtils.isEmpty(existingContentNode.getSlug()) && ObjectUtils.isNotEmpty(contentNode.getSlug())) {
-                                        contentNode.setSlug(contentNode.getSlug().replace("-"+environmentCode.trim().toLowerCase(), "") + "-" + environmentCode.trim().toLowerCase());
-                                    } else {
-                                        contentNode.setSlug(existingContentNode.getSlug());
-                                    }
-
                                     // Sauvegarder l'ancien contenu en ARCHIVE et le nouveau SNAPSHOT
                                     return this.contentNodeRepository.save(contentNodeMapper.fromModel(existingContentNode))
                                             .map(savedExistingContent -> contentNode);
@@ -402,15 +399,11 @@ public class ContentNodeHandler {
                                     newContentNode.setStatus(StatusEnum.SNAPSHOT);
                                     newContentNode.setCreationDate(Instant.now().toEpochMilli());
                                     newContentNode.setModificationDate(newContentNode.getCreationDate());
-
-                                    if (ObjectUtils.isNotEmpty(contentNode.getSlug())) {
-                                        newContentNode.setSlug(contentNode.getSlug().replace("-"+environmentCode.trim().toLowerCase(), "") + "-" + environmentCode.trim().toLowerCase());
-                                    }
-
                                     return newContentNode;
 
                                 }))
                 )
+                .flatMap(contentNode -> contentNodeSlugHelper.update(contentNode, environmentCode))
                 .flatMap(contentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(contentNode)))
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT))
