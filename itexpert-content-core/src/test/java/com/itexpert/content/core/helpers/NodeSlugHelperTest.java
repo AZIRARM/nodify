@@ -12,6 +12,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,8 @@ public class NodeSlugHelperTest {
         when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
         when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
 
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
+
         StepVerifier.create(nodeSlugHelper.update(node, "env"))
                 .assertNext(n -> {
                     assert n.getSlug().equals("mySlug-env");
@@ -46,17 +49,57 @@ public class NodeSlugHelperTest {
     }
 
     @Test
-    void testUpdate_slugExistsInNodeRepository_incrementsSlug() {
+    void testUpdate_slugExistsInNodeRepository_notUpdateKeepSlug() {
         com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
         node.setSlug("mySlug");
         node.setId(UUID.randomUUID());
         node.setCode("NODE-CODE");
 
+
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.fromIterable(List.of(new Node())));
+
+        StepVerifier.create(nodeSlugHelper.update(node, "env"))
+                .assertNext(n -> {
+                    assert n.getSlug().equals("mySlug");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testUpdate_slugNotExistsInNodeRepository_shouldHaveNewSlug() {
+        com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
+        node.setSlug("mySlug");
+        node.setId(UUID.randomUUID());
+        node.setCode("NODE-CODE");
+
+
         when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.fromIterable(List.of(new Node())));
+        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
+
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
+
+        StepVerifier.create(nodeSlugHelper.update(node, "env"))
+                .assertNext(n -> {
+                    assert n.getSlug().equals("mySlug-env");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testUpdate_slugExistForOtherNodeOrContent_shouldHaveNewDifferentSlug() {
+        com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
+        node.setSlug("mySlug");
+        node.setId(UUID.randomUUID());
+        node.setCode("NODE-CODE");
+
+
+        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
 
         when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
         when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(nodeSlugHelper.update(node, "env"))
                 .assertNext(n -> {
@@ -78,6 +121,8 @@ public class NodeSlugHelperTest {
         when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
         when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
 
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
+
         StepVerifier.create(nodeSlugHelper.update(node, "env"))
                 .assertNext(n -> {
                     assert n.getSlug().equals("mySlug-env1");
@@ -97,6 +142,8 @@ public class NodeSlugHelperTest {
 
         when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
         when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(nodeSlugHelper.update(node, "env"))
                 .assertNext(n -> {

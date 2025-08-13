@@ -4,10 +4,13 @@ import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.models.ContentNode;
+import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -26,21 +29,23 @@ public class ContentNodeSlugHelperTest {
     }
 
     @Test
-    void testUpdate_slugNotExistsAnywhere_setsSlugDirectly() {
+    void testUpdate_slugNotExistsAnywhere_doNothing() {
         ContentNode content = new ContentNode();
-        content.setSlug("mySlug");
 
         // Aucun slug dans contentNodeRepository
         when(contentNodeRepository.findAllBySlug(anyString())).thenReturn(Flux.empty());
         // Aucun slug dans nodeRepository
         when(nodeRepository.findAllBySlug(anyString())).thenReturn(Flux.empty());
 
+        when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
+
         StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
-                .expectNextMatches(c -> c.getSlug().equals("mySlug-env"))
+                .expectNextMatches(c -> ObjectUtils.isEmpty(c.getSlug()))
                 .verifyComplete();
 
-        verify(contentNodeRepository).findAllBySlug("mySlug-env");
-        verify(nodeRepository).findAllBySlug("mySlug-env");
+        verify(contentNodeRepository, times(0)).findAllBySlug(any());
+        verify(nodeRepository, times(0)).findAllBySlug(any());
+
     }
 
     @Test
@@ -55,6 +60,8 @@ public class ContentNodeSlugHelperTest {
         when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
         when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
                 .expectNextMatches(c -> c.getSlug().equals("mySlug-env1"))
@@ -78,6 +85,8 @@ public class ContentNodeSlugHelperTest {
         when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
         when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
                 .expectNextMatches(c -> c.getSlug().equals("mySlug-env1"))
