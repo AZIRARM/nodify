@@ -433,83 +433,77 @@ public class NodeHandler {
 
     @Transactional
     public Flux<Node> importNodes(List<Node> nodes, String nodeParentCode, Boolean fromFile) {
-        // 1. Trouver efficacement le nœud parent (gestion des nœuds manquants de manière gracieuse)
         return this.nodeRepository.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
                 .flatMapMany(nodeParent -> {
-                    // Si le parent est trouvé, on met à jour les nœuds enfants
-                    return
-                            this.nodeRepository.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
-                                    .doOnNext(existingNode -> {
-                                        log.info(existingNode.getCode());
+
+                    // On utilise directement nodeParent pour déterminer le parentCodeOrigin
+                    String parentCodeOrigin = ObjectUtils.isEmpty(nodeParent.getParentCodeOrigin())
+                            ? nodeParent.getCode()
+                            : nodeParent.getParentCodeOrigin();
+
+                    return this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
+                            .map(node -> {
+                                if (ObjectUtils.isEmpty(node.getParentCode())) {
+                                    node.setParentCode(nodeParent.getCode());
+                                    node.setParentCodeOrigin(nodeParent.getCode());
+                                } else {
+                                    node.setParentCodeOrigin(nodeParent.getCode());
+                                }
+                                return node;
+                            })
+                            .flatMap(node -> this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                                    .flatMap(existingNode -> {
+                                        existingNode.setStatus(StatusEnum.ARCHIVE);
+                                        existingNode.setModificationDate(Instant.now().toEpochMilli());
+
+                                        node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
+                                        node.setStatus(StatusEnum.SNAPSHOT);
+                                        node.setModificationDate(Instant.now().toEpochMilli());
+                                        return this.nodeRepository.save(existingNode)
+                                                .then(Mono.just(node));
                                     })
-                                    .map(node -> ObjectUtils.isEmpty(node.getParentCodeOrigin()) ? node.getCode() : nodeParent.getParentCodeOrigin())
-                                    .map(parentCodeOrigin ->
-                                            this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
-                                                    .map(node -> {
-                                                        // Si le parentCode et parentCodeOrigin sont vides, on les met à jour
-                                                        if (ObjectUtils.isEmpty(node.getParentCode())) {
-                                                            node.setParentCode(nodeParent.getCode());
-                                                            node.setParentCodeOrigin(nodeParent.getCode());
-                                                        } else {
-                                                            node.setParentCodeOrigin(nodeParent.getCode());
-                                                        }
-                                                        return node;
-                                                    }).flatMap(node -> this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
-                                                            .flatMap(existingNode -> {
-                                                                existingNode.setStatus(StatusEnum.ARCHIVE);
-                                                                existingNode.setModificationDate(Instant.now().toEpochMilli());
-
-                                                                node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
-                                                                node.setStatus(StatusEnum.SNAPSHOT);
-                                                                node.setModificationDate(Instant.now().toEpochMilli());
-
-                                                                return this.nodeRepository.save(existingNode)
-                                                                        .then(Mono.just(node));
-                                                            })
-                                                            .switchIfEmpty(Mono.just(node).map(model -> {
-                                                                model.setModificationDate(Instant.now().toEpochMilli());
-                                                                model.setCreationDate(model.getModificationDate());
-                                                                model.setVersion("0");
-                                                                return model;
-                                                            })))
-                                    );
-
-
-                }).flatMap(Flux::from)
+                                    .switchIfEmpty(Mono.just(node).map(model -> {
+                                        model.setModificationDate(Instant.now().toEpochMilli());
+                                        model.setCreationDate(model.getModificationDate());
+                                        model.setVersion("0");
+                                        return model;
+                                    }))
+                            );
+                })
                 .switchIfEmpty(
-                        // Si le nœud parent n'est pas trouvé, on cherche chaque nœud dans l'entrepôt et on l'archive si nécessaire
                         this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, "", fromFile)
                                 .flatMap(node ->
                                         nodeRepository.findByCode(node.getCode())
-                                                .flatMap(entity -> Mono.empty()) // Si un entity est trouvé, retourner Mono.empty
-                                                .switchIfEmpty(Mono.just(node)) // Si aucun entity n'est trouvé, retourner le node
+                                                .flatMap(entity -> Mono.empty())
+                                                .switchIfEmpty(Mono.just(node))
                                 )
                                 .map(o -> (Node) o)
                                 .flatMap(node -> {
-                                            // Si le nœud existe, on l'archive et on met à jour son état
-                                            node.setStatus(StatusEnum.SNAPSHOT);
-                                            node.setVersion("0");
-                                            node.setModificationDate(Instant.now().toEpochMilli());
-                                            node.setCreationDate(node.getModificationDate());
-                                            return this.nodeRepository.save(nodeMapper.fromModel(node)).map(entity -> node);//Retourne le nœud mis à jour
-                                        }
-                                )
-                ).collectList()  // Collecte tous les nœuds dans une liste
-                .flatMapMany(nodesList -> {
-                    // Une fois tous les nœuds collectés, on les sauvegarde en une seule opération
-                    return Flux.fromIterable(nodesList)
-                            .flatMap(this::importContent)  // Appliquer la logique de contenu
-                            .map(nodeMapper::fromModel)    // Mapper le modèle à une entité si nécessaire
-                            .flatMap(nodeRepository::save);  // Sauvegarde chaque nœud dans le dépôt
-                }).map(nodeMapper::fromEntity)
+                                    node.setStatus(StatusEnum.SNAPSHOT);
+                                    node.setVersion("0");
+                                    node.setModificationDate(Instant.now().toEpochMilli());
+                                    node.setCreationDate(node.getModificationDate());
+                                    return this.nodeRepository.save(nodeMapper.fromModel(node))
+                                            .map(entity -> node);
+                                })
+                )
+                .collectList()
+                .flatMapMany(nodesList -> Flux.fromIterable(nodesList)
+                        .flatMap(this::importContent)
+                        .map(nodeMapper::fromModel)
+                        .flatMap(nodeRepository::save)
+                )
+                .map(nodeMapper::fromEntity)
                 .flatMap(node -> this.notify(node, NotificationEnum.IMPORT));
     }
 
 
     private Mono<Node> importContent(Node node) {
-        return Flux.fromIterable(node.getContents())
+        return Flux.fromIterable(Optional.ofNullable(node.getContents()).orElse(List.of()))
                 .flatMap(this.contentNodeHandler::importContentNode)
-                .collectList().hasElement().map(haveElements -> node)
+                .collectList()
+                .hasElement()
+                .map(haveElements -> node)
                 .map(this.nodeMapper::fromModel)
                 .flatMap(this.nodeRepository::save)
                 .map(this.nodeMapper::fromEntity);
