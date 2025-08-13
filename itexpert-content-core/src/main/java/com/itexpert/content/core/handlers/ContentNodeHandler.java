@@ -339,10 +339,9 @@ public class ContentNodeHandler {
                     contentNode.setModificationDate(contentNode.getCreationDate());
                     return Mono.just(contentNode);
                 }))
-                .flatMap(content->this.contentNodeSlugHelper.update(content, content.getParentCode()))
-                .flatMap(model ->
-                        this.contentNodeRepository.save(this.contentNodeMapper.fromModel(contentNode))
-                )
+                // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
+                .flatMap(content -> this.contentNodeSlugHelper.update(content, content.getParentCode()))
+                .flatMap(model -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(model)))
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.IMPORT));
     }
@@ -367,11 +366,8 @@ public class ContentNodeHandler {
         return this.findByCodeAndStatus(contentNodeCode, StatusEnum.SNAPSHOT.name())
                 .map(model -> {
                     model.setCode(model.getCode().replace(model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
-
                     model.setParentCode(model.getParentCode().replace(model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
-
                     model.setParentCodeOrigin(null);
-
                     return model;
                 })
                 .flatMap(contentNode ->
@@ -388,9 +384,9 @@ public class ContentNodeHandler {
                                     existingContentNode.setStatus(StatusEnum.ARCHIVE);
                                     existingContentNode.setModificationDate(Instant.now().toEpochMilli());
 
-                                    // Sauvegarder l'ancien contenu en ARCHIVE et le nouveau SNAPSHOT
+                                    // Sauvegarder l'ancien contenu en ARCHIVE et retourner le nouveau SNAPSHOT
                                     return this.contentNodeRepository.save(contentNodeMapper.fromModel(existingContentNode))
-                                            .map(savedExistingContent -> contentNode);
+                                            .thenReturn(contentNode);
 
                                 })
                                 .switchIfEmpty(Mono.just(contentNode).map(newContentNode -> {
@@ -400,14 +396,13 @@ public class ContentNodeHandler {
                                     newContentNode.setCreationDate(Instant.now().toEpochMilli());
                                     newContentNode.setModificationDate(newContentNode.getCreationDate());
                                     return newContentNode;
-
                                 }))
                 )
+                // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
                 .flatMap(contentNode -> contentNodeSlugHelper.update(contentNode, environmentCode))
-                .flatMap(contentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(contentNode)))
+                .flatMap(updatedContentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(updatedContentNode)))
                 .map(this.contentNodeMapper::fromEntity)
-                .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT))
-                ;
+                .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
     }
 
     public Mono<ContentNode> fillContent(
