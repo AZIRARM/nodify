@@ -23,22 +23,34 @@ public class ContentNodeSlugHelper {
     }
 
     private Mono<ContentNode> renameSlug(ContentNode content, String environment, String slug) {
-        return this.contentNodeRepository.findAllBySlug(slug)
-                .hasElements()
-                .flatMap(existsInContentNodeRepo -> {
-                    if (existsInContentNodeRepo) {
-                        String newSlug = this.generateSlug(content.getSlug(), environment, extractRec(slug) + 1);
-                        return renameSlug(content, environment, newSlug);
+        if (ObjectUtils.isEmpty(slug)) {
+            return Mono.just(content);
+        }
+
+        return this.contentNodeRepository.findBySlugAndCode(slug, content.getCode())
+                .hasElements() // transforme le Flux en Mono<Boolean>
+                .flatMap(exists -> {
+                    if (exists) {
+                       return Mono.just(content);
                     } else {
-                        return this.nodeRepository.findAllBySlug(slug)
+                        return this.contentNodeRepository.findAllBySlug(slug)
                                 .hasElements()
-                                .flatMap(existsInNodeRepo -> {
-                                    if (existsInNodeRepo) {
+                                .flatMap(existsInContentNodeRepo -> {
+                                    if (existsInContentNodeRepo) {
                                         String newSlug = this.generateSlug(content.getSlug(), environment, extractRec(slug) + 1);
                                         return renameSlug(content, environment, newSlug);
                                     } else {
-                                        content.setSlug(slug);
-                                        return Mono.just(content);
+                                        return this.nodeRepository.findAllBySlug(slug)
+                                                .hasElements()
+                                                .flatMap(existsInNodeRepo -> {
+                                                    if (existsInNodeRepo) {
+                                                        String newSlug = this.generateSlug(content.getSlug(), environment, extractRec(slug) + 1);
+                                                        return renameSlug(content, environment, newSlug);
+                                                    } else {
+                                                        content.setSlug(slug);
+                                                        return Mono.just(content);
+                                                    }
+                                                });
                                     }
                                 });
                     }
@@ -54,7 +66,7 @@ public class ContentNodeSlugHelper {
                 return baseSlug + "-" + environment.toLowerCase() + rec;
             }
         }
-        return environment + (rec > 0 ? rec : "");
+        return null;
     }
 
     // Permet de récupérer le compteur rec d'un slug existant

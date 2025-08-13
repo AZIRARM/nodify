@@ -23,13 +23,16 @@ public class NodeSlugHelper {
     }
 
     private Mono<Node> renameSlug(Node node, String environment, String slug) {
-        return this.nodeRepository.findAllBySlug(slug)
-                .hasElements()
-                .flatMap(existsInNodeRepo -> {
-                    if (existsInNodeRepo) {
+        if (ObjectUtils.isEmpty(slug)) {
+            return Mono.just(node);
+        }
+
+        return this.nodeRepository.findBySlugAndCode(slug, node.getCode())
+                .hasElements() // transforme le Flux en Mono<Boolean>
+                .flatMap(exists -> {
+                    if (exists) {
                         // Le slug existe dans nodeRepository → incrément et rappel récursif
-                        String newSlug = this.generateSlug(node.getSlug(), environment, extractRec(slug) + 1);
-                        return renameSlug(node, environment, newSlug);
+                        return Mono.just(node);
                     } else {
                         // Pas trouvé dans nodeRepository, on cherche dans contentNodeRepository
                         return this.contentNodeRepository.findAllBySlug(slug)
@@ -58,7 +61,7 @@ public class NodeSlugHelper {
                 return baseSlug + "-" + environment.toLowerCase() + rec;
             }
         }
-        return environment + (rec > 0 ? rec : "");
+        return null;
     }
 
     // Permet de récupérer le compteur rec d'un slug existant
