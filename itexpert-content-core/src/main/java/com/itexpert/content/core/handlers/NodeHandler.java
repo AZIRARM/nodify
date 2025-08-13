@@ -179,34 +179,32 @@ public class NodeHandler {
                         })
                         .flatMapIterable(nodes -> nodes)
                         .filter(node -> node.getStatus().equals(StatusEnum.SNAPSHOT))
-                        .flatMap(node -> {
-
-                            return this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.PUBLISHED.name())
-                                    .map(this.nodeMapper::fromEntity)
-                                    .flatMap(toArchive -> this.archiveNode(toArchive, node, userId))
-                                    .switchIfEmpty(this.publishNode(node, userId))
-                                    .onErrorResume(error -> {
-                                        // Log l'erreur si nécessaire
-                                        System.err.println("Erreur détectée : " + error.getMessage());
-                                        return this.publishNode(node, userId);
-                                    });
-                        })
+                        .flatMap(node -> this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.PUBLISHED.name())
+                                .map(this.nodeMapper::fromEntity)
+                                .flatMap(toArchive -> this.archiveNode(toArchive, node, userId))
+                                .switchIfEmpty(this.publishNode(node, userId))
+                                .onErrorResume(error -> {
+                                    System.err.println("Erreur détectée : " + error.getMessage());
+                                    return this.publishNode(node, userId);
+                                })
+                        )
                         .collectList()
                         .flatMapIterable(list -> list)
+                        // 🔹 Correction ici : mise à jour du slug sur une liste d'un élément
                         .flatMap(node -> this.nodeSlugHelper.update(node, node.getEnvironmentCode()))
                         .map(this.nodeMapper::fromModel)
                         .flatMap(nodeRepository::save)
                         .map(nodeMapper::fromEntity)
-                        .flatMap(model ->
-                                this.contentNodeHandler.findAllByNodeCodeAndStatus(model.getCode(), StatusEnum.SNAPSHOT.name())
-                                        .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getId(), true, userId))
-                                        .then(Mono.just(model)) // Assurez-vous que le modèle est retourné après la publication
+                        .flatMap(model -> this.contentNodeHandler.findAllByNodeCodeAndStatus(model.getCode(), StatusEnum.SNAPSHOT.name())
+                                .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getId(), true, userId))
+                                .then(Mono.just(model))
                         )
                         .map(node -> node)
                         .collectList()
                         .flatMapIterable(list -> list)
                         .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT))
-                ).flatMap(Mono::from);
+                )
+                .flatMap(Mono::from);
     }
 
     private Mono<Node> publishNode(Node toPublish, UUID userId) {
@@ -409,28 +407,38 @@ public class NodeHandler {
     public Mono<Node> importNode(Node model) {
         return this.findByCodeAndStatus(model.getCode(), StatusEnum.SNAPSHOT.name())
                 .flatMap(existingNode -> {
-                    // Si un nœud SNAPSHOT existe, archiver l'ancien et créer une nouvelle version
+                    // Archiver l'ancien SNAPSHOT
                     existingNode.setStatus(StatusEnum.ARCHIVE);
+
+                    // Préparer le nouveau SNAPSHOT
                     model.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
                     model.setStatus(StatusEnum.SNAPSHOT);
 
-                    // Sauvegarder l'ancien en ARCHIVE et le nouveau SNAPSHOT
-                    return this.nodeRepository.save(nodeMapper.fromModel(existingNode))
-                            .then(this.nodeRepository.save(this.nodeMapper.fromModel(model)));
+                    // Mise à jour du slug pour le nouveau node
+                    return nodeSlugHelper.update(model, model.getEnvironmentCode()) // ou autre champ qui représente l'environnement
+                            .flatMap(updatedModel ->
+                                    // Sauvegarder l'ancien et le nouveau
+                                    this.nodeRepository.save(nodeMapper.fromModel(existingNode))
+                                            .then(this.nodeRepository.save(nodeMapper.fromModel(updatedModel)))
+                            );
                 })
                 .switchIfEmpty(
-                        // Si aucun nœud SNAPSHOT n'existe, sauvegarder directement le modèle comme SNAPSHOT
                         Mono.defer(() -> {
                             model.setVersion("0");
                             model.setStatus(StatusEnum.SNAPSHOT);
-                            return this.nodeRepository.save(this.nodeMapper.fromModel(model));
+
+                            // 🔹 Mise à jour du slug aussi pour la création initiale
+                            return nodeSlugHelper.update(model, model.getEnvironmentCode())
+                                    .flatMap(updatedModel ->
+                                            this.nodeRepository.save(nodeMapper.fromModel(updatedModel))
+                                    );
                         })
                 )
-                .flatMap(savedNode -> {
-                    // Sauvegarder les contenus associés au nœud
-                    return contentNodeHandler.saveAll(model.getContents())
-                            .then(Mono.just(savedNode)); // Remplace thenReturn par then + Mono.just
-                })
+                .flatMap(savedNode ->
+                        // Sauvegarder les contenus associés
+                        contentNodeHandler.saveAll(model.getContents())
+                                .then(Mono.just(savedNode))
+                )
                 .map(this.nodeMapper::fromEntity)
                 .flatMap(node -> this.notify(node, NotificationEnum.IMPORT));
     }
@@ -440,7 +448,6 @@ public class NodeHandler {
         return this.nodeRepository.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
                 .flatMapMany(nodeParent -> {
 
-                    // On utilise directement nodeParent pour déterminer le parentCodeOrigin
                     String parentCodeOrigin = ObjectUtils.isEmpty(nodeParent.getParentCodeOrigin())
                             ? nodeParent.getCode()
                             : nodeParent.getParentCodeOrigin();
@@ -491,6 +498,7 @@ public class NodeHandler {
                                             .map(entity -> node);
                                 })
                 )
+                // Mise à jour du slug pour chaque node
                 .flatMap(node -> this.nodeSlugHelper.update(node, nodeParentCode))
                 .collectList()
                 .flatMapMany(nodesList -> Flux.fromIterable(nodesList)
