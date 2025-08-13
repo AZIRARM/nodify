@@ -6,9 +6,9 @@ import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.ContentNode;
-import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Notification;
+import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -317,10 +317,17 @@ public class ContentNodeHandlerTest {
 
 
         ContentNode snapshotEntityProd = this.cloneNode(snapshotEntity);
-        snapshotEntityProd.setSlug("my-beutifull-slug");
+        snapshotEntityProd.setSlug("my-beautifull-slug-prod");
 
         when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
                 .thenReturn(Mono.just(snapshotEntityProd));
+
+        when(contentNodeRepository.findBySlugAndCode(any(), any()))
+                .thenReturn(Flux.fromIterable(List.of(snapshotEntityProd)));
+
+        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.empty());
+
 
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
@@ -330,26 +337,18 @@ public class ContentNodeHandlerTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.empty());
-
-        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod1")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod1")).thenReturn(Flux.empty());
-
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
                 .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("2");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
-                    assert !result.getSlug().equals(snapshotNode.getSlug());
-                    assert result.getSlug().equals("my-beautifull-slug-prod1");
+                    assert result.getSlug().equals("my-beautifull-slug-prod"); //no change slug already exist
                 })
                 .verifyComplete();
 
 
         verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
     }
-
 
     @Test
     void deployContentWithSlug_withNoExistingContent_shouldDeployAndAddNewSlug() {
@@ -466,6 +465,50 @@ public class ContentNodeHandlerTest {
         verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
     }
 
+    @Test
+    void deployContentWithoutSlug_withNoExistingContentWithSlug_shouldDeployAndArchiveOldAndNoSlug() {
+
+        ContentNode snapshotEntityDev = this.cloneNode(snapshotEntity);
+        snapshotEntityDev.setSlug(null);
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntityDev));
+
+
+        ContentNode snapshotEntityProd = this.cloneNode(snapshotEntity);
+        snapshotEntityProd.setSlug(null);
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntityProd));
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, nodeRepository);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
+        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod1")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod1")).thenReturn(Flux.empty());
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
+                .assertNext(result -> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("2");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                    assert ObjectUtils.isEmpty(result.getSlug());
+                })
+                .verifyComplete();
+
+
+        verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
+    }
+
+
     private ContentNode cloneNode(ContentNode original) {
         ContentNode clone = new ContentNode();
         clone.setId(original.getId());
@@ -478,7 +521,7 @@ public class ContentNodeHandlerTest {
         return clone;
     }
 
-    private void updateConfiguration(ContentNodeSlugHelper contentNodeSlugHelperParam){
+    private void updateConfiguration(ContentNodeSlugHelper contentNodeSlugHelperParam) {
         contentNodeHandler = new ContentNodeHandler(
                 contentNodeRepository,
                 contentNodeMapper,

@@ -67,4 +67,6 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     Mono<Boolean> existsBySlug(String slug);
 
     Flux<Node> findAllBySlug(String slug);
+
+    Flux<Node> findBySlugAndCode(String slug, String code);
 }
