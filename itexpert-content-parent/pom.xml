@@ -15,6 +15,7 @@
         <mapstruct>1.5.3.Final</mapstruct>
         <commons-lang3>3.18.0</commons-lang3>
         <io.projectreactor>3.4.29</io.projectreactor>
+        <com.fasterxml.jackson.core>2.15.0</com.fasterxml.jackson.core>
         <jdk-version>20</jdk-version>
         <maven-compiler-plugin>3.13.0</maven-compiler-plugin>
     </properties>
@@ -116,6 +117,21 @@
                 <version>2.10</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${com.fasterxml.jackson.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${com.fasterxml.jackson.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${com.fasterxml.jackson.core}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

@@ -360,7 +360,7 @@ public class ContentNodeHandler {
         return this.contentNodeRepository.countDistinctByParentCode(code).map(count -> count > 0);
     }
 
-    public Mono<Boolean> deployContent(String contentNodeCode, String environmentCode) {
+    public Mono<ContentNode> deployContent(String contentNodeCode, String environmentCode) {
         return this.findByCodeAndStatus(contentNodeCode, StatusEnum.SNAPSHOT.name())
                 .map(model -> {
                     model.setCode(model.getCode().replace(model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
@@ -385,6 +385,12 @@ public class ContentNodeHandler {
                                     existingContentNode.setStatus(StatusEnum.ARCHIVE);
                                     existingContentNode.setModificationDate(Instant.now().toEpochMilli());
 
+                                    if (ObjectUtils.isEmpty(existingContentNode.getSlug()) && ObjectUtils.isNotEmpty(contentNode.getSlug())) {
+                                        contentNode.setSlug(contentNode.getSlug().replace("-"+environmentCode.trim().toLowerCase(), "") + "-" + environmentCode.trim().toLowerCase());
+                                    } else {
+                                        contentNode.setSlug(existingContentNode.getSlug());
+                                    }
+
                                     // Sauvegarder l'ancien contenu en ARCHIVE et le nouveau SNAPSHOT
                                     return this.contentNodeRepository.save(contentNodeMapper.fromModel(existingContentNode))
                                             .map(savedExistingContent -> contentNode);
@@ -396,6 +402,11 @@ public class ContentNodeHandler {
                                     newContentNode.setStatus(StatusEnum.SNAPSHOT);
                                     newContentNode.setCreationDate(Instant.now().toEpochMilli());
                                     newContentNode.setModificationDate(newContentNode.getCreationDate());
+
+                                    if (ObjectUtils.isNotEmpty(contentNode.getSlug())) {
+                                        newContentNode.setSlug(contentNode.getSlug().replace("-"+environmentCode.trim().toLowerCase(), "") + "-" + environmentCode.trim().toLowerCase());
+                                    }
+
                                     return newContentNode;
 
                                 }))
@@ -403,7 +414,7 @@ public class ContentNodeHandler {
                 .flatMap(contentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(contentNode)))
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT))
-                .hasElement();
+                ;
     }
 
     public Mono<ContentNode> fillContent(

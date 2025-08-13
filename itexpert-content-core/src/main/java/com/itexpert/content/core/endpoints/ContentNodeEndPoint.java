@@ -214,7 +214,7 @@ public class ContentNodeEndPoint {
     @GetMapping(value = "/code/{code}/deploy")
     public Mono<Boolean> deploy(@PathVariable String code,
                                 @RequestParam(name = "environment", required = false) String environmentCode) {
-        return this.contentNodeHandler.deployContent(code, environmentCode);
+        return this.contentNodeHandler.deployContent(code, environmentCode).hasElement();
     }
 
     @GetMapping(value = "/code/{code}/slug/{slug}/exists")
