@@ -5,7 +5,6 @@ import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.ContentNode;
-import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Notification;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +34,10 @@ public class ContentNodeHandlerTest {
 
     private ContentNodeHandler contentNodeHandler;
 
+
+    private com.itexpert.content.lib.models.ContentNode snapshotNode;
+    private ContentNode snapshotEntity;
+
     @BeforeEach
     void setup() {
         contentNodeRepository = mock(ContentNodeRepository.class);
@@ -59,13 +62,30 @@ public class ContentNodeHandlerTest {
                 .type("CONTENT_NODE")
                 .build();
 
+        snapshotNode = new com.itexpert.content.lib.models.ContentNode();
+        snapshotNode.setId(UUID.randomUUID());
+        snapshotNode.setCode("NODE-DEV");
+        snapshotNode.setParentCode("PARENT-DEV");
+        snapshotNode.setVersion("1");
+        snapshotNode.setStatus(StatusEnum.SNAPSHOT);
+        snapshotNode.setSlug("my-beautifull-slug");
+        snapshotNode.setCreationDate(Instant.now().minusSeconds(3600).toEpochMilli());
+
+        snapshotEntity = new ContentNode();
+        snapshotEntity.setId(snapshotNode.getId());
+        snapshotEntity.setCode(snapshotNode.getCode());
+        snapshotEntity.setParentCode(snapshotNode.getParentCode());
+        snapshotEntity.setVersion(snapshotNode.getVersion());
+        snapshotEntity.setStatus(snapshotNode.getStatus());
+        snapshotEntity.setSlug("my-beautifull-slug");
+        snapshotEntity.setCreationDate(snapshotNode.getCreationDate());
+
         when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
 
     }
 
     @Test
     public void testImportContentNode_existingContentNode() {
-        // Préparer les objets
         com.itexpert.content.lib.models.ContentNode inputNode = new com.itexpert.content.lib.models.ContentNode();
         inputNode.setCode("code123");
         inputNode.setVersion("1");
@@ -86,21 +106,16 @@ public class ContentNodeHandlerTest {
         savedEntity.setVersion("2");
         savedEntity.setStatus(StatusEnum.SNAPSHOT);
 
-        // Simuler findByCodeAndStatus pour retourner un ContentNode existant
         when(contentNodeRepository.findByCodeAndStatus(eq("code123"), eq(StatusEnum.SNAPSHOT.name())))
                 .thenReturn(Mono.just(existingNode));
 
 
-        // Simuler save dans le repo, retourner le contenu sauvegardé (ici même objet pour simplicité)
         when(contentNodeRepository.save(any(ContentNode.class))).thenReturn(Mono.just(savedEntity));
 
-        // Appel de la méthode à tester
         Mono<com.itexpert.content.lib.models.ContentNode> resultMono = contentNodeHandler.importContentNode(inputNode);
 
-        // Vérifier le résultat
         StepVerifier.create(resultMono)
                 .assertNext(result -> {
-                    // Assertions sur le ContentNode retourné
                     assert result.getCode().equals("code123");
                     assert result.getVersion().equals("2");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
@@ -108,15 +123,13 @@ public class ContentNodeHandlerTest {
                 })
                 .verifyComplete();
 
-        // Vérifier interactions avec mocks
         verify(contentNodeRepository).findByCodeAndStatus(eq("code123"), eq(StatusEnum.SNAPSHOT.name()));
-        verify(contentNodeRepository, times(2)).save(any(ContentNode.class)); // Une fois pour archive, une fois pour nouveau
+        verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
         verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any());
     }
 
     @Test
     public void testImportContentNode_noExistingContentNode() {
-        // Préparer l'entrée
         com.itexpert.content.lib.models.ContentNode inputNode = new com.itexpert.content.lib.models.ContentNode();
         inputNode.setCode("newCode");
 
@@ -126,17 +139,13 @@ public class ContentNodeHandlerTest {
         savedEntity.setVersion("0");
         savedEntity.setStatus(StatusEnum.SNAPSHOT);
 
-        // Simuler findByCodeAndStatus retourne vide (pas de noeud existant)
         when(contentNodeRepository.findByCodeAndStatus(eq("newCode"), eq(StatusEnum.SNAPSHOT.name())))
                 .thenReturn(Mono.empty());
 
-        // Simuler save dans repo
         when(contentNodeRepository.save(any(ContentNode.class))).thenReturn(Mono.just(savedEntity));
 
-        // Appel de la méthode
         Mono<com.itexpert.content.lib.models.ContentNode> resultMono = contentNodeHandler.importContentNode(inputNode);
 
-        // Vérifier
         StepVerifier.create(resultMono)
                 .assertNext(result -> {
                     assert result.getCode().equals("newCode");
@@ -146,9 +155,195 @@ public class ContentNodeHandlerTest {
                 })
                 .verifyComplete();
 
-        // Vérifier interactions
         verify(contentNodeRepository).findByCodeAndStatus(eq("newCode"), eq(StatusEnum.SNAPSHOT.name()));
         verify(contentNodeRepository).save(any(ContentNode.class));
         verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void deployContent_withExistingContent_shouldDeployAndArchiveOld() {
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
+                .assertNext(result-> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("2");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                })
+                .verifyComplete();
+
+        verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
+    }
+
+    @Test
+    void deployContent_withoutExistingSecondSearch_shouldCreateSnapshotV0() {
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.empty());
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
+                .assertNext(result-> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("0");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                })
+                .verifyComplete();
+
+        verify(contentNodeRepository, times(1)).save(any(ContentNode.class));
+    }
+
+    @Test
+    void deployContentWithSlug_withExistingContentWithoutSlug_shouldDeployAndArchiveOldAndSetNewSlug() {
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+
+        ContentNode snapshotEntityProd = this.cloneNode(snapshotEntity);
+        snapshotEntityProd.setSlug(null);
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntityProd));
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
+                .assertNext(result-> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("2");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                    assert !result.getSlug().equals(snapshotNode.getSlug());
+                    assert result.getSlug().equals("my-beautifull-slug-prod");
+                })
+                .verifyComplete();
+
+
+        verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
+    }
+
+    @Test
+    void deployContentWithSlug_withExistingContentWithSlug_shouldDeployAndArchiveOldAndKeepSlug() {
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+
+        ContentNode snapshotEntityProd = this.cloneNode(snapshotEntity);
+        snapshotEntityProd.setSlug("my-update-slug");
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntityProd));
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
+                .assertNext(result-> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("2");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                    assert !result.getSlug().equals(snapshotNode.getSlug());
+                    assert result.getSlug().equals("my-update-slug");
+                })
+                .verifyComplete();
+
+
+        verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
+    }
+
+    @Test
+    void deployContentWithSlug_withNoExistingContent_shouldDeployAndAddNewSlug() {
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.empty());
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
+                .assertNext(result-> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("0");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                    assert !result.getSlug().equals(snapshotNode.getSlug());
+                    assert result.getSlug().equals("my-beautifull-slug-prod");
+                })
+                .verifyComplete();
+
+
+        verify(contentNodeRepository, times(1)).save(any(ContentNode.class));
+    }
+
+
+    @Test
+    void deployContent_withNoExistingContent_shouldDeployAndAddNewCode() {
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.empty());
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
+                .assertNext(result-> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("0");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                })
+                .verifyComplete();
+
+        verify(contentNodeRepository, times(1)).save(any(ContentNode.class));
+    }
+
+    @Test
+    void deployContent_withExistingContent_shouldDeployAndKeepCode() {
+        when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntity));
+
+        ContentNode snapshotEntityProd = this.cloneNode(snapshotEntity);
+
+        when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(snapshotEntityProd));
+
+        when(contentNodeRepository.save(any(ContentNode.class)))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD-OTHER"))
+                .assertNext(result-> {
+                    assert result.getCode().equals("NODE-PROD");
+                    assert result.getVersion().equals("2");
+                    assert result.getStatus() == StatusEnum.SNAPSHOT;
+                })
+                .verifyComplete();
+
+        verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
+    }
+
+    private ContentNode cloneNode(ContentNode original) {
+        ContentNode clone = new ContentNode();
+        clone.setId(original.getId());
+        clone.setCode(original.getCode());
+        clone.setParentCode(original.getParentCode());
+        clone.setVersion(original.getVersion());
+        clone.setStatus(original.getStatus());
+        clone.setCreationDate(original.getCreationDate());
+        clone.setModificationDate(original.getModificationDate());
+        return clone;
     }
 }
