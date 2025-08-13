@@ -1,6 +1,5 @@
 package com.itexpert.content.core.helpers;
 
-import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.models.Node;
@@ -8,10 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Slf4j
 @Component
@@ -22,11 +18,8 @@ public class NodeSlugHelper {
 
     private final ContentNodeRepository contentNodeRepository;
 
-    private final NodeMapper nodeMapper;
-
-    public Flux<Node> update(List<Node> nodes, String environment) {
-        return Flux.fromIterable(nodes)
-                .flatMap(node -> this.renameSlug(node, environment, this.generateSlug(node.getSlug(), environment, 0)));
+    public Mono<Node> update(Node node, String environment) {
+        return this.renameSlug(node, environment, this.generateSlug(node.getSlug(), environment, 0));
     }
 
     private Mono<Node> renameSlug(Node node, String environment, String slug) {
@@ -58,11 +51,11 @@ public class NodeSlugHelper {
 
     private String generateSlug(String slug, String environment, int rec) {
         if (ObjectUtils.isNotEmpty(slug)) {
-            String baseSlug = slug.trim().replace(environment, "");
+            String baseSlug = slug.trim().replace(environment.toLowerCase(), "");
             if (rec <= 0) {
-                return baseSlug + "-" + environment;
+                return baseSlug + "-" + environment.toLowerCase();
             } else {
-                return baseSlug + "-" + environment + rec;
+                return baseSlug + "-" + environment.toLowerCase() + rec;
             }
         }
         return environment + (rec > 0 ? rec : "");
