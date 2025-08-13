@@ -1,6 +1,5 @@
 package com.itexpert.content.core.helpers;
 
-import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.models.ContentNode;
@@ -8,10 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Slf4j
 @Component
@@ -22,11 +18,8 @@ public class ContentNodeSlugHelper {
 
     private final NodeRepository nodeRepository;
 
-    private final ContentNodeMapper contentNodeMapper;
-
-    public Flux<ContentNode> update(List<ContentNode> contents, String environment) {
-        return Flux.fromIterable(contents)
-                .flatMap(content -> this.renameSlug(content, environment, this.generateSlug(content.getSlug(), environment, 0)));
+    public Mono<ContentNode> update(ContentNode content, String environment) {
+        return this.renameSlug(content, environment, this.generateSlug(content.getSlug(), environment, 0));
     }
 
     private Mono<ContentNode> renameSlug(ContentNode content, String environment, String slug) {
@@ -54,11 +47,11 @@ public class ContentNodeSlugHelper {
 
     private String generateSlug(String slug, String environment, int rec) {
         if (ObjectUtils.isNotEmpty(slug)) {
-            String baseSlug = slug.trim().replace(environment, "");
+            String baseSlug = slug.trim().replace(environment.toLowerCase(), "");
             if (rec <= 0) {
-                return baseSlug + "-" + environment;
+                return baseSlug + "-" + environment.toLowerCase();
             } else {
-                return baseSlug + "-" + environment + rec;
+                return baseSlug + "-" + environment.toLowerCase() + rec;
             }
         }
         return environment + (rec > 0 ? rec : "");
