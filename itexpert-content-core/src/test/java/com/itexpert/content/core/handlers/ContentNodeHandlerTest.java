@@ -1,19 +1,25 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.helpers.ContentHelper;
+import com.itexpert.content.core.helpers.ContentNodeSlugHelper;
 import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.ContentNode;
+import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Notification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +40,7 @@ public class ContentNodeHandlerTest {
 
     private ContentNodeHandler contentNodeHandler;
 
+    private ContentNodeSlugHelper contentNodeSlugHelper;
 
     private com.itexpert.content.lib.models.ContentNode snapshotNode;
     private ContentNode snapshotEntity;
@@ -54,7 +61,8 @@ public class ContentNodeHandlerTest {
                 userHandler,
                 notificationHandler,
                 dataHandler,
-                contentHelper);
+                contentHelper,
+                contentNodeSlugHelper);
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
@@ -81,7 +89,6 @@ public class ContentNodeHandlerTest {
         snapshotEntity.setCreationDate(snapshotNode.getCreationDate());
 
         when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
-
     }
 
     @Test
@@ -111,6 +118,20 @@ public class ContentNodeHandlerTest {
 
 
         when(contentNodeRepository.save(any(ContentNode.class))).thenReturn(Mono.just(savedEntity));
+
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
 
         Mono<com.itexpert.content.lib.models.ContentNode> resultMono = contentNodeHandler.importContentNode(inputNode);
 
@@ -144,6 +165,20 @@ public class ContentNodeHandlerTest {
 
         when(contentNodeRepository.save(any(ContentNode.class))).thenReturn(Mono.just(savedEntity));
 
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
+
         Mono<com.itexpert.content.lib.models.ContentNode> resultMono = contentNodeHandler.importContentNode(inputNode);
 
         StepVerifier.create(resultMono)
@@ -171,8 +206,22 @@ public class ContentNodeHandlerTest {
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
+
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
-                .assertNext(result-> {
+                .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("2");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
@@ -193,8 +242,22 @@ public class ContentNodeHandlerTest {
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
+
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
-                .assertNext(result-> {
+                .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("0");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
@@ -219,8 +282,22 @@ public class ContentNodeHandlerTest {
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
+
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
-                .assertNext(result-> {
+                .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("2");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
@@ -240,7 +317,7 @@ public class ContentNodeHandlerTest {
 
 
         ContentNode snapshotEntityProd = this.cloneNode(snapshotEntity);
-        snapshotEntityProd.setSlug("my-update-slug");
+        snapshotEntityProd.setSlug("my-beutifull-slug");
 
         when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
                 .thenReturn(Mono.just(snapshotEntityProd));
@@ -248,19 +325,31 @@ public class ContentNodeHandlerTest {
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
+
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, nodeRepository);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
+        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod1")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod1")).thenReturn(Flux.empty());
+
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
-                .assertNext(result-> {
+                .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("2");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
                     assert !result.getSlug().equals(snapshotNode.getSlug());
-                    assert result.getSlug().equals("my-update-slug");
+                    assert result.getSlug().equals("my-beautifull-slug-prod1");
                 })
                 .verifyComplete();
 
 
         verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
     }
+
 
     @Test
     void deployContentWithSlug_withNoExistingContent_shouldDeployAndAddNewSlug() {
@@ -274,8 +363,22 @@ public class ContentNodeHandlerTest {
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
+
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
-                .assertNext(result-> {
+                .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("0");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
@@ -300,8 +403,22 @@ public class ContentNodeHandlerTest {
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
+
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD"))
-                .assertNext(result-> {
+                .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("0");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
@@ -324,8 +441,22 @@ public class ContentNodeHandlerTest {
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
+        contentNodeSlugHelper = mock(ContentNodeSlugHelper.class);
+
+        this.updateConfiguration(contentNodeSlugHelper);
+
+        when(contentNodeSlugHelper.update(any(), any()))
+                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
+                    @Override
+                    public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
+                        com.itexpert.content.lib.models.ContentNode content = invocationOnMock.getArgument(0);
+                        content.setSlug("my-beautifull-slug-prod");
+                        return Mono.just(content);
+                    }
+                });
+
         StepVerifier.create(contentNodeHandler.deployContent("NODE-DEV", "PROD-OTHER"))
-                .assertNext(result-> {
+                .assertNext(result -> {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("2");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
@@ -345,5 +476,17 @@ public class ContentNodeHandlerTest {
         clone.setCreationDate(original.getCreationDate());
         clone.setModificationDate(original.getModificationDate());
         return clone;
+    }
+
+    private void updateConfiguration(ContentNodeSlugHelper contentNodeSlugHelperParam){
+        contentNodeHandler = new ContentNodeHandler(
+                contentNodeRepository,
+                contentNodeMapper,
+                nodeRepository,
+                userHandler,
+                notificationHandler,
+                dataHandler,
+                contentHelper,
+                contentNodeSlugHelperParam);
     }
 }

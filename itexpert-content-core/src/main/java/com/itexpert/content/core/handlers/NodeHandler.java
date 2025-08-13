@@ -1,5 +1,6 @@
 package com.itexpert.content.core.handlers;
 
+import com.itexpert.content.core.helpers.NodeSlugHelper;
 import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.models.ContentStatsDTO;
@@ -38,6 +39,8 @@ public class NodeHandler {
     private final RenameNodeCodesHelper renameNodeCodesHelper;
 
     private final UserHandler userHandler;
+
+    private final NodeSlugHelper nodeSlugHelper;
 
     public Flux<Node> findAll() {
         return nodeRepository.findAll().map(nodeMapper::fromEntity);
@@ -190,6 +193,7 @@ public class NodeHandler {
                         })
                         .collectList()
                         .flatMapIterable(list -> list)
+                        .flatMap(node -> this.nodeSlugHelper.update(node, node.getEnvironmentCode()))
                         .map(this.nodeMapper::fromModel)
                         .flatMap(nodeRepository::save)
                         .map(nodeMapper::fromEntity)
@@ -487,6 +491,7 @@ public class NodeHandler {
                                             .map(entity -> node);
                                 })
                 )
+                .flatMap(node -> this.nodeSlugHelper.update(node, nodeParentCode))
                 .collectList()
                 .flatMapMany(nodesList -> Flux.fromIterable(nodesList)
                         .flatMap(this::importContent)

@@ -1,6 +1,5 @@
 package com.itexpert.content.core.helpers;
 
-import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.Node;
@@ -10,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -19,15 +16,13 @@ public class ContentNodeSlugHelperTest {
 
     private ContentNodeRepository contentNodeRepository;
     private NodeRepository nodeRepository;
-    private ContentNodeMapper contentNodeMapper;
     private ContentNodeSlugHelper contentNodeSlugHelper;
 
     @BeforeEach
     void setup() {
         contentNodeRepository = mock(ContentNodeRepository.class);
         nodeRepository = mock(NodeRepository.class);
-        contentNodeMapper = mock(ContentNodeMapper.class); // mock mapper si besoin
-        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, nodeRepository, contentNodeMapper);
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, nodeRepository);
     }
 
     @Test
@@ -40,7 +35,7 @@ public class ContentNodeSlugHelperTest {
         // Aucun slug dans nodeRepository
         when(nodeRepository.findAllBySlug(anyString())).thenReturn(Flux.empty());
 
-        StepVerifier.create(contentNodeSlugHelper.update(List.of(content), "env"))
+        StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
                 .expectNextMatches(c -> c.getSlug().equals("mySlug-env"))
                 .verifyComplete();
 
@@ -61,7 +56,7 @@ public class ContentNodeSlugHelperTest {
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
         when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
 
-        StepVerifier.create(contentNodeSlugHelper.update(List.of(content), "env"))
+        StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
                 .expectNextMatches(c -> c.getSlug().equals("mySlug-env1"))
                 .verifyComplete();
 
@@ -84,7 +79,7 @@ public class ContentNodeSlugHelperTest {
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
         when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
 
-        StepVerifier.create(contentNodeSlugHelper.update(List.of(content), "env"))
+        StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
                 .expectNextMatches(c -> c.getSlug().equals("mySlug-env1"))
                 .verifyComplete();
 
@@ -92,25 +87,5 @@ public class ContentNodeSlugHelperTest {
         verify(nodeRepository).findAllBySlug("mySlug-env");
         verify(contentNodeRepository).findAllBySlug("mySlug-env1");
         verify(nodeRepository).findAllBySlug("mySlug-env1");
-    }
-
-    @Test
-    void testUpdate_multipleContents() {
-        ContentNode content1 = new ContentNode();
-        content1.setSlug("slug1");
-
-        ContentNode content2 = new ContentNode();
-        content2.setSlug("slug2");
-
-        when(contentNodeRepository.findAllBySlug(anyString())).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug(anyString())).thenReturn(Flux.empty());
-
-        StepVerifier.create(contentNodeSlugHelper.update(List.of(content1, content2), "env"))
-                .expectNextMatches(c -> c.getSlug().equals("slug1-env"))
-                .expectNextMatches(c -> c.getSlug().equals("slug2-env"))
-                .verifyComplete();
-
-        verify(contentNodeRepository, times(2)).findAllBySlug(anyString());
-        verify(nodeRepository, times(2)).findAllBySlug(anyString());
     }
 }
