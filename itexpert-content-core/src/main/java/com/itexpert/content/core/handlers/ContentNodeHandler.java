@@ -322,6 +322,10 @@ public class ContentNodeHandler {
                     contentNode.setCreationDate(existingContentNode.getCreationDate());
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
 
+                    if(ObjectUtils.isNotEmpty(existingContentNode.getSlug())){
+                        contentNode.setSlug(existingContentNode.getSlug());
+                    }
+
                     // Archiver l'ancien ContentNode
                     existingContentNode.setStatus(StatusEnum.ARCHIVE);
                     existingContentNode.setModificationDate(Instant.now().toEpochMilli());
@@ -380,6 +384,10 @@ public class ContentNodeHandler {
                                     contentNode.setStatus(StatusEnum.SNAPSHOT);
                                     contentNode.setCreationDate(existingContentNode.getCreationDate());
                                     contentNode.setModificationDate(Instant.now().toEpochMilli());
+
+                                    if(ObjectUtils.isNotEmpty(existingContentNode.getSlug())){
+                                        contentNode.setSlug(existingContentNode.getSlug());
+                                    }
 
                                     existingContentNode.setStatus(StatusEnum.ARCHIVE);
                                     existingContentNode.setModificationDate(Instant.now().toEpochMilli());
