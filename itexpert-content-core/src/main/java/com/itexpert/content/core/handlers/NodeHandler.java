@@ -3,7 +3,6 @@ package com.itexpert.content.core.handlers;
 import com.itexpert.content.core.helpers.NodeSlugHelper;
 import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
 import com.itexpert.content.core.mappers.NodeMapper;
-import com.itexpert.content.core.models.ContentStatsDTO;
 import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.RulesUtils;
@@ -170,85 +169,101 @@ public class NodeHandler {
 
 
     @Transactional
+    /**
+     * Point d'entrée public pour la publication d'un noeud et de tous ses enfants.
+     * @param nodeUuid L'UUID du noeud parent à publier.
+     * @param userId L'ID de l'utilisateur qui effectue l'opération.
+     * @return Un Mono contenant le noeud parent publié.
+     */
     public Mono<Node> publish(UUID nodeUuid, UUID userId) {
         return this.findById(nodeUuid)
-                .map(entity -> this.findAllChildren(entity.getCode())
-                        .collectList()
-                        .doOnNext(nodes -> {
-                            log.info(nodes.toString());
-                        })
-                        .flatMapIterable(nodes -> nodes)
-                        .filter(node -> node.getStatus().equals(StatusEnum.SNAPSHOT))
-                        .flatMap(node -> this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.PUBLISHED.name())
-                                .map(this.nodeMapper::fromEntity)
-                                .flatMap(toArchive -> this.archiveNode(toArchive, node, userId))
-                                .switchIfEmpty(this.publishNode(node, userId))
-                                .onErrorResume(error -> {
-                                    System.err.println("Erreur détectée : " + error.getMessage());
-                                    return this.publishNode(node, userId);
-                                })
-                        )
-                        .collectList()
-                        .flatMapIterable(list -> list)
-                        // 🔹 Correction ici : mise à jour du slug sur une liste d'un élément
-                        .flatMap(node -> this.nodeSlugHelper.update(node, node.getEnvironmentCode()))
-                        .map(this.nodeMapper::fromModel)
-                        .flatMap(nodeRepository::save)
-                        .map(nodeMapper::fromEntity)
-                        .flatMap(model -> this.contentNodeHandler.findAllByNodeCodeAndStatus(model.getCode(), StatusEnum.SNAPSHOT.name())
-                                .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getId(), true, userId))
-                                .then(Mono.just(model))
-                        )
-                        .map(node -> node)
-                        .collectList()
-                        .flatMapIterable(list -> list)
-                        .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT))
-                )
-                .flatMap(Mono::from);
+                .filter(parentNode -> parentNode.getStatus().equals(StatusEnum.SNAPSHOT))
+                .switchIfEmpty(Mono.error(new IllegalStateException("Impossible de publier un noeud dont le statut n'est pas SNAPSHOT")))
+                .flatMap(parentNode -> this.publishRecursive(parentNode, userId));
     }
 
-    private Mono<Node> publishNode(Node toPublish, UUID userId) {
+    /**
+     * Logique de publication récursive pour un noeud donné.
+     * Cette méthode applique la logique complète (archivage si nécessaire, publication,
+     * création d'un snapshot, publication des enfants) pour un seul noeud.
+     *
+     * @param nodeToProcess Le noeud à traiter.
+     * @param userId        L'ID de l'utilisateur.
+     * @return Un Mono contenant le noeud traité après sa publication.
+     */
+    private Mono<Node> publishRecursive(Node nodeToProcess, UUID userId) {
+        // Étape 1 : Publier le nœud parent
+        return this.publishParentNode(nodeToProcess, userId)
+                .flatMap(publishedParentNode ->
+                        // Étape 2 : Publier récursivement les enfants
+                        this.findAllChildren(publishedParentNode.getCode())
+                                .flatMap(childNode -> this.publishRecursive(childNode, userId))
+                                .then(Mono.just(publishedParentNode))
+                );
+    }
+
+    private Mono<Node> publishParentNode(Node nodeToProcess, UUID userId) {
+        // Cette méthode gère la logique de publication d'un seul nœud parent et de son contenu
+        return this.nodeRepository.findByCodeAndStatus(nodeToProcess.getCode(), StatusEnum.PUBLISHED.name())
+                .flatMap(publishedParentNode ->
+                        // Si une version publiée existe, l'archiver d'abord
+                        this.archiveNode(this.nodeMapper.fromEntity(publishedParentNode), userId)
+                )
+                .then(
+                        // Que l'archivage ait eu lieu ou non, publier le nœud actuel
+                        this.publishNode(nodeToProcess, userId)
+                )
+                .flatMap(publishedParentNode ->
+                        // Publier le contenu associé au nœud
+                        this.contentNodeHandler.findAllByNodeCodeAndStatus(publishedParentNode.getCode(), StatusEnum.SNAPSHOT.name())
+                                .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getId(), true, userId))
+                                .then(Mono.just(publishedParentNode))
+                )
+                .flatMap(finalNode ->
+                        // Créer un nouveau snapshot du nœud
+                        this.createSnapshot(finalNode, userId)
+                )
+                .flatMap(finalNode ->
+                        // Envoyer la notification de déploiement
+                        this.notify(finalNode, NotificationEnum.DEPLOYMENT)
+                );
+    }
+
+
+    Mono<Node> createSnapshot(Node node, UUID userId) {
+        try {
+            Node snapshot = (Node) node.clone();
+            snapshot.setId(UUID.randomUUID());
+            snapshot.setStatus(StatusEnum.SNAPSHOT);
+            snapshot.setVersion(Integer.toString(Integer.parseInt(node.getVersion()) + 1));
+            node.setModifiedBy(userId);
+            return this.nodeRepository.save(this.nodeMapper.fromModel(snapshot))
+                    .map(saved -> node);
+        } catch (CloneNotSupportedException cloneNotSupportedException) {
+            return Mono.error(cloneNotSupportedException);
+        }
+
+    }
+
+
+    Mono<Node> publishNode(Node toPublish, UUID userId) {
         toPublish.setStatus(StatusEnum.PUBLISHED);
         toPublish.setModificationDate(Instant.now().toEpochMilli());
         toPublish.setPublicationDate(toPublish.getModificationDate());
         toPublish.setModifiedBy(userId);
 
         return this.nodeRepository.save(this.nodeMapper.fromModel(toPublish))
-                .flatMap(this.nodeRepository::save)
-                .map(this.nodeMapper::fromEntity)
-                .map(toSnapshot -> {
-                    toSnapshot.setId(UUID.randomUUID());
-                    toSnapshot.setStatus(StatusEnum.SNAPSHOT);
-                    toSnapshot.setVersion(Integer.toString(Integer.parseInt(toSnapshot.getVersion()) + 1));
-                    toSnapshot.setModifiedBy(userId);
-                    return toSnapshot;
-                });
+                .map(this.nodeMapper::fromEntity);
     }
 
-    private Mono<Node> archiveNode(Node toArchive, Node origin, UUID userId) {
+    public Mono<Node> archiveNode(Node toArchive, UUID userId) {
 
         toArchive.setStatus(StatusEnum.ARCHIVE);
         toArchive.setModificationDate(Instant.now().toEpochMilli());
         toArchive.setModifiedBy(userId);
 
         return this.nodeRepository.save(this.nodeMapper.fromModel(toArchive))
-                .map(archived -> origin)
-                .map(this.nodeMapper::fromModel)
-                .map(toPublish -> {
-                    toPublish.setStatus(StatusEnum.PUBLISHED);
-                    toPublish.setModificationDate(Instant.now().toEpochMilli());
-                    toPublish.setPublicationDate(toPublish.getModificationDate());
-                    toPublish.setModifiedBy(userId);
-                    return this.nodeRepository.save(toPublish)
-                            .map(this.nodeMapper::fromEntity)
-                            .map(toSnapshot -> {
-                                toSnapshot.setId(UUID.randomUUID());
-                                toSnapshot.setStatus(StatusEnum.SNAPSHOT);
-                                toSnapshot.setVersion(Integer.toString(Integer.parseInt(toSnapshot.getVersion()) + 1));
-                                toSnapshot.setModifiedBy(userId);
-                                return toSnapshot;
-                            });
-                }).flatMap(Mono::from);
+                .map(this.nodeMapper::fromEntity);
 
     }
 
@@ -371,6 +386,9 @@ public class NodeHandler {
                 .flatMap(node -> this.notify(node, NotificationEnum.EXPORT))
                 .collectList()
                 .flatMap(nodes -> renameNodeCodesHelper.changeCodesAndReturnJson(nodes, parentCodeOrigin, false))
+                .doOnNext(s -> {
+                    log.info(s);
+                })
                 .map(jsons -> jsons.getBytes());
     }
 
@@ -574,8 +592,8 @@ public class NodeHandler {
         TreeNode treeNode = new TreeNode();
         treeNode.setName(node.getName());
         treeNode.setCode(node.getCode());
-        if(ObjectUtils.isEmpty(node.getParentCode())) {
-                treeNode.setType("NODIFY");
+        if (ObjectUtils.isEmpty(node.getParentCode())) {
+            treeNode.setType("NODIFY");
         }
 
         List<TreeNode> children = new ArrayList<>();

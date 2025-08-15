@@ -59,11 +59,11 @@ public class ContentNodeSlugHelper {
 
     private String generateSlug(String slug, String environment, int rec) {
         if (ObjectUtils.isNotEmpty(slug)) {
-            String baseSlug = slug.trim().replace(environment.toLowerCase(), "");
+            String baseSlug = ObjectUtils.isNotEmpty(environment) ? slug.trim().replace(environment.toLowerCase(), "") :  slug.trim();
             if (rec <= 0) {
-                return baseSlug + "-" + environment.toLowerCase();
+                return ObjectUtils.isNotEmpty(environment) ? baseSlug + "-" + environment.toLowerCase() : baseSlug;
             } else {
-                return baseSlug + "-" + environment.toLowerCase() + rec;
+                return ObjectUtils.isNotEmpty(environment) ? baseSlug + "-" + environment.toLowerCase() + rec :  baseSlug + "-" + rec;
             }
         }
         return null;
