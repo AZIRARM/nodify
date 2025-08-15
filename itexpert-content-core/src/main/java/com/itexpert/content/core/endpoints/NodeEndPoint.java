@@ -1,12 +1,9 @@
 package com.itexpert.content.core.endpoints;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
-import com.itexpert.content.core.models.ContentStatsDTO;
 import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
@@ -23,9 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -80,19 +76,19 @@ public class NodeEndPoint {
             return nodeHandler.findAllByStatus(StatusEnum.DELETED.name())
                     .flatMap(nodeHandler::setPublicationStatus)
                     .filter(node -> {
-                      return   (
-                                        ( ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent) )
-                                                ||  ( ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                                return (
+                                        (ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent))
+                                                || (ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)))
                                 );
                             }
                     );
         }
 
         return nodeHandler.findDeleted(authentication.getPrincipal().toString())
-                .flatMap(nodeHandler::setPublicationStatus) .filter(node -> {
-                    return (
-                                    ( ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent) )
-                                            ||  ( ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                .flatMap(nodeHandler::setPublicationStatus).filter(node -> {
+                            return (
+                                    (ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent))
+                                            || (ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)))
                             );
                         }
                 );
@@ -243,17 +239,9 @@ public class NodeEndPoint {
                 .map(responseEntity -> {
                     Gson gson = new GsonBuilder().create();
 
-                    ObjectMapper objectMapper = new ObjectMapper();
+                    String json = new String(responseEntity.getBody(), StandardCharsets.UTF_8);
 
-                    List<String> array = null;
-                    try {
-                        array = objectMapper.readValue(responseEntity.getBody(), new TypeReference<List<String>>() {
-                        });
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    List<Node> nodes = gson.fromJson(array.toString(), new TypeToken<List<Node>>() {
-                    }.getType());
+                    List<Node> nodes = gson.fromJson(json, new TypeToken<List<Node>>() {}.getType());
 
                     return nodes;
                 })
@@ -272,4 +260,4 @@ public class NodeEndPoint {
     public Mono<TreeNode> generateTreeView(@PathVariable String code) {
         return nodeHandler.generateTreeView(code);
     }
-    }
+}
