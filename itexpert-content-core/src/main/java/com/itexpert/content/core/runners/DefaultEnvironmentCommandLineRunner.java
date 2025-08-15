@@ -7,6 +7,7 @@ import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
+import com.mongodb.DuplicateKeyException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +44,8 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
     }
 
     private void start() {
-        List<Node> environments = List.of(
+        // La liste de tous les environnements à initialiser
+        List<Node> environmentsToInitialize = List.of(
                 createNode("Development", "Development environment", "DEV-01", "development"),
                 createNode("Integration", "Integration environment", "INT-01", "integration"),
                 createNode("Staging", "Staging environment", "STG-01", "staging"),
@@ -51,41 +53,47 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                 createNode("Production", "Production environment", "PROD-01", "production")
         );
 
-        nodeHandler.findByCode("DEV-01")
-                .hasElements()  // renvoie Mono<Boolean> true s'il existe au moins un node avec ce code
-                .flatMapMany(exists -> {
-                    if (!exists) {
-                        log.info("No Development environment found, creating default environments...");
-                        return nodeHandler.saveAll(environments)
-                                .doOnNext(node -> log.info("Node saved, code: {}", node.getCode()))
-                                .flatMap(environment ->
-                                        userHandler.findByEmail("admin")
-                                                .flatMap(userPost -> nodeHandler.publish(environment.getId(), userPost.getId()))
-                                                .doOnNext(published -> log.info("Published environment: {}", environment.getCode()))
-                                                .thenReturn(environment)
-                                );
-                    } else {
-                        log.info("Development environment already exists, skipping creation.");
-                        return Flux.empty();
-                    }
-                })
-                .filter(environment -> environment.getCode().equals("DEV-01"))
-                .flatMap(node -> Flux.fromIterable(List.of(
-                                        "templates/Nodify-Blog.json",
-                                        "templates/Nodify-Landingpage.json"
-                                ))
-                                .flatMap(template -> this.importTemplate(node, template))
+        Flux.fromIterable(environmentsToInitialize)
+                // Pour chaque environnement, on essaie de le trouver par son code
+                .flatMap(node -> nodeHandler.findByCode(node.getCode())
+                        .switchIfEmpty(
+                                // S'il n'existe pas, on le sauvegarde
+                                nodeHandler.save(node)
+                        )
                 )
+                // On gère la publication de DEV-01 et l'importation des templates après l'initialisation de tous les environnements
+                .collectList()
+                .flatMapMany(allEnvironments -> {
+                    // On récupère le nœud DEV-01 une fois qu'il est certain qu'il a été créé
+                    Node devEnv = allEnvironments.stream()
+                            .filter(env -> "DEV-01".equals(env.getCode()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalStateException("DEV-01 environment not found after initialization."));
+
+                    // On publie le nœud DEV-01 s'il n'est pas déjà publié
+                    Mono<Node> devEnvPublishedMono = nodeHandler.findByCodeAndStatus("DEV-01", StatusEnum.SNAPSHOT.name())
+                            .switchIfEmpty(
+                                    userHandler.findByEmail("admin")
+                                            .flatMap(user -> nodeHandler.publish(devEnv.getId(), user.getId()))
+                                            .thenReturn(devEnv)
+                            );
+
+                    // On importe les templates une fois que la publication est terminée
+                    return devEnvPublishedMono
+                            .flatMapMany(publishedDevEnv -> Flux.fromIterable(List.of(
+                                            "templates/Nodify-Blog.json",
+                                            "templates/Nodify-Landingpage.json"
+                                    ))
+                                    .flatMap(template -> this.importTemplate(publishedDevEnv, template)));
+                })
                 .subscribe(
                         importedNode -> log.info("Imported node: {}", importedNode.getCode()),
                         error -> log.error("Error initializing environments", error),
-                        () -> log.info("Default environments initialized successfully")
+                        () -> log.info("All environments and templates initialized successfully")
                 );
     }
 
-
     private Node createNode(String name, String description, String code, String slug) {
-
         com.itexpert.content.lib.models.Value baseUrl = new com.itexpert.content.lib.models.Value();
         baseUrl.setValue(apiUrl);
         baseUrl.setKey("BASE_URL");
