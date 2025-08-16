@@ -29,7 +29,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class NodeHandlerTest {
+public class NodeHandlerImportTest {
     private NodeRepository nodeRepository;
 
     private NodeMapper nodeMapper;
