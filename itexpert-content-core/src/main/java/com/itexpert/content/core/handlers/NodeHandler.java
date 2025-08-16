@@ -433,7 +433,7 @@ public class NodeHandler {
                     model.setStatus(StatusEnum.SNAPSHOT);
 
                     // Mise à jour du slug pour le nouveau node
-                    return nodeSlugHelper.update(model, model.getEnvironmentCode()) // ou autre champ qui représente l'environnement
+                    return nodeSlugHelper.update(model) // ou autre champ qui représente l'environnement
                             .flatMap(updatedModel ->
                                     // Sauvegarder l'ancien et le nouveau
                                     this.nodeRepository.save(nodeMapper.fromModel(existingNode))
@@ -446,7 +446,7 @@ public class NodeHandler {
                             model.setStatus(StatusEnum.SNAPSHOT);
 
                             // 🔹 Mise à jour du slug aussi pour la création initiale
-                            return nodeSlugHelper.update(model, model.getEnvironmentCode())
+                            return nodeSlugHelper.update(model)
                                     .flatMap(updatedModel ->
                                             this.nodeRepository.save(nodeMapper.fromModel(updatedModel))
                                     );
@@ -517,7 +517,7 @@ public class NodeHandler {
                                 })
                 )
                 // Mise à jour du slug pour chaque node
-                .flatMap(node -> this.nodeSlugHelper.update(node, nodeParentCode))
+                .flatMap(node -> this.nodeSlugHelper.update(node))
                 .collectList()
                 .flatMapMany(nodesList -> Flux.fromIterable(nodesList)
                         .flatMap(this::importContent)

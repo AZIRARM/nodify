@@ -20,14 +20,9 @@ import java.util.List;
 @Slf4j
 public class SlugsUtils {
 
-    public static String generateSlug(String slug, String environment, int rec) {
+    public static String generateSlug(String slug, int rec) {
         if (ObjectUtils.isNotEmpty(slug)) {
-            String baseSlug = ObjectUtils.isNotEmpty(environment) ? slug.trim().replace(environment.toLowerCase(), "") :  slug.trim();
-            if (rec <= 0) {
-                return ObjectUtils.isNotEmpty(environment) ? baseSlug + "-" + environment.toLowerCase() : baseSlug;
-            } else {
-                return ObjectUtils.isNotEmpty(environment) ? baseSlug + "-" + environment.toLowerCase() + rec :  baseSlug + "-" + rec;
-            }
+             return  slug + "-" + rec;
         }
         return null;
     }

@@ -369,7 +369,7 @@ public class ContentNodeHandler {
                     return Mono.just(contentNode);
                 }))
                 // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
-                .flatMap(content -> this.contentNodeSlugHelper.update(content, content.getParentCode()))
+                .flatMap(content -> this.contentNodeSlugHelper.update(content))
                 .flatMap(model -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(model)))
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.IMPORT));
@@ -432,7 +432,7 @@ public class ContentNodeHandler {
                                 }))
                 )
                 // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
-                .flatMap(contentNode -> contentNodeSlugHelper.update(contentNode, environmentCode))
+                .flatMap(contentNode -> contentNodeSlugHelper.update(contentNode))
                 .flatMap(updatedContentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(updatedContentNode)))
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));

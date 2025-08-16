@@ -30,25 +30,6 @@ public class NodeSlugHelperTest {
 
 
     @Test
-    void testUpdate_slugDoesNotExist_setSlugDirectly() {
-        com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
-        node.setSlug("mySlug");
-        node.setId(UUID.randomUUID());
-        node.setCode("NODE-CODE");
-
-        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
-        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
-
-        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
-
-        StepVerifier.create(nodeSlugHelper.update(node, "env"))
-                .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-env");
-                })
-                .verifyComplete();
-    }
-
-    @Test
     void testUpdate_slugExistsInNodeRepository_notUpdateKeepSlug() {
         com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
         node.setSlug("mySlug");
@@ -58,7 +39,7 @@ public class NodeSlugHelperTest {
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.fromIterable(List.of(new Node())));
 
-        StepVerifier.create(nodeSlugHelper.update(node, "env"))
+        StepVerifier.create(nodeSlugHelper.update(node))
                 .assertNext(n -> {
                     assert n.getSlug().equals("mySlug");
                 })
@@ -73,14 +54,14 @@ public class NodeSlugHelperTest {
         node.setCode("NODE-CODE");
 
 
-        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
-        StepVerifier.create(nodeSlugHelper.update(node, "env"))
+        StepVerifier.create(nodeSlugHelper.update(node))
                 .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-env");
+                    assert n.getSlug().equals("mySlug-0");
                 })
                 .verifyComplete();
     }
@@ -93,61 +74,17 @@ public class NodeSlugHelperTest {
         node.setCode("NODE-CODE");
 
 
-        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
 
-        when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
-
-        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
-
-        StepVerifier.create(nodeSlugHelper.update(node, "env"))
-                .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-env1");
-                })
-                .verifyComplete();
-    }
-
-    @Test
-    void testUpdate_slugExistsInContentNodeRepository_incrementsSlug() {
-        com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
-        node.setSlug("mySlug");
-        node.setId(UUID.randomUUID());
-        node.setCode("NODE-CODE");
-
-        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
-
-        when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
-        StepVerifier.create(nodeSlugHelper.update(node, "env"))
+        StepVerifier.create(nodeSlugHelper.update(node))
                 .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-env1");
-                })
-                .verifyComplete();
-    }
-
-    @Test
-    void testUpdate_slugExistsInNodeAndContentNodeRepository_incrementsSlug() {
-        com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
-        node.setSlug("mySlug");
-        node.setId(UUID.randomUUID());
-        node.setCode("NODE-CODE");
-
-        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.fromIterable(List.of(new Node())));
-
-        when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
-
-        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
-
-        StepVerifier.create(nodeSlugHelper.update(node, "env"))
-                .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-env1");
+                    assert n.getSlug().equals("mySlug-1");
                 })
                 .verifyComplete();
     }
