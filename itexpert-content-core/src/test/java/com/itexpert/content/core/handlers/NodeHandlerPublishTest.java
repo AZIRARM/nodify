@@ -1,32 +1,21 @@
 package com.itexpert.content.core.handlers;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.itexpert.content.core.helpers.ContentHelper;
-import com.itexpert.content.core.helpers.ContentNodeSlugHelper;
 import com.itexpert.content.core.helpers.NodeSlugHelper;
 import com.itexpert.content.core.helpers.RenameNodeCodesHelper;
-import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.mappers.NodeMapper;
-import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
-import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Notification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.springframework.core.io.ClassPathResource;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,8 +55,6 @@ public class NodeHandlerPublishTest {
         renameNodeCodesHelper = new RenameNodeCodesHelper();
 
         nodeSlugHelper = mock(NodeSlugHelper.class);
-
-
 
         nodeHandler = new NodeHandler(
                 nodeRepository,
@@ -169,7 +156,7 @@ public class NodeHandlerPublishTest {
         publishedNode.setVersion("0");
 
         // Création du spy sur le handler
-        NodeHandler  spyHandler= Mockito.spy(nodeHandler);
+        NodeHandler spyHandler = Mockito.spy(nodeHandler);
 
         // Mock des dépendances externes
         when(nodeRepository.findById(nodeUuid)).thenReturn(Mono.just(nodeToPublish));
@@ -221,7 +208,7 @@ public class NodeHandlerPublishTest {
         childNode.setVersion("0");
 
         // Création du spy sur le handler
-        NodeHandler  spyHandler= Mockito.spy(nodeHandler);
+        NodeHandler spyHandler = Mockito.spy(nodeHandler);
 
         // Mock des dépendances externes
         when(nodeRepository.findById(nodeUuid)).thenReturn(Mono.just(nodeToPublish));
@@ -284,7 +271,7 @@ public class NodeHandlerPublishTest {
         childNodePublished.setVersion("0");
 
         // Création du spy sur le handler
-        NodeHandler  spyHandler= Mockito.spy(nodeHandler);
+        NodeHandler spyHandler = Mockito.spy(nodeHandler);
 
         // Mock des dépendances externes
         when(nodeRepository.findById(nodeUuid)).thenReturn(Mono.just(nodeToPublish));
