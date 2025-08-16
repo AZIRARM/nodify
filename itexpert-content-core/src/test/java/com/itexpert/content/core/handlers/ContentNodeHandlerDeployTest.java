@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ContentNodeHandlerDeployTest {
@@ -106,7 +105,7 @@ public class ContentNodeHandlerDeployTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
@@ -142,7 +141,7 @@ public class ContentNodeHandlerDeployTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
@@ -182,7 +181,7 @@ public class ContentNodeHandlerDeployTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
@@ -262,7 +261,7 @@ public class ContentNodeHandlerDeployTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
@@ -302,7 +301,7 @@ public class ContentNodeHandlerDeployTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
@@ -340,7 +339,7 @@ public class ContentNodeHandlerDeployTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {

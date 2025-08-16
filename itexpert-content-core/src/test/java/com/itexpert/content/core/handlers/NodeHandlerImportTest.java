@@ -98,7 +98,7 @@ public class NodeHandlerImportTest {
 
         this.updateConfiguration(nodeSlugHelper);
 
-        when(nodeSlugHelper.update(any(), any()))
+        when(nodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
@@ -140,7 +140,7 @@ public class NodeHandlerImportTest {
 
         this.updateConfiguration(nodeSlugHelper);
 
-        when(nodeSlugHelper.update(any(), any()))
+        when(nodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
@@ -180,7 +180,7 @@ public class NodeHandlerImportTest {
 
         this.updateConfiguration(nodeSlugHelper);
 
-        when(nodeSlugHelper.update(any(), any()))
+        when(nodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
@@ -224,7 +224,7 @@ public class NodeHandlerImportTest {
 
         this.updateConfiguration(nodeSlugHelper);
 
-        when(nodeSlugHelper.update(any(), any()))
+        when(nodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
@@ -270,7 +270,7 @@ public class NodeHandlerImportTest {
 
         this.updateConfiguration(nodeSlugHelper);
 
-        when(nodeSlugHelper.update(any(), any()))
+        when(nodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
@@ -313,7 +313,7 @@ public class NodeHandlerImportTest {
 
         this.updateConfiguration(nodeSlugHelper);
 
-        when(nodeSlugHelper.update(any(), any()))
+        when(nodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
