@@ -19,11 +19,11 @@ public class ContentNodeSlugHelper {
 
     private final NodeRepository nodeRepository;
 
-    public Mono<ContentNode> update(ContentNode content, String environment) {
-        return this.renameSlug(content, environment, SlugsUtils.generateSlug(content.getSlug(), environment, 0));
+    public Mono<ContentNode> update(ContentNode content) {
+        return this.renameSlug(content, SlugsUtils.generateSlug(content.getSlug(), 0));
     }
 
-    private Mono<ContentNode> renameSlug(ContentNode content, String environment, String slug) {
+    private Mono<ContentNode> renameSlug(ContentNode content, String slug) {
         if (ObjectUtils.isEmpty(slug)) {
             return Mono.just(content);
         }
@@ -38,15 +38,15 @@ public class ContentNodeSlugHelper {
                                 .hasElements()
                                 .flatMap(existsInContentNodeRepo -> {
                                     if (existsInContentNodeRepo) {
-                                        String newSlug = SlugsUtils.generateSlug(content.getSlug(), environment, SlugsUtils.extractRec(slug) + 1);
-                                        return renameSlug(content, environment, newSlug);
+                                        String newSlug = SlugsUtils.generateSlug(content.getSlug(), SlugsUtils.extractRec(slug) + 1);
+                                        return renameSlug(content, newSlug);
                                     } else {
                                         return this.nodeRepository.findAllBySlug(slug)
                                                 .hasElements()
                                                 .flatMap(existsInNodeRepo -> {
                                                     if (existsInNodeRepo) {
-                                                        String newSlug = SlugsUtils.generateSlug(content.getSlug(), environment, SlugsUtils.extractRec(slug) + 1);
-                                                        return renameSlug(content, environment, newSlug);
+                                                        String newSlug = SlugsUtils.generateSlug(content.getSlug(), SlugsUtils.extractRec(slug) + 1);
+                                                        return renameSlug(content, newSlug);
                                                     } else {
                                                         content.setSlug(slug);
                                                         return Mono.just(content);

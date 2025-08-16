@@ -123,7 +123,7 @@ public class ContentNodeHandlerImportTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {
@@ -169,7 +169,7 @@ public class ContentNodeHandlerImportTest {
 
         this.updateConfiguration(contentNodeSlugHelper);
 
-        when(contentNodeSlugHelper.update(any(), any()))
+        when(contentNodeSlugHelper.update(any()))
                 .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.ContentNode>>() {
                     @Override
                     public Mono<com.itexpert.content.lib.models.ContentNode> answer(InvocationOnMock invocationOnMock) {

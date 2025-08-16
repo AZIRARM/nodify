@@ -19,11 +19,11 @@ public class NodeSlugHelper {
 
     private final ContentNodeRepository contentNodeRepository;
 
-    public Mono<Node> update(Node node, String environment) {
-        return this.renameSlug(node, environment, SlugsUtils.generateSlug(node.getSlug(), environment, 0));
+    public Mono<Node> update(Node node) {
+        return this.renameSlug(node, SlugsUtils.generateSlug(node.getSlug(), 0));
     }
 
-    private Mono<Node> renameSlug(Node node, String environment, String slug) {
+    private Mono<Node> renameSlug(Node node, String slug) {
         if (ObjectUtils.isEmpty(slug)) {
             return Mono.just(node);
         }
@@ -41,8 +41,8 @@ public class NodeSlugHelper {
                                 .flatMap(existsInContentNodeRepo -> {
                                     if (existsInContentNodeRepo) {
                                         // Le slug existe dans contentNodeRepository → incrément et rappel récursif
-                                        String newSlug = SlugsUtils.generateSlug(node.getSlug(), environment, SlugsUtils.extractRec(slug) + 1);
-                                        return renameSlug(node, environment, newSlug);
+                                        String newSlug = SlugsUtils.generateSlug(node.getSlug(), SlugsUtils.extractRec(slug) + 1);
+                                        return renameSlug(node, newSlug);
                                     } else {
                                         // Slug dispo dans les deux → on peut setter et retourner node
                                         node.setSlug(slug);
