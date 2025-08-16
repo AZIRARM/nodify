@@ -39,7 +39,7 @@ public class ContentNodeSlugHelperTest {
 
         when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
 
-        StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
+        StepVerifier.create(contentNodeSlugHelper.update(content))
                 .expectNextMatches(c -> ObjectUtils.isEmpty(c.getSlug()))
                 .verifyComplete();
 
@@ -54,22 +54,21 @@ public class ContentNodeSlugHelperTest {
         content.setSlug("mySlug");
 
         // Slug existe dans contentNodeRepository à la 1ère vérif
-        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.just(new com.itexpert.content.lib.entities.ContentNode()));
+        when(contentNodeRepository.findAllBySlug("mySlug")).thenReturn(Flux.just(new com.itexpert.content.lib.entities.ContentNode()));
 
         // Slug "mySlug-env1" n'existe pas dans contentNodeRepository
-        when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
-        when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
 
         when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
-        StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
-                .expectNextMatches(c -> c.getSlug().equals("mySlug-env1"))
+        StepVerifier.create(contentNodeSlugHelper.update(content))
+                .expectNextMatches(c -> c.getSlug().equals("mySlug-0"))
                 .verifyComplete();
 
-        verify(contentNodeRepository).findAllBySlug("mySlug-env");
-        verify(contentNodeRepository).findAllBySlug("mySlug-env1");
-        verify(nodeRepository).findAllBySlug("mySlug-env1");
+        verify(contentNodeRepository).findAllBySlug("mySlug-0");
+        verify(nodeRepository).findAllBySlug("mySlug-0");
     }
 
     @Test
@@ -78,23 +77,23 @@ public class ContentNodeSlugHelperTest {
         content.setSlug("mySlug");
 
         // Pas dans contentNodeRepository
-        when(contentNodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
         // Slug existe dans nodeRepository
-        when(nodeRepository.findAllBySlug("mySlug-env")).thenReturn(Flux.just(new Node()));
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.just(new Node()));
         // Slug "mySlug-env1" n'existe pas dans contentNodeRepository
-        when(contentNodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
-        when(nodeRepository.findAllBySlug("mySlug-env1")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
 
         when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
-        StepVerifier.create(contentNodeSlugHelper.update(content, "env"))
-                .expectNextMatches(c -> c.getSlug().equals("mySlug-env1"))
+        StepVerifier.create(contentNodeSlugHelper.update(content))
+                .expectNextMatches(c -> c.getSlug().equals("mySlug-1"))
                 .verifyComplete();
 
-        verify(contentNodeRepository).findAllBySlug("mySlug-env");
-        verify(nodeRepository).findAllBySlug("mySlug-env");
-        verify(contentNodeRepository).findAllBySlug("mySlug-env1");
-        verify(nodeRepository).findAllBySlug("mySlug-env1");
+        verify(contentNodeRepository).findAllBySlug("mySlug-0");
+        verify(nodeRepository).findAllBySlug("mySlug-0");
+        verify(contentNodeRepository).findAllBySlug("mySlug-1");
+        verify(nodeRepository).findAllBySlug("mySlug-1");
     }
 }
