@@ -60,13 +60,15 @@ public class NodeHandler {
 
     public Mono<Node> save(Node node) {
         if (ObjectUtils.isNotEmpty(node) && ObjectUtils.isNotEmpty(node.getId())) {
-            return this.saveFactory(node, false);
+            return this.saveFactory(node, false).doOnNext(node1 -> {
+                log.info("Node {} with status {} saved", node1.getCode(), node1.getStatus());
+            });
         }
         return Mono.just(node).filter(model -> ObjectUtils.isEmpty(model.getId()))
                 .map(element -> this.saveFactory(element, true))
                 .flatMap(Mono::from)
                 .doOnNext(node1 -> {
-                    log.info("{} saved ", node1.getCode());
+                    log.info("Node {}, with status {} updated", node1.getCode(), node1.getStatus());
                 });
 
     }
@@ -177,6 +179,9 @@ public class NodeHandler {
      */
     public Mono<Node> publish(UUID nodeUuid, UUID userId) {
         return this.findById(nodeUuid)
+                .doOnNext(node -> {
+                    log.info("Node: {}, status: {} ", node.getName(), node.getStatus().name());
+                })
                 .filter(parentNode -> parentNode.getStatus().equals(StatusEnum.SNAPSHOT))
                 .switchIfEmpty(Mono.error(new IllegalStateException("Impossible de publier un noeud dont le statut n'est pas SNAPSHOT")))
                 .flatMap(parentNode -> this.publishRecursive(parentNode, userId));
@@ -197,6 +202,9 @@ public class NodeHandler {
                 .flatMap(publishedParentNode ->
                         // Étape 2 : Publier récursivement les enfants
                         this.findAllChildren(publishedParentNode.getCode())
+                                .doOnNext(node -> {
+                                    log.info("Node: {}, have childreens: {} ", node.getName());
+                                })
                                 .flatMap(childNode -> this.publishRecursive(childNode, userId))
                                 .then(Mono.just(publishedParentNode))
                 );
