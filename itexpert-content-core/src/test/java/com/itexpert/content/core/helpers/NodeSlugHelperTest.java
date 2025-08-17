@@ -88,4 +88,53 @@ public class NodeSlugHelperTest {
                 })
                 .verifyComplete();
     }
+
+    @Test
+    void testUpdate_slugExistForOtherNodeOrContentAndIncrementExist_shouldHaveNewDifferentSlugAndDifferentIncrement() {
+        com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
+        node.setSlug("mySlug-3");
+        node.setId(UUID.randomUUID());
+        node.setCode("NODE-CODE");
+
+
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
+
+        StepVerifier.create(nodeSlugHelper.update(node))
+                .assertNext(n -> {
+                    assert n.getSlug().equals("mySlug-1");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testUpdate_slugExistForOtherNodeOrContentAndIncrementExistButNotDisponible_shouldHaveNewDifferentSlugAndDifferentIncrement() {
+        com.itexpert.content.lib.models.Node node = new com.itexpert.content.lib.models.Node();
+        node.setSlug("mySlug-1");
+        node.setId(UUID.randomUUID());
+        node.setCode("NODE-CODE");
+
+
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
+
+        when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
+
+        StepVerifier.create(nodeSlugHelper.update(node))
+                .assertNext(n -> {
+                    assert n.getSlug().equals("mySlug-2");
+                })
+                .verifyComplete();
+    }
 }

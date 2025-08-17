@@ -369,7 +369,7 @@ public class ContentNodeHandler {
                     return Mono.just(contentNode);
                 }))
                 // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
-                .flatMap(content -> this.contentNodeSlugHelper.update(content))
+                .flatMap(this.contentNodeSlugHelper::update)
                 .flatMap(model -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(model)))
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.IMPORT));
