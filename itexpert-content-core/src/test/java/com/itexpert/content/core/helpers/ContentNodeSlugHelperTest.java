@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -95,5 +96,56 @@ public class ContentNodeSlugHelperTest {
         verify(nodeRepository).findAllBySlug("mySlug-0");
         verify(contentNodeRepository).findAllBySlug("mySlug-1");
         verify(nodeRepository).findAllBySlug("mySlug-1");
+    }
+
+
+
+    @Test
+    void testUpdate_slugExistForOtherNodeOrContentAndIncrementExist_shouldHaveNewDifferentSlugAndDifferentIncrement() {
+        com.itexpert.content.lib.models.ContentNode contentNode = new com.itexpert.content.lib.models.ContentNode();
+        contentNode.setSlug("mySlug-3");
+        contentNode.setId(UUID.randomUUID());
+        contentNode.setCode("NODE-CODE");
+
+
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
+
+        StepVerifier.create(contentNodeSlugHelper.update(contentNode))
+                .assertNext(n -> {
+                    assert n.getSlug().equals("mySlug-1");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testUpdate_slugExistForOtherNodeOrContentAndIncrementExistButNotDisponible_shouldHaveNewDifferentSlugAndDifferentIncrement() {
+        com.itexpert.content.lib.models.ContentNode contentNode = new com.itexpert.content.lib.models.ContentNode();
+        contentNode.setSlug("mySlug-1");
+        contentNode.setId(UUID.randomUUID());
+        contentNode.setCode("NODE-CODE");
+
+
+        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
+        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
+        when(nodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
+
+        StepVerifier.create(contentNodeSlugHelper.update(contentNode))
+                .assertNext(n -> {
+                    assert n.getSlug().equals("mySlug-2");
+                })
+                .verifyComplete();
     }
 }

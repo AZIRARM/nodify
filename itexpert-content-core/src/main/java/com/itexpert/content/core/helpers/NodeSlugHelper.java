@@ -33,7 +33,8 @@ public class NodeSlugHelper {
                 .flatMap(exists -> {
                     if (exists) {
                         // Le slug existe dans nodeRepository → incrément et rappel récursif
-                        return Mono.just(node);
+                        String newSlug = SlugsUtils.generateSlug(slug, SlugsUtils.extractRec(slug) + 1);
+                        return renameSlug(node, newSlug);
                     } else {
                         // Pas trouvé dans nodeRepository, on cherche dans contentNodeRepository
                         return this.contentNodeRepository.findAllBySlug(slug)
