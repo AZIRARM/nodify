@@ -13,6 +13,8 @@ import com.itexpert.content.lib.models.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -52,6 +54,11 @@ public class NodeHandler {
 
     public Mono<Node> findByCodeAndStatus(String code, String status) {
         return nodeRepository.findByCodeAndStatus(code, status).map(nodeMapper::fromEntity);
+    }
+
+    public Mono<Boolean> hasNodes() {
+        return nodeRepository.count()
+                .map(count -> count > 0);
     }
 
     public Flux<Node> findByCode(String code) {
@@ -121,6 +128,7 @@ public class NodeHandler {
 
     public Mono<Boolean> deleteDefinitively(String code) {
         return this.findAllChildren(code)
+                .concatWith(this.findByCode(code))
                 .flatMap(node -> this.contentNodeHandler.findAllByNodeCode(node.getCode()) // Récupère les contenus associés
                         .flatMap(contentNode -> this.contentNodeHandler.deleteDefinitively(contentNode.getCode()) // Supprime chaque contenu
                                 .thenReturn(contentNode)) // Retourne le node supprimé pour garder la trace
@@ -203,7 +211,7 @@ public class NodeHandler {
                 .flatMap(publishedParentNode ->
                         // Étape 2 : Publier tous les enfants (déjà trouvés)
                         this.findAllChildren(publishedParentNode.getCode())
-                                .doOnNext(childreen->{
+                                .doOnNext(childreen -> {
                                     log.info("Publish Node Child {}, version {}", childreen.getCode(), childreen.getVersion());
                                 })
                                 .flatMap(childNode -> this.publishParentNode(childNode, userId))
@@ -526,7 +534,7 @@ public class NodeHandler {
                                 })
                 )
                 // Mise à jour du slug pour chaque node
-                .flatMap(node -> this.nodeSlugHelper.update(node))
+                .flatMap(this.nodeSlugHelper::update)
                 .collectList()
                 .flatMapMany(nodesList -> Flux.fromIterable(nodesList)
                         .flatMap(this::importContent)

@@ -22,7 +22,9 @@ public class SlugsUtils {
 
     public static String generateSlug(String slug, int rec) {
         if (ObjectUtils.isNotEmpty(slug)) {
-             return  slug + "-" + rec;
+            // Supprime le suffixe "-nombre" s'il existe
+            slug = slug.replaceAll("-\\d+$", "");
+            return slug + "-" + rec;
         }
         return null;
     }
