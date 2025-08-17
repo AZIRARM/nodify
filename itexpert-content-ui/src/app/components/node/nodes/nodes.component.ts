@@ -430,7 +430,10 @@ export class NodesComponent implements OnInit {
   export(element: Node, environmentCode: string) {
     this.nodeService.export(element.code, environmentCode).subscribe((data: any) => {
 
-      let blob: Blob = new Blob(['[' + data + ']'], {type: 'application/json'});
+      // Convertir explicitement en JSON string
+      const jsonString = JSON.stringify(data, null, 2); // null,2 pour indentation lisible
+
+      const blob: Blob = new Blob([jsonString], { type: 'application/json' });
 
       const a = document.createElement('a');
       const objectUrl = URL.createObjectURL(blob);
@@ -440,6 +443,8 @@ export class NodesComponent implements OnInit {
       URL.revokeObjectURL(objectUrl);
     });
   }
+
+
 
   import(fileList: any) {
     if (fileList.files.length < 1) {

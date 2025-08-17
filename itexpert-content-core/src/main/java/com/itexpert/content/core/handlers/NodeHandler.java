@@ -21,6 +21,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 
@@ -403,10 +404,7 @@ public class NodeHandler {
                 .flatMap(node -> this.notify(node, NotificationEnum.EXPORT))
                 .collectList()
                 .flatMap(nodes -> renameNodeCodesHelper.changeCodesAndReturnJson(nodes, parentCodeOrigin, false))
-                .doOnNext(s -> {
-                    log.info(s);
-                })
-                .map(jsons -> jsons.getBytes());
+                .map(jsons -> jsons.getBytes(StandardCharsets.UTF_8));
     }
 
     private Flux<Node> findAllDescendants(Node node) {
