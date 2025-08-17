@@ -20,7 +20,6 @@ import reactor.core.publisher.Mono;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -44,9 +43,6 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
     }
 
     private void start() {
-
-        AtomicInteger index = new AtomicInteger(1);
-        // La liste de tous les environnements à initialiser
         List<Node> environmentsToInitialize = List.of(
                 createNode("Development", "Development environment", "DEV-01", "development"),
                 createNode("Integration", "Integration environment", "INT-01", "integration"),
@@ -56,36 +52,66 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
         );
 
         Flux.fromIterable(environmentsToInitialize)
-                // Pour chaque environnement, on essaie de le trouver par son code
-                .flatMap(node -> nodeHandler.findByCode(node.getCode())
-                        .switchIfEmpty(
-                                // S'il n'existe pas, on le sauvegarde
-                                nodeHandler.save(node)
-                                        .filter(saved -> saved.getCode().equals("DEV-01"))
-                                        .flatMapMany(envDev -> {
-                                            // On publie le nœud DEV-01 s'il n'est pas déjà publié
-                                            Mono<Node> devEnvPublishedMono = nodeHandler.findByCodeAndStatus("DEV-01", StatusEnum.SNAPSHOT.name())
-                                                    .switchIfEmpty(
-                                                            userHandler.findByEmail("admin")
-                                                                    .flatMap(user -> nodeHandler.publish(envDev.getId(), user.getId()))
-                                                                    .thenReturn(envDev)
-                                                    );
-
-                                            // On importe les templates une fois que la publication est terminée
-                                            return devEnvPublishedMono
-                                                    .flatMapMany(publishedDevEnv -> Flux.fromIterable(List.of(
-                                                                    "templates/Nodify-Blog.json",
-                                                                    "templates/Nodify-Landingpage.json"
-                                                            ))
-                                                            .flatMap(template -> this.importTemplate(publishedDevEnv, template)));
-                                        })
-                        )
-                ).subscribe(
+                .flatMap(this::initEnvironment)
+                .subscribe(
                         importedNode -> log.info("Imported node: {}", importedNode.getCode()),
                         error -> log.error("Error initializing environments", error),
                         () -> log.info("All environments and templates initialized successfully")
                 );
     }
+
+    private Flux<Node> initEnvironment(Node env) {
+        return nodeHandler.findByCodeAndStatus(env.getCode(), StatusEnum.SNAPSHOT.name())
+                // Si trouvé → on renvoie juste le nœud existant
+                .flux()
+                // Si pas trouvé → on crée, et si c'est DEV-01, on importe les templates
+                .switchIfEmpty(
+                        nodeHandler.save(env)
+                                .flatMapMany(saved -> {
+                                    if ("DEV-01".equals(saved.getCode())) {
+                                        return importDevEnvironment(saved);
+                                    } else {
+                                        return Flux.just(saved);
+                                    }
+                                })
+                );
+    }
+
+    private Flux<Node> importDevEnvironment(Node devEnv) {
+        return userHandler.findByEmail("admin")
+                .flatMap(user -> nodeHandler.publish(devEnv.getId(), user.getId())
+                        .thenReturn(devEnv))
+                .flatMapMany(publishedDevEnv -> Flux.fromIterable(List.of(
+                                        "templates/Nodify-Blog.json",
+                                        "templates/Nodify-Landingpage.json"
+                                ))
+                                .flatMap(template -> importTemplateChildrenOnly(publishedDevEnv, template))
+                );
+    }
+
+    private Flux<Node> importTemplateChildrenOnly(Node parent, String templatePath) {
+        return Mono.fromCallable(() -> {
+                    ClassPathResource resource = new ClassPathResource(templatePath);
+                    InputStreamReader reader = new InputStreamReader(resource.getInputStream());
+                    Type listType = new TypeToken<List<Node>>() {}.getType();
+                    return (List<Node>) new Gson().fromJson(reader, listType);
+                })
+                .flatMapMany(nodes -> nodeHandler.findChildrenByCodeAndStatus(parent.getCode(), StatusEnum.SNAPSHOT.name())
+                        .collectList()
+                        .flatMapMany(existingNodes -> {
+                            if (existingNodes.isEmpty()) {
+                                log.info("Importing template nodes from {}", templatePath);
+                                return nodeHandler.importNodes(nodes, parent.getCode(), true);
+                            } else {
+                                log.info("Template nodes already exist for {}", parent.getCode());
+                                return Flux.empty();
+                            }
+                        })
+                );
+    }
+
+
+
 
     private Node createNode(String name, String description, String code, String slug) {
         com.itexpert.content.lib.models.Value baseUrl = new com.itexpert.content.lib.models.Value();
@@ -95,7 +121,6 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
         Node node = new Node();
         node.setName(name);
         node.setDescription(description);
-        node.setVersion("1");
         node.setVersion("1");
         node.setDefaultLanguage("EN");
         node.setCode(code);
@@ -135,19 +160,24 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                         .flatMapMany(existingNodes -> {
                             if (existingNodes.isEmpty()) {
                                 log.info("No template nodes found, importing...");
-                                return nodeHandler.importNodes(nodes, "DEV-01", true) // nodes est bien une List<Node>
-                                        .doOnNext(node -> log.info("Added node: {}, parent: {}", node.getCode(), node.getParentCode()))
-                                        .collectList()
-                                        .flatMapMany(importedNodes ->
-                                                userHandler.findByEmail("admin")
-                                                        .flatMap(userPost -> nodeHandler.publish(environment.getId(), userPost.getId()))
-                                                        .thenMany(Flux.fromIterable(importedNodes))
-                                        );
+                                return nodeHandler.importNodes(nodes, "DEV-01", true)
+                                        .collectList() // récupérer tous les nodes importés
+                                        .flatMapMany(importedNodes -> {
+                                            Node parentNode = importedNodes.stream()
+                                                    .filter(n -> n.getCode().equals("DEV-01"))
+                                                    .findFirst()
+                                                    .orElseThrow();
+                                            return userHandler.findByEmail("admin")
+                                                    .flatMapMany(user -> nodeHandler.publish(parentNode.getId(), user.getId())
+                                                            .thenMany(Flux.fromIterable(importedNodes)));
+                                        });
                             } else {
                                 log.info("Template nodes already exist, skipping import.");
                                 return Flux.empty();
                             }
                         })
+
+
                 );
     }
 
