@@ -62,9 +62,14 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
     private Flux<Node> initEnvironment(Node env) {
         return nodeHandler.findByCodeAndStatus(env.getCode(), StatusEnum.SNAPSHOT.name())
-                // Si trouvé → on renvoie juste le nœud existant
-                .flux()
-                // Si pas trouvé → on crée, et si c'est DEV-01, on importe les templates
+                .flatMapMany(existing -> {
+                    if ("DEV-01".equals(existing.getCode())) {
+                        // Si DEV-01 existe déjà → on tente quand même d’importer les templates enfants
+                        return importDevEnvironment(existing);
+                    } else {
+                        return Flux.just(existing);
+                    }
+                })
                 .switchIfEmpty(
                         nodeHandler.save(env)
                                 .flatMapMany(saved -> {
@@ -110,9 +115,6 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
                 );
     }
 
-
-
-
     private Node createNode(String name, String description, String code, String slug) {
         com.itexpert.content.lib.models.Value baseUrl = new com.itexpert.content.lib.models.Value();
         baseUrl.setValue(apiUrl);
@@ -133,52 +135,4 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
         return node;
     }
-
-    private Flux<Node> importTemplate(Node environment, String template) {
-        return Mono.fromCallable(() -> {
-                    ClassPathResource resource = new ClassPathResource(template);
-                    InputStreamReader reader = new InputStreamReader(resource.getInputStream());
-                    Type listType = new TypeToken<List<Node>>() {
-                    }.getType();
-                    return (List<Node>) new Gson().fromJson(reader, listType); // <-- Ajout du cast ici
-                })
-                .flatMapMany(nodes -> nodeHandler.findChildrenByCodeAndStatus("DEV-01", StatusEnum.SNAPSHOT.name())
-                        .map(node -> {
-                            if (ObjectUtils.isEmpty(node.getSlug())) {
-                                node.setSlug(node.getCode());
-                            }
-                            if (ObjectUtils.isNotEmpty(node.getContents())) {
-                                for (ContentNode content : node.getContents()) {
-                                    if (ObjectUtils.isEmpty(content.getSlug())) {
-                                        content.setSlug(content.getCode());
-                                    }
-                                }
-                            }
-                            return node;
-                        })
-                        .collectList()
-                        .flatMapMany(existingNodes -> {
-                            if (existingNodes.isEmpty()) {
-                                log.info("No template nodes found, importing...");
-                                return nodeHandler.importNodes(nodes, "DEV-01", true)
-                                        .collectList() // récupérer tous les nodes importés
-                                        .flatMapMany(importedNodes -> {
-                                            Node parentNode = importedNodes.stream()
-                                                    .filter(n -> n.getCode().equals("DEV-01"))
-                                                    .findFirst()
-                                                    .orElseThrow();
-                                            return userHandler.findByEmail("admin")
-                                                    .flatMapMany(user -> nodeHandler.publish(parentNode.getId(), user.getId())
-                                                            .thenMany(Flux.fromIterable(importedNodes)));
-                                        });
-                            } else {
-                                log.info("Template nodes already exist, skipping import.");
-                                return Flux.empty();
-                            }
-                        })
-
-
-                );
-    }
-
 }
