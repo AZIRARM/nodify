@@ -197,15 +197,16 @@ public class NodeHandler {
      * @return Un Mono contenant le noeud traité après sa publication.
      */
     private Mono<Node> publishRecursive(Node nodeToProcess, UUID userId) {
+        log.info("Publish Node Parent {}, version {}", nodeToProcess.getCode(), nodeToProcess.getVersion());
         // Étape 1 : Publier le nœud parent
         return this.publishParentNode(nodeToProcess, userId)
                 .flatMap(publishedParentNode ->
-                        // Étape 2 : Publier récursivement les enfants
+                        // Étape 2 : Publier tous les enfants (déjà trouvés)
                         this.findAllChildren(publishedParentNode.getCode())
-                                .doOnNext(node -> {
-                                    log.info("Node: {}, have childreens: {} ", node.getName());
+                                .doOnNext(childreen->{
+                                    log.info("Publish Node Child {}, version {}", childreen.getCode(), childreen.getVersion());
                                 })
-                                .flatMap(childNode -> this.publishRecursive(childNode, userId))
+                                .flatMap(childNode -> this.publishParentNode(childNode, userId))
                                 .then(Mono.just(publishedParentNode))
                 );
     }
@@ -557,13 +558,14 @@ public class NodeHandler {
     }
 
     public Flux<Node> findAllChildren(String code) {
-        // Utilisation d'un Set partagé pour éviter les doublons
         Set<String> visitedCodes = Collections.synchronizedSet(new HashSet<>());
 
         return findAllChildrenRecursive(code, visitedCodes)
+                .filter(node -> !node.getCode().equals(code)) // <-- on exclut le parent
                 .groupBy(Node::getCode)
                 .flatMap(g -> g.reduce((a, b) -> a.getCode().compareTo(b.getCode()) > 0 ? a : b));
     }
+
 
     private Flux<Node> findAllChildrenRecursive(String code, Set<String> visitedCodes) {
         // Évitez les cycles ou doublons en vérifiant si le code a déjà été visité
