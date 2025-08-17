@@ -1,5 +1,6 @@
 package com.itexpert.content.core.endpoints;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -31,6 +32,8 @@ import java.util.UUID;
 public class NodeEndPoint {
 
     private final NodeHandler nodeHandler;
+
+    private final ObjectMapper objectMapper;
 
     @GetMapping("/")
     public Flux<Node> findAll() {
@@ -191,16 +194,21 @@ public class NodeEndPoint {
     }
 
     @GetMapping(value = "/code/{code}/export")
-    public Mono<ResponseEntity<byte[]>> exportAll(@PathVariable String code, @RequestParam(required = false, name = "environment") String environment) {
+    public Mono<ResponseEntity<byte[]>> exportAll(
+            @PathVariable String code,
+            @RequestParam(required = false, name = "environment") String environment) {
+
         return nodeHandler.exportAll(code, environment)
-                .map(bytes -> {
+                .map(jsonBytes -> {
                     return ResponseEntity.ok()
-                            .contentLength(bytes.length)
-                            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                            .contentLength(jsonBytes.length)
+                            .contentType(MediaType.APPLICATION_OCTET_STREAM) // pour téléchargement
                             .header("Content-Disposition", "attachment; filename=\"" + code + ".json\"")
-                            .body(bytes);
+                            .body(jsonBytes);
                 });
     }
+
+
 
     @PostMapping(value = "/import")
     public Mono<ResponseEntity<Node>> importNode(@RequestBody Node node) {
@@ -241,7 +249,8 @@ public class NodeEndPoint {
 
                     String json = new String(responseEntity.getBody(), StandardCharsets.UTF_8);
 
-                    List<Node> nodes = gson.fromJson(json, new TypeToken<List<Node>>() {}.getType());
+                    List<Node> nodes = gson.fromJson(json, new TypeToken<List<Node>>() {
+                    }.getType());
 
                     return nodes;
                 })
