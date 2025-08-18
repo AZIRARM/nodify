@@ -48,7 +48,8 @@ export class PasswordDialogComponent implements OnInit {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.dialogRef.close();
-              window.localStorage.removeItem("nodifyUserToken");
+              window.localStorage.removeItem("userToken");
+              window.location.reload();
             })
           }
         },

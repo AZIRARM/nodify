@@ -22,7 +22,7 @@ export class UserService extends Service {
   }
 
   changePassword(userPassword: any) {
-    return super.post("password/", userPassword);
+    return super.post("password", userPassword);
   }
 
   getById(userId: string) {
