@@ -36,6 +36,7 @@ public class NodeSlugHelperTest {
         node.setId(UUID.randomUUID());
         node.setCode("NODE-CODE");
 
+        when(contentNodeRepository.findBySlugAndCode("mySlug-0", "NODE-CODE")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.fromIterable(List.of(new Node())));
 
