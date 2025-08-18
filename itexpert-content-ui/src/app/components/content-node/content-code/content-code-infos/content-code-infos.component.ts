@@ -44,10 +44,11 @@ export class ContentCodeInfosComponent {
             }
          });
       } else {
-              this.slugAvailable = true;
+            this.contentNode.slug = slug;
+            this.slugAvailable = true;
       }
 
     });
-  
+
   }
 }
