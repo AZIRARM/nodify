@@ -88,7 +88,7 @@ export class HeaderComponent {
         this.dialogRef.afterClosed()
           .subscribe(result => {
             if (result.data === 'validated') {
-              window.localStorage.removeItem("nodifyUserToken");
+              window.localStorage.removeItem("userToken");
               this.router.navigate(["/login"]);
               window.location.reload();
             }
