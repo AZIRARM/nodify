@@ -13,8 +13,6 @@ import com.itexpert.content.lib.models.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -598,13 +596,13 @@ public class NodeHandler {
                 .hasElements();
     }
 
-    public Mono<TreeNode> generateTreeView(String code) {
+    public Mono<TreeNode> generateTreeView(String code, List<String> userProjects) {
         return findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .flatMap(node -> this.setContentsNodeWithStatus(node, StatusEnum.SNAPSHOT.name()))
-                .flatMap(this::buildTreeFromNode);
+                .flatMap(node -> this.buildTreeFromNode(node, userProjects));
     }
 
-    private Mono<TreeNode> buildTreeFromNode(Node node) {
+    private Mono<TreeNode> buildTreeFromNode(Node node, List<String> userProjects) {
         TreeNode treeNode = new TreeNode();
         treeNode.setName(node.getName());
         treeNode.setCode(node.getCode());
@@ -612,7 +610,7 @@ public class NodeHandler {
             treeNode.setType("NODIFY");
         }
 
-        List<TreeNode> children = new ArrayList<>();
+        List<TreeNode> childreens = new ArrayList<>();
 
         if (node.getContents() != null) {
             for (ContentNode content : node.getContents()) {
@@ -622,17 +620,18 @@ public class NodeHandler {
                 leaf.setChildren(Collections.emptyList());
                 leaf.setType(content.getType().name());
                 leaf.setLeaf(Boolean.TRUE);
-                children.add(leaf);
+                childreens.add(leaf);
             }
         }
 
         return this.findAllByParentCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                .filter(children -> userProjects.isEmpty() || userProjects.contains(children.getCode()) || userProjects.contains(children.getParentCode()) || userProjects.contains(children.getParentCodeOrigin()))
                 .flatMap(parent -> setContentsNodeWithStatus(parent, StatusEnum.SNAPSHOT.name()))
-                .flatMap(this::buildTreeFromNode)
+                .flatMap(parent -> this.buildTreeFromNode(parent, userProjects))
                 .collectList()
                 .map(subTrees -> {
-                    children.addAll(subTrees);
-                    treeNode.setChildren(children);
+                    childreens.addAll(subTrees);
+                    treeNode.setChildren(childreens);
                     return treeNode;
                 });
     }
