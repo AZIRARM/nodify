@@ -23,6 +23,7 @@ import {PublishedNodesDialogComponent} from "../published-nodes-dialog/published
 import {TranslationsDialogComponent} from "../../commons/translations-dialog/translations-dialog.component";
 import {UserService} from "../../../services/UserService";
 import {UserAccessService} from "../../../services/UserAccessService";
+import {AuthenticationService} from "../../../services/AuthenticationService";
 import {ToastrService} from "ngx-toastr";
 import {Env} from "../../../../assets/configurations/environment";
 import {DeletedNodesDialogComponent} from "../deleted-nodes-dialog/deleted-nodes-dialog.component";
@@ -58,6 +59,7 @@ export class NodesComponent implements OnInit {
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
               public userAccessService: UserAccessService,
+              private authService: AuthenticationService,
               private toast: ToastrService,
               private router: Router,
               private nodeService: NodeService,
@@ -68,7 +70,7 @@ export class NodesComponent implements OnInit {
 
 
   ngOnInit() {
-    this.userAccessService.user$.subscribe((user: User) => {
+    this.authService.getConnectedUser().subscribe((user: User) => {
       this.user = user;
       this.init();
     });
@@ -92,7 +94,11 @@ export class NodesComponent implements OnInit {
         (response: any) => {
           console.log('response received : ' + response);
           if (!this.userAccessService.isAdmin()) {
-            response = response.filter((node: Node) => this.user!.projects.includes(node.code));
+            response = response.filter((node: Node) =>
+              this.user &&
+              Array.isArray(this.user.projects) &&
+              this.user.projects.includes(node.code)
+            );
           }
           response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));

@@ -4,7 +4,7 @@ import { HttpClient } from "@angular/common/http";
 import { UserLogin } from "../modeles/UserLogin";
 import { jwtDecode } from "jwt-decode";
 import { UserService } from "./UserService";
-import { Observable, switchMap, throwError } from "rxjs";
+import { Observable, switchMap, throwError, of } from "rxjs";
 import { User } from "../modeles/User";
 
 @Injectable({ providedIn: 'root' })
@@ -41,11 +41,11 @@ export class AuthenticationService extends Service {
     const decoded = this.decodeJwt();
 
     if (!decoded || !decoded.sub) {
-      return throwError(() => new Error('Token invalide ou expiré'));
+     // return throwError(() => new Error('Token invalide ou expiré'));
 
       // Option 2 : rediriger directement ici (si logique UI)
       // this.router.navigate(['/login']);
-      // return of(null);
+       return of(null);
     }
 
     return this.userService.getByEmail(decoded.sub);

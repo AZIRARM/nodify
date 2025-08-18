@@ -23,7 +23,7 @@ export class LoginComponent {
           (response) => {
             console.log('Réponse du login :', response);
             window.localStorage.setItem("userToken", JSON.stringify(response));
-            this.router.navigateByUrl('/nodes');
+            this.router.navigateByUrl('/');
           },
         );
     }
