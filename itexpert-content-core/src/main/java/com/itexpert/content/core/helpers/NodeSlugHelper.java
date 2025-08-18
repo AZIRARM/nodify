@@ -32,8 +32,6 @@ public class NodeSlugHelper {
                 .hasElements() // transforme le Flux en Mono<Boolean>
                 .flatMap(exists -> {
                     if (exists) {
-                        // Le slug existe dans nodeRepository → incrément et rappel récursif
-                        String newSlug = SlugsUtils.generateSlug(slug, SlugsUtils.extractRec(slug) + 1);
                         return Mono.just(node);
                     } else {
                         // Pas trouvé dans nodeRepository, on cherche dans contentNodeRepository
