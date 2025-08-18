@@ -125,6 +125,9 @@ export class NodeDialogComponent implements OnInit {
       }
     })
   ).subscribe(isAvailable => {
+    if(isAvailable){
+      this.node.slug = slug;
+    }
     this.slugAvailable = isAvailable;
   });
 }
