@@ -59,7 +59,7 @@ public class ContentNode implements Serializable, Cloneable {
 
     private List<Translation> translations;
 
-    public com.itexpert.content.lib.models.ContentNode clone() throws CloneNotSupportedException {
-        return (com.itexpert.content.lib.models.ContentNode) super.clone();
+    public ContentNode clone() throws CloneNotSupportedException {
+        return (ContentNode) super.clone();
     }
 }

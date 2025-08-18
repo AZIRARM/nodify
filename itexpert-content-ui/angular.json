@@ -30,6 +30,13 @@
               "node_modules/ngx-toastr/toastr.css"
             ],
             "scripts": [
+            ],
+            "allowedCommonJsDependencies": [
+              "codemirror/addon/display/fullscreen",
+              "codemirror/mode/css/css",
+              "codemirror/mode/htmlmixed/htmlmixed",
+              "codemirror/mode/javascript/javascript",
+              "codemirror/mode/markdown/markdown"
             ]
           },
           "configurations": {

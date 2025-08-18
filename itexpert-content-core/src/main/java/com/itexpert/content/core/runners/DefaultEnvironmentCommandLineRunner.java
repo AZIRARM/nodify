@@ -5,10 +5,8 @@ import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.lib.enums.StatusEnum;
-import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.env.Environment;
@@ -43,49 +41,86 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
     }
 
     private void start() {
-        List<Node> environments = List.of(
-                createNode("Development", "Development environment", "DEV-01", "development"),
-                createNode("Integration", "Integration environment", "INT-01", "integration"),
-                createNode("Staging", "Staging environment", "STG-01", "staging"),
-                createNode("PreProduction", "Pre-Production environment", "PREP-01", "pre-production"),
-                createNode("Production", "Production environment", "PROD-01", "production")
-        );
+        final String status = StatusEnum.SNAPSHOT.name();
 
-        nodeHandler.findByCode("DEV-01")
-                .hasElements()  // renvoie Mono<Boolean> true s'il existe au moins un node avec ce code
+        nodeHandler.hasNodes()
                 .flatMapMany(exists -> {
-                    if (!exists) {
-                        log.info("No Development environment found, creating default environments...");
-                        return nodeHandler.saveAll(environments)
-                                .doOnNext(node -> log.info("Node saved, code: {}", node.getCode()))
-                                .flatMap(environment ->
-                                        userHandler.findByEmail("admin")
-                                                .flatMap(userPost -> nodeHandler.publish(environment.getId(), userPost.getId()))
-                                                .doOnNext(published -> log.info("Published environment: {}", environment.getCode()))
-                                                .thenReturn(environment)
-                                );
-                    } else {
-                        log.info("Development environment already exists, skipping creation.");
+                    if (exists) {
+                        log.info("DEV-01 existe déjà — aucune initialisation à faire.");
                         return Flux.empty();
                     }
+
+                    // A partir d’ici, DEV-01 n’existe pas : on initialise tout
+                    Node dev = createNode("Development", "Development environment", "DEV-01", "development");
+                    List<Node> others = List.of(
+                            createNode("Integration", "Integration environment", "INT-01", "integration"),
+                            createNode("Staging", "Staging environment", "STG-01", "staging"),
+                            createNode("PreProduction", "Pre-Production environment", "PREP-01", "pre-production"),
+                            createNode("Production", "Production environment", "PROD-01", "production")
+                    );
+
+                    // 1) créer DEV-01, 2) importer ses templates, 3) créer les autres environnements (si absents)
+                    return nodeHandler.save(dev)
+                            .flatMapMany(savedDev ->
+                                    importDevEnvironment(savedDev)
+                                            .thenMany(Flux.fromIterable(others)
+                                                    .concatMap(env -> saveIfAbsent(env, status)))
+                            );
                 })
-                .filter(environment -> environment.getCode().equals("DEV-01"))
-                .flatMap(node -> Flux.fromIterable(List.of(
+                .subscribe(
+                        n -> log.info("Initialisé/importé : {}", n.getCode()),
+                        e -> log.error("Erreur lors de l'initialisation des environnements", e),
+                        () -> log.info("Initialisation terminée")
+                );
+    }
+
+    /**
+     * Sauvegarde l’environnement uniquement s’il n’existe pas déjà (idempotent).
+     */
+    private Mono<Node> saveIfAbsent(Node env, String status) {
+        return nodeHandler.findByCodeAndStatus(env.getCode(), status)
+                .switchIfEmpty(nodeHandler.save(env));
+    }
+
+
+    private Flux<Node> importDevEnvironment(Node devEnv) {
+        return userHandler.findByEmail("admin")
+                .flatMapMany(user -> Flux.fromIterable(List.of(
                                         "templates/Nodify-Blog.json",
                                         "templates/Nodify-Landingpage.json"
                                 ))
-                                .flatMap(template -> this.importTemplate(node, template))
-                )
-                .subscribe(
-                        importedNode -> log.info("Imported node: {}", importedNode.getCode()),
-                        error -> log.error("Error initializing environments", error),
-                        () -> log.info("Default environments initialized successfully")
+                                .flatMap(template -> importTemplateChildrenOnly(devEnv, template))
+                                // Quand toutes les imports sont finis, on fait le publish une seule fois
+                                .then(Mono.defer(() -> nodeHandler.publish(devEnv.getId(), user.getId())
+                                        .thenReturn(devEnv)))
+                                .flux()
                 );
     }
 
 
-    private Node createNode(String name, String description, String code, String slug) {
+    private Flux<Node> importTemplateChildrenOnly(Node parent, String templatePath) {
+        return Mono.fromCallable(() -> {
+                    ClassPathResource resource = new ClassPathResource(templatePath);
+                    InputStreamReader reader = new InputStreamReader(resource.getInputStream());
+                    Type listType = new TypeToken<List<Node>>() {
+                    }.getType();
+                    return (List<Node>) new Gson().fromJson(reader, listType);
+                })
+                .flatMapMany(nodes -> nodeHandler.findChildrenByCodeAndStatus(parent.getCode(), StatusEnum.SNAPSHOT.name())
+                        .collectList()
+                        .flatMapMany(existingNodes -> {
+                            if (existingNodes.isEmpty()) {
+                                log.info("Importing template nodes from {}", templatePath);
+                                return nodeHandler.importNodes(nodes, parent.getCode(), true);
+                            } else {
+                                log.info("Template nodes already exist for {}", parent.getCode());
+                                return Flux.empty();
+                            }
+                        })
+                );
+    }
 
+    private Node createNode(String name, String description, String code, String slug) {
         com.itexpert.content.lib.models.Value baseUrl = new com.itexpert.content.lib.models.Value();
         baseUrl.setValue(apiUrl);
         baseUrl.setKey("BASE_URL");
@@ -105,47 +140,4 @@ public class DefaultEnvironmentCommandLineRunner implements CommandLineRunner {
 
         return node;
     }
-
-    private Flux<Node> importTemplate(Node environment, String template) {
-        return Mono.fromCallable(() -> {
-                    ClassPathResource resource = new ClassPathResource(template);
-                    InputStreamReader reader = new InputStreamReader(resource.getInputStream());
-                    Type listType = new TypeToken<List<Node>>() {
-                    }.getType();
-                    return (List<Node>) new Gson().fromJson(reader, listType); // <-- Ajout du cast ici
-                })
-                .flatMapMany(nodes -> nodeHandler.findChildrenByCodeAndStatus("DEV-01", StatusEnum.SNAPSHOT.name())
-                        .map(node -> {
-                            if (ObjectUtils.isEmpty(node.getSlug())) {
-                                node.setSlug(node.getCode());
-                            }
-                            if (ObjectUtils.isNotEmpty(node.getContents())) {
-                                for (ContentNode content : node.getContents()) {
-                                    if (ObjectUtils.isEmpty(content.getSlug())) {
-                                        content.setSlug(content.getCode());
-                                    }
-                                }
-                            }
-                            return node;
-                        })
-                        .collectList()
-                        .flatMapMany(existingNodes -> {
-                            if (existingNodes.isEmpty()) {
-                                log.info("No template nodes found, importing...");
-                                return nodeHandler.importNodes(nodes, "DEV-01", true) // nodes est bien une List<Node>
-                                        .doOnNext(node -> log.info("Added node: {}, parent: {}", node.getCode(), node.getParentCode()))
-                                        .collectList()
-                                        .flatMapMany(importedNodes ->
-                                                userHandler.findByEmail("admin")
-                                                        .flatMap(userPost -> nodeHandler.publish(environment.getId(), userPost.getId()))
-                                                        .thenMany(Flux.fromIterable(importedNodes))
-                                        );
-                            } else {
-                                log.info("Template nodes already exist, skipping import.");
-                                return Flux.empty();
-                            }
-                        })
-                );
-    }
-
 }
