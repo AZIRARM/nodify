@@ -92,12 +92,15 @@ export class NodesComponent implements OnInit {
     } else {
       this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
-          console.log('response received : ' + response);
-          if (!this.userAccessService.isAdmin()) {
-            response = response.filter((node: Node) =>
-              this.user &&
-              Array.isArray(this.user.projects) &&
-              this.user.projects.includes(node.code)
+          console.log('1 - Call user is Admin');
+          const isAdmin:boolean = this.userAccessService.isAdmin();
+          if (!isAdmin) {
+            response = response.filter((node: Node) => {
+              console.log('2 - Call user is NOT Admin');
+                return this.user &&
+                Array.isArray(this.user.projects) &&
+                this.user.projects.includes(node.code)
+              }
             );
           }
           response.map((node: any) => this.setUserName(node));

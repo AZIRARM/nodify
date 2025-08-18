@@ -20,7 +20,9 @@
   </span>
 
   <button mat-icon-button routerLink="/notifications" matTooltip="{{'NOTIFICATIONS'| translate}}">
-    <mat-icon matBadge="{{ (nbNotifications < 99) ? nbNotifications : '99+' }}">
+    <mat-icon
+      matBadge="{{ (nbNotifications < 99) ? nbNotifications : '99+' }}"
+      aria-hidden="false">
       notifications
     </mat-icon>
   </button>
