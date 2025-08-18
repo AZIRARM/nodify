@@ -5,11 +5,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
+import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Node;
+import com.itexpert.content.lib.models.UserPost;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -32,6 +34,8 @@ import java.util.UUID;
 public class NodeEndPoint {
 
     private final NodeHandler nodeHandler;
+
+    private final UserHandler userHandler;
 
     private final ObjectMapper objectMapper;
 
@@ -209,7 +213,6 @@ public class NodeEndPoint {
     }
 
 
-
     @PostMapping(value = "/import")
     public Mono<ResponseEntity<Node>> importNode(@RequestBody Node node) {
         return nodeHandler.importNode(node)
@@ -266,7 +269,15 @@ public class NodeEndPoint {
     }
 
     @GetMapping(value = "/code/{code}/tree-view")
-    public Mono<TreeNode> generateTreeView(@PathVariable String code) {
-        return nodeHandler.generateTreeView(code);
+    public Mono<TreeNode> generateTreeView(@PathVariable String code, Authentication authentication) {
+        var grantedAuthority = authentication.getAuthorities().stream().findFirst().get();
+
+        if (grantedAuthority.getAuthority().equals(RoleEnum.ADMIN.name())) {
+
+            return nodeHandler.generateTreeView(code, List.of());
+        }
+        return this.userHandler.findByEmail(authentication.getPrincipal().toString())
+                .map(UserPost::getProjects)
+                .flatMap(userProjects -> nodeHandler.generateTreeView(code, userProjects));
     }
 }
