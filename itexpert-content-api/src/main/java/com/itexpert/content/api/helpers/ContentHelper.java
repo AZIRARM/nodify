@@ -5,6 +5,7 @@ import com.itexpert.content.api.mappers.ContentNodeMapper;
 import com.itexpert.content.api.repositories.ContentNodeRepository;
 import com.itexpert.content.api.repositories.NodeRepository;
 import com.itexpert.content.api.repositories.PluginRepository;
+import com.itexpert.content.api.utils.RulesUtils;
 import com.itexpert.content.lib.entities.ContentNode;
 import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.entities.Plugin;
@@ -218,6 +219,13 @@ public class ContentHelper {
                     }
                     return Flux.just(contentNode);
                 })
+                .doOnNext(contentNode -> {
+                    log.info("---> content code {}", contentNode.getCode());
+                })
+                /*.filterWhen(contentNode ->
+                        this.evaluateContent(contentNode.getCode(), status).hasElement()
+                                .defaultIfEmpty(false)
+                )*/
                 .distinct(ContentNode::getCode);
     }
 
@@ -290,5 +298,20 @@ public class ContentHelper {
                         return Flux.just(node);
                     }
                 });
+    }
+
+
+    public Mono<com.itexpert.content.lib.models.ContentNode> evaluateContent(String code, StatusEnum status) {
+        return this.findByCodeAndStatus(code, status)
+                .switchIfEmpty(Mono.empty());
+    }
+
+    public Mono<com.itexpert.content.lib.models.ContentNode> findByCodeAndStatus(String code, StatusEnum status) {
+        return contentNodeRepository.findByCodeAndStatus(code, status.name())
+                .map(contentNodeMapper::fromEntity)
+                .flatMap(content -> RulesUtils.evaluateContentNode(content)
+                        .filter(aBoolean -> aBoolean)
+                        .map(aBoolean -> content)
+                );
     }
 }

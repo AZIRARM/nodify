@@ -70,7 +70,8 @@ public class ContentNodeHandler {
     private Mono<Node> evaluateNodeByCodeContent(String codeContent, StatusEnum status) {
         return
                 this.contentNodeRepository.findByCodeAndStatus(codeContent, status.name())
-                        .map(contentNode -> this.nodeHelper.evaluateNode(contentNode.getParentCode(), status)).flatMap(Mono::from);
+                        .map(contentNode -> this.nodeHelper.evaluateNode(contentNode.getParentCode(), status))
+                        .flatMap(Mono::from);
     }
 
     public Mono<ContentNodeView> findByCodeAndStatus(String code,
@@ -79,6 +80,7 @@ public class ContentNodeHandler {
         return this.evaluateNodeByCodeContent(code, status)
                 .map(node ->
                         this.findContentNodeByCode(code, status, translation)
+                                .flatMap(contentNode -> this.contentHelper.evaluateContent(contentNode.getCode(), status))
                                 .flatMap(this::addDisplay)
                                 .map(this.contentNodeMapper::toView)
                 ).flatMap(Mono::from);
