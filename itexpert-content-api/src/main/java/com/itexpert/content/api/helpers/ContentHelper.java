@@ -21,10 +21,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +35,7 @@ public class ContentHelper {
     private final ContentNodeRepository contentNodeRepository;
     private final NodeRepository nodeRepository;
     private final PluginRepository pluginRepository;
+    private static final Pattern CONTENT_PATTERN = Pattern.compile("\\$content\\(([^)]+)\\)");
 
     /**
      * Fills the content of a given ContentNode, handling nested content, translations, and values.
@@ -60,61 +58,82 @@ public class ContentHelper {
      * @param translation The translation language.
      * @return A Mono emitting the processed ContentNode.
      */
-    private Mono<ContentNode> fillContentFactory(ContentNode element, StatusEnum status, String translation) {
-        if (ObjectUtils.isNotEmpty(element) && ObjectUtils.isNotEmpty(element.getContent()) && element.getContent().contains("$content(")) {
-            return Flux.fromIterable(getContentCodes(element))
-                    .collectList()
-                    .flatMapMany(contentCodes -> this.getContents(contentCodes, status))
-                    .collectList()
-                    .flatMap(contentNodes ->
-                            this.getNodes(contentNodes, status)
-                                    .collectList()
-                                    .map(nodes -> Tuples.of(contentNodes, nodes))
-                    )
-                    .map(tuplesContentsAndNodes -> {
-                        while (element.getContent().contains("$content(")) {
-                            tuplesContentsAndNodes.getT1().forEach(contentNode -> {
-                                Node parentNode = this.getParentNode(tuplesContentsAndNodes.getT2(), contentNode.getParentCode());
-                                if (parentNode != null) {
-                                    contentNode.setContent(this.translate(contentNode, contentNode.getTranslations(), ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
-                                    contentNode.setContent(this.fillValues(contentNode, contentNode.getValues()));
+    Mono<ContentNode> fillContentFactory(ContentNode element, StatusEnum status, String translation) {
+        List<String> codes = extractContentCodes(element.getContent());
 
-                                    element.setContent(element.getContent().replace("$content(" + contentNode.getCode() + ")", contentNode.getContent()));
-
-                                    element.setContent(this.translate(element, element.getTranslations(), ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
-                                    element.setContent(this.fillValues(element, element.getValues()));
-                                    tuplesContentsAndNodes.getT2().forEach(node -> {
-                                        element.setContent(this.translate(element, node.getTranslations(), ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
-                                        element.setContent(this.fillValues(element, node.getValues()));
-                                    });
-                                }
-                            });
-                        }
-                        return element;
-                    });
-        } else if (ObjectUtils.isNotEmpty(element) && ObjectUtils.isNotEmpty(element.getContent())) {
-            return this.getNodes(element, status)
-                    .collectList()
-                    .map(nodes -> {
-                        Node parentNode = this.getParentNode(nodes, element.getParentCode());
-                        if (parentNode != null) {
-                            element.setContent(this.translate(element, element.getTranslations(), ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
-                            element.setContent(this.fillValues(element, element.getValues()));
-
-                            nodes.forEach(node -> {
-                                element.setContent(this.translate(element, node.getTranslations(), ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
-                                element.setContent(this.fillValues(element, node.getValues()));
-                            });
-                        }
-                        return element;
-                    });
+        if (codes.isEmpty()) {
+            return finalizeContent(element, status, translation)
+                    .flatMap(finalized ->
+                            RulesUtils.evaluateContentNode(contentNodeMapper.fromEntity(finalized))
+                                    .filter(Boolean::booleanValue)
+                                    .map(keep -> finalized)
+                    );
         }
-        return Mono.just(element).flatMap(contentNode -> getContentPlugin(contentNode)
-                .flatMap(this.pluginRepository::findByName)
-                .map(plugin -> this.fillPlugin(plugin, contentNode))
+
+        return getContents(codes, status)
                 .collectList()
-                .thenReturn(element));
+                .flatMap(children ->
+                        Flux.fromIterable(children)
+                                .flatMap(child -> fillContentFactory(child, status, translation))
+                                .collectList()
+                                .flatMap(resolvedChildren -> {
+                                    // remplacer uniquement les enfants valides
+                                    String newContent = element.getContent();
+                                    for (ContentNode child : resolvedChildren) {
+                                        newContent = newContent.replace("$content(" + child.getCode() + ")", child.getContent());
+                                    }
+                                    element.setContent(newContent);
+
+                                    // finaliser puis évaluer le parent
+                                    return finalizeContent(element, status, translation)
+                                            .flatMap(finalized ->
+                                                    RulesUtils.evaluateContentNode(contentNodeMapper.fromEntity(finalized))
+                                                            .filter(Boolean::booleanValue)
+                                                            .map(keep -> finalized)
+                                            );
+                                })
+                );
     }
+
+
+
+    private List<String> extractContentCodes(String content) {
+        List<String> codes = new ArrayList<>();
+        if (content == null) return codes;
+
+        Matcher matcher = CONTENT_PATTERN.matcher(content);
+
+        while (matcher.find()) {
+            codes.add(matcher.group(1).trim());
+        }
+        return codes;
+    }
+
+    private Mono<ContentNode> finalizeContent(ContentNode element, StatusEnum status, String translation) {
+        return this.getNodes(element, status)
+                .collectList()
+                .map(nodes -> {
+                    Node parentNode = this.getParentNode(nodes, element.getParentCode());
+                    if (parentNode != null) {
+                        element.setContent(this.translate(element, element.getTranslations(),
+                                ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
+                        element.setContent(this.fillValues(element, element.getValues()));
+
+                        nodes.forEach(node -> {
+                            element.setContent(this.translate(element, node.getTranslations(),
+                                    ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
+                            element.setContent(this.fillValues(element, node.getValues()));
+                        });
+                    }
+                    return element;
+                })
+                .flatMap(contentNode -> getContentPlugin(contentNode)
+                        .flatMap(this.pluginRepository::findByName)
+                        .map(plugin -> this.fillPlugin(plugin, contentNode))
+                        .collectList()
+                        .thenReturn(element));
+    }
+
 
     private ContentNode fillPlugin(Plugin plugin, ContentNode content) {
         if(ObjectUtils.isNotEmpty(content) && ObjectUtils.isNotEmpty(plugin) && ObjectUtils.isNotEmpty(plugin.getCode()) && ObjectUtils.isNotEmpty(content.getContent())) {

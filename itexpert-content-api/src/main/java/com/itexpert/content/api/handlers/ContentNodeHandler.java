@@ -80,7 +80,6 @@ public class ContentNodeHandler {
         return this.evaluateNodeByCodeContent(code, status)
                 .map(node ->
                         this.findContentNodeByCode(code, status, translation)
-                                .flatMap(contentNode -> this.contentHelper.evaluateContent(contentNode.getCode(), status))
                                 .flatMap(this::addDisplay)
                                 .map(this.contentNodeMapper::toView)
                 ).flatMap(Mono::from);
