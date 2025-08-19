@@ -30,8 +30,10 @@
   <ng-container matColumnDef="Actions">
     <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
     <td mat-cell *matCellDef="let element">
-      <mat-icon class="icon-display scale2" *ngIf="user && user.roles && user.roles.includes('ADMIN')" (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
-      <mat-icon class="icon-display scale2 danger" *ngIf="user && user.roles && user.roles.includes('ADMIN')" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
+      @if(userAccessService.isAdmin()){
+      <mat-icon class="icon-display scale2"  (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
+      <mat-icon class="icon-display scale2 danger" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
+      }
     </td>
   </ng-container>
 

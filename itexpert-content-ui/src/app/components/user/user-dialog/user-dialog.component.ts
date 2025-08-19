@@ -34,10 +34,8 @@ export class UserDialogComponent implements OnInit {
 
 
   ngOnInit() {
-    this.userAccessService.user$.subscribe((user: User) => {
-  this.connectedUser = user;
-});
-    this.init();
+   this.user = this.userAccessService.getCurrentUser()
+   this.init();
   }
 
   cancel() {

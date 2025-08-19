@@ -35,10 +35,8 @@ export class LanguagesComponent implements OnInit {
 
 
   ngOnInit() {
-    this.userAccessService.user$.subscribe((user: any) => {
-      this.user = user;
-    });
-    this.init();
+   this.user = this.userAccessService.getCurrentUser()
+   this.init();
   }
 
   init() {

@@ -55,7 +55,7 @@
 </span>
 
 
-<table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.user$ | async as user">
+<table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.getCurrentUser()">
 
   <ng-container matColumnDef="Status">
     <th mat-header-cell *matHeaderCellDef> {{ "ACTIVE" | translate }}</th>
