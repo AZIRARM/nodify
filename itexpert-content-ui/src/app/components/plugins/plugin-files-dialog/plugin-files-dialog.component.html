@@ -18,7 +18,7 @@
     <button *ngIf="currentPluginFile && !currentPluginFile.id && currentPluginFile.data" mat-button class="code-validation" (click)="save()" style="margin-bottom: 20px">{{ "ADD" | translate }}</button>
   </div>
 
-  <table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.user$ | async as user">
+  <table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.getCurrentUser()">
 
     <ng-container matColumnDef="PluginName">
       <th mat-header-cell *matHeaderCellDef> {{ "PLUGIN" | translate }}</th>

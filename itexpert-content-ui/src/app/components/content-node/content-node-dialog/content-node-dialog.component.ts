@@ -83,9 +83,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-   this.userAccessService.user$.subscribe((user: User) => {
-  this.user = user;
-});
+   this.user = this.userAccessService.getCurrentUser()
     this.init();
   }
 

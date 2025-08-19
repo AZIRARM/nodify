@@ -44,9 +44,7 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.userAccessService.user$.subscribe((user: any) => {
-      this.user = user;
-    });
+   this.user = this.userAccessService.getCurrentUser()
     this.init();
   }
 

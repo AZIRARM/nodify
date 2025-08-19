@@ -70,10 +70,8 @@ export class NodesComponent implements OnInit {
 
 
   ngOnInit() {
-    this.authService.getConnectedUser().subscribe((user: User) => {
-      this.user = user;
+      this.user = this.userAccessService.getCurrentUser();
       this.init();
-    });
   }
 
   init() {
