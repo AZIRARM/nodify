@@ -6,6 +6,7 @@ import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.SlugsUtils;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
+import com.itexpert.content.lib.models.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -31,15 +32,21 @@ public class ContentNodeSlugHelper {
                         return this.renameSlug(content, SlugsUtils.generateSlug(content.getSlug(), 0));
                     }
                 })
-                .switchIfEmpty(Mono.just(content));
+                .switchIfEmpty(this.checkSlugInNewNode(content));
+    }
+
+    private Mono<ContentNode> checkSlugInNewNode(ContentNode contentNode) {
+        if(ObjectUtils.isNotEmpty(contentNode.getSlug())) {
+            return this.renameSlug(contentNode, SlugsUtils.generateSlug(contentNode.getSlug(), 0));
+        }
+        else {
+            return Mono.just(contentNode);
+        }
     }
 
     private Mono<ContentNode> renameSlug(ContentNode content, String slug) {
         if (ObjectUtils.isEmpty(slug)) {
             return Mono.just(content);
-        }
-        if (ObjectUtils.isNotEmpty(content.getSlug())) {
-                return Mono.just(content);
         }
 
         return this.contentNodeRepository.findBySlugAndCode(slug, content.getCode())

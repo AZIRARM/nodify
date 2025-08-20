@@ -33,16 +33,21 @@ public class NodeSlugHelper {
                         return this.renameSlug(node, SlugsUtils.generateSlug(node.getSlug(), 0));
                     }
                 })
-                .switchIfEmpty(Mono.just(node));
+                .switchIfEmpty(this.checkSlugInNewNode(node));
+    }
+
+    private Mono< Node> checkSlugInNewNode(Node node) {
+        if(ObjectUtils.isNotEmpty(node.getSlug())) {
+            return this.renameSlug(node, SlugsUtils.generateSlug(node.getSlug(), 0));
+        }
+        else {
+            return Mono.just(node);
+        }
     }
 
     private Mono<Node> renameSlug(Node node, String slug) {
         if (ObjectUtils.isEmpty(slug)) {
             return Mono.just(node);
-        }
-
-        if (ObjectUtils.isNotEmpty(node.getSlug())) {
-                return Mono.just(node);
         }
 
         return this.nodeRepository.findBySlugAndCode(slug, node.getCode())
