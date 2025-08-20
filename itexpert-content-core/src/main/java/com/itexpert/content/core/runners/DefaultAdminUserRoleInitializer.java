@@ -3,9 +3,8 @@ package com.itexpert.content.core.runners;
 import com.itexpert.content.core.handlers.UserRoleHandler;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.models.UserRole;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,20 +13,12 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class DefaultAdminUserRoleCommandLineRunner implements CommandLineRunner {
+@AllArgsConstructor
+public class DefaultAdminUserRoleInitializer {
 
     private final UserRoleHandler userRoleHandler;
 
-    DefaultAdminUserRoleCommandLineRunner(UserRoleHandler userRoleHandler) {
-
-        this.userRoleHandler = userRoleHandler;
-    }
-
-    public void run(String... args) {
-        this.start();
-    }
-
-    private void start() {
+    public Mono<Void> init() {
         UserRole adminRole = new UserRole();
         adminRole.setCode(RoleEnum.ADMIN.name());
 
@@ -39,7 +30,7 @@ public class DefaultAdminUserRoleCommandLineRunner implements CommandLineRunner 
 
         List<UserRole> defaultRoles = List.of(adminRole, editorRole, readerRole);
 
-        userRoleHandler.findAll()
+        return userRoleHandler.findAll()
                 .hasElements()
                 .flatMapMany(hasRoles -> {
                     if (!hasRoles) {
@@ -54,7 +45,7 @@ public class DefaultAdminUserRoleCommandLineRunner implements CommandLineRunner 
                         return Flux.empty();
                     }
                 })
-                .subscribe();
+                .then();
     }
 
 
