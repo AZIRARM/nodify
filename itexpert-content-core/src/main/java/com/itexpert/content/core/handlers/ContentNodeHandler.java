@@ -346,6 +346,8 @@ public class ContentNodeHandler {
                     contentNode.setStatus(StatusEnum.SNAPSHOT);
                     contentNode.setCreationDate(existingContentNode.getCreationDate());
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
+                    contentNode.setSlug(existingContentNode.getSlug());
+                    contentNode.setFavorite(existingContentNode.isFavorite());
 
                     if (ObjectUtils.isNotEmpty(existingContentNode.getSlug())) {
                         contentNode.setSlug(existingContentNode.getSlug());

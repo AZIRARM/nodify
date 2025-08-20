@@ -501,6 +501,8 @@ public class NodeHandler {
                                         node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
                                         node.setStatus(StatusEnum.SNAPSHOT);
                                         node.setModificationDate(Instant.now().toEpochMilli());
+                                        node.setSlug(existingNode.getSlug());
+                                        node.setFavorite(existingNode.isFavorite());
                                         return this.nodeRepository.save(existingNode)
                                                 .then(Mono.just(node));
                                     })

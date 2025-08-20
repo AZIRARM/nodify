@@ -5,7 +5,6 @@ import com.itexpert.content.lib.models.UserPost;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,25 +13,22 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class DefaultUserCommandLineRunner implements CommandLineRunner {
+public class DefaultUserInitializer {
 
     private static final String ADMIN_USER = "admin";
 
-    @Value("${app.admin-password}")
     private String password;
 
     private final UserHandler userHandler;
 
-    public DefaultUserCommandLineRunner(UserHandler userHandler) {
+
+    public DefaultUserInitializer(@Value("${app.admin-password}") String password,
+                                  UserHandler userHandler) {
+        this.password = password;
         this.userHandler = userHandler;
     }
 
-
-    public void run(String... args) {
-        this.start();
-    }
-
-    private void start() {
+    public Mono<Void> init() {
         if (ObjectUtils.isNotEmpty(password)) {
 
             UserPost userDB = new UserPost();
@@ -42,7 +38,7 @@ public class DefaultUserCommandLineRunner implements CommandLineRunner {
             userDB.setPassword(password);
             userDB.setRoles(List.of("ADMIN"));
 
-            this.userHandler.findAll()
+            return this.userHandler.findAll()
                     .hasElements()
                     .flatMapMany(hasUsers -> {
                         if (!hasUsers) {
@@ -57,8 +53,10 @@ public class DefaultUserCommandLineRunner implements CommandLineRunner {
                             return Flux.empty();
                         }
                     })
-                    .subscribe();
+                    .then();
         }
+
+        return Mono.empty();
     }
 
 
