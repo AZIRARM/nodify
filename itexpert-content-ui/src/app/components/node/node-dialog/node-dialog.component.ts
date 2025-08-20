@@ -7,7 +7,8 @@ import {LanguageService} from "../../../services/LanguageService";
 import {LoggerService} from "../../../services/LoggerService";
 import {TranslateService} from "@ngx-translate/core";
 import { SlugService } from 'src/app/services/SlugService';
-import { map, of, switchMap } from 'rxjs';
+import { toArray, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-node-dialog',
@@ -108,28 +109,28 @@ export class NodeDialogComponent implements OnInit {
     }
   }
 
-  onSlugChange(slug: string) {
-  if (!slug) {
-    this.slugAvailable = true;
-    return;
-  }
-
-  this.slugService.exists(slug).pipe(
-    switchMap((exists: any) => {
-      if (exists) {
-        return this.nodeService.getNodeByCodeAndStatus(this.node.code, this.node.status).pipe(
-          map((node: any) => node.slug === slug) // true si c’est le même slug, sinon false
-        );
-      } else {
-        return of(true);
-      }
-    })
-  ).subscribe(isAvailable => {
-    if(isAvailable){
-      this.node.slug = slug;
+    onSlugChange(slug: string) {
+    if (!slug) {
+      this.slugAvailable = null;
+      return;
     }
-    this.slugAvailable = isAvailable;
-  });
-}
+  
+    (this.slugService.exists(slug) as Observable<string[]>)
+      .pipe(
+        map((codes: (string | null)[]) => {
+          const filtered = codes.filter(c => c != null); // supprime null / undefined
+          return (
+            filtered.length === 0 ||
+            (filtered.length === 1 && filtered[0] === this.node.code)
+          );
+        })
+      )
+      .subscribe((available: boolean) => {
+        this.slugAvailable = available;
+        if (available) {
+          this.node.slug = slug;
+        }
+      });
+    }
 
 }

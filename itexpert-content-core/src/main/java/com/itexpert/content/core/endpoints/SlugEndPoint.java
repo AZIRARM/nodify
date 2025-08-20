@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -32,9 +33,8 @@ public class SlugEndPoint {
      */
     @Operation(summary = "Check if slug exists", description = "Check if slug exists for contents nodes and nodes")
     @GetMapping(value = "/exists/{slug}")
-    public Mono<ResponseEntity<Boolean>> exists(@Parameter(description = "The slug to check") @PathVariable String slug) {
-        return slugHandler.existsBySlug(slug)
-                .map(ResponseEntity::ok);
+    public Mono<List<String>> exists(@Parameter(description = "The slug to check") @PathVariable String slug) {
+        return slugHandler.existsBySlug(slug).collectList();
     }
 
 

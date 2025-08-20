@@ -1,8 +1,9 @@
 import { Component, Injectable, Input, Output } from '@angular/core';
 import { ContentNode } from "../../../../modeles/ContentNode";
-import { map, Observable } from 'rxjs';
 import { SlugService } from 'src/app/services/SlugService';
 import { ContentNodeService } from 'src/app/services/ContentNodeService';
+import { toArray, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-content-code-infos',
@@ -20,35 +21,26 @@ export class ContentCodeInfosComponent {
     private slugService: SlugService) {}
 
   onSlugChange(slug: string) {
-    if (!slug) {
-      this.slugAvailable = null;
-      return;
-    }
+  if (!slug) {
+    this.slugAvailable = null;
+    return;
+  }
 
-    /*this.slugService.exists(slug)
-      .pipe(map((res: any) => !res))
-      .subscribe(isAvailable => {
-        this.slugAvailable = isAvailable;
-      });*/
-
-
-   this.slugService.exists(slug)
-    .subscribe((exists: any)=>{
-      if(exists) {
-        this.contentNodeService.slugExists(this.contentNode.code, slug)
-          .subscribe((existsForContent: any) => {
-            if (existsForContent === false) {
-              this.slugAvailable = false;
-            } else {
-              this.slugAvailable = true;
-            }
-         });
-      } else {
-            this.contentNode.slug = slug;
-            this.slugAvailable = true;
+  (this.slugService.exists(slug) as Observable<string[]>)
+    .pipe(
+      map((codes: (string | null)[]) => {
+        const filtered = codes.filter(c => c != null); // supprime null / undefined
+        return (
+          filtered.length === 0 ||
+          (filtered.length === 1 && filtered[0] === this.contentNode.code)
+        );
+      })
+    )
+    .subscribe((available: boolean) => {
+      this.slugAvailable = available;
+      if (available) {
+        this.contentNode.slug = slug;
       }
-
     });
-
   }
 }

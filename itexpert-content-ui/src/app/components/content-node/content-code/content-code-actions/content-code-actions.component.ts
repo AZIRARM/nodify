@@ -5,6 +5,8 @@ import {StatusEnum} from "../../../../modeles/StatusEnum";
 import {LoggerService} from "../../../../services/LoggerService";
 import {ContentNodeService} from "../../../../services/ContentNodeService";
 import { SlugService } from 'src/app/services/SlugService';
+import { toArray, map, switchMap,tap} from 'rxjs/operators';
+import { Observable, EMPTY } from 'rxjs';
 
 @Component({
   selector: 'app-content-code-actions',
@@ -38,27 +40,27 @@ export class ContentCodeActionsComponent implements AfterViewInit {
 
   validateFactory(): void {
     this.slugService.exists(this.contentNode.slug)
-    .subscribe((exists: any)=>{
-      if(exists) {
-        this.contentNodeService.slugExists(this.contentNode.code, this.contentNode.slug)
-          .subscribe((existsForContent: any) => {
-            if (existsForContent === false) {
-              this.translate.get('SLUG_ALREADY_USED')
-                .subscribe(translation => {
-                  this.logger.error(translation);
-                });
-            } else {
-              this.validate.next();
-            }
-         });
-      } else {
-        this.validate.next();
+    .subscribe((codes:any) => {  // cast explicite
+      const filtered = codes.filter((c:string) => c != null);
+      
+        const available = filtered.length === 0 ||
+        (filtered.length === 1 && filtered[0] === this.contentNode.code);
+
+         if (available) {
+          this.validate.next();
+          return EMPTY;
+        } else {
+          return this.translate.get('SLUG_ALREADY_USED').pipe(
+            tap(translation => this.logger.error(translation))
+          );
       }
 
-    });
+    }
+    );
 
-     
-  }
+}
+
+
 
   initContentNodeModels() {
     this.contentNodeService.getAllByParentCodeAndStatus(this.contentNode.parentCode, StatusEnum.SNAPSHOT).subscribe(
