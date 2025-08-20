@@ -1,5 +1,6 @@
 package com.itexpert.content.core.helpers;
 
+import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.Node;
@@ -7,6 +8,7 @@ import com.itexpert.content.lib.models.ContentNode;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -21,12 +23,15 @@ public class ContentNodeSlugHelperTest {
     private ContentNodeRepository contentNodeRepository;
     private NodeRepository nodeRepository;
     private ContentNodeSlugHelper contentNodeSlugHelper;
+    private ContentNodeMapper contentNodeMapper;
 
     @BeforeEach
     void setup() {
         contentNodeRepository = mock(ContentNodeRepository.class);
         nodeRepository = mock(NodeRepository.class);
-        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, nodeRepository);
+        contentNodeMapper = Mappers.getMapper(ContentNodeMapper.class);
+
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository);
     }
 
     @Test
