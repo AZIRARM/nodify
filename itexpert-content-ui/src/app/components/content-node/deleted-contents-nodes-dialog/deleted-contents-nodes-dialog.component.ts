@@ -45,6 +45,9 @@ export class DeletedContentsNodesDialogComponent implements OnInit{
       (response: any) => {
         if (response) {
           response.map((content: any) => this.setUserName(content));
+          
+          response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
+
           this.dataSource = new MatTableDataSource(response);
         }
       },

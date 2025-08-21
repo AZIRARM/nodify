@@ -42,6 +42,7 @@ export class LanguagesComponent implements OnInit {
   init() {
     this.languageService.getAll().subscribe(
       (response: any) => {                           //next() callback
+        response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
         this.dataSource = new MatTableDataSource(response);
       },
       (error) => {                              //error() callback
