@@ -43,6 +43,8 @@ public class ContentNodeHandlerDeployTest {
 
     private ContentNodeSlugHelper contentNodeSlugHelper;
 
+    private SlugHandler slugHandler;
+
     private com.itexpert.content.lib.models.ContentNode snapshotNode;
     private ContentNode snapshotEntity;
 
@@ -56,6 +58,7 @@ public class ContentNodeHandlerDeployTest {
         notificationHandler = mock(NotificationHandler.class);
         dataHandler = mock(DataHandler.class);
         contentHelper = mock(ContentHelper.class);
+        slugHandler = new SlugHandler(nodeRepository, contentNodeRepository);
         contentNodeHandler = new ContentNodeHandler(
                 contentNodeRepository,
                 contentNodeMapper,
@@ -231,7 +234,7 @@ public class ContentNodeHandlerDeployTest {
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
 
-        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository);
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository, slugHandler);
 
         this.updateConfiguration(contentNodeSlugHelper);
 
@@ -383,7 +386,7 @@ public class ContentNodeHandlerDeployTest {
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
 
-        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository);
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository,slugHandler);
 
         this.updateConfiguration(contentNodeSlugHelper);
 

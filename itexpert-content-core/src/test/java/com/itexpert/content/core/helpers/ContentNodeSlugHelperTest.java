@@ -1,15 +1,18 @@
 package com.itexpert.content.core.helpers;
 
+import com.itexpert.content.core.handlers.SlugHandler;
 import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.Node;
+import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.List;
@@ -24,19 +27,28 @@ public class ContentNodeSlugHelperTest {
     private NodeRepository nodeRepository;
     private ContentNodeSlugHelper contentNodeSlugHelper;
     private ContentNodeMapper contentNodeMapper;
+    private SlugHandler slugHandler;
 
     @BeforeEach
     void setup() {
         contentNodeRepository = mock(ContentNodeRepository.class);
         nodeRepository = mock(NodeRepository.class);
         contentNodeMapper = Mappers.getMapper(ContentNodeMapper.class);
+        slugHandler = new SlugHandler(nodeRepository, contentNodeRepository);
 
-        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository);
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository, slugHandler);
     }
 
     @Test
     void testUpdate_slugNotExistsAnywhere_doNothing() {
         ContentNode content = new ContentNode();
+
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity.setId(UUID.randomUUID());
+        contentNodeEntity.setCode(content.getCode());
+
+
+        when(contentNodeRepository.findByCodeAndStatus(content.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
         // Aucun slug dans contentNodeRepository
         when(contentNodeRepository.findAllBySlug(anyString())).thenReturn(Flux.empty());
@@ -58,6 +70,13 @@ public class ContentNodeSlugHelperTest {
     void testUpdate_slugExistsInContentNodeRepository_incrementSlug() {
         ContentNode content = new ContentNode();
         content.setSlug("mySlug");
+
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity.setId(UUID.randomUUID());
+        contentNodeEntity.setCode(content.getCode());
+
+
+        when(contentNodeRepository.findByCodeAndStatus(content.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
         // Slug existe dans contentNodeRepository à la 1ère vérif
         when(contentNodeRepository.findAllBySlug("mySlug")).thenReturn(Flux.just(new com.itexpert.content.lib.entities.ContentNode()));
@@ -81,6 +100,13 @@ public class ContentNodeSlugHelperTest {
     void testUpdate_slugExistsInNodeRepository_incrementSlug() {
         ContentNode content = new ContentNode();
         content.setSlug("mySlug");
+
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity.setId(UUID.randomUUID());
+        contentNodeEntity.setCode(content.getCode());
+
+
+        when(contentNodeRepository.findByCodeAndStatus(content.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
         // Pas dans contentNodeRepository
         when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
@@ -113,6 +139,14 @@ public class ContentNodeSlugHelperTest {
         contentNode.setCode("NODE-CODE");
 
 
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity.setId(UUID.randomUUID());
+        contentNodeEntity.setCode(contentNode.getCode());
+
+
+        when(contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
+
+
         when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
         when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
 
@@ -130,11 +164,17 @@ public class ContentNodeSlugHelperTest {
 
     @Test
     void testUpdate_slugExistForOtherNodeOrContentAndIncrementExistButNotDisponible_shouldHaveNewDifferentSlugAndDifferentIncrement() {
-        com.itexpert.content.lib.models.ContentNode contentNode = new com.itexpert.content.lib.models.ContentNode();
+        ContentNode contentNode = new ContentNode();
         contentNode.setSlug("mySlug-1");
         contentNode.setId(UUID.randomUUID());
         contentNode.setCode("NODE-CODE");
 
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity.setId(UUID.randomUUID());
+        contentNodeEntity.setCode(contentNode.getCode());
+
+
+        when(contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
         when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
         when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());

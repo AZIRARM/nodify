@@ -136,6 +136,11 @@ public class NodeEndPoint {
         return nodeHandler.deleteDefinitively(code)
                 .map(ResponseEntity::ok);
     }
+    @DeleteMapping(value = "/{id}")
+    public Mono<ResponseEntity<Boolean>> deleteById(@PathVariable UUID id) {
+        return nodeHandler.deleteById(id)
+                .map(ResponseEntity::ok);
+    }
 
     @PostMapping(value = "/code/{code}/user/{userId}/activate")
     public Mono<ResponseEntity<Boolean>> activate(@PathVariable String code, @PathVariable UUID userId) {

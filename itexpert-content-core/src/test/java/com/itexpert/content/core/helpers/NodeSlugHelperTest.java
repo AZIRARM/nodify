@@ -1,5 +1,6 @@
 package com.itexpert.content.core.helpers;
 
+import com.itexpert.content.core.handlers.SlugHandler;
 import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
@@ -24,14 +25,16 @@ public class NodeSlugHelperTest {
     private ContentNodeRepository contentNodeRepository;
     private NodeSlugHelper nodeSlugHelper;
     private NodeMapper nodeMapper;
+    private SlugHandler slugHandler;
 
     @BeforeEach
     void setup() {
         contentNodeRepository = mock(ContentNodeRepository.class);
         nodeRepository = mock(NodeRepository.class);
         nodeMapper = Mappers.getMapper(NodeMapper.class);
+        slugHandler = new SlugHandler(nodeRepository, contentNodeRepository);
 
-        nodeSlugHelper = new NodeSlugHelper(nodeRepository, nodeMapper, contentNodeRepository);
+        nodeSlugHelper = new NodeSlugHelper(nodeRepository, nodeMapper, contentNodeRepository, slugHandler);
     }
 
 
