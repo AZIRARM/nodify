@@ -38,6 +38,10 @@ export class NodeService extends Service {
     return super.remove("code/" + code + "/user/" + userId);
   }
 
+  deleteById(id: String) {
+    return super.remove("" + id);
+  }
+
   deleteDefinitively(code: String) {
     return super.remove("code/" + code + "/deleteDefinitively");
   }

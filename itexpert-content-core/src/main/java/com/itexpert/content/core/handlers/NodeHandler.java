@@ -501,7 +501,9 @@ public class NodeHandler {
                                         node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
                                         node.setStatus(StatusEnum.SNAPSHOT);
                                         node.setModificationDate(Instant.now().toEpochMilli());
-                                        node.setSlug(existingNode.getSlug());
+                                        if(ObjectUtils.isNotEmpty(existingNode.getSlug())) {
+                                            node.setSlug(existingNode.getSlug());
+                                        }
                                         node.setFavorite(existingNode.isFavorite());
                                         return this.nodeRepository.save(existingNode)
                                                 .then(Mono.just(node));
@@ -650,6 +652,14 @@ public class NodeHandler {
     public Flux<Node> findAllByParentCodeAndStatus(String code, String name) {
         return this.nodeRepository.findAllByParentCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .map(this.nodeMapper::fromEntity);
+    }
+
+    public Mono<Boolean> deleteById(UUID id) {
+        return this.nodeRepository.findById(id)
+                .map(this.nodeMapper::fromEntity)
+                .flatMap(node ->
+                        this.nodeRepository.deleteById(id).map(unused -> this.notify(node, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(node))
+                ).hasElement();
     }
 }
 

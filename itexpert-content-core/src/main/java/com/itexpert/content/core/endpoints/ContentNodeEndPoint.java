@@ -91,6 +91,11 @@ public class ContentNodeEndPoint {
                 .map(ResponseEntity::ok);
     }
 
+    @DeleteMapping(value = "/{id}")
+    public Mono<ResponseEntity<Boolean>> deleteById(@PathVariable UUID id) {
+        return contentNodeHandler.deleteById(id)
+                .map(ResponseEntity::ok);
+    }
     @PostMapping(value = "/code/{code}/user/{userId}/activate")
     public Mono<ResponseEntity<Boolean>> activate(@PathVariable String code, @PathVariable UUID userId) {
         return contentNodeHandler.activate(code, userId)
