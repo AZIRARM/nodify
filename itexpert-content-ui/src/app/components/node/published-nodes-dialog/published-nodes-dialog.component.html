@@ -57,7 +57,7 @@
     <td mat-cell *matCellDef="let element">
       <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit()" (click)="revert(element)" inline matTooltip="{{ 'REVERT' | translate}}">cloud_download</mat-icon>
       <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit()" (click)="deploy(element)" inline matTooltip="{{ 'DEPLOY' | translate}}">history</mat-icon>
-      <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit()" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
+      <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit() && element.status === 'ARCHIVE'" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
     </td>
   </ng-container>
 

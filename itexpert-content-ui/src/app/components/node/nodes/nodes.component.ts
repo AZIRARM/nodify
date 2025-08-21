@@ -81,6 +81,7 @@ export class NodesComponent implements OnInit {
           response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
+          response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
           this.dataSource = new MatTableDataSource(response);
           this.initEnvironments();
         },

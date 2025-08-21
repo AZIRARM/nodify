@@ -21,6 +21,9 @@ export class ContentChartsComponent implements OnInit {
 
   ngOnInit(): void {
     this.chartService.getCharts().subscribe((treeData: any) => {
+
+      treeData = this.sortTreeByCode([treeData]);
+
       this.cleanTreeData(treeData).subscribe((cleaned:any) => {
         this.chartOptions = {
           tooltip: {
@@ -88,6 +91,24 @@ export class ContentChartsComponent implements OnInit {
         };
       });
     });
+  }
+
+  private sortTreeByCode(nodes: any[]): any[] {
+    if (!Array.isArray(nodes) || nodes.length === 0) return nodes;
+
+    nodes.sort((a, b) => {
+      if (!a.code) return -1;
+      if (!b.code) return 1;
+      return a.code.localeCompare(b.code);
+    });
+
+    nodes.forEach(node => {
+      if (Array.isArray(node.children) && node.children.length > 0) {
+        this.sortTreeByCode(node.children);
+      }
+    });
+
+    return nodes[0];
   }
 
   private cleanTreeData(node: any): Observable<any> {
