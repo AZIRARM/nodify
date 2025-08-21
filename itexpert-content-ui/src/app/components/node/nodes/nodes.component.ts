@@ -392,7 +392,8 @@ export class NodesComponent implements OnInit {
       (response: any) => {
         this.environments = response.filter(
           (env: Node) => this.user!.roles.includes("ADMIN")
-            || this.user!.projects.includes(env.code));
+            || this.user!.projects.includes(env.code))
+            .filter((env:Node)=>env.code !== this.parentNode.code && env.code !== this.parentNode.parentCodeOrigin);
       },
       (error) => {
         console.error('Request failed with error');
