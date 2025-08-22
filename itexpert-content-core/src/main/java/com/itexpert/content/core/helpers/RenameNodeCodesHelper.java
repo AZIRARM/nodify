@@ -43,9 +43,13 @@ public class RenameNodeCodesHelper {
 
                     return node;
                 }).collectList()
-                .map(nodesList -> CodesUtils.changeCodes(gson.toJson(nodesList), parentCodeOrigin, fromFile))
-                .map(modifiedJson -> gson.fromJson(modifiedJson, new TypeToken<List<Node>>() {
-                }.getType())).flatMapMany(o -> Flux.fromIterable((List<Node>) o)); // Convertir la liste de nœuds en Flux<Node>
+                .map(nodesList -> {
+                    return CodesUtils.changeCodes(gson.toJson(nodesList), parentCodeOrigin, fromFile);
+                })
+                .map(modifiedJson -> {
+                    return gson.fromJson(modifiedJson, new TypeToken<List<Node>>() {
+                    }.getType());
+                }).flatMapMany(o -> Flux.fromIterable((List<Node>) o)); // Convertir la liste de nœuds en Flux<Node>
     }
 
     public Mono<String> changeCodesAndReturnJson(List<Node> nodes, String parentCodeOrigin, Boolean fromFile) {
