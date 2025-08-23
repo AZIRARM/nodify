@@ -83,9 +83,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-   this.userAccessService.user$.subscribe((user: User) => {
-  this.user = user;
-});
+   this.user = this.userAccessService.getCurrentUser()
     this.init();
   }
 
@@ -100,6 +98,9 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       (response: any) => {
         //next() callback
         response.map((node: any) => this.setUserName(node)).map((node: any) => this.setUserName(node));
+        
+        response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
+        
         this.dataSource = new MatTableDataSource(response);
         this.initEnvironments();
       },

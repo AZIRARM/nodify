@@ -143,6 +143,7 @@ import {CanvasRenderer} from "echarts/renderers";
 import {NodesViewDialogComponent} from "./components/node/nodes-view-dialog/nodes-view-dialog.component";
 import {ChartService} from "./services/ChartService";
 import { SlugService } from './services/SlugService';
+import { CookiesService } from './services/CookiesService';
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -282,7 +283,8 @@ export function defaultLanguage() {
     PluginFileService,
     ChartService,
     SlugService,
-    AuthGuard
+    AuthGuard,
+    CookiesService
   ],
 
   bootstrap: [AppComponent]

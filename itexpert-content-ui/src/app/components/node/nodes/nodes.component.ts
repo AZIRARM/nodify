@@ -23,6 +23,7 @@ import {PublishedNodesDialogComponent} from "../published-nodes-dialog/published
 import {TranslationsDialogComponent} from "../../commons/translations-dialog/translations-dialog.component";
 import {UserService} from "../../../services/UserService";
 import {UserAccessService} from "../../../services/UserAccessService";
+import {AuthenticationService} from "../../../services/AuthenticationService";
 import {ToastrService} from "ngx-toastr";
 import {Env} from "../../../../assets/configurations/environment";
 import {DeletedNodesDialogComponent} from "../deleted-nodes-dialog/deleted-nodes-dialog.component";
@@ -58,6 +59,7 @@ export class NodesComponent implements OnInit {
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
               public userAccessService: UserAccessService,
+              private authService: AuthenticationService,
               private toast: ToastrService,
               private router: Router,
               private nodeService: NodeService,
@@ -68,10 +70,8 @@ export class NodesComponent implements OnInit {
 
 
   ngOnInit() {
-    this.userAccessService.user$.subscribe((user: User) => {
-      this.user = user;
+      this.user = this.userAccessService.getCurrentUser();
       this.init();
-    });
   }
 
   init() {
@@ -81,6 +81,7 @@ export class NodesComponent implements OnInit {
           response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
+          response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
           this.dataSource = new MatTableDataSource(response);
           this.initEnvironments();
         },
@@ -90,9 +91,16 @@ export class NodesComponent implements OnInit {
     } else {
       this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
-          console.log('response received : ' + response);
-          if (!this.userAccessService.isAdmin()) {
-            response = response.filter((node: Node) => this.user!.projects.includes(node.code));
+          console.log('1 - Call user is Admin');
+          const isAdmin:boolean = this.userAccessService.isAdmin();
+          if (!isAdmin) {
+            response = response.filter((node: Node) => {
+              console.log('2 - Call user is NOT Admin');
+                return this.user &&
+                Array.isArray(this.user.projects) &&
+                this.user.projects.includes(node.code)
+              }
+            );
           }
           response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
@@ -385,7 +393,8 @@ export class NodesComponent implements OnInit {
       (response: any) => {
         this.environments = response.filter(
           (env: Node) => this.user!.roles.includes("ADMIN")
-            || this.user!.projects.includes(env.code));
+            || this.user!.projects.includes(env.code))
+            .filter((env:Node)=>env.code !== this.parentNode.code && env.code !== this.parentNode.parentCodeOrigin);
       },
       (error) => {
         console.error('Request failed with error');

@@ -5,7 +5,6 @@ import com.itexpert.content.lib.models.Language;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
@@ -17,22 +16,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class DefaultLanguagesCommandLineRunner implements CommandLineRunner {
-
-    @Value("${app.defaultLanguages}")
-    private String defaultLanguages;
-
+public class DefaultLanguagesInitializer {
+    private final String defaultLanguages;
     private final LanguageHandler languageHandler;
 
-    DefaultLanguagesCommandLineRunner(LanguageHandler languageHandler) {
+    public DefaultLanguagesInitializer(@Value("${app.defaultLanguages}") String defaultLanguages,
+                                       LanguageHandler languageHandler) {
+        this.defaultLanguages = defaultLanguages;
         this.languageHandler = languageHandler;
     }
 
-    public void run(String... args) {
-        this.start();
-    }
 
-    private void start() {
+    public Mono<Void> init() {
         if (ObjectUtils.isNotEmpty(defaultLanguages)) {
             List<String> languageCodes = (List<String>) CollectionUtils.arrayToList(defaultLanguages.trim().split(";"));
             List<Language> languages = languageCodes.stream()
@@ -44,7 +39,7 @@ public class DefaultLanguagesCommandLineRunner implements CommandLineRunner {
                     })
                     .collect(Collectors.toList());
 
-            languageHandler.findAll()
+            return languageHandler.findAll()
                     .hasElements()
                     .flatMapMany(hasLanguages -> {
                         if (!hasLanguages) {
@@ -59,8 +54,9 @@ public class DefaultLanguagesCommandLineRunner implements CommandLineRunner {
                             return Flux.empty();
                         }
                     })
-                    .subscribe();
+                    .then();
         }
+        return Mono.empty();
     }
 
 

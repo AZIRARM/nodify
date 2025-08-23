@@ -9,7 +9,7 @@ public class CodesUtils {
     private static final String DIGITS = "0123456789";
     private static final int CODE_LENGTH = 10;
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final String CODES_REGEX = "[\\\\]*\"code[\\\\]*\"[ ]*:[ ]*[\\\\]*\"[a-zA-Z-_]*[0-9]*[\\\\]*\"";
+    private static final String CODES_REGEX = "[\\\\]*\"code[\\\\]*\"[ ]*:[ ]*[\\\\]*\"[a-zA-Z0-9-_]*[0-9]*[\\\\]*\"";
 
 
     public static String changeCodes(String jsons, String environment, boolean fromFile) {

@@ -25,21 +25,19 @@ export class UsersComponent implements OnInit {
   constructor(private translate: TranslateService,
     private loggerService: LoggerService,
     private userService: UserService,
-    private userAccessService: UserAccessService,
+    public userAccessService: UserAccessService,
     private dialog: MatDialog) {
   }
 
   ngOnInit() {
-    this.userAccessService.user$.subscribe((user: User) => {
-      this.user = user;
-    });
-    this.init();
+   this.user = this.userAccessService.getCurrentUser()
+   this.init();
   }
 
   init() {
     this.userService.getAll().subscribe(
       (response: any) => {
-        console.log('response received : ' + response);
+        response=response.sort((a:any, b:any) => a.name.localeCompare(b.name));
         this.dataSource = new MatTableDataSource(response);
       },
       (error) => {

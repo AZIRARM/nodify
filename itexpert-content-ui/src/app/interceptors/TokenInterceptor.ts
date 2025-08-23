@@ -8,35 +8,34 @@ import { AuthenticationService } from "../services/AuthenticationService";
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
 
-  constructor(private router: Router, private authService: AuthenticationService) { }
+  constructor(
+    private router: Router,
+    private authService: AuthenticationService
+  ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const userToken = 'secure-user-token';
-    const modifiedReq = req.clone({
-      headers: req.headers
-        .set('Authorization', 'Bearer ' + this.getAuthorization())
-        .set('Content-Type', 'application/json')
-        .set('Accept', 'application/json')
-    });
-    return next.handle(modifiedReq).pipe(tap(() => { },
-      (err: any) => {
-        if (err instanceof HttpErrorResponse) {
-          if (!this.authService.isAuthenticated()) {
-            this.router.navigate(['/login']);
+    const token = this.authService.getAccessToken();
+
+    let headers = req.headers
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const modifiedReq = req.clone({ headers });
+
+    return next.handle(modifiedReq).pipe(
+      tap({
+        error: (err: any) => {
+          if (err instanceof HttpErrorResponse) {
+            if (!this.authService.isAuthenticated()) {
+              this.router.navigate(['/login']);
+            }
           }
         }
-      }));
+      })
+    );
   }
-
-
-
-  getAuthorization() {
-    return (window.localStorage.getItem("userToken")
-      ?
-      JSON.parse((JSON.parse(JSON.stringify(window.localStorage.getItem("userToken"))))).token
-      :
-      '');
-  }
-
-
 }

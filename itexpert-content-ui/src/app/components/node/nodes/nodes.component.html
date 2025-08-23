@@ -45,17 +45,7 @@
   <mat-icon>add</mat-icon>
 </button>
 
-<span class="form-group" style="margin-left: 90%"
-      *ngIf="parentNode && userAccessService.canEdit()">
-  <mat-icon class="icon-display" style="scale: 2" inline matTooltip="{{ 'IMPORT' | translate}}"
-            (click)="fileInput.click()">downloading</mat-icon>
-  <input hidden #fileInput type="file"
-         id="file"
-         (change)="import($event.target)">
-</span>
-
-
-<table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.user$ | async as user">
+<table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.getCurrentUser()">
 
   <ng-container matColumnDef="Status">
     <th mat-header-cell *matHeaderCellDef> {{ "ACTIVE" | translate }}</th>

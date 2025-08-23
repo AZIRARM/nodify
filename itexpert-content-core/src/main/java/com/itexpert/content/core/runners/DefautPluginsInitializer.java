@@ -5,7 +5,6 @@ import com.itexpert.content.core.handlers.PluginHandler;
 import com.itexpert.content.lib.models.Plugin;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -16,24 +15,19 @@ import java.io.InputStreamReader;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class DefautPluginsCommandLineRunner implements CommandLineRunner {
+public class DefautPluginsInitializer {
 
     private final PluginHandler pluginHandler;
 
-    public void run(String... args) {
-        this.start();
-    }
 
-    private void start() {
-        Flux.merge(
+    public Mono<Void> init() {
+        return Flux.merge(
                 this.importPlugin("plugins/jquery3.7.1.json"),
                 this.importPlugin("plugins/bootstrap5.0.2.json"),
                 this.importPlugin("plugins/feedbacks.json"),
                 this.importPlugin("plugins/clicks.json"),
                 this.importPlugin("plugins/comments.json")
-        ).collectList().subscribe(list -> {
-            log.info("Plugins Imported");
-        });
+        ).collectList().then();
 
     }
 

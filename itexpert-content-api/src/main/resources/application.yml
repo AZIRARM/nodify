@@ -6,7 +6,9 @@ spring:
       #database: itexpert-content-db
 
   application:
-    name: content-api
+    name: nodify-headless-cms-api
+    version: 3.0.0
+
   main:
     web-appli cation-type: reactive
     allow-bean-definition-overriding: true

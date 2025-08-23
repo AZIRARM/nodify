@@ -36,10 +36,8 @@ export class DeletedPluginsDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.userAccessService.user$.subscribe((user: any) => {
-      this.user = user;
-    });
-    this.init();
+   this.user = this.userAccessService.getCurrentUser()
+   this.init();
   }
 
   init() {
@@ -47,6 +45,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
       (response: any) => {
         if (response) {
           response.map((content: any) => this.setUserName(content));
+          response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
           this.dataSource = new MatTableDataSource(response);
         }
       },

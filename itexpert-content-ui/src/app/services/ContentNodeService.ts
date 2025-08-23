@@ -18,6 +18,10 @@ export class ContentNodeService extends Service {
     return super.remove("code/" + code + "/deleteDefinitively");
   }
 
+  deleteById(id: String) {
+    return super.remove("" + id);
+  }
+  
   save(content: ContentNode) {
     return super.post("", content);
   }

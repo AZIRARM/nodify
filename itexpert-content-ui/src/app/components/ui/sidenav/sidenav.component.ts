@@ -18,9 +18,7 @@ export class SidenavComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userAccessService.user$.subscribe((user: any) => {
-      this.user = user;
-    });
+    this.user = this.userAccessService.getCurrentUser()
     this.sidenavService.setSidenav(this.sideNav);
   }
 
