@@ -53,7 +53,7 @@ public class Node implements Serializable, Cloneable {
 
     private Long modificationDate;
 
-    private UUID modifiedBy;
+    private String modifiedBy;
 
 
     private String version;

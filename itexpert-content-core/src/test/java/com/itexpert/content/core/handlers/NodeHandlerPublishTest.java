@@ -7,6 +7,7 @@ import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Notification;
+import com.itexpert.content.lib.models.UserPost;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -67,7 +68,7 @@ public class NodeHandlerPublishTest {
         );
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.randomUUID())
+                .user("Admin")
                 .type("CONTENT_NODE")
                 .build();
 
@@ -85,6 +86,7 @@ public class NodeHandlerPublishTest {
         childNode.setStatus(StatusEnum.SNAPSHOT);
         childNode.setVersion("0");
 
+        when(userHandler.findById(any())).thenReturn(Mono.just(mock(UserPost.class)));
         when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
 
     }

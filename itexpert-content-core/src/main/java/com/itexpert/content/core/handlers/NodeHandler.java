@@ -114,11 +114,11 @@ public class NodeHandler {
 
     public Mono<Boolean> delete(String code, UUID userId) {
         return nodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
-                .map(node -> {
+                .flatMap(node -> userHandler.findById(userId).map(userPost -> {
                     node.setStatus(StatusEnum.DELETED);
-                    node.setModifiedBy(userId);
+                    node.setModifiedBy(userPost.getFirstname() + " " + userPost.getLastname() + "(" + userPost.getRoles() + ")");
                     return node;
-                }).flatMap(nodeRepository::save)
+                })).flatMap(nodeRepository::save)
                 .map(nodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DELETION))
                 .map(unused -> Boolean.TRUE)
@@ -252,8 +252,12 @@ public class NodeHandler {
             snapshot.setId(UUID.randomUUID());
             snapshot.setStatus(StatusEnum.SNAPSHOT);
             snapshot.setVersion(Integer.toString(Integer.parseInt(node.getVersion()) + 1));
-            node.setModifiedBy(userId);
-            return this.nodeRepository.save(this.nodeMapper.fromModel(snapshot))
+            return userHandler.findById(userId).map(userPost -> {
+                        snapshot.setModifiedBy(userPost.getFirstname() + " " + userPost.getLastname() + "(" + userPost.getRoles() + ")");
+                        return node;
+                    })
+                    .map(nodeMapper::fromModel)
+                    .flatMap(nodeRepository::save)
                     .map(saved -> node);
         } catch (CloneNotSupportedException cloneNotSupportedException) {
             return Mono.error(cloneNotSupportedException);
@@ -266,9 +270,11 @@ public class NodeHandler {
         toPublish.setStatus(StatusEnum.PUBLISHED);
         toPublish.setModificationDate(Instant.now().toEpochMilli());
         toPublish.setPublicationDate(toPublish.getModificationDate());
-        toPublish.setModifiedBy(userId);
-
-        return this.nodeRepository.save(this.nodeMapper.fromModel(toPublish))
+        return userHandler.findById(userId).map(userPost -> {
+                    toPublish.setModifiedBy(userPost.getFirstname() + " " + userPost.getLastname() + "(" + userPost.getRoles() + ")");
+                    return toPublish;
+                }).map(nodeMapper::fromModel)
+                .flatMap(this.nodeRepository::save)
                 .map(this.nodeMapper::fromEntity);
     }
 
@@ -276,11 +282,12 @@ public class NodeHandler {
 
         toArchive.setStatus(StatusEnum.ARCHIVE);
         toArchive.setModificationDate(Instant.now().toEpochMilli());
-        toArchive.setModifiedBy(userId);
-
-        return this.nodeRepository.save(this.nodeMapper.fromModel(toArchive))
+        return userHandler.findById(userId).map(userPost -> {
+                    toArchive.setModifiedBy(userPost.getFirstname() + " " + userPost.getLastname() + "(" + userPost.getRoles() + ")");
+                    return toArchive;
+                }).map(nodeMapper::fromModel)
+                .flatMap(this.nodeRepository::save)
                 .map(this.nodeMapper::fromEntity);
-
     }
 
 
@@ -300,22 +307,26 @@ public class NodeHandler {
 
     public Mono<Node> revert(String code, String version, UUID userId) {
         return this.nodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
-                .map(node -> {
+                .flatMap(node -> {
                     node.setStatus(StatusEnum.ARCHIVE);
                     node.setModificationDate(Instant.now().toEpochMilli());
-                    node.setModifiedBy(userId);
-                    return node;
+                    return userHandler.findById(userId).map(userPost -> {
+                        node.setModifiedBy(userPost.getFirstname() + " " + userPost.getLastname() + "(" + userPost.getRoles() + ")");
+                        return node;
+                    });
                 }).flatMap(nodeRepository::save)
                 .map(node -> node.getVersion())
                 .flatMap(lastVersion -> nodeRepository.findByCodeAndVersion(code, version).map(node -> Tuples.of(lastVersion, node)))
-                .map(tuple -> {
+                .flatMap(tuple -> {
                     com.itexpert.content.lib.entities.Node node = tuple.getT2();
                     String lastVersion = tuple.getT1();
                     node.setVersion(Long.valueOf(Long.parseLong(lastVersion) + 1).toString());
                     node.setStatus(StatusEnum.SNAPSHOT);
-                    node.setModifiedBy(userId);
                     node.setModificationDate(Instant.now().toEpochMilli());
-                    return node;
+                    return userHandler.findById(userId).map(userPost -> {
+                        node.setModifiedBy(userPost.getFirstname() + " " + userPost.getLastname() + "(" + userPost.getRoles() + ")");
+                        return node;
+                    });
                 }).flatMap(nodeRepository::save)
                 .map(nodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.REVERT));
@@ -325,11 +336,13 @@ public class NodeHandler {
 
     public Mono<Boolean> activate(String code, UUID userId) {
         return nodeRepository.findByCodeAndStatus(code, StatusEnum.DELETED.name())
-                .map(node -> {
+                .flatMap(node -> {
                     node.setStatus(StatusEnum.SNAPSHOT);
-                    node.setModifiedBy(userId);
                     node.setModificationDate(Instant.now().toEpochMilli());
-                    return node;
+                    return userHandler.findById(userId).map(userPost -> {
+                        node.setModifiedBy(userPost.getFirstname() + " " + userPost.getLastname() + "(" + userPost.getRoles() + ")");
+                        return node;
+                    });
                 }).flatMap(nodeRepository::save)
                 .map(nodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.REACTIVATION))
@@ -503,7 +516,7 @@ public class NodeHandler {
                                         node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
                                         node.setStatus(StatusEnum.SNAPSHOT);
                                         node.setModificationDate(Instant.now().toEpochMilli());
-                                        if(ObjectUtils.isNotEmpty(existingNode.getSlug())) {
+                                        if (ObjectUtils.isNotEmpty(existingNode.getSlug())) {
                                             node.setSlug(existingNode.getSlug());
                                         }
                                         node.setFavorite(existingNode.isFavorite());
