@@ -23,7 +23,7 @@
   right: 0;
   bottom: 60px; /* hauteur du footer */
   overflow: hidden; /* défilement interne si le contenu dépasse */
-  #background-color: #fff; /* fond par défaut (à adapter pour fond noir si nécessaire) */
+  /*background-color: #fff; µ/ /* fond par défaut (à adapter pour fond noir si nécessaire) */
   padding: 20px;
   box-sizing: border-box;
 }
