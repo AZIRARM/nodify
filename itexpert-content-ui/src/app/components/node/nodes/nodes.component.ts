@@ -78,7 +78,6 @@ export class NodesComponent implements OnInit {
     if (this.parentNode) {
       this.nodeService.getAllByParentCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
-          response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
           response = response.sort((a: any, b: any) => {
@@ -106,7 +105,6 @@ export class NodesComponent implements OnInit {
               }
             );
           }
-          response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
           this.dataSource = new MatTableDataSource(response);
