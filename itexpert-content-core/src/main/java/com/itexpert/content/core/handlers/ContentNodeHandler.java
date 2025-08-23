@@ -111,51 +111,52 @@ public class ContentNodeHandler {
     }
 
     public Mono<ContentNode> publish(UUID contentNodeUuid, Boolean publish, UUID userId) {
-        return contentNodeRepository.findById(contentNodeUuid)
-                .flatMap(contentNode ->
-                        contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.PUBLISHED.name())
-                                .flatMap(alreadyPublished ->
-                                        // Archive l'ancien PUBLISHED
-                                        userHandler.findById(userId).flatMap(user -> {
-                                                    alreadyPublished.setStatus(StatusEnum.ARCHIVE);
-                                                    alreadyPublished.setModificationDate(Instant.now().toEpochMilli());
-                                                    alreadyPublished.setModifiedBy(user.getFirstname() + " " + user.getLastname() + "(" + user.getRoles() + ")");
-                                                    return contentNodeRepository.save(alreadyPublished);
-                                                })
-                                                // Publie le SNAPSHOT existant
-                                                .flatMap(archived -> contentNodeRepository.findByCodeAndStatus(archived.getCode(), StatusEnum.SNAPSHOT.name()))
-                                                .flatMap(snapshotNode -> {
-                                                    snapshotNode.setStatus(StatusEnum.PUBLISHED);
-                                                    snapshotNode.setModificationDate(Instant.now().toEpochMilli());
-                                                    snapshotNode.setPublicationDate(snapshotNode.getModificationDate());
+        return userHandler.findById(userId).map(userPost -> {
+                    return this.contentNodeRepository.findById(contentNodeUuid)
+                            .flatMap(contentNode ->
+                                    this.contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.PUBLISHED.name())
+                                            .flatMap(alreadyPublished -> {
+                                                // Cas où un PUBLISHED existe
+                                                alreadyPublished.setStatus(StatusEnum.ARCHIVE);
+                                                alreadyPublished.setModifiedBy(userPost.getFirstname()+" "+userPost.getLastname()+"("+userPost.getRoles()+")");
+                                                alreadyPublished.setModificationDate(Instant.now().toEpochMilli());
 
-                                                    return userHandler.findById(userId).flatMap(user -> {
-                                                        snapshotNode.setModifiedBy(user.getFirstname() + " " + user.getLastname() + "(" + user.getRoles() + ")");
-                                                        return contentNodeRepository.save(snapshotNode);
-                                                    });
-                                                })
-                                                // Création d’un nouveau SNAPSHOT en arrière-plan
-                                                .flatMap(publishedContent -> Mono.fromCallable(() -> {
-                                                            long version = ObjectUtils.isNotEmpty(publishedContent.getVersion())
-                                                                    ? Long.parseLong(publishedContent.getVersion()) + 1L
-                                                                    : 1L;
+                                                return this.contentNodeRepository.save(alreadyPublished)
+                                                        .flatMap(archived -> this.contentNodeRepository.findByCodeAndStatus(archived.getCode(), StatusEnum.SNAPSHOT.name()))
+                                                        .flatMap(snapshotNode -> {
+                                                            snapshotNode.setStatus(StatusEnum.PUBLISHED);
+                                                            snapshotNode.setModifiedBy(userPost.getFirstname()+" "+userPost.getLastname()+"("+userPost.getRoles()+")");
+                                                            snapshotNode.setModificationDate(Instant.now().toEpochMilli());
+                                                            snapshotNode.setPublicationDate(snapshotNode.getModificationDate());
 
-                                                            com.itexpert.content.lib.entities.ContentNode newSnapshot = publishedContent.clone();
-                                                            newSnapshot.setStatus(StatusEnum.SNAPSHOT);
-                                                            newSnapshot.setId(UUID.randomUUID());
-                                                            newSnapshot.setVersion(Long.toString(version));
-                                                            return newSnapshot;
-                                                        })
-                                                        .flatMap(newSnapshot -> userHandler.findById(userId).flatMap(user -> {
-                                                            newSnapshot.setModifiedBy(user.getFirstname() + " " + user.getLastname() + "(" + user.getRoles() + ")");
-                                                            return contentNodeRepository.save(newSnapshot);
-                                                        }))
-                                                        .thenReturn(publishedContent))
-                                )
-                                .switchIfEmpty(Mono.defer(() -> createFirstPublication(contentNodeUuid, publish)))
-                )
+                                                            return this.contentNodeRepository.save(snapshotNode)
+                                                                    .flatMap(publishedContent -> {
+                                                                        try {
+                                                                            // Création du SNAPSHOT en arrière-plan
+                                                                            long version = ObjectUtils.isNotEmpty(publishedContent.getVersion())
+                                                                                    ? Long.parseLong(publishedContent.getVersion()) + 1L
+                                                                                    : 1L;
+                                                                            com.itexpert.content.lib.entities.ContentNode newSnapshot = publishedContent.clone();
+                                                                            newSnapshot.setStatus(StatusEnum.SNAPSHOT);
+                                                                            newSnapshot.setModifiedBy(userPost.getFirstname()+" "+userPost.getLastname()+"("+userPost.getRoles()+")");
+                                                                            newSnapshot.setId(UUID.randomUUID());
+                                                                            newSnapshot.setVersion(Long.toString(version));
+                                                                            this.contentNodeRepository.save(newSnapshot).subscribe();
+
+                                                                            // Retourne le PUBLISHED final
+                                                                            return Mono.just(publishedContent);
+                                                                        } catch (CloneNotSupportedException e) {
+                                                                            return Mono.error(e);
+                                                                        }
+                                                                    });
+                                                        });
+                                            })
+                                            .switchIfEmpty(Mono.defer(() -> createFirstPublication(contentNodeUuid, publish)))
+                            );
+                })
+                .flatMap(Mono::from)
                 .map(contentNodeMapper::fromEntity)
-                .flatMap(model -> notify(model, NotificationEnum.DEPLOYMENT));
+                .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
     }
 
 
