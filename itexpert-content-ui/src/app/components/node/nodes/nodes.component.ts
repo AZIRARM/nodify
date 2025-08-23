@@ -81,7 +81,11 @@ export class NodesComponent implements OnInit {
           response.map((node: any) => this.setUserName(node));
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
-          response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
+          response = response.sort((a: any, b: any) => {
+            if (a.favorite && !b.favorite) return -1;
+            if (!a.favorite && b.favorite) return 1;
+            return a.code.localeCompare(b.code);
+          });
           this.dataSource = new MatTableDataSource(response);
           this.initEnvironments();
         },
@@ -394,7 +398,10 @@ export class NodesComponent implements OnInit {
         this.environments = response.filter(
           (env: Node) => this.user!.roles.includes("ADMIN")
             || this.user!.projects.includes(env.code))
-            .filter((env:Node)=>env.code !== this.parentNode.code && env.code !== this.parentNode.parentCodeOrigin);
+          .filter((env: Node) =>
+            env.code !== this.parentNode?.code &&
+            env.code !== this.parentNode?.parentCodeOrigin
+          );
       },
       (error) => {
         console.error('Request failed with error');
