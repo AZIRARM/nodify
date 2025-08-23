@@ -61,7 +61,7 @@ public class NodeHandlerImportTest {
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.randomUUID())
+                .user("Admin")
                 .type("CONTENT_NODE")
                 .build();
 

@@ -31,7 +31,7 @@ public class NotificationHandler {
 
     public Mono<Notification> create(NotificationEnum type,
                                      String description,
-                                     UUID userId,
+                                     String user,
                                      String elementType,
                                      String typeCode,
                                      String typeVersion) {
@@ -39,7 +39,7 @@ public class NotificationHandler {
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
-                .userId(userId)
+                .user(user)
                 .type(elementType)
                 .typeCode(typeCode)
                 .typeVersion(typeVersion)

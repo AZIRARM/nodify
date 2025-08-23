@@ -71,7 +71,7 @@ public class ContentNodeHandlerDeployTest {
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.randomUUID())
+                .user("Admin")
                 .type("CONTENT_NODE")
                 .build();
 
@@ -218,16 +218,14 @@ public class ContentNodeHandlerDeployTest {
 
 
         ContentNode snapshotEntityProd = this.cloneNode(snapshotEntity);
-        snapshotEntityProd.setSlug("my-beautifull-slug-prod");
+        snapshotEntityProd.setSlug("my-slug");
+        snapshotEntityProd.setCode("NODE-PROD");
 
         when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
                 .thenReturn(Mono.just(snapshotEntityProd));
 
-        when(contentNodeRepository.findBySlugAndCode(any(), any()))
-                .thenReturn(Flux.fromIterable(List.of(snapshotEntityProd)));
-
-        when(contentNodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("my-beautifull-slug-prod")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("my-slug")).thenReturn(Flux.fromIterable(List.of(snapshotEntityProd)));
+        when(nodeRepository.findBySlug("my-slug")).thenReturn(Flux.empty());
 
 
         when(contentNodeRepository.save(any(ContentNode.class)))
@@ -243,7 +241,7 @@ public class ContentNodeHandlerDeployTest {
                     assert result.getCode().equals("NODE-PROD");
                     assert result.getVersion().equals("2");
                     assert result.getStatus() == StatusEnum.SNAPSHOT;
-                    assert result.getSlug().equals("my-beautifull-slug-prod"); //no change slug already exist
+                    assert result.getSlug().equals("my-slug"); //no change slug already exist
                 })
                 .verifyComplete();
 

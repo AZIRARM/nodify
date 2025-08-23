@@ -75,25 +75,32 @@ public class ContentNodeSlugHelperTest {
         contentNodeEntity.setId(UUID.randomUUID());
         contentNodeEntity.setCode(content.getCode());
 
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity0 = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity0.setId(UUID.randomUUID());
+        contentNodeEntity0.setCode("XXXX");
+
 
         when(contentNodeRepository.findByCodeAndStatus(content.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
         // Slug existe dans contentNodeRepository à la 1ère vérif
-        when(contentNodeRepository.findAllBySlug("mySlug")).thenReturn(Flux.just(new com.itexpert.content.lib.entities.ContentNode()));
+        when(contentNodeRepository.findBySlug("mySlug")).thenReturn(Flux.just(contentNodeEntity0));
+        when(nodeRepository.findBySlug("mySlug")).thenReturn(Flux.empty());
 
         // Slug "mySlug-env1" n'existe pas dans contentNodeRepository
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.empty());
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.empty());
 
         when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(contentNodeSlugHelper.update(content))
-                .expectNextMatches(c -> c.getSlug().equals("mySlug-0"))
+                .assertNext(c -> {
+                    assert c.getSlug().equals("mySlug-1");
+                })
                 .verifyComplete();
 
-        verify(contentNodeRepository).findAllBySlug("mySlug-0");
-        verify(nodeRepository).findAllBySlug("mySlug-0");
+        verify(contentNodeRepository).findBySlug("mySlug-1");
+        verify(nodeRepository).findBySlug("mySlug-1");
     }
 
     @Test
@@ -105,28 +112,39 @@ public class ContentNodeSlugHelperTest {
         contentNodeEntity.setId(UUID.randomUUID());
         contentNodeEntity.setCode(content.getCode());
 
+        com.itexpert.content.lib.entities.Node node = new com.itexpert.content.lib.entities.Node();
+        node.setId(UUID.randomUUID());
+        node.setCode("XXXX");
+
 
         when(contentNodeRepository.findByCodeAndStatus(content.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
+
         // Pas dans contentNodeRepository
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug")).thenReturn(Flux.empty());
         // Slug existe dans nodeRepository
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.just(new Node()));
+        when(nodeRepository.findBySlug("mySlug")).thenReturn(Flux.just(node));
+
+        // Pas dans contentNodeRepository
+        when(contentNodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.empty());
+        // Slug existe dans nodeRepository
+        when(nodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.just(node));
+
         // Slug "mySlug-env1" n'existe pas dans contentNodeRepository
-        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.empty());
         // Slug "mySlug-env1" n'existe pas dans nodeRepository
-        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.empty());
 
         when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(contentNodeSlugHelper.update(content))
-                .expectNextMatches(c -> c.getSlug().equals("mySlug-1"))
+                .expectNextMatches(c -> c.getSlug().equals("mySlug-2"))
                 .verifyComplete();
 
-        verify(contentNodeRepository).findAllBySlug("mySlug-0");
-        verify(nodeRepository).findAllBySlug("mySlug-0");
-        verify(contentNodeRepository).findAllBySlug("mySlug-1");
-        verify(nodeRepository).findAllBySlug("mySlug-1");
+        verify(contentNodeRepository).findBySlug("mySlug-2");
+        verify(nodeRepository).findBySlug("mySlug-2");
+        verify(contentNodeRepository).findBySlug("mySlug-1");
+        verify(nodeRepository).findBySlug("mySlug-1");
     }
 
 
@@ -144,20 +162,23 @@ public class ContentNodeSlugHelperTest {
         contentNodeEntity.setCode(contentNode.getCode());
 
 
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity3 = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity3.setId(UUID.randomUUID());
+        contentNodeEntity3.setCode("XXXX");
+
         when(contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
+        when(contentNodeRepository.findBySlug("mySlug-3")).thenReturn(Flux.fromIterable(List.of(contentNodeEntity3)));
+        when(nodeRepository.findBySlug("mySlug-3")).thenReturn(Flux.empty());
 
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
-
-        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-4")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug-4")).thenReturn(Flux.empty());
 
         when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(contentNodeSlugHelper.update(contentNode))
                 .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-1");
+                    assert n.getSlug().equals("mySlug-4");
                 })
                 .verifyComplete();
     }
@@ -173,17 +194,25 @@ public class ContentNodeSlugHelperTest {
         contentNodeEntity.setId(UUID.randomUUID());
         contentNodeEntity.setCode(contentNode.getCode());
 
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity1 = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity1.setId(UUID.randomUUID());
+        contentNodeEntity1.setCode("XXXX");
+
+
+        com.itexpert.content.lib.entities.ContentNode contentNodeEntity2 = new com.itexpert.content.lib.entities.ContentNode();
+        contentNodeEntity2.setId(UUID.randomUUID());
+        contentNodeEntity2.setCode("NODE-CODE");
 
         when(contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(contentNodeEntity));
 
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(contentNodeEntity)));
+        when(nodeRepository.findBySlug("mySlug-0")).thenReturn(Flux.empty());
 
-        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.fromIterable(List.of(new com.itexpert.content.lib.entities.ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.fromIterable(List.of(contentNodeEntity1)));
+        when(nodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.empty());
 
-        when(contentNodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.fromIterable(List.of(contentNodeEntity2)));
+        when(nodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.empty());
 
         when(contentNodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
