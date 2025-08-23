@@ -307,7 +307,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     content.parentCode = this.node.code;
     content.parentCodeOrigin = this.node.parentCodeOrigin;
 
-    this.contentNodeService.save(content).subscribe(
+    this.contentNodeService.save(content, this.user.id).subscribe(
       (response: any) => {
 
         this.currentContent = response;

@@ -94,7 +94,7 @@ public class NodeHandlerPublishTest {
     @Test
     void publish_shouldCallPublishNode_WhenNoChildreensAndNoPublishedExists() {
         UUID nodeUuid = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        String user = "Admin";
 
         // Parent SNAPSHOT
         Node parentSnapshot = new Node();
@@ -119,7 +119,7 @@ public class NodeHandlerPublishTest {
                 .findAllChildren(anyString());
 
         // Exécution et vérification du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, userId))
+        StepVerifier.create(spyHandler.publish(nodeUuid, user))
                 .expectNextMatches(node ->
                         node.getStatus().equals(StatusEnum.PUBLISHED) &&
                                 node.getCode().equals("PARENT-DEV") &&
@@ -130,19 +130,19 @@ public class NodeHandlerPublishTest {
         ArgumentCaptor<com.itexpert.content.lib.models.Node> nodeCaptor =
                 ArgumentCaptor.forClass(com.itexpert.content.lib.models.Node.class);
 
-        verify(spyHandler).publishNode(nodeCaptor.capture(), eq(userId));
+        verify(spyHandler).publishNode(nodeCaptor.capture(), eq(user));
         assertEquals("PARENT-DEV", nodeCaptor.getValue().getCode());
 
 
-        verify(spyHandler, times(1)).publishNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(0)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(1)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
+        verify(spyHandler, times(1)).publishNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(0)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(1)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any());
     }
 
     @Test
     void publish_shouldPublish_WhenNoChildrensFoundAndPublshedExists() {
         UUID nodeUuid = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        String user = "Admin";
 
         // Création du noeud parent original et du noeud publié mock
         Node nodeToPublish = new Node();
@@ -173,22 +173,22 @@ public class NodeHandlerPublishTest {
 
 
         // Exécution du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, userId))
+        StepVerifier.create(spyHandler.publish(nodeUuid, user))
                 .assertNext(node -> {
                     assert node.getStatus().equals(StatusEnum.PUBLISHED);
                     assert node.getId().equals(nodeToPublish.getId());
                 })
                 .verifyComplete();
 
-        verify(spyHandler, times(1)).publishNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(1)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(1)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
+        verify(spyHandler, times(1)).publishNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(1)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(1)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any());
     }
 
     @Test
     void publish_shouldPublish_WhenChildrensFoundButNotPublishedAginAndPublshedExists() {
         UUID nodeUuid = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        String user = "Admin";
 
         // Création du noeud parent original et du noeud publié mock
         Node nodeToPublish = new Node();
@@ -229,23 +229,23 @@ public class NodeHandlerPublishTest {
         doReturn(Flux.empty()).when(spyHandler).findAllChildren(childNode.getCode());
 
         // Exécution du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, userId))
+        StepVerifier.create(spyHandler.publish(nodeUuid, user))
                 .assertNext(node -> {
                     assert node.getStatus().equals(StatusEnum.PUBLISHED);
                     assert node.getId().equals(nodeToPublish.getId());
                 })
                 .verifyComplete();
 
-        verify(spyHandler, times(2)).publishNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(1)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(2)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
+        verify(spyHandler, times(2)).publishNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(1)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(2)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any());
     }
 
 
     @Test
     void publish_shouldPublish_WhenChildrensFoundButPublishedAginAndPublshedExists() {
         UUID nodeUuid = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        String user = "Admin";
 
         // Création du noeud parent original et du noeud publié mock
         Node nodeToPublish = new Node();
@@ -292,15 +292,15 @@ public class NodeHandlerPublishTest {
         doReturn(Flux.empty()).when(spyHandler).findAllChildren(childNode.getCode());
 
         // Exécution du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, userId))
+        StepVerifier.create(spyHandler.publish(nodeUuid, user))
                 .assertNext(node -> {
                     assert node.getStatus().equals(StatusEnum.PUBLISHED);
                     assert node.getId().equals(nodeToPublish.getId());
                 })
                 .verifyComplete();
 
-        verify(spyHandler, times(2)).publishNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(2)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
-        verify(spyHandler, times(2)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any(UUID.class));
+        verify(spyHandler, times(2)).publishNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(2)).archiveNode(any(com.itexpert.content.lib.models.Node.class), any());
+        verify(spyHandler, times(2)).createSnapshot(any(com.itexpert.content.lib.models.Node.class), any());
     }
 }

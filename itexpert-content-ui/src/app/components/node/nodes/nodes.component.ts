@@ -9,7 +9,6 @@ import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NodeDialogComponent} from "../node-dialog/node-dialog.component";
 import {LoggerService} from "../../../services/LoggerService";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
-import {User} from "../../../modeles/User";
 import {ValuesDialogComponent} from "../../commons/values-dialog/values-dialog.component";
 import {NodeAccessRolesDialogComponent} from "../node-access-roles-dialg/node-access-roles-dialog.component";
 import {
@@ -70,8 +69,8 @@ export class NodesComponent implements OnInit {
 
 
   ngOnInit() {
-      this.user = this.userAccessService.getCurrentUser();
-      this.init();
+    this.user = this.userAccessService.getCurrentUser();
+    this.init();
   }
 
   init() {
@@ -95,13 +94,13 @@ export class NodesComponent implements OnInit {
       this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
           console.log('1 - Call user is Admin');
-          const isAdmin:boolean = this.userAccessService.isAdmin();
+          const isAdmin: boolean = this.userAccessService.isAdmin();
           if (!isAdmin) {
             response = response.filter((node: Node) => {
-              console.log('2 - Call user is NOT Admin');
+                console.log('2 - Call user is NOT Admin');
                 return this.user &&
-                Array.isArray(this.user.projects) &&
-                this.user.projects.includes(node.code)
+                  Array.isArray(this.user.projects) &&
+                  this.user.projects.includes(node.code)
               }
             );
           }
@@ -136,7 +135,7 @@ export class NodesComponent implements OnInit {
 
   save(node: Node) {
     node.modifiedBy = this.user.id;
-    this.nodeService.save(node).subscribe(
+    this.nodeService.save(node, this.user.id).subscribe(
       response => {
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
@@ -253,7 +252,7 @@ export class NodesComponent implements OnInit {
         if (result) {
           let contentNode: ContentNode = result.data;
           if (contentNode) {
-            this.contentNodeService.save(contentNode).subscribe(
+            this.contentNodeService.save(contentNode, this.user.id).subscribe(
               response => {
                 this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                   this.loggerService.success(trad);
@@ -447,7 +446,7 @@ export class NodesComponent implements OnInit {
       // Convertir explicitement en JSON string
       const jsonString = JSON.stringify(data, null, 2); // null,2 pour indentation lisible
 
-      const blob: Blob = new Blob([jsonString], { type: 'application/json' });
+      const blob: Blob = new Blob([jsonString], {type: 'application/json'});
 
       const a = document.createElement('a');
       const objectUrl = URL.createObjectURL(blob);
@@ -457,7 +456,6 @@ export class NodesComponent implements OnInit {
       URL.revokeObjectURL(objectUrl);
     });
   }
-
 
 
   import(fileList: any) {

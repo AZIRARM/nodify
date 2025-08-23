@@ -84,7 +84,7 @@ public class ContentNodeHandlerPublishTest {
         when(contentNodeRepository.findByCodeAndStatus(snapshotNode.getCode(), StatusEnum.PUBLISHED.name())).thenReturn(Mono.empty());
 
 
-        StepVerifier.create(contentNodeHandler.publish(contentNodeId, true, UUID.randomUUID()))
+        StepVerifier.create(contentNodeHandler.publish(contentNodeId, true, "Admin"))
                 .assertNext(contentNode -> {
                     assert contentNode.getStatus().equals(StatusEnum.PUBLISHED);
                     assert contentNode.getId().equals(snapshotNode.getId());
@@ -126,7 +126,7 @@ public class ContentNodeHandlerPublishTest {
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // WHEN
-        StepVerifier.create(contentNodeHandler.publish(snapshotContentId, true, UUID.randomUUID()))
+        StepVerifier.create(contentNodeHandler.publish(snapshotContentId, true, "Admin"))
                 .assertNext(contentNode -> {
                     assert contentNode.getStatus().equals(StatusEnum.PUBLISHED);
                     assert !contentNode.getId().equals(snapshotContent.getId());

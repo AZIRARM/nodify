@@ -127,7 +127,12 @@ public class NodeEndPoint {
 
     @DeleteMapping(value = "/code/{code}/user/{userId}")
     public Mono<ResponseEntity<Boolean>> delete(@PathVariable String code, @PathVariable UUID userId) {
-        return nodeHandler.delete(code, userId)
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> nodeHandler.delete(code, user))
                 .map(ResponseEntity::ok);
     }
 
@@ -136,6 +141,7 @@ public class NodeEndPoint {
         return nodeHandler.deleteDefinitively(code)
                 .map(ResponseEntity::ok);
     }
+
     @DeleteMapping(value = "/{id}")
     public Mono<ResponseEntity<Boolean>> deleteById(@PathVariable UUID id) {
         return nodeHandler.deleteById(id)
@@ -144,13 +150,23 @@ public class NodeEndPoint {
 
     @PostMapping(value = "/code/{code}/user/{userId}/activate")
     public Mono<ResponseEntity<Boolean>> activate(@PathVariable String code, @PathVariable UUID userId) {
-        return nodeHandler.activate(code, userId)
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> nodeHandler.activate(code, user))
                 .map(ResponseEntity::ok);
     }
 
     @PostMapping(value = "/id/{id}/user/{userId}/publish")
     public Mono<ResponseEntity<Node>> publish(@PathVariable UUID id, @PathVariable UUID userId) {
-        return nodeHandler.publish(id, userId)
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> nodeHandler.publish(id, user))
                 .flatMap(nodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok);
     }
@@ -192,13 +208,25 @@ public class NodeEndPoint {
 
     @PostMapping(value = "/code/{code}/version/{version}/user/{userId}/revert")
     public Mono<Node> revert(@PathVariable String code, @PathVariable String version, @PathVariable UUID userId) {
-        return nodeHandler.revert(code, version, userId)
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> nodeHandler.revert(code, version, user))
                 .flatMap(nodeHandler::setPublicationStatus);
     }
 
-    @PostMapping("/")
-    public Mono<Node> save(@RequestBody(required = true) Node node) {
-        return nodeHandler.save(node)
+    @PostMapping("/userId/{userId}")
+    public Mono<Node> save(@RequestBody(required = true) Node node, @PathVariable UUID userId) {
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> {
+                    node.setModifiedBy(user);
+                   return nodeHandler.save(node);
+                })
                 .flatMap(nodeHandler::setPublicationStatus);
     }
 
@@ -284,5 +312,11 @@ public class NodeEndPoint {
         return this.userHandler.findByEmail(authentication.getPrincipal().toString())
                 .map(UserPost::getProjects)
                 .flatMap(userProjects -> nodeHandler.generateTreeView(code, userProjects));
+    }
+
+
+    private String extratUser(UserPost user) {
+        return ObjectUtils.isEmpty(user) ? "" :
+                (user.getFirstname() + " " + user.getLastname() + (ObjectUtils.isEmpty(user.getRoles()) ? "(ADMIN)" : "(" + user.getRoles() + ")"));
     }
 }
