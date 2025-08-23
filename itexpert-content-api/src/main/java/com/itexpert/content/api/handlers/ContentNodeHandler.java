@@ -18,6 +18,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @AllArgsConstructor
@@ -70,7 +72,8 @@ public class ContentNodeHandler {
     private Mono<Node> evaluateNodeByCodeContent(String codeContent, StatusEnum status) {
         return
                 this.contentNodeRepository.findByCodeAndStatus(codeContent, status.name())
-                        .map(contentNode -> this.nodeHelper.evaluateNode(contentNode.getParentCode(), status)).flatMap(Mono::from);
+                        .map(contentNode -> this.nodeHelper.evaluateNode(contentNode.getParentCode(), status))
+                        .flatMap(Mono::from);
     }
 
     public Mono<ContentNodeView> findByCodeAndStatus(String code,
@@ -113,9 +116,45 @@ public class ContentNodeHandler {
                 .flatMap(contentNode -> RulesUtils.evaluateContentNode(contentNode)
                         .filter(aBoolean -> aBoolean)
                         .map(aBoolean -> contentNode)
-
+                        .map(aBoolean -> addStatusParamIfNeeded(contentNode))
                 );
     }
+
+    private ContentNode addStatusParamIfNeeded(ContentNode contentNode) {
+        String html = contentNode.getContent();
+        String status = contentNode.getStatus().name();
+
+        // Regex: capture src="...contents/(code/.../file | file/.../code)..."
+        Pattern urlPattern = Pattern.compile(
+                "(src|href)=\"([^\"]*?/contents/(?:code/[^/]+/file|file/[^/]+/code))(.*?)\""
+        );
+        Matcher matcher = urlPattern.matcher(html);
+
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            String before = matcher.group(2); // l’URL de base
+            String after = matcher.group(3);  // éventuels query params
+
+            String newUrl = before + after;
+            if (!newUrl.contains("status=")) {
+                if (newUrl.contains("?")) {
+                    newUrl = newUrl + "&status=" + status;
+                } else {
+                    newUrl = newUrl + "?status=" + status;
+                }
+            }
+
+            matcher.appendReplacement(
+                    sb,
+                    matcher.group(1) + "=\"" + Matcher.quoteReplacement(newUrl) + "\""
+            );
+        }
+        matcher.appendTail(sb);
+
+        contentNode.setContent(sb.toString());
+        return contentNode;
+    }
+
 
     private Integer getDatasIndexByKey(List<Value> datas, String key) {
         for (int i = 0; i < datas.size(); i++) {

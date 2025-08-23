@@ -5,7 +5,8 @@ spring:
       auto-index-creation:  true
 
   application:
-    name: content-core
+    name: nodify-headless-cms-core
+    version: 3.0.0
 
   main:
     web-application-type: reactive

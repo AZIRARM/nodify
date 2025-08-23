@@ -22,6 +22,7 @@ import reactor.util.function.Tuples;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -346,6 +347,10 @@ public class ContentNodeHandler {
                     contentNode.setStatus(StatusEnum.SNAPSHOT);
                     contentNode.setCreationDate(existingContentNode.getCreationDate());
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
+                    if(ObjectUtils.isNotEmpty(existingContentNode.getSlug())){
+                        contentNode.setSlug(existingContentNode.getSlug());
+                    }
+                    contentNode.setFavorite(existingContentNode.isFavorite());
 
                     if (ObjectUtils.isNotEmpty(existingContentNode.getSlug())) {
                         contentNode.setSlug(existingContentNode.getSlug());
@@ -432,7 +437,7 @@ public class ContentNodeHandler {
                                 }))
                 )
                 // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
-                .flatMap(contentNode -> contentNodeSlugHelper.update(contentNode))
+                .flatMap(contentNodeSlugHelper::update)
                 .flatMap(updatedContentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(updatedContentNode)))
                 .map(this.contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
@@ -454,6 +459,14 @@ public class ContentNodeHandler {
     public Mono<Boolean> slugAlreadyExists(String code, String slug) {
         return this.contentNodeRepository.findBySlugAndCode(slug, code)
                 .hasElements();
+    }
+
+    public Mono<Boolean> deleteById(UUID id) {
+        return this.contentNodeRepository.findById(id)
+                .map(this.contentNodeMapper::fromEntity)
+                .flatMap(content ->
+                        this.contentNodeRepository.deleteById(id).map(unused -> this.notify(content, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(content))
+                ).hasElement();
     }
 }
 

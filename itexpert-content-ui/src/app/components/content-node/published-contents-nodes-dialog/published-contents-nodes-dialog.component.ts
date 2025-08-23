@@ -44,9 +44,7 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.userAccessService.user$.subscribe((user: any) => {
-      this.user = user;
-    });
+   this.user = this.userAccessService.getCurrentUser()
     this.init();
   }
 
@@ -64,7 +62,11 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
     this.contentNodeService.getAllByCode(this.contentNode.code).subscribe(
       (response: any) => {
         if (response) {
-          let filtredNodes: ContentNode[] = response.filter((element: ContentNode) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED));
+          let filtredNodes: ContentNode[] = response.filter((element: ContentNode) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED))
+           .sort((a: ContentNode, b: ContentNode) => Number(b.version) - Number(a.version));
+
+          
+
           filtredNodes.map((content: any) => this.setUserName(content));
           this.dataSource = new MatTableDataSource(filtredNodes);
         }
@@ -115,6 +117,35 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
             });
           }, (error) => {
             this.translate.get("SAVE_ERROR").subscribe(trad => {
+              this.loggerService.error(trad);
+            });
+          });
+        }
+      });
+  }
+
+  
+
+  delete(element: Node) {
+    this.dialogRefPublish = this.dialog.open(ValidationDialogComponent, {
+      data: {
+        title: "DELETE_CONTENT_NODE_VERSION_TITLE",
+        message: "DELETE_CONTENT_NODE_VERSION_MESSAGE"
+      },
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    });
+    this.dialogRefPublish.afterClosed()
+      .subscribe((result: any) => {
+        if (result && result.data && result.data === "validated") {
+          this.contentNodeService.deleteById(element.id).subscribe(() => {
+            this.translate.get("DELETE_SUCCESS").subscribe(trad => {
+              this.loggerService.success(trad);
+              this.init();
+            });
+          }, (error) => {
+            this.translate.get("DELETE_ERROR").subscribe(trad => {
               this.loggerService.error(trad);
             });
           });

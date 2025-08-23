@@ -3,6 +3,7 @@ package com.itexpert.content.core.handlers;
 import com.itexpert.content.core.helpers.ContentHelper;
 import com.itexpert.content.core.helpers.ContentNodeSlugHelper;
 import com.itexpert.content.core.mappers.ContentNodeMapper;
+import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.ContentNode;
@@ -29,6 +30,7 @@ public class ContentNodeHandlerDeployTest {
 
     private ContentNodeRepository contentNodeRepository;
     private ContentNodeMapper contentNodeMapper;
+    private NodeMapper nodeMapper;
 
     private NodeRepository nodeRepository;
 
@@ -41,6 +43,8 @@ public class ContentNodeHandlerDeployTest {
 
     private ContentNodeSlugHelper contentNodeSlugHelper;
 
+    private SlugHandler slugHandler;
+
     private com.itexpert.content.lib.models.ContentNode snapshotNode;
     private ContentNode snapshotEntity;
 
@@ -48,11 +52,13 @@ public class ContentNodeHandlerDeployTest {
     void setup() {
         contentNodeRepository = mock(ContentNodeRepository.class);
         contentNodeMapper = Mappers.getMapper(ContentNodeMapper.class);
+        nodeMapper = Mappers.getMapper(NodeMapper.class);
         nodeRepository = mock(NodeRepository.class);
         userHandler = mock(UserHandler.class);
         notificationHandler = mock(NotificationHandler.class);
         dataHandler = mock(DataHandler.class);
         contentHelper = mock(ContentHelper.class);
+        slugHandler = new SlugHandler(nodeRepository, contentNodeRepository);
         contentNodeHandler = new ContentNodeHandler(
                 contentNodeRepository,
                 contentNodeMapper,
@@ -228,7 +234,7 @@ public class ContentNodeHandlerDeployTest {
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
 
-        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, nodeRepository);
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository, slugHandler);
 
         this.updateConfiguration(contentNodeSlugHelper);
 
@@ -380,7 +386,7 @@ public class ContentNodeHandlerDeployTest {
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
 
-        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, nodeRepository);
+        contentNodeSlugHelper = new ContentNodeSlugHelper(contentNodeRepository, contentNodeMapper, nodeRepository,slugHandler);
 
         this.updateConfiguration(contentNodeSlugHelper);
 

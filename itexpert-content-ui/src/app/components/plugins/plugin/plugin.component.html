@@ -7,90 +7,99 @@
 
 <div mat-dialog-content>
   <p>
-
-    <mat-icon class="icon-display scale2 danger" *ngIf="userAccessService.canEdit()"
+    @if(userAccessService.canEdit()){
+    <mat-icon class="icon-display scale2 danger"
               inline matTooltip="{{ 'DELETED_CONTENTS_NODES' | translate}}"
               (click)="deleteds()">delete
     </mat-icon>
-
-    <mat-icon class="icon-display scale2" *ngIf="userAccessService.canEdit()"
+    }
+    @if(userAccessService.canEdit()){
+    <mat-icon class="icon-display scale2"
               inline matTooltip="{{ 'IMPORT' | translate }}"
               (click)="fileInput.click()">downloading</mat-icon>
-
+    }
     <input hidden #fileInput type="file" id="file"
            (change)="import($event)">
 
-
-    <button mat-fab aria-label="create new project" class="icon-display" *ngIf="userAccessService.canEdit()" (click)="create()">
-      <mat-icon>add</mat-icon>
-    </button>
+    
+    @if(userAccessService.canEdit()){
+      <button mat-fab aria-label="create new project" class="icon-display" (click)="create()">
+        <mat-icon>add</mat-icon>
+      </button>
+    }
   </p>
 
+  @if(userAccessService.getCurrentUser()){
+    <table mat-table [dataSource]="dataSource">
+      <ng-container matColumnDef="Status">
+        <th mat-header-cell *matHeaderCellDef> {{ "ACTIVE" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          <button disabled="{{!userAccessService.canEdit()}}"  (click)="status(element)" mat-icon-button>
+            <mat-icon class="{{getPublishedIcon(element)}}">fiber_manual_record</mat-icon>
+          </button>
+        </td>
+      </ng-container>
 
-  <table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.user$ | async as user">
-    <ng-container matColumnDef="Status">
-      <th mat-header-cell *matHeaderCellDef> {{ "ACTIVE" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        <button disabled="{{!userAccessService.canEdit()}}"  (click)="status(element)" mat-icon-button>
-          <mat-icon class="{{getPublishedIcon(element)}}">fiber_manual_record</mat-icon>
-        </button>
-      </td>
-    </ng-container>
 
+      <ng-container matColumnDef="Name">
+        <th mat-header-cell *matHeaderCellDef> {{ "Name" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="description" matTooltip="{{element.name }}, {{'CODE' | translate}}: {{element.code}}">
+            <i>{{ element.name | slice:0:30 }}</i></div>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="Description">
+        <th mat-header-cell *matHeaderCellDef> {{ "DESCRIPTION" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          <span title='{{element.description | translate}}'>
+            {{ element.description }}
+          </span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="ModifiedBy">
+        <th mat-header-cell *matHeaderCellDef> {{ "MODIFIED_BY" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+            {{ element.modfiedBy }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="CreationDate">
+      <th mat-header-cell *matHeaderCellDef> {{ "CREATION" | translate }}</th>
+      <td mat-cell *matCellDef="let element">{{ element.creationDate }}</td>
+        <td mat-cell *matCellDef="let element">{{ element.creationDate |date :'dd/MM/YYYY HH:mm' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="ModificationDate">
+        <th mat-header-cell *matHeaderCellDef> {{ "MODIFICATION_DATE" | translate }}</th>
+        <td mat-cell *matCellDef="let element">{{ element.modificationDate |date :'dd/MM/YYYY HH:mm' }}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="Name">
-      <th mat-header-cell *matHeaderCellDef> {{ "Name" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        <div class="description" matTooltip="{{element.name }}, {{'CODE' | translate}}: {{element.code}}">
-          <i>{{ element.name | slice:0:30 }}</i></div>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="Description">
-      <th mat-header-cell *matHeaderCellDef> {{ "DESCRIPTION" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        <span title='{{element.description | translate}}'>
-          {{ element.description }}
-        </span>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="ModifiedBy">
-      <th mat-header-cell *matHeaderCellDef> {{ "MODIFIED_BY" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-          {{ element.modfiedBy }}
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="CreationDate">
-    <th mat-header-cell *matHeaderCellDef> {{ "CREATION" | translate }}</th>
-    <td mat-cell *matCellDef="let element">{{ element.creationDate }}</td>
-      <td mat-cell *matCellDef="let element">{{ element.creationDate |date :'dd/MM/YYYY HH:mm' }}</td>
-    </ng-container>
-    <ng-container matColumnDef="ModificationDate">
-      <th mat-header-cell *matHeaderCellDef> {{ "MODIFICATION_DATE" | translate }}</th>
-      <td mat-cell *matCellDef="let element">{{ element.modificationDate |date :'dd/MM/YYYY HH:mm' }}</td>
-    </ng-container>
+      <ng-container matColumnDef="Actions">
+        <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          @if(userAccessService.canEdit()){
+            <mat-icon class="icon-display primary" (click)="assets(element)" inline
+                      matTooltip="{{ 'ASSETS' | translate}}">post_add
+            </mat-icon>
+          }
+          @if(userAccessService.canEdit()){
+            <mat-icon class="icon-display warn"  (click)="update(element)" inline
+                      matTooltip="{{ 'EDIT' | translate}}">edit
+            </mat-icon>
+          }
+          @if(userAccessService.canEdit()){
+            <mat-icon class="icon-display primary"  (click)="export(element)" inline
+                      matTooltip="{{ 'EXPORT' | translate}}">ios_share
+            </mat-icon>
+          }
+          @if(userAccessService.canEdit()){
+            <mat-icon class="icon-display danger"  (click)="delete(element)" inline
+                      matTooltip="{{ 'DELETE' | translate}}">delete
+            </mat-icon>
+          }
+        </td>
+      </ng-container>
 
-    <ng-container matColumnDef="Actions">
-      <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        <mat-icon class="icon-display primary" *ngIf="userAccessService.canEdit() && element.editable" (click)="assets(element)" inline
-                  matTooltip="{{ 'ASSETS' | translate}}">post_add
-        </mat-icon>
-
-        <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit() && element.editable" (click)="update(element)" inline
-                  matTooltip="{{ 'EDIT' | translate}}">edit
-        </mat-icon>
-
-        <mat-icon class="icon-display primary"  (click)="export(element)" *ngIf="userAccessService.canEdit()" inline
-                  matTooltip="{{ 'EXPORT' | translate}}">ios_share
-        </mat-icon>
-
-        <mat-icon class="icon-display danger" *ngIf="userAccessService.canEdit()"  (click)="delete(element)" inline
-                  matTooltip="{{ 'DELETE' | translate}}">delete
-        </mat-icon>
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header-cell"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }" class="mat-row"></tr>
-  </table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header-cell"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }" class="mat-row"></tr>
+    </table>
+  }
 </div>

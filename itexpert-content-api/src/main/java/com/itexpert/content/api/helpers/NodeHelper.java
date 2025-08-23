@@ -20,6 +20,7 @@ public class NodeHelper {
     private final NodeMapper nodeMapper;
 
     public Mono<Node> evaluateNode(String code, StatusEnum status) {
+        log.info("---> Evalating Node {}, status {}", code, status);
         return this.findByCodeAndStatus(code, status)
                 .switchIfEmpty(Mono.empty())
                 .map(node -> {

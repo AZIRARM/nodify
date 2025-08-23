@@ -1,5 +1,6 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
+import {AppComponent} from "./app.component";
 import {NodesComponent} from "./components/node/nodes/nodes.component";
 import {LanguagesComponent} from "./components/language/languages/languages.component";
 import {UsersComponent} from "./components/user/users/users.component";
@@ -20,7 +21,7 @@ const routes: Routes =
   [
     {
       path: '',
-      component: NodesComponent,
+      component: AppComponent,
       canActivate: [AuthGuard]
     },
     {

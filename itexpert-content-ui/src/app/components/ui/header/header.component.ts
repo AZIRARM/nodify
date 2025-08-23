@@ -8,6 +8,7 @@ import {NotificationService} from "../../../services/NotificationService";
 import {ThemeService} from "../../../services/ThemeService";
 import {AuthenticationService} from "../../../services/AuthenticationService";
 import {UserAccessService} from "../../../services/UserAccessService";
+import { CookiesService } from 'src/app/services/CookiesService';
 
 @Component({
   selector: 'app-header',
@@ -47,6 +48,7 @@ export class HeaderComponent {
     private sidenavService: SidenavService,
     private themeService: ThemeService,
     private authenticationService: AuthenticationService,
+    private cookiesService: CookiesService,
     private userAccessService: UserAccessService) {
     this.selectedLanguage = window.localStorage.getItem("defaultLanguage")!;
 
@@ -88,7 +90,7 @@ export class HeaderComponent {
         this.dialogRef.afterClosed()
           .subscribe(result => {
             if (result.data === 'validated') {
-              window.localStorage.removeItem("userToken");
+              this.cookiesService.eraseCookie("userToken");
               this.router.navigate(["/login"]);
               window.location.reload();
             }
@@ -115,9 +117,7 @@ export class HeaderComponent {
 
       this.lastNotificationUpdate = (new Date()).getTime();
 
-      this.userAccessService.user$.subscribe((user: any) => {
-        this.user = user;
-      });
+      this.user = this.userAccessService.getCurrentUser()
 
       if (this.user && this.user!.id) {
         this.notificationService.countUnreadedNotification(this.user!.id).subscribe(

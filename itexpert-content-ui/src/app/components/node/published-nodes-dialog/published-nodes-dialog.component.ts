@@ -20,7 +20,7 @@ export class PublishedNodesDialogComponent implements OnInit {
 
   node: Node;
 
-  displayedColumns: string[] = ['Status', 'Version', 'Last Modification', 'Modified by', 'Actions'];
+  displayedColumns: string[] = ['Status', 'Version', 'Description', 'Last Modification', 'Modified by', 'Actions'];
 
   dataSource: MatTableDataSource<Node>;
   dialogRefPublish: MatDialogRef<ValidationDialogComponent>;
@@ -41,10 +41,8 @@ export class PublishedNodesDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.userAccessService.user$.subscribe((user: any) => {
-      this.user = user;
-    });
-    this.init();
+   this.user = this.userAccessService.getCurrentUser()
+   this.init();
   }
 
 
@@ -62,7 +60,8 @@ export class PublishedNodesDialogComponent implements OnInit {
       (response: any) => {
         if (response) {
           let filtredNodes: Node[] =
-            response.filter((element: Node) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED));
+            response.filter((element: Node) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED))
+                       .sort((a: Node, b: Node) => Number(b.version) - Number(a.version));
           response.map((node: any) => this.setUserName(node));
           this.dataSource = new MatTableDataSource(filtredNodes);
         }
@@ -113,6 +112,33 @@ export class PublishedNodesDialogComponent implements OnInit {
             });
           }, (error) => {
             this.translate.get("SAVE_ERROR").subscribe(trad => {
+              this.loggerService.error(trad);
+            });
+          });
+        }
+      });
+  }
+
+  delete(element: Node) {
+    this.dialogRefPublish = this.dialog.open(ValidationDialogComponent, {
+      data: {
+        title: "DELETE_NODE_VERSION_TITLE",
+        message: "DELETE_NODE_VERSION_MESSAGE"
+      },
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    });
+    this.dialogRefPublish.afterClosed()
+      .subscribe((result: any) => {
+        if (result && result.data && result.data === "validated") {
+          this.nodeService.deleteById(element.id).subscribe(() => {
+            this.translate.get("DELETE_SUCCESS").subscribe(trad => {
+              this.loggerService.success(trad);
+              this.init();
+            });
+          }, (error) => {
+            this.translate.get("DELETE_ERROR").subscribe(trad => {
               this.loggerService.error(trad);
             });
           });

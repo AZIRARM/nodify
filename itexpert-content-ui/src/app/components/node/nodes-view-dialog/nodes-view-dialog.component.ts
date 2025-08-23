@@ -34,9 +34,7 @@ export class NodesViewDialogComponent implements OnInit {
 
 
   ngOnInit() {
-   this.userAccessService.user$.subscribe((user: User) => {
-  this.user = user;
-});
+   this.user = this.userAccessService.getCurrentUser()
 
     this.options = this.nodeService.getNodeView(this.node.code).pipe(
       map(treeNode => this.buildChartOptions(treeNode))
@@ -44,6 +42,8 @@ export class NodesViewDialogComponent implements OnInit {
   }
 
   buildChartOptions(tree: any): EChartsCoreOption {
+
+    tree = this.sortTreeByCode([tree]);
     const enrichedTree = this.addIconsToTree(tree);
 
     return {
@@ -79,6 +79,25 @@ export class NodesViewDialogComponent implements OnInit {
         }
       ]
     };
+  }
+
+  
+  private sortTreeByCode(nodes: any[]): any[] {
+    if (!Array.isArray(nodes) || nodes.length === 0) return nodes;
+
+    nodes.sort((a, b) => {
+      if (!a.code) return -1;
+      if (!b.code) return 1;
+      return a.code.localeCompare(b.code);
+    });
+
+    nodes.forEach(node => {
+      if (Array.isArray(node.children) && node.children.length > 0) {
+        this.sortTreeByCode(node.children);
+      }
+    });
+
+    return nodes[0];
   }
 
   addIconsToTree(node: any): any {
