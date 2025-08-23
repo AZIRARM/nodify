@@ -4,7 +4,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-
+import { CommonModule } from '@angular/common';
 import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from '@angular/common/http';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
@@ -144,6 +144,8 @@ import {NodesViewDialogComponent} from "./components/node/nodes-view-dialog/node
 import {ChartService} from "./services/ChartService";
 import { SlugService } from './services/SlugService';
 import { CookiesService } from './services/CookiesService';
+import {LoaderService} from "./services/Loader.service";
+import {LoaderComponent} from "./components/ui/loader/loader.component";
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -206,7 +208,8 @@ export function defaultLanguage() {
     PluginDialogComponent,
     DeletedPluginsDialogComponent,
     PluginFilesDialogComponent,
-    NodesViewDialogComponent
+    NodesViewDialogComponent,
+    LoaderComponent
   ],
   imports: [
     BrowserModule,
@@ -258,6 +261,7 @@ export function defaultLanguage() {
     MatIconModule,
     MatTooltipModule,
     FlexModule,
+    CommonModule
   ],
 
   providers: [
@@ -284,12 +288,13 @@ export function defaultLanguage() {
     ChartService,
     SlugService,
     AuthGuard,
-    CookiesService
+    CookiesService,
+    LoaderService
   ],
 
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 
-
+  exports: [LoaderComponent]
 })
 export class AppModule {
 }
