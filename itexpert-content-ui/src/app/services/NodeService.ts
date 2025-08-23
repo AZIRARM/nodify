@@ -30,8 +30,8 @@ export class NodeService extends Service {
     return super.get("");
   }
 
-  save(node: Node) {
-    return super.post("", node);
+  save(node: Node, userId: string) {
+    return super.post("userId/" + userId, node);
   }
 
   delete(code: String, userId: String) {

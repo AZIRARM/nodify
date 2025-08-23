@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Service} from "./Service";
 import {ContentNode} from "../modeles/ContentNode";
+import {Node} from "../modeles/Node";
 
 @Injectable()
 export class ContentNodeService extends Service {
@@ -21,10 +22,11 @@ export class ContentNodeService extends Service {
   deleteById(id: String) {
     return super.remove("" + id);
   }
-  
-  save(content: ContentNode) {
-    return super.post("", content);
+
+  save(content: ContentNode, userId: string) {
+    return super.post("userId/" + userId, content);
   }
+
 
   delete(code: String, userId: string) {
     return super.remove("code/" + code + "/user/" + userId);
