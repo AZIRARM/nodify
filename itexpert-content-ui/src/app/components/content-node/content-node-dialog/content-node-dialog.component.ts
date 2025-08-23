@@ -98,9 +98,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       (response: any) => {
         //next() callback
         response.map((node: any) => this.setUserName(node)).map((node: any) => this.setUserName(node));
-        
-        response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
-        
+
+        response = response.sort((a: any, b: any) => {
+          if (a.favorite && !b.favorite) return -1;
+          if (!a.favorite && b.favorite) return 1;
+          return a.code.localeCompare(b.code);
+        });
+
         this.dataSource = new MatTableDataSource(response);
         this.initEnvironments();
       },
