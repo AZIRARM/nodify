@@ -51,7 +51,7 @@ import {LanguageDialogComponent} from './components/language/language-dialog/lan
 import {UserDialogComponent} from './components/user/user-dialog/user-dialog.component';
 import {NodeDialogComponent} from "./components/node/node-dialog/node-dialog.component";
 import {UserService} from "./services/UserService";
-import {LoginComponent} from './components/ui/login/login.component';
+import {LoginComponent} from './components/user/login/login.component';
 import {UserInfosComponent} from './components/user/user-infos/user-infos.component';
 import {PasswordDialogComponent} from "./components/user/password-dialog/password-dialog.component";
 import {HelpsComponent} from './components/ui/helps/helps.component';

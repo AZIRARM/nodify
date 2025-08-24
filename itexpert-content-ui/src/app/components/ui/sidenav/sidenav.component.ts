@@ -22,4 +22,7 @@ export class SidenavComponent implements OnInit {
     this.sidenavService.setSidenav(this.sideNav);
   }
 
+  isAdmin(){
+    return this.userAccessService.isAdmin();
+  }
 }
