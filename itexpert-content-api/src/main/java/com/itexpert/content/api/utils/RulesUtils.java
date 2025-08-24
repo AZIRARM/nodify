@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Slf4j
@@ -78,24 +79,26 @@ public class RulesUtils {
      */
     private static boolean verifyRuleCondition(Rule rule) {
         if (!rule.getEnable()) {
-            return false; // Rule is disabled, consider it as not satisfied
+            return false;
         }
 
         boolean evaluation = false;
 
         if (rule.getType().equals(TypeEnum.BOOL)) {
-            evaluation = true; // Boolean rules are always considered as satisfied if enabled
-        } else if (rule.getType().equals(TypeEnum.DATE)) {
+            evaluation = true;
+        }
+        else if (rule.getType().equals(TypeEnum.DATE)) {
             Instant ruleInstant = parseDate(rule.getValue());
             Instant now = Instant.now();
-
             switch (rule.getOperator()) {
-                case EQ -> evaluation = now.equals(ruleInstant);
-                case DIF -> evaluation = !now.equals(ruleInstant);
+                case EQ -> evaluation = now.truncatedTo(ChronoUnit.SECONDS)
+                        .equals(ruleInstant.truncatedTo(ChronoUnit.SECONDS));
+                case DIF -> evaluation = !now.truncatedTo(ChronoUnit.SECONDS)
+                        .equals(ruleInstant.truncatedTo(ChronoUnit.SECONDS));
                 case LOW -> evaluation = now.isBefore(ruleInstant);
-                case LOW_EQ -> evaluation = now.isBefore(ruleInstant) || now.equals(ruleInstant);
+                case LOW_EQ -> evaluation = !now.isAfter(ruleInstant); // équivalent
                 case SUP -> evaluation = now.isAfter(ruleInstant);
-                case SUP_EQ -> evaluation = now.isAfter(ruleInstant) || now.equals(ruleInstant);
+                case SUP_EQ -> evaluation = !now.isBefore(ruleInstant); // équivalent
             }
         }
 
