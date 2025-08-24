@@ -12,7 +12,7 @@ You can explore a live demo of **Nodify Headless CMS** here:
 
 **Credentials:**
 - **Username:** `admin`
-- **Password:** `Admin123`
+- **Password:** `Admin13579++`
 
 **Availability:**  
 The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
