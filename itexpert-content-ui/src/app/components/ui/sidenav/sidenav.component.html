@@ -21,16 +21,18 @@
           </a>
         </mat-nav-list>
       </mat-expansion-panel>
-      <mat-expansion-panel [class.mat-elevation-z0]="true">
-        <mat-expansion-panel-header>
-          {{ 'USERS' | translate }}
-        </mat-expansion-panel-header>
-        <mat-nav-list>
-          <a mat-list-item routerLink="users">
+      @if(isAdmin()) {
+        <mat-expansion-panel [class.mat-elevation-z0]="true">
+          <mat-expansion-panel-header>
             {{ 'USERS' | translate }}
-          </a>
-        </mat-nav-list>
-      </mat-expansion-panel>
+          </mat-expansion-panel-header>
+          <mat-nav-list>
+            <a mat-list-item routerLink="users">
+              {{ 'USERS' | translate }}
+            </a>
+          </mat-nav-list>
+        </mat-expansion-panel>
+      }
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>

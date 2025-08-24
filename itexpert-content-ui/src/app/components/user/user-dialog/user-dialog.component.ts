@@ -23,7 +23,7 @@ export class UserDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<UserDialogComponent>,
     @Inject(MAT_DIALOG_DATA) private currentUser: User,
-    private userAccessService: UserAccessService,
+    public userAccessService: UserAccessService,
     private nodeService: NodeService,
     private roleService: RoleService,
   ) {
@@ -34,7 +34,7 @@ export class UserDialogComponent implements OnInit {
 
 
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
+   this.connectedUser = this.userAccessService.getCurrentUser()
    this.init();
   }
 
@@ -75,27 +75,18 @@ export class UserDialogComponent implements OnInit {
     );
   }
 
-  public isAdmin(): boolean {
-    return !!(this.connectedUser
-      && this.connectedUser.roles
-      && this.connectedUser.roles.includes("ADMIN"));
-
-  }
-
-  currentUserIsAdmin() {
-    return (
-      this.user
-      && this.user!.id
-      && this.user!.roles
-      && this.user!.roles.includes("ADMIN")
-    ) && this.user!.id === this.connectedUser!.id;
-  }
-
   get selectedRole(): string {
     return this.user && this.user!.roles && this.user.roles.length > 0 ? this.user.roles[0] : '';
   }
 
   set selectedRole(value: string) {
-    this.user!.roles = [value]; // Met à jour la première valeur du tableau
+    this.user!.roles = [value];
+  }
+
+  connectedUserIsAdmin() {
+    return this.connectedUser.roles && this.connectedUser.roles.includes("ADMIN");
+  }
+  userIsAdmin() {
+    return this.user.roles && this.user.roles.includes("ADMIN");
   }
 }

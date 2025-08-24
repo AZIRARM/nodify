@@ -37,7 +37,7 @@ export class UsersComponent implements OnInit {
   init() {
     this.userService.getAll().subscribe(
       (response: any) => {
-        response=response.sort((a:any, b:any) => a.name.localeCompare(b.name));
+        response=response.sort((a:any, b:any) => a.lastname.localeCompare(b.lastname));
         this.dataSource = new MatTableDataSource(response);
       },
       (error) => {

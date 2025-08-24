@@ -59,7 +59,7 @@ export class HeaderComponent {
 
   initCountUreadedNotifications() {
     try{
-      setInterval(() => this.countUnreadedNotifications(), 2000);
+      setInterval(() => this.countUnreadedNotifications(), 30000);
     } catch(error:any){}
 
   }
