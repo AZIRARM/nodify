@@ -21,7 +21,7 @@
     <input hidden #fileInput type="file" id="file"
            (change)="import($event)">
 
-    
+
     @if(userAccessService.canEdit()){
       <button mat-fab aria-label="create new project" class="icon-display" (click)="create()">
         <mat-icon>add</mat-icon>
@@ -90,7 +90,7 @@
                       matTooltip="{{ 'EXPORT' | translate}}">ios_share
             </mat-icon>
           }
-          @if(userAccessService.canEdit()){
+          @if(userAccessService.isAdmin()){
             <mat-icon class="icon-display danger"  (click)="delete(element)" inline
                       matTooltip="{{ 'DELETE' | translate}}">delete
             </mat-icon>
