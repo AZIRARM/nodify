@@ -97,8 +97,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.contentNodeService.getAllByParentCodeAndStatus(this.node.code, StatusEnum.SNAPSHOT).subscribe(
       (response: any) => {
         //next() callback
-        response.map((node: any) => this.setUserName(node)).map((node: any) => this.setUserName(node));
-
         response = response.sort((a: any, b: any) => {
           if (a.favorite && !b.favorite) return -1;
           if (!a.favorite && b.favorite) return 1;
@@ -309,7 +307,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     content.parentCode = this.node.code;
     content.parentCodeOrigin = this.node.parentCodeOrigin;
 
-    this.contentNodeService.save(content).subscribe(
+    this.contentNodeService.save(content, this.user.id).subscribe(
       (response: any) => {
 
         this.currentContent = response;

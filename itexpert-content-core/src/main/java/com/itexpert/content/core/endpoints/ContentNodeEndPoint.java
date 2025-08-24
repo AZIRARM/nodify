@@ -3,14 +3,15 @@ package com.itexpert.content.core.endpoints;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.itexpert.content.core.handlers.ContentNodeHandler;
-import com.itexpert.content.core.handlers.EnvironmentHandler;
 import com.itexpert.content.core.handlers.NodeHandler;
+import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.helpers.RenameContentNodeCodesHelper;
 import com.itexpert.content.core.models.ContentNodePayload;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
+import com.itexpert.content.lib.models.UserPost;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -19,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -33,7 +33,7 @@ public class ContentNodeEndPoint {
 
     private final ContentNodeHandler contentNodeHandler;
     private final NodeHandler nodeHandler;
-    private final EnvironmentHandler environmentHandler;
+    private final UserHandler userHandler;
     private final RenameContentNodeCodesHelper renameContentNodeCodesHelper;
 
     @GetMapping("/")
@@ -81,7 +81,12 @@ public class ContentNodeEndPoint {
 
     @DeleteMapping(value = "/code/{code}/user/{userId}")
     public Mono<ResponseEntity<Boolean>> delete(@PathVariable String code, @PathVariable UUID userId) {
-        return contentNodeHandler.delete(code, userId)
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> contentNodeHandler.delete(code, user))
                 .map(ResponseEntity::ok);
     }
 
@@ -96,43 +101,68 @@ public class ContentNodeEndPoint {
         return contentNodeHandler.deleteById(id)
                 .map(ResponseEntity::ok);
     }
+
     @PostMapping(value = "/code/{code}/user/{userId}/activate")
     public Mono<ResponseEntity<Boolean>> activate(@PathVariable String code, @PathVariable UUID userId) {
-        return contentNodeHandler.activate(code, userId)
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> contentNodeHandler.activate(code, user))
                 .map(ResponseEntity::ok);
     }
 
     @PostMapping(value = "/id/{id}/user/{userId}/publish/{publish}")
     public Mono<ResponseEntity<ContentNode>> publish(@PathVariable UUID id, @PathVariable Boolean publish, @PathVariable UUID userId) {
-        return contentNodeHandler.publish(id, publish, userId)
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> contentNodeHandler.publish(id, publish, user))
                 .flatMap(contentNodeHandler::setPublicationStatus)
                 .map(ResponseEntity::ok);
+
     }
 
     @PostMapping(value = "/code/{code}/version/{version}/user/{userId}/revert")
     public Mono<ContentNode> revert(@PathVariable String code, @PathVariable String version, @PathVariable UUID userId) {
-        return contentNodeHandler.revert(code, version, userId)
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> contentNodeHandler.revert(code, version, user))
                 .flatMap(contentNodeHandler::setPublicationStatus);
+
     }
 
     @PostMapping(value = "/code/{code}/status/{status}/fill")
     public Mono<ContentNode> fillContent(@PathVariable String code,
-                                    @PathVariable StatusEnum status,
-                                    @RequestBody ContentNodePayload contentNode) {
+                                         @PathVariable StatusEnum status,
+                                         @RequestBody ContentNodePayload contentNode) {
         return contentNodeHandler.fillContent(code, status, contentNode);
     }
 
 
-    @PostMapping("/")
-    public Mono<ResponseEntity<ContentNode>> save(@RequestBody ContentNode contentNode) {
-        try {
-            return contentNodeHandler.save(contentNode)
-                    .flatMap(contentNodeHandler::setPublicationStatus)
-                    .map(ResponseEntity::ok);
-        } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    ex.getMessage());
-        }
+    @PostMapping("/userId/{userId}")
+    public Mono<ResponseEntity<ContentNode>> save(@RequestBody ContentNode contentNode, @PathVariable UUID userId) {
+
+        return Mono.justOrEmpty(userId)
+                .flatMap(userHandler::findById)
+                .map(this::extratUser)
+                .defaultIfEmpty("")
+                .flatMap(user -> {
+                    contentNode.setModifiedBy(user);
+                    try {
+                        return contentNodeHandler.save(contentNode);
+                    } catch (CloneNotSupportedException ex) {
+                        return Mono.error(new RuntimeException("Erreur lors du clone du contentNode", ex));
+                    }
+                })
+                .flatMap(contentNodeHandler::setPublicationStatus)
+                .map(ResponseEntity::ok);
+
     }
 
     @GetMapping("/deleted")
@@ -143,9 +173,9 @@ public class ContentNodeEndPoint {
             return contentNodeHandler.findAllByStatus(StatusEnum.DELETED.name())
                     .flatMap(contentNodeHandler::setPublicationStatus)
                     .filter(contentNode -> {
-                                return   (
-                                        ( ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent) )
-                                                ||  ( ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                                return (
+                                        (ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent))
+                                                || (ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent)))
                                 );
                             }
                     );
@@ -154,9 +184,9 @@ public class ContentNodeEndPoint {
         return contentNodeHandler.findDeleted(authentication.getPrincipal().toString())
                 .flatMap(contentNodeHandler::setPublicationStatus)
                 .filter(contentNode -> {
-                            return   (
-                                    ( ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent) )
-                                            ||  ( ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent)) )
+                            return (
+                                    (ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent))
+                                            || (ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent)))
                             );
                         }
                 );
@@ -225,5 +255,11 @@ public class ContentNodeEndPoint {
     @GetMapping(value = "/code/{code}/slug/{slug}/exists")
     public Mono<Boolean> slugExists(@PathVariable String code, @PathVariable String slug) {
         return contentNodeHandler.slugAlreadyExists(code, slug);
+    }
+
+
+    private String extratUser(UserPost user) {
+        return ObjectUtils.isEmpty(user) ? "" :
+                (user.getFirstname() + " " + user.getLastname());
     }
 }

@@ -45,7 +45,13 @@ public class NodeSlugHelperTest {
         node.setId(UUID.randomUUID());
         node.setCode("NODE-CODE");
 
-        when(contentNodeRepository.findBySlugAndCode("mySlug-0", "NODE-CODE")).thenReturn(Flux.empty());
+        com.itexpert.content.lib.entities.Node node0 = new com.itexpert.content.lib.entities.Node();
+        node0.setSlug("mySlug");
+        node0.setId(UUID.randomUUID());
+        node0.setCode("NODE-CODE");
+
+        when(nodeRepository.findBySlug("mySlug")).thenReturn(Flux.just(node0));
+        when(contentNodeRepository.findBySlug("mySlug")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.fromIterable(List.of(new Node())));
 
@@ -63,15 +69,14 @@ public class NodeSlugHelperTest {
         node.setId(UUID.randomUUID());
         node.setCode("NODE-CODE");
 
-
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(nodeSlugHelper.update(node))
                 .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-0");
+                    assert n.getSlug().equals("mySlug");
                 })
                 .verifyComplete();
     }
@@ -83,18 +88,26 @@ public class NodeSlugHelperTest {
         node.setId(UUID.randomUUID());
         node.setCode("NODE-CODE");
 
+        com.itexpert.content.lib.entities.ContentNode content3 = new com.itexpert.content.lib.entities.ContentNode();
+        content3.setSlug("mySlug-XXX");
+        content3.setId(UUID.randomUUID());
+        content3.setCode("XXXX");
 
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug")).thenReturn(Flux.fromIterable(List.of(content3)));
+        when(nodeRepository.findBySlug("mySlug")).thenReturn(Flux.empty());
 
-        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.fromIterable(List.of(content3)));
+        when(nodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(nodeSlugHelper.update(node))
                 .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-1");
+                    assert n.getSlug().equals("mySlug-2");
                 })
                 .verifyComplete();
     }
@@ -106,18 +119,25 @@ public class NodeSlugHelperTest {
         node.setId(UUID.randomUUID());
         node.setCode("NODE-CODE");
 
+        com.itexpert.content.lib.entities.ContentNode content3 = new com.itexpert.content.lib.entities.ContentNode();
+        content3.setSlug("mySlug-XXX");
+        content3.setId(UUID.randomUUID());
+        content3.setCode("XXXX");
 
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-3")).thenReturn(Flux.just(content3));
+        when(nodeRepository.findBySlug("mySlug-3")).thenReturn(Flux.empty());
 
-        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-4")).thenReturn(Flux.just(content3));
+        when(nodeRepository.findBySlug("mySlug-4")).thenReturn(Flux.empty());
+
+        when(contentNodeRepository.findBySlug("mySlug-5")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug-5")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(nodeSlugHelper.update(node))
                 .assertNext(n -> {
-                    assert n.getSlug().equals("mySlug-1");
+                    assert n.getSlug().equals("mySlug-5");
                 })
                 .verifyComplete();
     }
@@ -130,14 +150,16 @@ public class NodeSlugHelperTest {
         node.setCode("NODE-CODE");
 
 
-        when(contentNodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-0")).thenReturn(Flux.empty());
+        com.itexpert.content.lib.entities.Node node0 = new com.itexpert.content.lib.entities.Node();
+        node0.setSlug("mySlug-1");
+        node0.setId(UUID.randomUUID());
+        node0.setCode("XXXXX");
 
-        when(contentNodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.fromIterable(List.of(new ContentNode())));
-        when(nodeRepository.findAllBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug-1")).thenReturn(Flux.just(node0));
 
-        when(contentNodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
-        when(nodeRepository.findAllBySlug("mySlug-2")).thenReturn(Flux.empty());
+        when(contentNodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.empty());
+        when(nodeRepository.findBySlug("mySlug-2")).thenReturn(Flux.empty());
 
         when(nodeRepository.findBySlugAndCode(any(), any())).thenReturn(Flux.empty());
 
