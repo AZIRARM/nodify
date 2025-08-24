@@ -3,9 +3,11 @@
     <span> {{ "USERS" | translate}}</span>
   </mat-toolbar>
 </p>
-<button mat-fab  aria-label="create new user" (click)="create()" *ngIf="user && user.roles && user.roles.includes('ADMIN')">
-  <mat-icon>add</mat-icon>
-</button>
+@if(userAccessService.isAdmin()){
+  <button mat-fab  aria-label="create new user" (click)="create()">
+    <mat-icon>add</mat-icon>
+  </button>
+}
 <table mat-table [dataSource]="dataSource">
   <ng-container matColumnDef="Firstname">
     <th mat-header-cell *matHeaderCellDef> {{ "USER_FIRSTNAME" | translate}} </th>
@@ -31,8 +33,10 @@
     <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
     <td mat-cell *matCellDef="let element">
       @if(userAccessService.isAdmin()){
-      <mat-icon class="icon-display scale2"  (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
-      <mat-icon class="icon-display scale2 danger" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
+        <mat-icon class="icon-display scale2"  (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
+      }
+      @if(userAccessService.isAdmin() && !element.roles.includes('ADMIN') ){
+        <mat-icon class="icon-display scale2 danger" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
       }
     </td>
   </ng-container>
