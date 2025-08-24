@@ -136,9 +136,14 @@ public class ContentHelper {
 
 
     private ContentNode fillPlugin(Plugin plugin, ContentNode content) {
-        if(ObjectUtils.isNotEmpty(content) && ObjectUtils.isNotEmpty(plugin) && ObjectUtils.isNotEmpty(plugin.getCode()) && ObjectUtils.isNotEmpty(content.getContent())) {
-           content.setContent(content.getContent().replace("$with("+plugin.getName()+")", "\n<script>\n" +plugin.getCode()+"\n</script>\n"));
-        }
+
+            if (ObjectUtils.isNotEmpty(content) && ObjectUtils.isNotEmpty(plugin) && ObjectUtils.isNotEmpty(plugin.getCode()) && ObjectUtils.isNotEmpty(content.getContent())) {
+                if(plugin.isEnabled()) {
+                    content.setContent(content.getContent().replace("$with(" + plugin.getName() + ")", "\n<script>\n" + plugin.getCode() + "\n</script>\n"));
+                }else {
+                    content.setContent(content.getContent().replace("$with(" + plugin.getName() + ")",""));
+                }
+            }
          return content;
     }
 
