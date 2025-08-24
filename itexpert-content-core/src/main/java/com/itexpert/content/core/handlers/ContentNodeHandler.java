@@ -116,7 +116,6 @@ public class ContentNodeHandler {
                                 .flatMap(alreadyPublished -> {
                                     // Cas où un PUBLISHED existe
                                     alreadyPublished.setStatus(StatusEnum.ARCHIVE);
-                                    alreadyPublished.setModifiedBy(modifiedBy);
                                     alreadyPublished.setModificationDate(Instant.now().toEpochMilli());
 
                                     return this.contentNodeRepository.save(alreadyPublished)
@@ -225,7 +224,6 @@ public class ContentNodeHandler {
         return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .map(contentNode -> {
                     contentNode.setStatus(StatusEnum.ARCHIVE);
-                    contentNode.setModifiedBy(modifiedBy);
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
                     return contentNode;
                 }).flatMap(contentNodeRepository::save)

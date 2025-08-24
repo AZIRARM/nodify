@@ -268,7 +268,6 @@ public class NodeHandler {
 
         toArchive.setStatus(StatusEnum.ARCHIVE);
         toArchive.setModificationDate(Instant.now().toEpochMilli());
-        toArchive.setModifiedBy(modifiedBy);
 
         return this.nodeRepository.save(this.nodeMapper.fromModel(toArchive))
                 .map(this.nodeMapper::fromEntity);
@@ -295,7 +294,6 @@ public class NodeHandler {
                 .map(node -> {
                     node.setStatus(StatusEnum.ARCHIVE);
                     node.setModificationDate(Instant.now().toEpochMilli());
-                    node.setModifiedBy(modifiedBy);
                     return node;
                 }).flatMap(nodeRepository::save)
                 .map(node -> node.getVersion())

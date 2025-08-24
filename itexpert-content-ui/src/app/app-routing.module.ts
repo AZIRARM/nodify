@@ -4,7 +4,7 @@ import {AppComponent} from "./app.component";
 import {NodesComponent} from "./components/node/nodes/nodes.component";
 import {LanguagesComponent} from "./components/language/languages/languages.component";
 import {UsersComponent} from "./components/user/users/users.component";
-import {LoginComponent} from "./components/ui/login/login.component";
+import {LoginComponent} from "./components/user/login/login.component";
 import {UserInfosComponent} from "./components/user/user-infos/user-infos.component";
 import {HelpsComponent} from "./components/ui/helps/helps.component";
 import {UserParametersComponent} from "./components/user/user-parameters/user-parameters.component";
