@@ -44,7 +44,6 @@ export class DeletedNodesDialogComponent implements OnInit {
     this.nodeService.getDeleted(this.parentNode?.code ?? null).subscribe(
       (response: any) => {
         if (response) {
-          response.map((param: any) => this.setUserName(param));
           this.dataSource = new MatTableDataSource(response);
         }
       },
@@ -81,10 +80,6 @@ export class DeletedNodesDialogComponent implements OnInit {
           });
         }
       });
-  }
-
-  setUserName(param: any) {
-    this.userService.setUserName(param);
   }
 
   delete(element: Node) {

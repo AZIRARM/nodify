@@ -62,7 +62,6 @@ export class PublishedNodesDialogComponent implements OnInit {
           let filtredNodes: Node[] =
             response.filter((element: Node) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED))
                        .sort((a: Node, b: Node) => Number(b.version) - Number(a.version));
-          response.map((node: any) => this.setUserName(node));
           this.dataSource = new MatTableDataSource(filtredNodes);
         }
       },
@@ -171,9 +170,5 @@ export class PublishedNodesDialogComponent implements OnInit {
           });
         }
       });
-  }
-
-  setUserName(param: any) {
-    this.userService.setUserName(param);
   }
 }

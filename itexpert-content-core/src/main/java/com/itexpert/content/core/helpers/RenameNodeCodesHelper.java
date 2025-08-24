@@ -65,6 +65,15 @@ public class RenameNodeCodesHelper {
                     }
                     return node;
                 })
+                .map(node -> {
+                    node.setModifiedBy("");
+                    if(ObjectUtils.isNotEmpty(node.getContents())){
+                        node.getContents().forEach(contentNode -> {
+                            contentNode.setModifiedBy("");
+                        });
+                    }
+                    return node;
+                })
                 .collectList()
                 .map(gson::toJson)
                 .map(jsons -> CodesUtils.changeCodes(jsons, parentCodeOrigin, fromFile));

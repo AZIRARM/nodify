@@ -25,6 +25,7 @@ public class PluginHandler {
     private final PluginFileMapper pluginFileMapper;
     private final NotificationHandler notificationHandler;
     private final PluginFileRepository pluginFileRepository;
+    private final UserHandler userHandler;
 
     public Flux<Plugin> findAll() {
         return pluginRepository.findAll()
@@ -96,11 +97,11 @@ public class PluginHandler {
 
 
     public Mono<Plugin> notify(Plugin model, NotificationEnum type, UUID userId) {
-        return Mono.just(model).flatMap(user -> {
-            return notificationHandler
-                    .create(type, user.getCode(), userId, "PLUGIN", model.getName(), null)
-                    .map(notification -> model);
-        });
+        return userHandler.findById(userId)
+                .flatMap(userPost -> notificationHandler
+                        .create(type, model.getCode(), userPost.getFirstname() + " " + userPost.getLastname() + " " + "(" + userPost.getRoles() + ")", "PLUGIN", model.getName(), null)
+                        .map(notification -> model)
+                );
     }
 
     public Mono<Plugin> enable(String name, UUID userId) {

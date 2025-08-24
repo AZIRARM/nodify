@@ -83,11 +83,11 @@ public class ContentNodeHandler {
                 .flatMap(node -> this.notify(node, isCreation ? NotificationEnum.DELETION : NotificationEnum.UPDATE));
     }
 
-    public Mono<Boolean> delete(String code, UUID userId) {
+    public Mono<Boolean> delete(String code, String modifiedBy) {
         return contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .map(contentNode -> {
                     contentNode.setStatus(StatusEnum.DELETED);
-                    contentNode.setModifiedBy(userId);
+                    contentNode.setModifiedBy(modifiedBy);
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
                     return contentNode;
                 }).flatMap(contentNodeRepository::save)
@@ -109,21 +109,21 @@ public class ContentNodeHandler {
                 .map(contentNodeMapper::fromEntity);
     }
 
-    public Mono<ContentNode> publish(UUID contentNodeUuid, Boolean publish, UUID userId) {
+    public Mono<ContentNode> publish(UUID contentNodeUuid, Boolean publish, String modifiedBy) {
         return this.contentNodeRepository.findById(contentNodeUuid)
                 .flatMap(contentNode ->
                         this.contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.PUBLISHED.name())
                                 .flatMap(alreadyPublished -> {
                                     // Cas où un PUBLISHED existe
                                     alreadyPublished.setStatus(StatusEnum.ARCHIVE);
-                                    alreadyPublished.setModifiedBy(userId);
+                                    alreadyPublished.setModifiedBy(modifiedBy);
                                     alreadyPublished.setModificationDate(Instant.now().toEpochMilli());
 
                                     return this.contentNodeRepository.save(alreadyPublished)
                                             .flatMap(archived -> this.contentNodeRepository.findByCodeAndStatus(archived.getCode(), StatusEnum.SNAPSHOT.name()))
                                             .flatMap(snapshotNode -> {
                                                 snapshotNode.setStatus(StatusEnum.PUBLISHED);
-                                                snapshotNode.setModifiedBy(userId);
+                                                snapshotNode.setModifiedBy(modifiedBy);
                                                 snapshotNode.setModificationDate(Instant.now().toEpochMilli());
                                                 snapshotNode.setPublicationDate(snapshotNode.getModificationDate());
 
@@ -136,7 +136,7 @@ public class ContentNodeHandler {
                                                                         : 1L;
                                                                 com.itexpert.content.lib.entities.ContentNode newSnapshot = publishedContent.clone();
                                                                 newSnapshot.setStatus(StatusEnum.SNAPSHOT);
-                                                                newSnapshot.setModifiedBy(userId);
+                                                                newSnapshot.setModifiedBy(modifiedBy);
                                                                 newSnapshot.setId(UUID.randomUUID());
                                                                 newSnapshot.setVersion(Long.toString(version));
                                                                 this.contentNodeRepository.save(newSnapshot).subscribe();
@@ -221,11 +221,11 @@ public class ContentNodeHandler {
     }
 
 
-    public Mono<ContentNode> revert(String code, String version, UUID userId) {
+    public Mono<ContentNode> revert(String code, String version, String modifiedBy) {
         return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .map(contentNode -> {
                     contentNode.setStatus(StatusEnum.ARCHIVE);
-                    contentNode.setModifiedBy(userId);
+                    contentNode.setModifiedBy(modifiedBy);
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
                     return contentNode;
                 }).flatMap(contentNodeRepository::save)
@@ -236,7 +236,7 @@ public class ContentNodeHandler {
                     String lastVersion = tuple.getT1();
                     contentNode.setVersion(Long.valueOf(Long.parseLong(lastVersion) + 1).toString());
                     contentNode.setStatus(StatusEnum.SNAPSHOT);
-                    contentNode.setModifiedBy(userId);
+                    contentNode.setModifiedBy(modifiedBy);
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
                     return contentNode;
                 }).flatMap(contentNodeRepository::save)
@@ -245,11 +245,11 @@ public class ContentNodeHandler {
 
     }
 
-    public Mono<Boolean> activate(String code, UUID userId) {
+    public Mono<Boolean> activate(String code, String modifiedBy) {
         return contentNodeRepository.findByCodeAndStatus(code, StatusEnum.DELETED.name())
                 .map(contentNode -> {
                     contentNode.setStatus(StatusEnum.SNAPSHOT);
-                    contentNode.setModifiedBy(userId);
+                    contentNode.setModifiedBy(modifiedBy);
                     return contentNode;
                 }).flatMap(contentNodeRepository::save)
                 .map(contentNodeMapper::fromEntity)

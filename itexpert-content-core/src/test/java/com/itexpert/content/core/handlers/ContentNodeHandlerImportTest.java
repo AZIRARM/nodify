@@ -66,7 +66,7 @@ public class ContentNodeHandlerImportTest {
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.randomUUID())
+                .user("Admin")
                 .type("CONTENT_NODE")
                 .build();
 

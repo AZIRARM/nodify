@@ -65,9 +65,8 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
           let filtredNodes: ContentNode[] = response.filter((element: ContentNode) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED))
            .sort((a: ContentNode, b: ContentNode) => Number(b.version) - Number(a.version));
 
-          
 
-          filtredNodes.map((content: any) => this.setUserName(content));
+
           this.dataSource = new MatTableDataSource(filtredNodes);
         }
       },
@@ -124,7 +123,7 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
       });
   }
 
-  
+
 
   delete(element: Node) {
     this.dialogRefPublish = this.dialog.open(ValidationDialogComponent, {
@@ -178,9 +177,5 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
           });
         }
       });
-  }
-
-  setUserName(param: any) {
-    this.userService.setUserName(param);
   }
 }

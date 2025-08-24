@@ -44,7 +44,7 @@ export class ContentCodeComponent {
     this.contentNode.parentCode = this.node.code;
     this.contentNode.parentCodeOrigin = this.node.parentCodeOrigin;
 
-    this.contentNodeService.save(this.contentNode).subscribe(
+    this.contentNodeService.save(this.contentNode, this.user.id).subscribe(
       (response: any) => {
 
         this.contentNode = response;
