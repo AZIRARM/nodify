@@ -72,16 +72,19 @@ public class UserHandler {
 
     public Mono<Boolean> delete(UUID uuid) {
         return this.userRepository.findById(uuid)
-                .flatMap(entity ->
-                        this.notify(this.userMapper.fromEntity(entity), NotificationEnum.DELETION)
-                                .flatMap(notification ->
-                                        this.userRepository.deleteById(uuid)
-                                                .thenReturn(Boolean.TRUE)
-                                )
-                                .onErrorReturn(Boolean.FALSE)
-                );
-
+                .flatMap(entity -> {
+                    if (entity.getRoles() != null && entity.getRoles().contains("ADMIN")) {
+                        return Mono.just(Boolean.FALSE);
+                    }
+                    return this.notify(this.userMapper.fromEntity(entity), NotificationEnum.DELETION)
+                            .flatMap(notification ->
+                                    this.userRepository.deleteById(uuid)
+                                            .thenReturn(Boolean.TRUE)
+                            )
+                            .onErrorReturn(Boolean.FALSE);
+                });
     }
+
 
     public Mono<UserPost> findByEmail(String username) {
         return userRepository.findByEmail(username).map(userMapper::fromEntity);
