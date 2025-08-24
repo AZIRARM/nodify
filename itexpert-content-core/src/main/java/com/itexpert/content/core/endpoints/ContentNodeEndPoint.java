@@ -260,6 +260,6 @@ public class ContentNodeEndPoint {
 
     private String extratUser(UserPost user) {
         return ObjectUtils.isEmpty(user) ? "" :
-                (user.getFirstname() + " " + user.getLastname() + (ObjectUtils.isEmpty(user.getRoles()) ? "(ADMIN)" : "(" + user.getRoles() + ")"));
+                (user.getFirstname() + " " + user.getLastname());
     }
 }
