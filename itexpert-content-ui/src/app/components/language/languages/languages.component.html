@@ -29,7 +29,7 @@
   <ng-container matColumnDef="Actions">
     <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
     <td mat-cell *matCellDef="let element">
-      <mat-icon class="icon-display scale2" *ngIf="(!userAccessService.isAdmin())" (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
+      <mat-icon class="icon-display scale2" *ngIf="userAccessService.isAdmin()" (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
       <mat-icon class="icon-display scale2 danger" *ngIf="userAccessService.isAdmin()" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
     </td>
   </ng-container>
