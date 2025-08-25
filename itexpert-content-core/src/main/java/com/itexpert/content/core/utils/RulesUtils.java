@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -66,7 +67,9 @@ public class RulesUtils {
                 DateTimeFormatter format = new DateTimeFormatterBuilder()
                         .append(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                         .toFormatter();
-                Instant instant = LocalDateTime.parse(ruleCondition.getValue().replace("T", " "), format).toInstant(ZoneOffset.UTC);
+                Instant instant = LocalDateTime.parse(ruleCondition.getValue().replace("T", " "), format)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
                 switch (ruleCondition.getOperator()) {
                     case EQ -> evaluation = Instant.now().toEpochMilli() == instant.toEpochMilli();

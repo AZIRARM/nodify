@@ -1,5 +1,9 @@
 FROM maven:3.9.4-eclipse-temurin-21 AS build
 
+# Install tzdata to support all timezones
+RUN apt-get update && apt-get install -y tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copier le pom parent et tous les modules nécessaires pour Maven multi-modules
