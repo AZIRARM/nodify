@@ -14,6 +14,7 @@ services:
       MONGO_URL: "${MONGO_URL:-mongodb://mongo:27017/nodify}"
       ADMIN_PWD: "${ADMIN_PWD:-Admin123}"
       API_URL: "${API_URL:-http://localhost:9080}"
+      TZ: "${TZ:-Europe/Paris}"
     expose:
       - "8080"
 
@@ -24,6 +25,7 @@ services:
       - mongo
     environment:
       MONGO_URL: "${MONGO_URL:-mongodb://mongo:27017/nodify}"
+      TZ: "${TZ:-Europe/Paris}"
     expose:
       - "9080"
     ports:

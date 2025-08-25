@@ -11,9 +11,11 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Slf4j
@@ -73,36 +75,39 @@ public class RulesUtils {
     /**
      * Verifies if a single rule condition is satisfied.
      *
-     * @param rule The rule to verify.
+     * @param ruleCondition The rule to verify.
      * @return boolean indicating whether the rule condition is satisfied.
      */
-    private static boolean verifyRuleCondition(Rule rule) {
-        if (!rule.getEnable()) {
-            return false; // Rule is disabled, consider it as not satisfied
-        }
-
+    private static boolean verifyRuleCondition(Rule ruleCondition) {
         boolean evaluation = false;
+        if (ruleCondition.getEnable()) {
+            if (ruleCondition.getType().equals(TypeEnum.BOOL)) {
+                evaluation = true;
+            } else if (ruleCondition.getType().equals(TypeEnum.DATE)) {
+                DateTimeFormatter format = new DateTimeFormatterBuilder()
+                        .append(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                        .toFormatter();
+                Instant instant = LocalDateTime.parse(ruleCondition.getValue().replace("T", " "), format)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
-        if (rule.getType().equals(TypeEnum.BOOL)) {
-            evaluation = true; // Boolean rules are always considered as satisfied if enabled
-        } else if (rule.getType().equals(TypeEnum.DATE)) {
-            Instant ruleInstant = parseDate(rule.getValue());
-            Instant now = Instant.now();
-
-            switch (rule.getOperator()) {
-                case EQ -> evaluation = now.equals(ruleInstant);
-                case DIF -> evaluation = !now.equals(ruleInstant);
-                case LOW -> evaluation = now.isBefore(ruleInstant);
-                case LOW_EQ -> evaluation = now.isBefore(ruleInstant) || now.equals(ruleInstant);
-                case SUP -> evaluation = now.isAfter(ruleInstant);
-                case SUP_EQ -> evaluation = now.isAfter(ruleInstant) || now.equals(ruleInstant);
+                switch (ruleCondition.getOperator()) {
+                    case EQ -> evaluation = Instant.now().toEpochMilli() == instant.toEpochMilli();
+                    case DIF -> evaluation = Instant.now().toEpochMilli() != instant.toEpochMilli();
+                    case LOW -> evaluation = Instant.now().toEpochMilli() < instant.toEpochMilli();
+                    case LOW_EQ -> evaluation = Instant.now().toEpochMilli() <= instant.toEpochMilli();
+                    case SUP -> evaluation = Instant.now().toEpochMilli() > instant.toEpochMilli();
+                    case SUP_EQ -> evaluation = Instant.now().toEpochMilli() >= instant.toEpochMilli();
+                }
             }
+
+            evaluation = ruleCondition.getBehavior() ?
+                    !(evaluation && ruleCondition.getEnable() && ruleCondition.getBehavior())
+                    :
+                    evaluation && ruleCondition.getEnable() && !ruleCondition.getBehavior();
         }
-
-        // Apply behavior logic: if behavior is true, invert the evaluation
-        return rule.getBehavior() ? !evaluation : evaluation;
+        return evaluation;
     }
-
     /**
      * Parses a date string into an Instant.
      *
