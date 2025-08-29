@@ -8,13 +8,17 @@ import com.itexpert.content.core.handlers.NodeHandler;
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.models.auth.RoleEnum;
+import com.itexpert.content.lib.enums.ContentTypeEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
+import com.itexpert.content.lib.enums.TypeEnum;
+import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Node;
 import com.itexpert.content.lib.models.UserPost;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.reactivestreams.Publisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +28,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -278,7 +284,8 @@ public class NodeEndPoint {
 
     @GetMapping(value = "/code/{code}/deploy")
     public Flux<Node> deploy(@PathVariable String code,
-                             @RequestParam(name = "environment", required = false) String environmentCode) {
+                             @RequestParam(name = "environment", required = false) String environmentCode,
+                             Authentication authentication) {
         return this.exportAll(code, environmentCode)
                 .map(responseEntity -> {
                     Gson gson = new GsonBuilder().create();
@@ -290,10 +297,33 @@ public class NodeEndPoint {
 
                     return nodes;
                 })
-                .map(nodes -> this.importNodes(nodes, environmentCode, false))
+                .map(nodes -> {
+                    log.debug("[EXPORT] About to importNodes, environmentCode={}, nodes count={}",
+                            environmentCode, nodes.size());
+
+                    // Log chaque Node avec code et status
+                    nodes.forEach(node -> {
+                        log.debug("[EXPORT] Node to import: code={}, status={}",
+                                node.getCode(), node.getStatus());
+
+                        // Log chaque ContentNode à l'intérieur de Node
+                        Optional.ofNullable(node.getContents()).orElse(List.of())
+                                .forEach(contentNode -> log.debug(
+                                        "[EXPORT]   ContentNode: code={}, status={}",
+                                        contentNode.getCode(), contentNode.getStatus()));
+                    });
+
+                    return this.importNodes(nodes, environmentCode, false);
+                })
                 .flatMapMany(nodes -> nodes)
+                .flatMap(this::removeStatusSnaphotFromContents)
                 .flatMap(nodeHandler::setPublicationStatus)
-                .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT));
+                .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT))
+                .filter(node -> node.getParentCode().equals(environmentCode))
+                .flatMap(node -> this.nodeHandler.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                        .flatMap(nodeToPublish->this.nodeHandler.publish(nodeToPublish.getId(), authentication.getPrincipal().toString()))
+                )
+                ;
     }
 
     @GetMapping(value = "/code/{code}/slug/{slug}/exists")
@@ -319,4 +349,55 @@ public class NodeEndPoint {
         return ObjectUtils.isEmpty(user) ? "" :
                 (user.getFirstname() + " " + user.getLastname());
     }
+
+    private Mono<Node> removeStatusSnaphotFromContents(Node node) {
+        if (ObjectUtils.isEmpty(node) || ObjectUtils.isEmpty(node.getContents())) {
+            return Mono.just(node);
+        }
+
+        List<ContentNode> cleanedContents = node.getContents().stream()
+                .map(contentNode -> {
+                    if (ObjectUtils.isNotEmpty(contentNode.getContent())
+                            && !contentNode.getType().equals(ContentTypeEnum.FILE)
+                            && !contentNode.getType().equals(ContentTypeEnum.PICTURE)) {
+                        String cleaned = cleanStatusSnapshot(contentNode.getContent());
+                        contentNode.setContent(cleaned);
+                    }
+                    return contentNode;
+                })
+                .toList();
+
+        node.setContents(cleanedContents);
+        return Mono.just(node);
+    }
+
+    private String cleanStatusSnapshot(String input) {
+        if (input == null) return null;
+
+        int qIndex = input.indexOf('?');
+        if (qIndex < 0) {
+            return input; // pas de paramètres
+        }
+
+        String base = input.substring(0, qIndex);
+        String query = input.substring(qIndex + 1);
+
+        // découpe en paramètres
+        String[] params = query.split("&");
+        List<String> kept = new ArrayList<>();
+
+        for (String p : params) {
+            if (!"status=SNAPSHOT".equals(p)) { // supprime exactement status=SNAPSHOT
+                kept.add(p);
+            }
+        }
+
+        if (kept.isEmpty()) {
+            return base; // aucun param restant -> pas de "?"
+        }
+
+        return base + "?" + String.join("&", kept);
+    }
+
+
 }

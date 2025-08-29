@@ -22,6 +22,8 @@ import reactor.util.function.Tuples;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -192,7 +194,7 @@ public class NodeHandler {
      * création d'un snapshot, publication des enfants) pour un seul noeud.
      *
      * @param nodeToProcess Le noeud à traiter.
-     * @param modifiedBy        L'utilisateur.
+     * @param modifiedBy    L'utilisateur.
      * @return Un Mono contenant le noeud traité après sa publication.
      */
     private Mono<Node> publishRecursive(Node nodeToProcess, String modifiedBy) {
@@ -464,11 +466,11 @@ public class NodeHandler {
                 .flatMap(node -> this.notify(node, NotificationEnum.IMPORT));
     }
 
-    @Transactional
     public Flux<Node> importNodes(List<Node> nodes, String nodeParentCode, Boolean fromFile) {
+        log.debug("[IMPORT] Start importNodes, parentCode={}, nodesCount={}", nodeParentCode, nodes.size());
+
         return this.nodeRepository.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
                 .flatMapMany(nodeParent -> {
-
                     String parentCodeOrigin = ObjectUtils.isEmpty(nodeParent.getParentCodeOrigin())
                             ? nodeParent.getCode()
                             : nodeParent.getParentCodeOrigin();
@@ -493,61 +495,81 @@ public class NodeHandler {
                                         node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
                                         node.setStatus(StatusEnum.SNAPSHOT);
                                         node.setModificationDate(Instant.now().toEpochMilli());
-                                        if(ObjectUtils.isNotEmpty(existingNode.getSlug())) {
+                                        if (ObjectUtils.isNotEmpty(existingNode.getSlug())) {
                                             node.setSlug(existingNode.getSlug());
                                         }
                                         node.setFavorite(existingNode.isFavorite());
+
                                         return this.nodeRepository.save(existingNode)
                                                 .then(Mono.just(node));
                                     })
-                                    .switchIfEmpty(Mono.just(node).map(model -> {
+                                    .switchIfEmpty(Mono.just(node).map(model -> {//si c'est un ajout
                                         model.setModificationDate(Instant.now().toEpochMilli());
                                         model.setCreationDate(model.getModificationDate());
+                                        model.setStatus(StatusEnum.SNAPSHOT);//Normalement déjà SNAPSHOT
                                         model.setVersion("0");
                                         return model;
                                     }))
                             );
                 })
-                .switchIfEmpty(
+                .switchIfEmpty(//ici normalement c'est le premier import
                         this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, "", fromFile)
-                                .flatMap(node ->
-                                        nodeRepository.findByCode(node.getCode())
-                                                .flatMap(entity -> Mono.empty())
-                                                .switchIfEmpty(Mono.just(node))
-                                )
-                                .map(o -> (Node) o)
-                                .flatMap(node -> {
+                                .map(node -> {
                                     node.setStatus(StatusEnum.SNAPSHOT);
                                     node.setVersion("0");
                                     node.setModificationDate(Instant.now().toEpochMilli());
                                     node.setCreationDate(node.getModificationDate());
-                                    return this.nodeRepository.save(nodeMapper.fromModel(node))
-                                            .map(entity -> node);
+                                    return node;
                                 })
                 )
                 // Mise à jour du slug pour chaque node
-                .flatMap(this.nodeSlugHelper::update)
+                .flatMap(node -> {
+                    return this.nodeSlugHelper.update(node);
+                })
                 .collectList()
-                .flatMapMany(nodesList -> Flux.fromIterable(nodesList)
-                        .flatMap(this::importContent)
-                        .map(nodeMapper::fromModel)
-                        .flatMap(nodeRepository::save)
+                .flatMapMany(nodesList -> Flux.fromIterable(
+                                        nodesList.stream()
+                                                .collect(Collectors.toMap(
+                                                        Node::getCode,
+                                                        Function.identity(),
+                                                        (existing, replacement) -> existing
+                                                ))
+                                                .values()
+                                )
+                                .flatMap(this::importContent)
+                                .collectList()
+                                .flatMapMany(entities -> Flux.fromIterable(
+                                        nodesList.stream()
+                                                .collect(Collectors.toMap(
+                                                        Node::getCode,
+                                                        Function.identity(),
+                                                        (existing, replacement) -> existing
+                                                ))
+                                                .values()
+                                ))
+                                .map(nodeMapper::fromModel)
+                                .flatMap(nodeRepository::save)
                 )
                 .map(nodeMapper::fromEntity)
-                .flatMap(node -> this.notify(node, NotificationEnum.IMPORT));
+                .flatMap(node -> {
+                    return this.notify(node, NotificationEnum.IMPORT);
+                })
+                .doOnComplete(() -> log.debug("[IMPORT] importNodes finished, parentCode={}", nodeParentCode));
     }
 
-
     private Mono<Node> importContent(Node node) {
-        return Flux.fromIterable(Optional.ofNullable(node.getContents()).orElse(List.of()))
+        log.debug("[IMPORT] Start importContent, node {}", node.getCode());
+        if (ObjectUtils.isEmpty(node) || ObjectUtils.isEmpty(node.getContents())) {
+            return Mono.just(node);
+        }
+        return Flux.fromIterable(node.getContents())
                 .flatMap(this.contentNodeHandler::importContentNode)
                 .collectList()
                 .hasElement()
                 .map(haveElements -> node)
-                .map(this.nodeMapper::fromModel)
-                .flatMap(this.nodeRepository::save)
-                .map(this.nodeMapper::fromEntity);
+                .doOnSuccess(n -> log.debug("[IMPORT] importContent finished, node {}", n.getCode()));
     }
+
 
     public Mono<Boolean> haveContents(String code) {
         return this.contentNodeHandler.nodeHaveContents(code);
