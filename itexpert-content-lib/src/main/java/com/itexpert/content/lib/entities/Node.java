@@ -6,6 +6,8 @@ import com.itexpert.content.lib.models.Translation;
 import com.itexpert.content.lib.models.Value;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,6 +16,20 @@ import java.util.List;
 import java.util.UUID;
 
 @Document(collection = "nodes")
+@CompoundIndexes({
+        @CompoundIndex(
+                name = "uniq_code_snapshot",
+                def = "{'code': 1, 'status': 1}",
+                unique = true,
+                partialFilter = "{ 'status': 'SNAPSHOT' }"
+        ),
+        @CompoundIndex(
+                name = "uniq_code_published",
+                def = "{'code': 1, 'status': 1}",
+                unique = true,
+                partialFilter = "{ 'status': 'PUBLISHED' }"
+        )
+})
 @Data
 public class Node implements Serializable, Cloneable {
 
