@@ -70,23 +70,16 @@ public class PluginHandler {
     }
 
 
-    public Mono<Boolean> delete(UUID uuid, UUID userId) {
-        return this.pluginRepository.findById(uuid)
-                .flatMap(entity ->
-                        this.notify(this.pluginMapper.fromEntity(entity), NotificationEnum.DELETION, userId)
-                                .flatMap(notification -> {
-                                            entity.setDeleted(true);
-                                            entity.setModifiedBy(userId);
-                                            entity.setCreationDate(Instant.now().toEpochMilli());
-                                            return this.pluginRepository.save(entity)
-                                                    .thenReturn(entity);
-                                        }
+    public Mono<Boolean> delete(UUID uuid, String user) {
 
-                                )
-                                .flatMapMany(plugin -> this.pluginFileRepository.findByPluginId(entity.getId()))
-                                .flatMap(this.pluginFileRepository::delete)
-                                .collectList()
-                                .thenReturn(Boolean.TRUE))
+        return pluginRepository.findById(uuid).flatMap(plugin -> {
+                    plugin.setDeleted(Boolean.TRUE);
+                    plugin.setModificationDate(Instant.now().toEpochMilli());
+                    plugin.setModifiedBy(user);
+                    return this.pluginRepository.save(plugin)
+                            .map(pluginMapper::fromEntity)
+                            .flatMap(model -> this.notify(model, NotificationEnum.DELETION, user));
+                }).thenReturn(Boolean.TRUE)
                 .onErrorReturn(Boolean.FALSE);
     }
 
@@ -96,61 +89,63 @@ public class PluginHandler {
     }
 
 
-    public Mono<Plugin> notify(Plugin model, NotificationEnum type, UUID userId) {
-        return userHandler.findById(userId)
-                .flatMap(userPost -> notificationHandler
-                        .create(type, model.getCode(), userPost.getFirstname() + " " + userPost.getLastname() + " " + "(" + userPost.getRoles() + ")", "PLUGIN", model.getName(), null)
-                        .map(notification -> model)
-                );
+    public Mono<Plugin> notify(Plugin model, NotificationEnum type, String user) {
+        return notificationHandler
+                .create(type, model.getCode(), user, "PLUGIN", model.getName(), null)
+                .map(notification -> model);
     }
 
-    public Mono<Plugin> enable(String name, UUID userId) {
-        return pluginRepository.findByName(name).map(plugin -> {
-                    plugin.setEnabled(Boolean.TRUE);
-                    plugin.setModificationDate(Instant.now().toEpochMilli());
-                    plugin.setModifiedBy(userId);
-                    return plugin;
-                }).flatMap(pluginRepository::save)
-                .map(pluginMapper::fromEntity)
-                .flatMap(plugin -> this.notify(plugin, NotificationEnum.ACTIVATION, userId));
+    public Mono<Plugin> enable(UUID id, String user) {
+        return pluginRepository.findById(id).flatMap(plugin -> {
+            plugin.setEnabled(Boolean.TRUE);
+            plugin.setModificationDate(Instant.now().toEpochMilli());
+            plugin.setModifiedBy(user);
+            return this.pluginRepository.save(plugin)
+                    .map(pluginMapper::fromEntity)
+                    .flatMap(model -> this.notify(model, NotificationEnum.ACTIVATION, user));
+        });
     }
 
-    public Mono<Plugin> disable(String name, UUID userId) {
-        return pluginRepository.findByName(name).map(plugin -> {
-                    plugin.setEnabled(Boolean.FALSE);
-                    plugin.setModificationDate(Instant.now().toEpochMilli());
-                    plugin.setModifiedBy(userId);
-                    return plugin;
-                }).flatMap(pluginRepository::save)
-                .map(pluginMapper::fromEntity)
-                .flatMap(plugin -> this.notify(plugin, NotificationEnum.DEACTIVATION, userId));
+    public Mono<Plugin> disable(UUID id, String user) {
+        return pluginRepository.findById(id).flatMap(plugin -> {
+            plugin.setEnabled(Boolean.FALSE);
+            plugin.setModificationDate(Instant.now().toEpochMilli());
+            plugin.setModifiedBy(user);
+            return this.pluginRepository.save(plugin)
+                    .map(pluginMapper::fromEntity)
+                    .flatMap(model -> this.notify(model, NotificationEnum.DEACTIVATION, user));
+        });
     }
 
     public Flux<Plugin> deleteds() {
         return pluginRepository.findDeleted().map(this.pluginMapper::fromEntity);
     }
 
-    public Mono<Boolean> deleteDefinitively(UUID id, UUID userId) {
-        return this.findById(id)
-                .flatMap(plugin -> this.notify(plugin, NotificationEnum.DELETION_DEFINITIVELY, userId))
-                .map(Plugin::getId)
-                .flatMap(this.pluginRepository::deleteById)
-                .hasElement();
+    public Mono<Boolean> deleteDefinitively(UUID id, String user) {
+        return this.pluginRepository.findById(id)
+                .flatMap(plugin ->
+                        this.pluginRepository.delete(plugin)
+                                .then(this.pluginFileRepository.deleteAllByPluginId(id).then()) // <-- important
+                                .then(this.notify(pluginMapper.fromEntity(plugin), NotificationEnum.DELETION_DEFINITIVELY, user))
+                                .thenReturn(true)
+                )
+                .defaultIfEmpty(false);
     }
 
-    public Mono<Plugin> activate(String name, UUID userId) {
-        return pluginRepository.findByName(name).map(plugin -> {
+
+    public Mono<Plugin> activate(UUID id, String user) {
+        return pluginRepository.findById(id).map(plugin -> {
                     plugin.setDeleted(Boolean.FALSE);
                     plugin.setModificationDate(Instant.now().toEpochMilli());
-                    plugin.setModifiedBy(userId);
+                    plugin.setModifiedBy(user);
                     return plugin;
                 }).flatMap(pluginRepository::save)
                 .map(pluginMapper::fromEntity)
-                .flatMap(plugin -> this.notify(plugin, NotificationEnum.REVERT, userId));
+                .flatMap(plugin -> this.notify(plugin, NotificationEnum.REVERT, user));
     }
 
-    public Mono<Plugin> export(String name) {
-        return this.pluginRepository.findByName(name)
+    public Mono<Plugin> export(UUID id) {
+        return this.pluginRepository.findById(id)
                 .map(this.pluginMapper::fromEntity)
                 .flatMap(plugin -> this.pluginFileRepository.findByPluginId(plugin.getId())
                         .map(this.pluginFileMapper::fromEntity)

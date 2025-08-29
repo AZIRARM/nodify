@@ -13,4 +13,6 @@ public interface PluginFileRepository extends ReactiveMongoRepository<PluginFile
     Flux<PluginFile> findByPluginId(UUID pluginId);
 
     Mono<PluginFile> findByPluginIdAndFileName(UUID pluginId, String fileName);
+
+    Flux<PluginFile> deleteAllByPluginId(UUID id);
 }

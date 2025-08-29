@@ -24,20 +24,20 @@ export class PluginService extends Service {
     return super.get("");
   }
 
-  disable(name: string, userId:string) {
-    return super.put("name/" + name +"/user/"+userId+ "/disable", null);
+  disable(id: string) {
+    return super.put("id/" + id + "/disable", null);
   }
 
-  enable(name: string, userId:string) {
-    return super.put("name/" + name  +"/user/"+userId+  "/enable", null);
+  enable(id: string) {
+    return super.put("id/" + id + "/enable", null);
   }
 
-  activate(name: string, userId:string) {
-    return super.put("name/" + name  +"/user/"+userId+  "/activate", null);
+  activate(id: string) {
+    return super.put("id/" + id +  "/activate", null);
   }
 
-  delete(id: string, userId: string) {
-    return super.remove("id/" + id+"/user/"+userId);
+  delete(id: string) {
+    return super.remove("id/"  + id);
   }
 
   save(plugin: Plugin) {
@@ -48,11 +48,11 @@ export class PluginService extends Service {
     return super.get("deleteds");
   }
 
-  deleteDefinitively(id: string, userId: string) {
-    return super.remove("id/" + id+"/user/"+userId+"/deleteDefinitively");
+  deleteDefinitively(id: string) {
+    return super.remove("id/" + id + "/deleteDefinitively");
   }
-  export(name:string) {
-    return super.get("name/"+name+"/export");
+  export(id:string) {
+    return super.get("id/"+id+"/export");
   }
   import(plugin:Plugin) {
     return super.post("import", plugin);
