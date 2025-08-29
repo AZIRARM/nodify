@@ -22,7 +22,6 @@ import reactor.util.function.Tuples;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -337,33 +336,27 @@ public class ContentNodeHandler {
 
     @Transactional
     public Mono<ContentNode> importContentNode(ContentNode contentNode) {
+        log.debug("[IMPORT] Start importContentNode, code={}", contentNode.getCode());
+
         return this.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
                 .flatMap(existingContentNode -> {
-                    // Préparer le nouveau ContentNode
                     contentNode.setId(UUID.randomUUID());
                     contentNode.setVersion(String.valueOf(Integer.parseInt(existingContentNode.getVersion()) + 1));
                     contentNode.setStatus(StatusEnum.SNAPSHOT);
                     contentNode.setCreationDate(existingContentNode.getCreationDate());
                     contentNode.setModificationDate(Instant.now().toEpochMilli());
-                    if(ObjectUtils.isNotEmpty(existingContentNode.getSlug())){
+                    if (ObjectUtils.isNotEmpty(existingContentNode.getSlug())) {
                         contentNode.setSlug(existingContentNode.getSlug());
                     }
                     contentNode.setFavorite(existingContentNode.isFavorite());
 
-                    if (ObjectUtils.isNotEmpty(existingContentNode.getSlug())) {
-                        contentNode.setSlug(existingContentNode.getSlug());
-                    }
-
-                    // Archiver l'ancien ContentNode
                     existingContentNode.setStatus(StatusEnum.ARCHIVE);
                     existingContentNode.setModificationDate(Instant.now().toEpochMilli());
 
-                    // Sauvegarder l'ancien contenu archivé et retourner le nouveau SNAPSHOT
                     return this.contentNodeRepository.save(contentNodeMapper.fromModel(existingContentNode))
                             .thenReturn(contentNode);
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    // Si aucun ContentNode existant trouvé, créer un nouveau SNAPSHOT
                     contentNode.setId(UUID.randomUUID());
                     contentNode.setVersion("0");
                     contentNode.setStatus(StatusEnum.SNAPSHOT);
@@ -371,12 +364,14 @@ public class ContentNodeHandler {
                     contentNode.setModificationDate(contentNode.getCreationDate());
                     return Mono.just(contentNode);
                 }))
-                // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
                 .flatMap(this.contentNodeSlugHelper::update)
                 .flatMap(model -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(model)))
                 .map(this.contentNodeMapper::fromEntity)
-                .flatMap(model -> this.notify(model, NotificationEnum.IMPORT));
+                .flatMap(model -> this.notify(model, NotificationEnum.IMPORT))
+                .doOnSuccess(n -> log.debug("[IMPORT] importContentNode finished, code={}", n.getCode()))
+                .doOnError(e -> log.error("[IMPORT] Error When import ContentNode code={}", contentNode.getCode(), e));
     }
+
 
     public Mono<Boolean> deleteDefinitively(String code) {
         return contentNodeRepository.findAllByCode(code)

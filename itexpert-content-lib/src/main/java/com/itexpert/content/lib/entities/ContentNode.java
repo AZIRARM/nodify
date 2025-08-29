@@ -5,6 +5,8 @@ import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.*;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,6 +15,20 @@ import java.util.List;
 import java.util.UUID;
 
 @Document(collection = "content-nodes")
+@CompoundIndexes({
+        @CompoundIndex(
+                name = "uniq_code_snapshot",
+                def = "{'code': 1, 'status': 1}",
+                unique = true,
+                partialFilter = "{ 'status': 'SNAPSHOT' }"
+        ),
+        @CompoundIndex(
+                name = "uniq_code_published",
+                def = "{'code': 1, 'status': 1}",
+                unique = true,
+                partialFilter = "{ 'status': 'PUBLISHED' }"
+        )
+})
 @Data
 public class ContentNode implements Serializable, Cloneable {
     @Id
