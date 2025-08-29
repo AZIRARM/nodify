@@ -59,7 +59,7 @@ export class PluginComponent implements OnInit {
 
   status(plugin: Plugin) {
     if (!plugin.enabled) {
-      this.pluginService.enable(plugin.name, this.user!.id).subscribe(
+      this.pluginService.enable(plugin.id).subscribe(
         (response: any) => {
           //next() callback
           this.init();
@@ -68,7 +68,7 @@ export class PluginComponent implements OnInit {
           this.toast.error('Request failed with error');
         });
     } else {
-      this.pluginService.disable(plugin.name, this.user!.id).subscribe(
+      this.pluginService.disable(plugin.id).subscribe(
         (response: any) => {
           //next() callback
           this.init();
@@ -120,7 +120,7 @@ export class PluginComponent implements OnInit {
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
 
-          this.pluginService.delete(plugin.id, this.user!.id).subscribe(
+          this.pluginService.delete(plugin.id).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -191,7 +191,7 @@ export class PluginComponent implements OnInit {
   }
 
   export(element: Plugin) {
-    this.pluginService.export(element.name).subscribe((data: any) => {
+    this.pluginService.export(element.id).subscribe((data: any) => {
       const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2); // Beautifié avec indentation
       const blob: Blob = new Blob([jsonString], { type: 'application/json' });
       const a = document.createElement('a');
