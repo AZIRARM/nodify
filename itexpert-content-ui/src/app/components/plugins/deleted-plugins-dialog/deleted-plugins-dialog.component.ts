@@ -70,7 +70,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
     this.dialogValidationRef.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.pluginService.activate(element.name, this.user!.id).subscribe(() => {
+          this.pluginService.activate(element.id).subscribe(() => {
             this.translate.get("ACTIVATION_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
@@ -102,7 +102,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
     this.dialogValidationRef.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.pluginService.deleteDefinitively(element.id, this.user!.id).subscribe(
+          this.pluginService.deleteDefinitively(element.id).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);

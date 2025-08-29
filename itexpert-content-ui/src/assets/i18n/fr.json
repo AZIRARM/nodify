@@ -264,5 +264,7 @@
   "NODES_VIEW": "Visaulisation des noeuds",
 
   "SLUG_ALREADY_USED": "Cet alias n'est pas disponible",
-  "SLUG_AVAILABLE": "Cet alias est disponible"
+  "SLUG_AVAILABLE": "Cet alias est disponible",
+
+  "NEED_PLUGIN_NAME": "Le nom du plugin est nécessaire."
 }

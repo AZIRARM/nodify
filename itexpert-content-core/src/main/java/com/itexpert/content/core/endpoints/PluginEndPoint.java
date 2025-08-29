@@ -3,17 +3,19 @@ package com.itexpert.content.core.endpoints;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.itexpert.content.core.handlers.PluginHandler;
+import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.lib.models.Plugin;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class PluginEndPoint {
 
     private final PluginHandler pluginHandler;
+    private final UserHandler userHandler;
 
 
     @GetMapping("/")
@@ -37,16 +40,8 @@ public class PluginEndPoint {
     }
 
     @GetMapping(value = "/id/{id}")
-    public Mono<ResponseEntity<Plugin>> findById(@PathVariable String id) {
-        return pluginHandler.findById(UUID.fromString(id))
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-    }
-
-    @GetMapping(value = "/name/{name}")
-    public Mono<ResponseEntity<Plugin>> findByName(@PathVariable String name) {
-        return pluginHandler.findByName(name)
+    public Mono<ResponseEntity<Plugin>> findById(@PathVariable UUID id) {
+        return pluginHandler.findById(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
@@ -58,39 +53,52 @@ public class PluginEndPoint {
                 .map(ResponseEntity::ok);
     }
 
-    @DeleteMapping(value = "/id/{id}/user/{userId}")
-    public Mono<ResponseEntity<Boolean>> delete(@PathVariable String id, @PathVariable String userId) {
-        return pluginHandler.delete(UUID.fromString(id), UUID.fromString(userId))
-                .map(ResponseEntity::ok);
+    @DeleteMapping(value = "/id/{id}")
+    public Mono<ResponseEntity<Boolean>> delete(@PathVariable UUID id, Authentication authentication) {
+        return
+                this.extractUser(authentication.getPrincipal().toString())
+                        .flatMap(user ->
+                                pluginHandler.delete(id, user))
+                        .map(ResponseEntity::ok);
     }
 
-    @PutMapping(value = "/name/{name}/user/{userId}/enable")
-    public Mono<ResponseEntity<Plugin>> enable(@PathVariable String name, @PathVariable String userId) {
-        return pluginHandler.enable(name, UUID.fromString(userId))
-                .map(ResponseEntity::ok);
+    @PutMapping(value = "/id/{id}/enable")
+    public Mono<ResponseEntity<Plugin>> enable(@PathVariable UUID id, Authentication authentication) {
+        return
+                this.extractUser(authentication.getPrincipal().toString())
+                        .flatMap(user -> pluginHandler.enable(id, user)
+                                .map(ResponseEntity::ok)
+                        );
     }
 
-    @PutMapping(value = "/name/{name}/user/{userId}/disable")
-    public Mono<ResponseEntity<Plugin>> disable(@PathVariable String name, @PathVariable String userId) {
-        return pluginHandler.disable(name, UUID.fromString(userId))
-                .map(ResponseEntity::ok);
+    @PutMapping(value = "/id/{id}/disable")
+    public Mono<ResponseEntity<Plugin>> disable(@PathVariable UUID id, Authentication authentication) {
+        return
+                this.extractUser(authentication.getPrincipal().toString())
+                        .flatMap(user -> pluginHandler.disable(id, user)
+                                .map(ResponseEntity::ok));
     }
 
-    @PutMapping(value = "/name/{name}/user/{userId}/activate")
-    public Mono<ResponseEntity<Plugin>> activate(@PathVariable String name, @PathVariable String userId) {
-        return pluginHandler.activate(name, UUID.fromString(userId))
-                .map(ResponseEntity::ok);
+    @PutMapping(value = "/id/{id}/activate")
+    public Mono<ResponseEntity<Plugin>> activate(@PathVariable UUID id, Authentication authentication) {
+        return
+                this.extractUser(authentication.getPrincipal().toString())
+                        .flatMap(user -> pluginHandler.activate(id, user)
+                                .map(ResponseEntity::ok));
     }
 
-    @DeleteMapping(value = "/id/{id}/user/{userId}/deleteDefinitively")
-    public Mono<ResponseEntity<Boolean>> deleteDefinitively(@PathVariable String id, @PathVariable String userId) {
-        return pluginHandler.deleteDefinitively(UUID.fromString(id), UUID.fromString(userId))
-                .map(ResponseEntity::ok);
+    @DeleteMapping(value = "/id/{id}/deleteDefinitively")
+    public Mono<ResponseEntity<Boolean>> deleteDefinitively(@PathVariable UUID id, Authentication authentication) {
+        return
+                this.extractUser(authentication.getPrincipal().toString())
+                        .flatMap(user -> pluginHandler.deleteDefinitively(id, user)
+                                .map(ResponseEntity::ok)
+                        );
     }
 
-    @GetMapping(value = "/name/{name}/export")
-    public Mono<ResponseEntity<byte[]>> export(@PathVariable String name) {
-        return this.pluginHandler.export(name)
+    @GetMapping(value = "/id/{id}/export")
+    public Mono<ResponseEntity<byte[]>> export(@PathVariable UUID id) {
+        return this.pluginHandler.export(id)
                 .map(plugin -> {
                     Gson gson = new GsonBuilder()
                             .setPrettyPrinting() // optionnel, pour lisibilité
@@ -115,5 +123,13 @@ public class PluginEndPoint {
 
     }
 
+    private Mono<String> extractUser(String email) {
+        if (ObjectUtils.isEmpty(email)) {
+            return Mono.just("");
+        }
 
+        return this.userHandler.findByEmail(email)
+                .map(userPost -> userPost.getFirstname() + " " + userPost.getLastname())
+                .defaultIfEmpty("");
+    }
 }

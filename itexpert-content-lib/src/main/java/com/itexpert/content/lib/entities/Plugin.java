@@ -30,7 +30,7 @@ public class Plugin implements Serializable, Cloneable {
 
     private Long creationDate;
     private Long modificationDate;
-    private UUID modifiedBy;
+    private String modifiedBy;
 
     private boolean deleted;
 }
