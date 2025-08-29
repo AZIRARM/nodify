@@ -268,6 +268,8 @@ export class NodesComponent implements OnInit {
                 })
               });
           }
+        } else {
+          this.init();
         }
       });
   }

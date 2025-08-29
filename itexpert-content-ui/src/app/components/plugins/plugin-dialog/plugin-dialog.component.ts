@@ -2,6 +2,9 @@ import {AfterViewInit, Component, Inject, ViewChild} from '@angular/core';
 import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
 import {Plugin} from "../../../modeles/Plugin";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import { TranslateService } from '@ngx-translate/core';
+import { ToastrService } from 'ngx-toastr';
+import { LoggerService } from 'src/app/services/LoggerService';
 
 @Component({
   selector: 'app-plugin-dialog',
@@ -15,7 +18,9 @@ export class PluginDialogComponent implements AfterViewInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<PluginDialogComponent>
+    public dialogRef: MatDialogRef<PluginDialogComponent>,
+    private translate: TranslateService,
+    private loggerService: LoggerService
   ) {
     if (data && data.plugin) {
       this.plugin = data.plugin;
@@ -56,6 +61,12 @@ export class PluginDialogComponent implements AfterViewInit {
   }
 
   validate() {
-    this.dialogRef.close({validate: true, plugin: this.plugin});
+    if(!this.plugin.name || this.plugin.name.trim().length <= 0) {
+      this.translate.get("NEED_PLUGIN_NAME").subscribe(trad => {
+                this.loggerService.error(trad);
+              })
+    } else{
+      this.dialogRef.close({validate: true, plugin: this.plugin});
+    }
   }
 }
