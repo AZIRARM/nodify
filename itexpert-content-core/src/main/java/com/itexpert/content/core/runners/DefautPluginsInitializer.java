@@ -26,7 +26,8 @@ public class DefautPluginsInitializer {
                 this.importPlugin("plugins/bootstrap5.0.2.json"),
                 this.importPlugin("plugins/feedbacks.json"),
                 this.importPlugin("plugins/clicks.json"),
-                this.importPlugin("plugins/comments.json")
+                this.importPlugin("plugins/comments.json"),
+                this.importPlugin("plugins/epubjs.json")
         ).collectList().then();
 
     }
