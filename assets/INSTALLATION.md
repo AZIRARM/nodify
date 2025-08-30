@@ -1,3 +1,5 @@
+Voici ta documentation mise à jour pour inclure la configuration de `REDIS_URL` pour `nodify-api` :
+
 ````markdown
 # Installation Steps
 
@@ -23,20 +25,25 @@
    # Database
    MONGO_URL=mongodb://mongo:27017/nodify
 
+   # Redis (optional)
+   # If REDIS_URL is not provided, nodify-api will default to redis://redis:6379
+   REDIS_URL=redis://localhost:6379
+
    # Nodify Core
    ADMIN_PWD=Admin123              # Default admin password (change in production!)
-   API_URL=http://localhost:9080   # URL of the Nodify API
+   API_URL=http://localhost:1080   # URL of the Nodify API
    TZ=Europe/Paris                 # Timezone (configurable)
 
    # Nodify API
-   # (inherits MONGO_URL and TZ)
+   # (inherits MONGO_URL, TZ, and can use REDIS_URL)
 
    # Nodify UI
    CORE_URL=http://nodify-core:8080
-   API_URL=http://localhost:9080
+   API_URL=http://localhost:1080
    ```
 
    > ⚠️ Make sure to update sensitive values such as `ADMIN_PWD` for production environments.
+   > ⚠️ The `REDIS_URL` variable is optional; if not set, the application will use the default Redis service defined in `docker-compose.yml`.
 
 4. **Start the services**
 
@@ -47,5 +54,5 @@
 5. **Access the application**
 
    * **Nodify UI** → [http://localhost](http://localhost)
-   * **Nodify API** → [http://localhost:9080](http://localhost:9080)
+   * **Nodify API** → [http://localhost:1080](http://localhost:1080)
 
