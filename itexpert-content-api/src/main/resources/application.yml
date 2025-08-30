@@ -4,6 +4,8 @@ spring:
       uri: ${MONGO_URL}
       auto-index-creation:  true
       #database: itexpert-content-db
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}  # prendra la variable d'environnement REDIS_URL ou localhost par défaut
 
   application:
     name: nodify-headless-cms-api
