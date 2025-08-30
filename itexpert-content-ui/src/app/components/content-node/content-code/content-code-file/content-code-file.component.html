@@ -3,4 +3,7 @@
     [title]="'FILE'"></app-content-code-title>
   <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
   <input type="file" (change)="onFileChangeFactory($event)" accept="*/*">
+  @if(contentNode && contentNode.file){
+    <p>{{ contentNode.file.name }}</p>
+  }
 </div>
