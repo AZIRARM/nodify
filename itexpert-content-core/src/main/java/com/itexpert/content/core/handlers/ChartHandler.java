@@ -27,7 +27,7 @@ public class ChartHandler {
     private final ContentNodeHandler contentNodeHandler;
 
     public Mono<TreeNode> getContentStats(List<String> userProjects) {
-        return this.nodeHandler.findParentsNodesByStatus(StatusEnum.SNAPSHOT.name())
+        return this.nodeHandler.findParentsNodesByStatus(StatusEnum.PUBLISHED.name())
                 .filter(children -> userProjects.isEmpty() || userProjects.contains(children.getCode()) || userProjects.contains(children.getParentCode()) || userProjects.contains(children.getParentCodeOrigin()))
                 .flatMap(this::buildTreeFromNode)
                 .collectList()
@@ -64,8 +64,8 @@ public class ChartHandler {
         }
 
 
-        return this.nodeHandler.findAllByParentCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
-                .flatMap(parent -> setContentsNodeWithStatus(parent, StatusEnum.SNAPSHOT.name()))
+        return this.nodeHandler.findAllByParentCodeAndStatus(node.getCode(), StatusEnum.PUBLISHED.name())
+                .flatMap(parent -> setContentsNodeWithStatus(parent, StatusEnum.PUBLISHED.name()))
                 .flatMap(this::buildTreeFromNode)
                 .collectList()
                 .map(subTrees -> {
