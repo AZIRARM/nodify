@@ -4,6 +4,10 @@ services:
     volumes:
       - mongo:/data/db
       - mongo-conf:/data/configdb
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
 
   nodify-core:
     build:
@@ -26,6 +30,7 @@ services:
     environment:
       MONGO_URL: "${MONGO_URL:-mongodb://mongo:27017/nodify}"
       TZ: "${TZ:-Europe/Paris}"
+      REDIS_URL: "${REDIS_URL:-redis://redis:6379}"
     expose:
       - "9080"
     ports:
