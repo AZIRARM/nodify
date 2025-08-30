@@ -7,6 +7,7 @@ import com.itexpert.content.core.models.ContentNodePayload;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.RulesUtils;
+import com.itexpert.content.core.utils.SnapshotUtils;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
@@ -125,6 +126,11 @@ public class ContentNodeHandler {
                                                 snapshotNode.setModificationDate(Instant.now().toEpochMilli());
                                                 snapshotNode.setPublicationDate(snapshotNode.getModificationDate());
 
+                                                String content = snapshotNode.getContent();
+                                                String snapshotContent = content != null ? new String(content) : "";
+
+                                                snapshotNode.setContent(SnapshotUtils.clearSnapshotIfCode(snapshotNode.getContent()));
+
                                                 return this.contentNodeRepository.save(snapshotNode)
                                                         .flatMap(publishedContent -> {
                                                             try {
@@ -137,10 +143,11 @@ public class ContentNodeHandler {
                                                                 newSnapshot.setModifiedBy(modifiedBy);
                                                                 newSnapshot.setId(UUID.randomUUID());
                                                                 newSnapshot.setVersion(Long.toString(version));
-                                                                this.contentNodeRepository.save(newSnapshot).subscribe();
+                                                                newSnapshot.setContent(snapshotContent);
 
-                                                                // Retourne le PUBLISHED final
-                                                                return Mono.just(publishedContent);
+                                                                return this.contentNodeRepository.save(newSnapshot)
+                                                                        .then(Mono.just(publishedContent));
+
                                                             } catch (CloneNotSupportedException e) {
                                                                 return Mono.error(e);
                                                             }
@@ -152,7 +159,6 @@ public class ContentNodeHandler {
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
     }
-
 
     private Mono<com.itexpert.content.lib.entities.ContentNode> createFirstPublication(UUID contentNodeUuid, Boolean publish) {
         if (publish) {
