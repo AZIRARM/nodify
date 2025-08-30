@@ -1,6 +1,7 @@
 package com.itexpert.content.api.endpoints;
 
 import com.itexpert.content.api.handlers.ContentNodeHandler;
+import com.itexpert.content.api.handlers.RedisHandler;
 import com.itexpert.content.api.utils.ContentNodeView;
 import com.itexpert.content.lib.enums.StatusEnum;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
 
 @Slf4j
@@ -29,6 +31,7 @@ import java.util.Base64;
 public class ContentNodeEndPoint {
 
     private final ContentNodeHandler contentNodeHandler;
+    private final RedisHandler redisHandler;
 
     @Operation(summary = "Retrieve all content nodes by node code")
     @GetMapping(value = "/node/code/{code}")
@@ -89,30 +92,45 @@ public class ContentNodeEndPoint {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @Operation(summary = "Retrieve content node file data as a downloadable file")
     @GetMapping(value = "/code/{code}/file")
     public Mono<ResponseEntity<byte[]>> getContentAsFileDataFromCode(
             @PathVariable String code,
             @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status
     ) {
-        return contentNodeHandler.findResourceByCode(code, status).map(contentFile -> {
+        String cacheKey = "file:" + code + ":" + status;
 
-            byte[] bytes = null;
-            String partSeparator = ",";
-            if (contentFile.getData().contains(partSeparator)) {
-                String encodedImg = contentFile.getData().split(partSeparator)[1];
-                bytes = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
-            } else {
-                bytes = Base64.getDecoder().decode(contentFile.getData());
-            }
+        return redisHandler.get(cacheKey)
+                .flatMap(cachedBytes -> {
+                    // Si trouvé dans Redis, on renvoie directement
+                    return Mono.just(ResponseEntity.ok()
+                            .contentLength(cachedBytes.length)
+                            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                            .header("Content-Disposition", "attachment; filename=\"" + code + "\"")
+                            .body(cachedBytes));
+                })
+                .switchIfEmpty(
+                        contentNodeHandler.findResourceByCode(code, status)
+                                .flatMap(contentFile -> {
+                                    byte[] bytes;
+                                    String partSeparator = ",";
+                                    if (contentFile.getData().contains(partSeparator)) {
+                                        String encodedImg = contentFile.getData().split(partSeparator)[1];
+                                        bytes = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
+                                    } else {
+                                        bytes = Base64.getDecoder().decode(contentFile.getData());
+                                    }
 
-            return ResponseEntity.ok()
-                    .contentLength(contentFile.getSize())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + contentFile.getName() + "\"")
-                    .body(bytes);
-        });
+                                    // On met en cache dans Redis pour 5 minutes
+                                    return redisHandler.set(cacheKey, bytes, Duration.ofMinutes(5))
+                                            .thenReturn(ResponseEntity.ok()
+                                                    .contentLength(contentFile.getSize())
+                                                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                                                    .header("Content-Disposition", "attachment; filename=\"" + contentFile.getName() + "\"")
+                                                    .body(bytes));
+                                })
+                );
     }
+
 
     @Operation(summary = "Retrieve content node file data as a downloadable file")
     @GetMapping(value = "/{slug}/file")
