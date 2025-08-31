@@ -39,7 +39,8 @@ public class DevTemplatesInitializer {
                                                         "templates/Nodify-News.json",
                                                         "templates/Nodify-EMarket.json",
                                                         "templates/Nodify-Ebooks.json",
-                                                        "templates/Nodify-Gallery.json"
+                                                        "templates/Nodify-Gallery.json",
+                                                        "templates/Nodify-Music.json"
                                                 ))
                                                 .concatMap(template -> importTemplateChildrenOnly(devEnv, template))
                                                 .collectList() // collecte tous les résultats des imports
@@ -68,7 +69,7 @@ public class DevTemplatesInitializer {
                         nodeHandler.findChildrenByCodeAndStatus(parent.getCode(), StatusEnum.SNAPSHOT.name())
                                 .collectList()
                                 .flatMapMany(existingNodes -> {
-                                    if (existingNodes.size() <= 5 && parent.getVersion().equals("0")) {
+                                    if (existingNodes.size() <= 6 && parent.getVersion().equals("0")) {
                                         log.info("Importing template nodes from {}", templatePath);
                                         return nodeHandler.importNodes(nodes, parent.getCode(), true);
                                     } else {
