@@ -50,5 +50,5 @@ server:
   port : 8080
 logging:
   level:
-    root: ERROR
-    com.itexpert.content: DEBUG
+    root: INFO
+    com.itexpert.content: INFO

@@ -168,6 +168,12 @@ public class ContentNodeHandler {
                         contentNode.setModificationDate(Instant.now().toEpochMilli());
                         contentNode.setPublicationDate(contentNode.getModificationDate());
 
+                        String content = contentNode.getContent();
+                        String snapshotContent = content != null ? new String(content) : "";
+
+                        contentNode.setContent(SnapshotUtils.clearSnapshotIfCode(contentNode.getContent()));
+
+
                         return this.contentNodeRepository.save(contentNode)
                                 .flatMap(savedPublishedNode -> {
                                     // Crée le SNAPSHOT en flux réactif
@@ -179,6 +185,7 @@ public class ContentNodeHandler {
                                                         ? Long.parseLong(savedPublishedNode.getVersion()) + 1L
                                                         : 1L;
                                                 newSnapshot.setVersion(Long.toString(version));
+                                                newSnapshot.setContent(snapshotContent);
                                                 return newSnapshot;
                                             })
                                             .flatMap(newSnapshot -> this.contentNodeRepository.save(newSnapshot))
