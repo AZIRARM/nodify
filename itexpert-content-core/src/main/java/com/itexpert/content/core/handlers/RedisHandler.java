@@ -4,6 +4,7 @@ import com.itexpert.content.core.models.LockInfo;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -18,16 +19,16 @@ public class RedisHandler {
     }
 
     // --- Acquérir un lock ---
-    public Mono<Boolean> acquireLock(String nodeId, String userId, Duration ttl) {
-        String key = "lock:node:" + nodeId;
+    public Mono<Boolean> acquireLock(String resourceCode, String userId, Duration ttl) {
+        String key = "lock:node:" + resourceCode;
         return redisTemplate.opsForValue()
                 .setIfAbsent(key, userId, ttl)
                 .defaultIfEmpty(false);
     }
 
     // --- Relâcher un lock ---
-    public Mono<Boolean> releaseLock(String nodeId, String userId) {
-        String key = "lock:node:" + nodeId;
+    public Mono<Boolean> releaseLock(String resourceCode, String userId) {
+        String key = "lock:node:" + resourceCode;
         return redisTemplate.opsForValue().get(key)
                 .flatMap(value -> {
                     if (value.equals(userId)) {
@@ -39,8 +40,8 @@ public class RedisHandler {
     }
 
     // --- Rafraîchir le TTL d’un lock ---
-    public Mono<Boolean> refreshLock(String nodeId, String userId, Duration ttl) {
-        String key = "lock:node:" + nodeId;
+    public Mono<Boolean> refreshLock(String resourceCode, String userId, Duration ttl) {
+        String key = "lock:node:" + resourceCode;
         return redisTemplate.opsForValue().get(key)
                 .flatMap(value -> {
                     if (value.equals(userId)) {
@@ -52,24 +53,34 @@ public class RedisHandler {
     }
 
     // --- Récupérer le lock sous forme de DTO LockInfo ---
-    public Mono<LockInfo> getLockInfo(String nodeId, Authentication authentication) {
+    public Mono<LockInfo> getLockInfo(String resourceCode, Authentication authentication) {
         String currentUser = authentication.getPrincipal().toString();
-        String key = "lock:node:" + nodeId;
+        String key = "lock:node:" + resourceCode;
 
         return redisTemplate.opsForValue().get(key)
                 .map(owner -> {
                     boolean isOwner = owner.equals(currentUser);
                     boolean locked = !isOwner; // verrouillé seulement si ce n’est pas lui
-                    return new LockInfo(owner, isOwner, locked);
+                    return new LockInfo(owner, isOwner, locked, resourceCode);
                 })
-                .defaultIfEmpty(new LockInfo(null, false, false)); // pas de lock
+                .defaultIfEmpty(new LockInfo(null, false, false, resourceCode)); // pas de lock
     }
 
-    public Mono<Boolean> forceReleaseLock(String nodeId) {
-        String key = "lock:node:" + nodeId;
+    public Mono<Boolean> forceReleaseLock(String resourceCode) {
+        String key = "lock:node:" + resourceCode;
         return redisTemplate.delete(key)
                 .map(deleted -> deleted > 0)
                 .defaultIfEmpty(false);
+    }
+
+    public Flux<LockInfo> getAllLocks() {
+        return redisTemplate.keys("lock:node:*")
+                .flatMap(key -> redisTemplate.opsForValue().get(key)
+                        .map(owner -> {
+                            String resourceCode = key.replace("lock:node:", "");
+                            return new LockInfo(owner, false, true, resourceCode);
+                        })
+                );
     }
 
 }

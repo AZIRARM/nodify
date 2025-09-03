@@ -22,6 +22,10 @@ export class LockService extends Service {
     return super.get(`owner/${code}`);
   }
 
+getAll(): Observable<any[]>{
+  return super.get("all");
+}
+
   // --- Récupère les locks de plusieurs nodes ---
   getLockInfos(codes: string[]){
     if (!codes?.length) return of({});
@@ -64,9 +68,10 @@ export class LockService extends Service {
     });
   }
 
-    adminRelease(code: string) {
-      return super.post(`admin/release/${code}`, {});
-    }
+  adminRelease(code: string): Observable<any> {
+    return super.post(`admin/release/${code}`, {});
+  }
+  
 
   private stopHeartbeat(): void {
     if (this.heartbeatSub) {
