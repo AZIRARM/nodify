@@ -16,20 +16,14 @@
       <!-- Code -->
       <ng-container matColumnDef="Code">
         <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate }}</th>
-        <td mat-cell *matCellDef="let element">{{ element.code }}</td>
-      </ng-container>
-
-      <!-- Name -->
-      <ng-container matColumnDef="Name">
-        <th mat-header-cell *matHeaderCellDef> {{ "NAME" | translate }}</th>
-        <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+        <td mat-cell *matCellDef="let element">{{ element.resourceCode }}</td>
       </ng-container>
 
       <!-- Owner -->
       <ng-container matColumnDef="Owner">
         <th mat-header-cell *matHeaderCellDef> {{ "LOCK_OWNER" | translate }}</th>
         <td mat-cell *matCellDef="let element">
-          {{ element.lockInfo?.owner || ("NONE" | translate) }}
+          {{ element.owner || ("NONE" | translate) }}
         </td>
       </ng-container>
 
@@ -37,8 +31,8 @@
       <ng-container matColumnDef="Locked">
         <th mat-header-cell *matHeaderCellDef> {{ "LOCKED" | translate }}</th>
         <td mat-cell *matCellDef="let element">
-          <mat-icon *ngIf="element.lockInfo?.locked" class="danger">lock</mat-icon>
-          <mat-icon *ngIf="!element.lockInfo?.locked" class="primary">lock_open</mat-icon>
+          <mat-icon *ngIf="element.locked" class="danger">lock</mat-icon>
+          <mat-icon *ngIf="!element.locked" class="primary">lock_open</mat-icon>
         </td>
       </ng-container>
 
@@ -46,7 +40,7 @@
       <ng-container matColumnDef="Actions">
         <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
         <td mat-cell *matCellDef="let element">
-          @if(userAccessService.isAdmin() && element.lockInfo?.locked){
+          @if(userAccessService.isAdmin() && element.locked){
             <mat-icon class="icon-display warn" (click)="unlock(element)" inline
                       matTooltip="{{ 'UNLOCK' | translate }}">lock_open
             </mat-icon>

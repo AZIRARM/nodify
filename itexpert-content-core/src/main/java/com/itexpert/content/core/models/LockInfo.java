@@ -9,5 +9,6 @@ public class LockInfo {
     private String owner;
     private Boolean mine;
     private Boolean locked;
+    private String resourceCode;
 }
 

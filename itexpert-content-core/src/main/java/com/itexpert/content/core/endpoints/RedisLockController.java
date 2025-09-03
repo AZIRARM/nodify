@@ -5,6 +5,7 @@ import com.itexpert.content.core.models.LockInfo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -40,8 +41,20 @@ public class RedisLockController {
     }
 
     @PostMapping("/admin/release/{code}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Mono<Boolean> adminRelease(@PathVariable String code) {
-        return redisHandler.forceReleaseLock(code);
+    public Mono<Boolean> adminRelease(@PathVariable String code, Authentication authentication) {
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
+            return redisHandler.forceReleaseLock(code);
+        } else {
+            return Mono.error(new RuntimeException("Access denied"));
+        }
+    }
+
+    @GetMapping("/all")
+    public Flux<LockInfo> getAllLocks(Authentication authentication) {
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
+            return redisHandler.getAllLocks();
+        } else {
+            return Flux.error(new RuntimeException("Access denied"));
+        }
     }
 }
