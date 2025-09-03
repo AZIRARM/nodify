@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Node} from "../../../modeles/Node";
 import {Language} from "../../../modeles/Language";
@@ -9,13 +9,14 @@ import {TranslateService} from "@ngx-translate/core";
 import { SlugService } from 'src/app/services/SlugService';
 import { toArray, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { LockService } from 'src/app/services/LockService';
 
 @Component({
   selector: 'app-node-dialog',
   templateUrl: './node-dialog.component.html',
   styleUrls: ['./node-dialog.component.css']
 })
-export class NodeDialogComponent implements OnInit {
+export class NodeDialogComponent implements OnInit, OnDestroy  {
 
   node: Node;
   isProject: boolean;
@@ -35,7 +36,8 @@ export class NodeDialogComponent implements OnInit {
     private languageService: LanguageService,
     private translateService: TranslateService,
     private loggerService: LoggerService,
-    private slugService: SlugService
+    private slugService: SlugService,
+    private lockService: LockService
   ) {
     if (content) {
       this.node = content;
@@ -46,9 +48,27 @@ export class NodeDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.init();
-  }
+      this.init();
 
+      // 🔒 Tente d’acquérir le lock en entrant dans l’édition
+      this.lockService.acquire(this.node.code).subscribe(acquired => {
+        if (!acquired) {
+          this.loggerService.error("Ce nœud est déjà en cours d'édition.");
+          this.dialogRef.close();
+        } else {
+          // Si acquis → démarre la surveillance d’inactivité à 30 min
+          this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
+            this.loggerService.warn("Fermeture automatique après 30 min d'inactivité.");
+            this.dialogRef.close();
+          });
+        }
+      });
+    }
+
+   ngOnDestroy(): void {
+      // Libère le lock proprement
+      this.lockService.release();
+   }
 
   cancel() {
     this.dialogRef.close();
@@ -114,7 +134,7 @@ export class NodeDialogComponent implements OnInit {
       this.slugAvailable = null;
       return;
     }
-  
+
     (this.slugService.exists(slug) as Observable<string[]>)
       .pipe(
         map((codes: (string | null)[]) => {

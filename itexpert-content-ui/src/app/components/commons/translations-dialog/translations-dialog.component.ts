@@ -1,17 +1,19 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {LanguageService} from "../../../services/LanguageService";
 import {Language} from "../../../modeles/Language";
 import {Translation} from "../../../modeles/Translation";
 import {UserAccessService} from "../../../services/UserAccessService";
+import { LockService } from 'src/app/services/LockService';
+import { LoggerService } from 'src/app/services/LoggerService';
 
 @Component({
   selector: 'app-translations-dialog',
   templateUrl: './translations-dialog.component.html',
   styleUrls: ['./translations-dialog.component.css']
 })
-export class TranslationsDialogComponent implements  OnInit{
+export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   data: any;
 
   current: any;
@@ -26,7 +28,9 @@ export class TranslationsDialogComponent implements  OnInit{
     public dialogRef: MatDialogRef<TranslationsDialogComponent>,
     public userAccessService: UserAccessService,
     @Inject(MAT_DIALOG_DATA) public content: any,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private loggerService: LoggerService,
+    private lockService: LockService
   ) {
     if (content) {
       this.data = content;
@@ -36,10 +40,30 @@ export class TranslationsDialogComponent implements  OnInit{
     }
   }
 
-  ngOnInit(): void {
+
+  ngOnInit() {
     this.init();
+    
+    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
+    this.lockService.acquire(this.data.code).subscribe(acquired => {
+      if (!acquired) {
+        this.loggerService.warn("Ce nœud est déjà en cours d'édition.");
+        this.dialogRef.close();
+      } else {
+        // Si acquis → démarre la surveillance d’inactivité à 30 min
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
+          this.loggerService.warn("Fermeture automatique après 30 min d'inactivité.");
+          this.dialogRef.close();
+        });
+      }
+    });
+    
   }
 
+  ngOnDestroy(): void {
+    // Libère le lock proprement
+    this.lockService.release();
+  }
 
   cancel() {
     this.dialogRef.close();

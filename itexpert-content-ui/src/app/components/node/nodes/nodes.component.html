@@ -67,7 +67,8 @@
   <ng-container matColumnDef="Name">
     <th mat-header-cell *matHeaderCellDef> {{ "NAME" | translate }}</th>
     <td mat-cell *matCellDef="let element">
-      <div class="description"><i>{{ element.description }}</i></div>
+      <div class="description" *ngIf="!element.lockInfo.locked"><i>{{ element.description }}</i></div>
+      <div class="danger" *ngIf="element.lockInfo.locked"><i>{{"LOCKED_BY"}}:{{ element.lockInfo.owner }}</i></div>
       <span title="{{element.name | translate}}, {{'CODE'| translate}}: {{ element.code }}">{{ element.name }} </span>
     </td>
   </ng-container>
@@ -87,10 +88,10 @@
   <ng-container matColumnDef="Translations">
     <th mat-header-cell *matHeaderCellDef> {{ "TRANSLATIONS" | translate }}</th>
     <td mat-cell *matCellDef="let element">
-      <mat-icon *ngIf="!element.translations || element.translations.length <= 0" class="icon-display"
+      <mat-icon *ngIf="(!element.translations || element.translations.length <= 0) && !element.lockInfo.locked" class="icon-display"
                 (click)="translations(element)" inline>flag
       </mat-icon>
-      <mat-icon *ngIf="element.translations && element.translations.length > 0" class="icon-display danger"
+      <mat-icon *ngIf="element.translations && element.translations.length > 0 && !element.lockInfo.locked" class="icon-display danger"
                 (click)="translations(element)" inline>flag
       </mat-icon>
     </td>
@@ -99,22 +100,26 @@
   <ng-container matColumnDef="Rules">
     <th mat-header-cell *matHeaderCellDef> {{ "RULES" | translate }}</th>
     <td mat-cell *matCellDef="let element">
-      <mat-icon *ngIf="!element.rules || element.rules.length <= 0" class="icon-display" (click)="rules(element)" inline
-                matTooltip="{{'RULES'|translate}}">list
+      <mat-icon *ngIf="(!element.rules || element.rules.length <= 0) && !element.lockInfo.locked" class="icon-display" 
+                (click)="rules(element)" 
+                inline matTooltip="{{'RULES'|translate}}">list
       </mat-icon>
-      <mat-icon *ngIf="element.rules && element.rules.length > 0" class="icon-display danger"
-                (click)="rules(element)" inline matTooltip="{{'RULES'|translate}}">list
+      <mat-icon *ngIf="element.rules && element.rules.length > 0 && !element.lockInfo.locked" class="icon-display danger"
+                (click)="rules(element)" 
+                inline matTooltip="{{'RULES'|translate}}">list
       </mat-icon>
     </td>
   </ng-container>
   <ng-container matColumnDef="Values">
     <th mat-header-cell *matHeaderCellDef> {{ "VALUES" | translate }}</th>
     <td mat-cell *matCellDef="let element">
-      <mat-icon *ngIf="!element.values || element.values.length <= 0" class="icon-display" (click)="values(element)"
+      <mat-icon *ngIf="(!element.values || element.values.length <= 0) && !element.lockInfo.locked" class="icon-display" 
+                (click)="values(element)"
                 inline matTooltip="{{ 'VALUES' | translate}}">money
       </mat-icon>
-      <mat-icon *ngIf="element.values && element.values.length > 0" class="icon-display danger"
-                (click)="values(element)" inline matTooltip="{{ 'VALUES' | translate}}">money
+      <mat-icon *ngIf="element.values && element.values.length > 0 && !element.lockInfo.locked" class="icon-display danger"
+                (click)="values(element)" 
+                inline matTooltip="{{ 'VALUES' | translate}}">money
       </mat-icon>
     </td>
   </ng-container>
@@ -146,11 +151,9 @@
   <ng-container matColumnDef="Publication">
     <th mat-header-cell *matHeaderCellDef> {{ "PUBLICATION" | translate }}</th>
     <td mat-cell *matCellDef="let element">
-      <button mat-icon-button [disabled]="!userAccessService.canEdit()"
-              matTooltip="{{'DEPLOY_VERSION'| translate}}"
-              (click)="publish(element)">
-        <mat-icon>play_arrow</mat-icon>
-      </button>
+      <mat-icon class="icon-display secondary" *ngIf="userAccessService.canEdit() && !element.lockInfo.locked"
+                (click)="publish(element)" inline matTooltip="{{'DEPLOY_VERSION'| translate}}">play_arrow
+      </mat-icon>
     </td>
   </ng-container>
 
@@ -168,7 +171,7 @@
       </mat-icon>
 
       <mat-icon class="icon-display"
-                *ngIf="(parentNode && userAccessService.canEdit()) || (userAccessService.isAdmin())"
+                *ngIf="( (parentNode && userAccessService.canEdit()) || (userAccessService.isAdmin()) ) && !element.lockInfo.locked"
                 (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit
       </mat-icon>
 
@@ -180,7 +183,7 @@
       </button>
 
       <button
-        *ngIf="userAccessService.canEdit() && parentNode"
+        *ngIf="userAccessService.canEdit() && parentNode && !element.lockInfo.locked"
         mat-icon-button matTooltip="{{'DEPLOY_ENVIRONMENT'| translate}}"
         [matMenuTriggerFor]="deployNodeMenu">
         <mat-icon>share</mat-icon>
@@ -192,17 +195,17 @@
       </mat-menu>
 
       <mat-icon class="icon-display danger"
-                *ngIf="(parentNode && userAccessService.canEdit()) || (userAccessService.isAdmin())"
+                *ngIf="( (parentNode && userAccessService.canEdit()) || (userAccessService.isAdmin()) ) &&  !element.lockInfo.locked"
                 (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete
       </mat-icon>
 
 
       <mat-icon class="icon-display primary"
-                *ngIf="element.favorite && ((userAccessService.canEdit() && parentNode) || (userAccessService.isAdmin()))"
+                *ngIf="element.favorite && ((userAccessService.canEdit() && parentNode) || (userAccessService.isAdmin())) && !element.lockInfo.locked"
                 (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
       </mat-icon>
       <mat-icon class="icon-display disabled"
-                *ngIf="!element.favorite && ((userAccessService.canEdit() && parentNode) || (userAccessService.isAdmin()))"
+                *ngIf="!element.favorite && ((userAccessService.canEdit() && parentNode) || (userAccessService.isAdmin())) && !element.lockInfo.locked"
                 (click)="favorite(element)" inline matTooltip="{{ 'FAVORITE' | translate}}">favorite
       </mat-icon>
     </td>
@@ -213,4 +216,3 @@
   <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"
       class="mat-row"></tr>
 </table>
-        

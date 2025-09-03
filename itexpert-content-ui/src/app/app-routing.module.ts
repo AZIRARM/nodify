@@ -16,6 +16,7 @@ import {NotificationsComponent} from "./components/notification/notifications/no
 import {ContentChartsComponent} from "./components/analytics/content-charts/content-charts.component";
 import {AuthGuard} from "./services/AuthGuard";
 import {PluginComponent} from "./components/plugins/plugin/plugin.component";
+import { ReleaseLocksComponent } from './admin/release-locks/release-locks.component';
 
 const routes: Routes =
   [
@@ -82,6 +83,12 @@ const routes: Routes =
     {
       path: 'plugins',
       component: PluginComponent,
+      canActivate: [AuthGuard]
+    },
+
+    {
+      path: 'release-locks',
+      component: ReleaseLocksComponent,
       canActivate: [AuthGuard]
     },
 

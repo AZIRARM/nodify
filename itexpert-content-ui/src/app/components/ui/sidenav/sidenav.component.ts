@@ -14,7 +14,7 @@ export class SidenavComponent implements OnInit {
   @ViewChild('sideNav', {static: true}) sideNav: any;
 
   constructor(private sidenavService: SidenavService,
-              private userAccessService: UserAccessService) {
+              public userAccessService: UserAccessService) {
   }
 
   ngOnInit() {
