@@ -1,16 +1,18 @@
-import {Component, Inject} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {Node} from "../../../modeles/Node";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Value} from "../../../modeles/Value";
 import {MatTableDataSource} from "@angular/material/table";
 import {UserAccessService} from "../../../services/UserAccessService";
+import { LoggerService } from 'src/app/services/LoggerService';
+import { LockService } from 'src/app/services/LockService';
 
 @Component({
   selector: 'app-values-dialog',
   templateUrl: './values-dialog.component.html',
   styleUrls: ['./values-dialog.component.css']
 })
-export class ValuesDialogComponent {
+export class ValuesDialogComponent implements OnInit, OnDestroy {
 
   node: Node;
   key: string;
@@ -22,6 +24,8 @@ export class ValuesDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<ValuesDialogComponent>,
     public userAccessService: UserAccessService,
+    private loggerService: LoggerService,
+    private lockService: LockService,
     @Inject(MAT_DIALOG_DATA) public content: any
   ) {
     if (content) {
@@ -29,8 +33,32 @@ export class ValuesDialogComponent {
       if (!this.node.values) {
         this.node.values = [];
       }
-      this.init();
     }
+  }
+
+  
+  ngOnInit() {
+    this.init();
+    
+    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
+    this.lockService.acquire(this.node.code).subscribe(acquired => {
+      if (!acquired) {
+        this.loggerService.warn("Ce nœud est déjà en cours d'édition.");
+        this.dialogRef.close();
+      } else {
+        // Si acquis → démarre la surveillance d’inactivité à 30 min
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
+          this.loggerService.warn("Fermeture automatique après 30 min d'inactivité.");
+          this.dialogRef.close();
+        });
+      }
+    });
+  }
+  
+
+  ngOnDestroy(): void {
+    // Libère le lock proprement
+    this.lockService.release();
   }
 
   cancel() {
