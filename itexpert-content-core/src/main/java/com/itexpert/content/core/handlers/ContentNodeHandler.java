@@ -109,10 +109,8 @@ public class ContentNodeHandler {
                 .map(contentNodeMapper::fromEntity);
     }
 
-    public Mono<ContentNode> publish(UUID contentNodeUuid, Boolean publish, String modifiedBy) {
-        return this.contentNodeRepository.findById(contentNodeUuid)
-                .flatMap(contentNode ->
-                        this.contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.PUBLISHED.name())
+    public Mono<ContentNode> publish(String code, Boolean publish, String modifiedBy) {
+        return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
                                 .flatMap(alreadyPublished -> {
                                     // Cas où un PUBLISHED existe
                                     alreadyPublished.setStatus(StatusEnum.ARCHIVE);
@@ -154,15 +152,15 @@ public class ContentNodeHandler {
                                                         });
                                             });
                                 })
-                                .switchIfEmpty(Mono.defer(() -> createFirstPublication(contentNodeUuid, publish)))
-                )
+                                .switchIfEmpty(Mono.defer(() -> createFirstPublication(code, publish)))
+
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
     }
 
-    private Mono<com.itexpert.content.lib.entities.ContentNode> createFirstPublication(UUID contentNodeUuid, Boolean publish) {
+    private Mono<com.itexpert.content.lib.entities.ContentNode> createFirstPublication(String code, Boolean publish) {
         if (publish) {
-            return this.contentNodeRepository.findByIdAndStatus(contentNodeUuid, StatusEnum.SNAPSHOT)
+            return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                     .flatMap(contentNode -> {
                         contentNode.setStatus(StatusEnum.PUBLISHED);
                         contentNode.setModificationDate(Instant.now().toEpochMilli());

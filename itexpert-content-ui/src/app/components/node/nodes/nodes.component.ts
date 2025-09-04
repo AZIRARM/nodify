@@ -215,7 +215,7 @@ init() {
         if (result && result.data !== 'canceled') {
           let isSnapshot: boolean = true;
 
-          this.nodeService.publish(node.id).subscribe(
+          this.nodeService.publish(node.code).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);

@@ -38,10 +38,6 @@ export class NodeService extends Service {
     return super.remove("code/" + code );
   }
 
-  deleteById(id: String) {
-    return super.remove("" + id);
-  }
-
   deleteDefinitively(code: String) {
     return super.remove("code/" + code + "/deleteDefinitively");
   }
@@ -50,8 +46,8 @@ export class NodeService extends Service {
     return super.post("code/" + code + "/activate", null);
   }
 
-  publish(nodeId: string) {
-    return super.post("id/" + nodeId + "/publish", null);
+  publish(code: string) {
+    return super.post("code/" + code + "/publish", null);
   }
 
   getNodeByCodeAndStatus(code: string, status: string) {

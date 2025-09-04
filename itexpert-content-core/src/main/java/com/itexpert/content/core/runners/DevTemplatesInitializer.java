@@ -47,7 +47,7 @@ public class DevTemplatesInitializer {
                                                 .flatMap(importedNodes -> {
                                                     if (!importedNodes.isEmpty()) {
                                                         log.info("Publishing DEV-01 after importing templates...");
-                                                        return nodeHandler.publish(devEnv.getId(), "Nodify").then();
+                                                        return nodeHandler.publish(devEnv.getCode(), "Nodify").then();
                                                     } else {
                                                         log.info("No templates were imported, skipping publish.");
                                                         return Mono.empty();
