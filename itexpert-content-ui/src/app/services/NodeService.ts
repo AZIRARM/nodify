@@ -42,6 +42,10 @@ export class NodeService extends Service {
     return super.remove("code/" + code + "/deleteDefinitively");
   }
 
+  deleteVersionDefinitively(code: String, version: string) {
+    return super.remove("code/" + code+"/version/" + version + "/deleteDefinitively");
+  }
+
   activate(code: String) {
     return super.post("code/" + code + "/activate", null);
   }

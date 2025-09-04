@@ -138,7 +138,7 @@ export class PublishedContentsNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.contentNodeService.delete(element.code).subscribe(() => {
+          this.contentNodeService.deleteVersionDefinitively(element.code, element.version).subscribe(() => {
             this.translate.get("DELETE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();

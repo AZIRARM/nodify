@@ -191,7 +191,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       .subscribe(result => {
 
         if (result && result.data !== 'canceled') {
-          this.contentNodeService.publish(content.id, true).subscribe(
+          this.contentNodeService.publish(content.code, true).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);

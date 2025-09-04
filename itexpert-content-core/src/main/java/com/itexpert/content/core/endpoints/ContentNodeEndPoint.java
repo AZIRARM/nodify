@@ -92,7 +92,6 @@ public class ContentNodeEndPoint {
                 });
     }
 
-
     @DeleteMapping(value = "/code/{code}/deleteDefinitively")
     public Mono<ResponseEntity<Boolean>> deleteDefinitively(@PathVariable String code, Authentication authentication) {
         String user = authentication.getPrincipal().toString();
@@ -105,6 +104,24 @@ public class ContentNodeEndPoint {
                     }
 
                     return contentNodeHandler.deleteDefinitively(code)
+                            .flatMap(result -> redisHandler.releaseLock(code, user).thenReturn(result))
+                            .onErrorResume(ex -> redisHandler.releaseLock(code, user).then(Mono.error(ex)))
+                            .map(ResponseEntity::ok);
+                });
+    }
+
+    @DeleteMapping(value = "/code/{code}/version/{version}/deleteDefinitively")
+    public Mono<ResponseEntity<Boolean>> deleteDefinitivelyVersion(@PathVariable String code, @PathVariable String version, Authentication authentication) {
+        String user = authentication.getPrincipal().toString();
+        Duration ttl = Duration.ofMinutes(30);
+
+        return redisHandler.canModify(code, user, ttl)
+                .flatMap(canModify -> {
+                    if (!canModify) {
+                        return Mono.error(new IllegalStateException("ContentNode locked by another user"));
+                    }
+
+                    return contentNodeHandler.deleteDefinitivelyVersion(code, version)
                             .flatMap(result -> redisHandler.releaseLock(code, user).thenReturn(result))
                             .onErrorResume(ex -> redisHandler.releaseLock(code, user).then(Mono.error(ex)))
                             .map(ResponseEntity::ok);
