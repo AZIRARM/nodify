@@ -21,7 +21,7 @@ export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
 
   ruleType: string = "BOOL";
 
-  constructor(private translate: TranslateService,
+  constructor(private translateService: TranslateService,
               private loggerService: LoggerService,
               public userAccessService: UserAccessService,
               public dialogRef: MatDialogRef<NodeRulesConditionsDialogComponent>,
@@ -38,13 +38,19 @@ export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
     
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.node.code).subscribe(acquired => {
-      if (!acquired) {
-        this.loggerService.warn("Ce nœud est déjà en cours d'édition.");
+      if (!acquired) {       
+         this.translateService.get("RESOURCE_LOCKED")
+            .subscribe(translation => {
+              this.loggerService.error(translation);
+            });
         this.dialogRef.close();
       } else {
         // Si acquis → démarre la surveillance d’inactivité à 30 min
-        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-          this.loggerService.warn("Fermeture automatique après 30 min d'inactivité.");
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {         
+         this.translateService.get("RESOURCE_RELEASED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
           this.dialogRef.close();
         });
       }
@@ -137,7 +143,7 @@ export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
 
   private checkCommonsFields(rule: Rule) {
     if (!rule.name) {
-      this.translate.get("NEED_RULE_NAME").subscribe((message:string)=>{
+      this.translateService.get("NEED_RULE_NAME").subscribe((message:string)=>{
         this.loggerService.warn(message);
       });
     }

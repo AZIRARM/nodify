@@ -6,6 +6,7 @@ import {MatTableDataSource} from "@angular/material/table";
 import {UserAccessService} from "../../../services/UserAccessService";
 import { LoggerService } from 'src/app/services/LoggerService';
 import { LockService } from 'src/app/services/LockService';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-values-dialog',
@@ -26,6 +27,7 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
     public userAccessService: UserAccessService,
     private loggerService: LoggerService,
     private lockService: LockService,
+    private translateService: TranslateService,
     @Inject(MAT_DIALOG_DATA) public content: any
   ) {
     if (content) {
@@ -43,12 +45,20 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.node.code).subscribe(acquired => {
       if (!acquired) {
-        this.loggerService.warn("Ce nœud est déjà en cours d'édition.");
+        
+         this.translateService.get("RESOURCE_LOCKED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
         this.dialogRef.close();
       } else {
         // Si acquis → démarre la surveillance d’inactivité à 30 min
         this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-          this.loggerService.warn("Fermeture automatique après 30 min d'inactivité.");
+
+         this.translateService.get("RESOURCE_RELEASED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
           this.dialogRef.close();
         });
       }

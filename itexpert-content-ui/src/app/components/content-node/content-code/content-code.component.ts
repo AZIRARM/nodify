@@ -1,4 +1,4 @@
-import {Component, Inject, Input, Output} from '@angular/core';
+import {Component, Inject, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {Node} from "../../../modeles/Node";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {User} from "../../../modeles/User";
@@ -7,13 +7,14 @@ import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {ContentFile} from "../../../modeles/ContentFile";
+import { LockService } from 'src/app/services/LockService';
 
 @Component({
   selector: 'app-code-dialog',
   templateUrl: './content-code.component.html',
   styleUrls: ['./content-code.component.css']
 })
-export class ContentCodeComponent {
+export class ContentCodeComponent implements OnInit, OnDestroy {
   @Input() @Output() node: Node;
   @Input() @Output() contentNode: ContentNode;
   @Input() @Output() type: string;
@@ -21,11 +22,12 @@ export class ContentCodeComponent {
   @Input() @Output() hasChanged: boolean = false;
 
   constructor(
-    private translate: TranslateService,
+    private translateService: TranslateService,
     private loggerService: LoggerService,
     private contentNodeService: ContentNodeService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<ContentCodeComponent>,
+    private lockService: LockService
   ) {
     if (data) {
       this.node = data.node;
@@ -34,6 +36,37 @@ export class ContentCodeComponent {
       this.user = data.user;
     }
   }
+
+  
+  ngOnInit(): void {
+
+    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
+    this.lockService.acquire(this.contentNode.code).subscribe(acquired => {
+      if (!acquired) {
+        this.loggerService.error("Ce nœud est déjà en cours d'édition.");
+         this.translateService.get("RESOURCE_LOCKED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
+        this.dialogRef.close();
+      } else {
+        // Si acquis → démarre la surveillance d’inactivité à 30 min
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
+         this.translateService.get("RESOURCE_RELEASED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
+          this.dialogRef.close();
+        });
+      }
+    });
+  }
+
+
+   ngOnDestroy(): void {
+      // Libère le lock proprement
+      this.lockService.release();
+   }
 
   close(refesh: boolean): void {
     this.dialogRef.close({refresh: refesh});
@@ -44,19 +77,19 @@ export class ContentCodeComponent {
     this.contentNode.parentCode = this.node.code;
     this.contentNode.parentCodeOrigin = this.node.parentCodeOrigin;
 
-    this.contentNodeService.save(this.contentNode, this.user.id).subscribe(
+    this.contentNodeService.save(this.contentNode).subscribe(
       (response: any) => {
 
         this.contentNode = response;
-        this.translate.get("SAVE_SUCCESS").subscribe(trad => {
+        this.translateService.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
           this.close(true);
         })
 
       },
       error => {
-        this.translate.get("SAVE_ERROR").subscribe(trad1 => {
-          this.translate.get("CHANGE_PROJECT_CODE_MESSAGE").subscribe(trad2 => {
+        this.translateService.get("SAVE_ERROR").subscribe(trad1 => {
+          this.translateService.get("CHANGE_PROJECT_CODE_MESSAGE").subscribe(trad2 => {
             this.loggerService.error(trad1 + ",  " + trad2);
           })
         })
