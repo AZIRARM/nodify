@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 import { Router } from "@angular/router";
 import { tap, finalize } from 'rxjs/operators';
 import { AuthenticationService } from "../services/AuthenticationService";
-import {LoaderService} from "../services/Loader.service";
+import { LoaderService } from "../services/Loader.service";
 
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
@@ -27,8 +27,11 @@ export class TokenInterceptor implements HttpInterceptor {
 
     const modifiedReq = req.clone({ headers });
 
-    // Montre le loader
-    this.loaderService.show();
+    // Vérifie si on doit afficher le loader
+    const skipLoader = req.url.includes('locks/') || req.url.includes('notifications/');
+    if (!skipLoader) {
+      this.loaderService.show();
+    }
 
     return next.handle(modifiedReq).pipe(
       tap({
@@ -39,8 +42,9 @@ export class TokenInterceptor implements HttpInterceptor {
         }
       }),
       finalize(() => {
-        // Cache le loader après la requête (succès ou erreur)
-        this.loaderService.hide();
+        if (!skipLoader) {
+          this.loaderService.hide();
+        }
       })
     );
   }

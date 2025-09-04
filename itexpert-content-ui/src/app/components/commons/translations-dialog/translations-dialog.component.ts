@@ -7,6 +7,7 @@ import {Translation} from "../../../modeles/Translation";
 import {UserAccessService} from "../../../services/UserAccessService";
 import { LockService } from 'src/app/services/LockService';
 import { LoggerService } from 'src/app/services/LoggerService';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-translations-dialog',
@@ -30,7 +31,8 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public content: any,
     private languageService: LanguageService,
     private loggerService: LoggerService,
-    private lockService: LockService
+    private lockService: LockService,
+    private translateService: TranslateService,
   ) {
     if (content) {
       this.data = content;
@@ -46,13 +48,19 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
     
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.data.code).subscribe(acquired => {
-      if (!acquired) {
-        this.loggerService.warn("Ce nœud est déjà en cours d'édition.");
+      if (!acquired) {       
+         this.translateService.get("RESOURCE_LOCKED")
+            .subscribe(translation => {
+              this.loggerService.error(translation);
+            });
         this.dialogRef.close();
       } else {
         // Si acquis → démarre la surveillance d’inactivité à 30 min
-        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-          this.loggerService.warn("Fermeture automatique après 30 min d'inactivité.");
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {          
+         this.translateService.get("RESOURCE_RELEASED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
           this.dialogRef.close();
         });
       }

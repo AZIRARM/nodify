@@ -277,5 +277,8 @@
   "ADMIN_LOCK_MANAGEMENT": "Gestion des ressources Vérouillés(encours de modification)",
   "LOCK_OWNER": "Vérouillé par",
   "LOCKED": "Vérouillé",
-  "UNLOCK": "Dévéroullez"
+  "UNLOCK": "Dévéroullez",
+  "LOCKED_BY": "Encours de modification par",
+  "RESOURCE_LOCKED": "La resource est encours de modification",
+  "RESOURCE_RELEASED": "La resource a été relachée aprés inactivité"
 }

@@ -30,12 +30,12 @@ export class NodeService extends Service {
     return super.get("");
   }
 
-  save(node: Node, userId: string) {
-    return super.post("userId/" + userId, node);
+  save(node: Node) {
+    return super.post("", node);
   }
 
-  delete(code: String, userId: String) {
-    return super.remove("code/" + code + "/user/" + userId);
+  delete(code: String) {
+    return super.remove("code/" + code );
   }
 
   deleteById(id: String) {
@@ -46,12 +46,12 @@ export class NodeService extends Service {
     return super.remove("code/" + code + "/deleteDefinitively");
   }
 
-  activate(code: String, userId: string) {
-    return super.post("code/" + code + "/user/" + userId + "/activate", null);
+  activate(code: String) {
+    return super.post("code/" + code + "/activate", null);
   }
 
-  publish(nodeId: string, userId: string) {
-    return super.post("id/" + nodeId + "/user/" + userId + "/publish", null);
+  publish(nodeId: string) {
+    return super.post("id/" + nodeId + "/publish", null);
   }
 
   getNodeByCodeAndStatus(code: string, status: string) {
@@ -62,12 +62,12 @@ export class NodeService extends Service {
     return super.get("code/" + code);
   }
 
-  deployVersion(code: string, version: string, userId: string) {
-    return super.post("code/" + code + "/version/" + version + "/user/" + userId + "/deploy", null);
+  deployVersion(code: string, version: string) {
+    return super.post("code/" + code + "/version/" + version + "/deploy", null);
   }
 
-  revertToVersion(code: string, version: string, userId: string) {
-    return super.post("code/" + code + "/version/" + version + "/user/" + userId + "/revert", null);
+  revertToVersion(code: string, version: string) {
+    return super.post("code/" + code + "/version/" + version  + "/revert", null);
   }
 
   export(code: string, environmentCode: string) {

@@ -30,6 +30,8 @@ import {NodeService} from "../../../services/NodeService";
 import {ContentDatasComponent} from "../content-datas/content-datas.component";
 import {DataService} from "../../../services/DataService";
 import {ContentCodeComponent} from "../content-code/content-code.component";
+import { LockService } from 'src/app/services/LockService';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-node-content-dialog',
@@ -64,6 +66,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   dialogRefDatas: MatDialogRef<ContentDatasComponent>;
   dialogRefCode: MatDialogRef<ContentCodeComponent>;
 
+  private lockRefreshSub?: Subscription;
 
   constructor(private translate: TranslateService,
               private toast: ToastrService,
@@ -75,6 +78,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
               public dialogRef: MatDialogRef<ContentNodeDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public content: Node,
               private userService: UserService,
+              private lockService: LockService,
               private dialog: MatDialog
   ) {
     if (content) {
@@ -88,7 +92,27 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.lockRefreshSub) {
+      this.lockRefreshSub.unsubscribe();
+    }
   }
+
+  private initLocks(contents: ContentNode[]) {
+    this.fetchLocks(contents);
+
+    this.lockRefreshSub = interval(10000).subscribe(() => {
+      this.fetchLocks(contents);
+    });
+  }
+
+  private fetchLocks(contents: ContentNode[]) {
+    contents.forEach((content: ContentNode) => {
+      this.lockService.getLockInfo(content.code).subscribe((lockInfo: any) => {
+        content.lockInfo = lockInfo;
+      });
+    });
+  }
+  
 
   init() {
     this.currentContent = null as any;
@@ -97,6 +121,9 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.contentNodeService.getAllByParentCodeAndStatus(this.node.code, StatusEnum.SNAPSHOT).subscribe(
       (response: any) => {
         //next() callback
+        
+        this.initLocks(response);
+        
         response = response.sort((a: any, b: any) => {
           if (a.favorite && !b.favorite) return -1;
           if (!a.favorite && b.favorite) return 1;
@@ -164,7 +191,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       .subscribe(result => {
 
         if (result && result.data !== 'canceled') {
-          this.contentNodeService.publish(content.id, true, this.user!.id).subscribe(
+          this.contentNodeService.publish(content.id, true).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -196,7 +223,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.dialogRefDelete.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.contentNodeService.delete(node.code, this.user!.id).subscribe(
+          this.contentNodeService.delete(node.code).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -307,7 +334,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     content.parentCode = this.node.code;
     content.parentCodeOrigin = this.node.parentCodeOrigin;
 
-    this.contentNodeService.save(content, this.user.id).subscribe(
+    this.contentNodeService.save(content).subscribe(
       (response: any) => {
 
         this.currentContent = response;

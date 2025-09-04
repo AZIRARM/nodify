@@ -83,4 +83,23 @@ public class RedisHandler {
                 );
     }
 
+    public Mono<Boolean> canModify(String resourceCode, String userId, Duration ttl) {
+        String key = "lock:node:" + resourceCode;
+        return redisTemplate.opsForValue().get(key)
+                .flatMap(owner -> {
+                    if (owner.equals(userId)) {
+                        // déjà verrouillé par l’utilisateur
+                        return Mono.just(true);
+                    } else {
+                        // verrouillé par quelqu’un d’autre
+                        return Mono.just(false);
+                    }
+                })
+                .switchIfEmpty(
+                        // pas de lock → essayer d’acquérir
+                        redisTemplate.opsForValue().setIfAbsent(key, userId, ttl)
+                                .defaultIfEmpty(false)
+                );
+    }
+
 }

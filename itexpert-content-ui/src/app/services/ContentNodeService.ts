@@ -23,38 +23,38 @@ export class ContentNodeService extends Service {
     return super.remove("" + id);
   }
 
-  save(content: ContentNode, userId: string) {
-    return super.post("userId/" + userId, content);
+  save(content: ContentNode) {
+    return super.post("", content);
   }
 
 
-  delete(code: String, userId: string) {
-    return super.remove("code/" + code + "/user/" + userId);
+  delete(code: String) {
+    return super.remove("code/" + code);
   }
 
 
-  activate(code: String, userId: string) {
-    return super.post("code/" + code + "/user/" + userId + "/activate", null);
+  activate(code: String) {
+    return super.post("code/" + code + "/user/", null);
   }
 
   getAllByParentCodeAndStatus(code: string, status: string) {
     return super.get("node/code/" + code + "/status/" + status);
   }
 
-  publish(contentNodeId: string, status: boolean, userId: string) {
-    return super.post("id/" + contentNodeId + "/user/" + userId + "/publish/" + status, null);
+  publish(contentNodeId: string, status: boolean) {
+    return super.post("id/" + contentNodeId + "/publish/" + status, null);
   }
 
   getAllByCode(code: string) {
     return super.get("code/" + code);
   }
 
-  deployVersion(code: string, version: string, userId: string) {
-    return super.post("code/" + code + "/version/" + version + "/user/" + userId + "/deploy", null);
+  deployVersion(code: string, version: string) {
+    return super.post("code/" + code + "/version/" + version + "/deploy", null);
   }
 
-  revertToVersion(code: string, version: string, userId: string) {
-    return super.post("code/" + code + "/version/" + version + "/user/" + userId + "/revert", null);
+  revertToVersion(code: string, version: string) {
+    return super.post("code/" + code + "/version/" + version + "/revert", null);
   }
 
   export(code: string, environmentCode: string) {

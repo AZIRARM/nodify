@@ -163,7 +163,7 @@ init() {
 
   save(node: Node) {
     node.modifiedBy = this.user.id;
-    this.nodeService.save(node, this.user.id).subscribe(
+    this.nodeService.save(node).subscribe(
       response => {
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
@@ -215,7 +215,7 @@ init() {
         if (result && result.data !== 'canceled') {
           let isSnapshot: boolean = true;
 
-          this.nodeService.publish(node.id, this.user.id).subscribe(
+          this.nodeService.publish(node.id).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -247,7 +247,7 @@ init() {
     this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.nodeService.delete(node.code, this.user.id).subscribe(
+          this.nodeService.delete(node.code).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -280,7 +280,7 @@ init() {
         if (result) {
           let contentNode: ContentNode = result.data;
           if (contentNode) {
-            this.contentNodeService.save(contentNode, this.user.id).subscribe(
+            this.contentNodeService.save(contentNode).subscribe(
               response => {
                 this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                   this.loggerService.success(trad);
