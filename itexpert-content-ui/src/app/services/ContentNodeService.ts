@@ -29,8 +29,13 @@ export class ContentNodeService extends Service {
   }
 
 
+  deleteVersionDefinitively(code: String, version: string) {
+    return super.remove("code/" + code+"/version/" + version + "/deleteDefinitively");
+  }
+
+
   activate(code: String) {
-    return super.post("code/" + code + "/user/", null);
+    return super.post("code/" + code+"/activate" , null);
   }
 
   getAllByParentCodeAndStatus(code: string, status: string) {

@@ -671,5 +671,13 @@ public class NodeHandler {
                         this.nodeRepository.deleteById(id).map(unused -> this.notify(node, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(node))
                 ).hasElement();
     }
+
+    public Mono<Boolean> deleteDefinitivelyVersion(String code, String version) {
+        return this.nodeRepository.findByCodeAndVersion(code, version)
+                .map(this.nodeMapper::fromEntity)
+                .flatMap(node ->
+                        this.nodeRepository.deleteById(node.getId()).map(unused -> this.notify(node, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(node))
+                ).hasElement();
+    }
 }
 

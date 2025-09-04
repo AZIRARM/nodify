@@ -395,6 +395,16 @@ public class ContentNodeHandler {
                 .map(unused -> Boolean.TRUE)
                 .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
     }
+    public Mono<Boolean> deleteDefinitivelyVersion(String code, String version) {
+        return contentNodeRepository.findByCodeAndVersion(code, version)
+                .flatMap(node -> this.contentNodeRepository.delete(node)
+                        .map(unused -> this.dataHandler.deleteAllByContentNodeCode(code))
+                        .map(response -> node)
+                )
+                .flatMap(model -> this.notify(this.contentNodeMapper.fromEntity(model), NotificationEnum.DELETION_DEFINITIVELY))
+                .map(unused -> Boolean.TRUE)
+                .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
+    }
 
     public Mono<Boolean> nodeHaveContents(String code) {
         return this.contentNodeRepository.countDistinctByParentCode(code).map(count -> count > 0);
