@@ -19,10 +19,6 @@ export class ContentNodeService extends Service {
     return super.remove("code/" + code + "/deleteDefinitively");
   }
 
-  deleteById(id: String) {
-    return super.remove("" + id);
-  }
-
   save(content: ContentNode) {
     return super.post("", content);
   }
@@ -41,8 +37,8 @@ export class ContentNodeService extends Service {
     return super.get("node/code/" + code + "/status/" + status);
   }
 
-  publish(contentNodeId: string, status: boolean) {
-    return super.post("id/" + contentNodeId + "/publish/" + status, null);
+  publish(code: string, status: boolean) {
+    return super.post("code/" + code + "/publish/" + status, null);
   }
 
   getAllByCode(code: string) {

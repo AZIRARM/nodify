@@ -82,9 +82,10 @@ public class ContentNodeHandlerPublishTest {
         when(contentNodeRepository.findById(contentNodeId)).thenReturn(Mono.just(snapshotNode));
         when(contentNodeRepository.findByIdAndStatus(contentNodeId, StatusEnum.SNAPSHOT)).thenReturn(Mono.just(snapshotNode));
         when(contentNodeRepository.findByCodeAndStatus(snapshotNode.getCode(), StatusEnum.PUBLISHED.name())).thenReturn(Mono.empty());
+        when(contentNodeRepository.findByCodeAndStatus(snapshotNode.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(snapshotNode));
 
 
-        StepVerifier.create(contentNodeHandler.publish(contentNodeId, true, "Admin"))
+        StepVerifier.create(contentNodeHandler.publish(snapshotNode.getCode(), true, "Admin"))
                 .assertNext(contentNode -> {
                     assert contentNode.getStatus().equals(StatusEnum.PUBLISHED);
                     assert contentNode.getId().equals(snapshotNode.getId());
@@ -126,7 +127,7 @@ public class ContentNodeHandlerPublishTest {
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // WHEN
-        StepVerifier.create(contentNodeHandler.publish(snapshotContentId, true, "Admin"))
+        StepVerifier.create(contentNodeHandler.publish(snapshotContent.getCode(), true, "Admin"))
                 .assertNext(contentNode -> {
                     assert contentNode.getStatus().equals(StatusEnum.PUBLISHED);
                     assert !contentNode.getId().equals(snapshotContent.getId());

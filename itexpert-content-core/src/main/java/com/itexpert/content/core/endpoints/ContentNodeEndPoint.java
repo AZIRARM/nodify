@@ -74,14 +74,6 @@ public class ContentNodeEndPoint {
                 .sort((content1, content2) -> Boolean.compare(content2.isFavorite(), content1.isFavorite()));
     }
 
-    @GetMapping(value = "/id/{uuid}")
-    public Mono<ResponseEntity<ContentNode>> findById(@PathVariable String uuid) {
-        return contentNodeHandler.findById(UUID.fromString(uuid))
-                .flatMap(contentNodeHandler::setPublicationStatus)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
     @DeleteMapping(value = "/code/{code}")
     public Mono<ResponseEntity<Boolean>> delete(@PathVariable String code, Authentication authentication) {
         String user = authentication.getPrincipal().toString();
@@ -120,24 +112,6 @@ public class ContentNodeEndPoint {
     }
 
 
-    @DeleteMapping(value = "/{id}")
-    public Mono<ResponseEntity<Boolean>> deleteById(@PathVariable UUID id, Authentication authentication) {
-        String user = authentication.getPrincipal().toString();
-        Duration ttl = Duration.ofMinutes(30);
-
-        return redisHandler.canModify(id.toString(), user, ttl)
-                .flatMap(canModify -> {
-                    if (!canModify) {
-                        return Mono.error(new IllegalStateException("ContentNode locked by another user"));
-                    }
-
-                    return contentNodeHandler.deleteById(id)
-                            .flatMap(result -> redisHandler.releaseLock(id.toString(), user).thenReturn(result))
-                            .onErrorResume(ex -> redisHandler.releaseLock(id.toString(), user).then(Mono.error(ex)))
-                            .map(ResponseEntity::ok);
-                });
-    }
-
 
     @PostMapping(value = "/code/{code}/activate")
     public Mono<ResponseEntity<Boolean>> activate(@PathVariable String code, Authentication authentication) {
@@ -158,23 +132,23 @@ public class ContentNodeEndPoint {
     }
 
 
-    @PostMapping(value = "/id/{id}/publish/{publish}")
-    public Mono<ResponseEntity<ContentNode>> publish(@PathVariable UUID id,
+    @PostMapping(value = "/code/{code}/publish/{publish}")
+    public Mono<ResponseEntity<ContentNode>> publish(@PathVariable String code,
                                                      @PathVariable Boolean publish,
                                                      Authentication authentication) {
         String user = authentication.getPrincipal().toString();
         Duration ttl = Duration.ofMinutes(30);
 
-        return redisHandler.canModify(id.toString(), user, ttl)
+        return redisHandler.canModify(code, user, ttl)
                 .flatMap(canModify -> {
                     if (!canModify) {
                         return Mono.error(new IllegalStateException("ContentNode locked by another user"));
                     }
 
-                    return contentNodeHandler.publish(id, publish, user)
+                    return contentNodeHandler.publish(code, publish, user)
                             .flatMap(contentNodeHandler::setPublicationStatus)
-                            .flatMap(saved -> redisHandler.releaseLock(id.toString(), user).thenReturn(saved))
-                            .onErrorResume(ex -> redisHandler.releaseLock(id.toString(), user).then(Mono.error(ex)))
+                            .flatMap(saved -> redisHandler.releaseLock(code, user).thenReturn(saved))
+                            .onErrorResume(ex -> redisHandler.releaseLock(code, user).then(Mono.error(ex)))
                             .map(ResponseEntity::ok);
                 });
     }

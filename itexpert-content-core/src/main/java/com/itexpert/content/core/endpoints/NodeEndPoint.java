@@ -30,7 +30,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -105,15 +104,6 @@ public class NodeEndPoint {
                 );
     }
 
-    @GetMapping(value = "/id/{id}")
-    public Mono<ResponseEntity<Node>> findById(@PathVariable String id) {
-        return nodeHandler.findById(UUID.fromString(id))
-                .flatMap(nodeHandler::setPublicationStatus)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-    }
-
     @GetMapping(value = "/code/{code}/status/{status}")
     public Mono<ResponseEntity<Node>> findByCodeAndStatus(@PathVariable String code, @PathVariable String status) {
         return nodeHandler.findByCodeAndStatus(code, status)
@@ -166,23 +156,6 @@ public class NodeEndPoint {
                 });
     }
 
-    @DeleteMapping(value = "/{id}")
-    public Mono<ResponseEntity<Boolean>> deleteById(@PathVariable UUID id, Authentication authentication) {
-        String user = authentication.getPrincipal().toString();
-        Duration ttl = Duration.ofMinutes(30);
-
-        return redisHandler.canModify(id.toString(), user, ttl)
-                .flatMap(canModify -> {
-                    if (!canModify) {
-                        return Mono.error(new IllegalStateException("Resource locked by another user"));
-                    }
-
-                    return nodeHandler.deleteById(id)
-                            .flatMap(result -> redisHandler.releaseLock(id.toString(), user).thenReturn(result))
-                            .onErrorResume(ex -> redisHandler.releaseLock(id.toString(), user).then(Mono.error(ex)))
-                            .map(ResponseEntity::ok);
-                });
-    }
 
 
     @PostMapping(value = "/code/{code}/activate")
@@ -204,21 +177,21 @@ public class NodeEndPoint {
     }
 
 
-    @PostMapping(value = "/id/{id}/publish")
-    public Mono<ResponseEntity<Node>> publish(@PathVariable UUID id, Authentication authentication) {
+    @PostMapping(value = "/code/{code}/publish")
+    public Mono<ResponseEntity<Node>> publish(@PathVariable String code, Authentication authentication) {
         String user = authentication.getPrincipal().toString();
         Duration ttl = Duration.ofMinutes(30);
 
-        return redisHandler.canModify(id.toString(), user, ttl)
+        return redisHandler.canModify(code, user, ttl)
                 .flatMap(canModify -> {
                     if (!canModify) {
                         return Mono.error(new IllegalStateException("Resource locked by another user"));
                     }
 
-                    return nodeHandler.publish(id, user)
+                    return nodeHandler.publish(code, user)
                             .flatMap(nodeHandler::setPublicationStatus)
-                            .flatMap(saved -> redisHandler.releaseLock(id.toString(), user).thenReturn(saved))
-                            .onErrorResume(ex -> redisHandler.releaseLock(id.toString(), user).then(Mono.error(ex)))
+                            .flatMap(saved -> redisHandler.releaseLock(code, user).thenReturn(saved))
+                            .onErrorResume(ex -> redisHandler.releaseLock(code, user).then(Mono.error(ex)))
                             .map(ResponseEntity::ok);
                 });
     }
@@ -390,7 +363,7 @@ public class NodeEndPoint {
                 .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT))
                 .filter(node -> node.getParentCode().equals(environmentCode))
                 .flatMap(node -> this.nodeHandler.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
-                        .flatMap(nodeToPublish -> this.nodeHandler.publish(nodeToPublish.getId(), authentication.getPrincipal().toString()))
+                        .flatMap(nodeToPublish -> this.nodeHandler.publish(nodeToPublish.getCode(), authentication.getPrincipal().toString()))
                 )
                 ;
     }
