@@ -121,7 +121,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.contentNodeService.getAllByParentCodeAndStatus(this.node.code, StatusEnum.SNAPSHOT).subscribe(
       (response: any) => {
         //next() callback
-        
+        this.fetchDatas(response);
         this.initLocks(response);
         
         response = response.sort((a: any, b: any) => {
@@ -499,16 +499,24 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       });
   }
 
-  haveDatas(code: string) {
-    if (this.mapDatas.has(code)) {
-      return this.mapDatas.get(code);
-    } else {
-      return this.dataService.countDatasByContentNodeCode(code).subscribe(
-        (count: any) => {
-          this.mapDatas.set(code, count > 0);
-          return this.mapDatas.get(code);
-        });
-    }
+  fetchDatas(contents:any) {
+    this.fetchLocksFactory(contents);
+    this.lockRefreshSub = interval(10000).subscribe(() => {
+      this.fetchLocksFactory(contents);
+    });
+  }
+  fetchLocksFactory(contents:any) {
+    contents.forEach((content:any) => {
+      return this.dataService.countDatasByContentNodeCode(content.code).subscribe(
+      (count: any) => {
+        this.mapDatas.set(content.code, count > 0);
+        return this.mapDatas.get(content.code);
+      });
+    });
+  }
+
+  haveDatas(code: string): boolean {
+    return this.mapDatas.get(code) ?? false;
   }
 
   favorite(element: ContentNode) {

@@ -26,23 +26,28 @@ export class LoginComponent {
   }
 
   login() {
-    if (this.userLogin.email && this.userLogin.password) {
-      this.authenticationService.signin(this.userLogin)
-        .subscribe((response) => {
-              this.translate.get("LOGIN_SUCCESS").subscribe(trad => {
-                this.loggerService.success(trad);
-              });
-              this.cookiesService.setCookie("userToken", JSON.stringify(response), 1);
-              this.authenticationService.loadUser();
-              this.router.navigateByUrl('/nodes');
-          }, error => {
+  if (this.userLogin.email && this.userLogin.password) {
+    this.authenticationService.signin(this.userLogin).subscribe({
+        next: (response) => {
+          this.cookiesService.setCookie("userToken", JSON.stringify(response), 1);
+
+          this.authenticationService.loadUser().subscribe({
+            next: () => this.router.navigateByUrl('/nodes'),
+            error: (err) => {
+              this.loggerService.error("Erreur lors du chargement de l'utilisateur");
+              console.error(err);
+            }
+          });
+        },
+        error: () => {
           this.translate.get("LOGIN_ERROR").subscribe(trad => {
             this.loggerService.error(trad);
           });
-          }
-        );
-    }
+        }
+      });
+
   }
+}
 
   cancel() {
 

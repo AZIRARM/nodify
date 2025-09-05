@@ -45,18 +45,18 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
 
   ngOnInit() {
     this.init();
-    
+
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.data.code).subscribe(acquired => {
-      if (!acquired) {       
+      if (!acquired) {
          this.translateService.get("RESOURCE_LOCKED")
             .subscribe(translation => {
-              this.loggerService.error(translation);
+              this.loggerService.warn(translation);
             });
         this.dialogRef.close();
       } else {
         // Si acquis → démarre la surveillance d’inactivité à 30 min
-        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {          
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
          this.translateService.get("RESOURCE_RELEASED")
             .subscribe(translation => {
               this.loggerService.warn(translation);
@@ -65,7 +65,7 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
         });
       }
     });
-    
+
   }
 
   ngOnDestroy(): void {

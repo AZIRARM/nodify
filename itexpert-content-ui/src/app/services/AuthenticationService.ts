@@ -3,7 +3,7 @@ import { Service } from "./Service";
 import { HttpClient } from "@angular/common/http";
 import { UserLogin } from "../modeles/UserLogin";
 import { UserService } from "./UserService";
-import { Observable, switchMap, throwError, of } from "rxjs";
+import { Observable, switchMap, throwError, of, tap } from "rxjs";
 import { CookiesService } from './CookiesService';
 
 @Injectable({ providedIn: 'root' })
@@ -46,14 +46,17 @@ export class AuthenticationService extends Service {
   }
 
   loadUser() {
-    const decoded = this.decodeJwt(this.getAccessToken());
+  const decoded = this.decodeJwt(this.getAccessToken());
 
-    if (decoded && decoded.sub) {  
-      this.userService.getByEmail(decoded.sub).subscribe((userInfos:any)=>{
+  if (decoded && decoded.sub) {
+    return this.userService.getByEmail(decoded.sub).pipe(
+      tap((userInfos: any) => {
         this.cookiesService.setCookie("userInfos", JSON.stringify(userInfos), 1);
-      });
-    }
+      })
+    );
   }
+  return of(null); // si pas de token
+}
 
   setTokens(accessToken: string, refreshToken: string): void {
     this.cookiesService.setCookie(
