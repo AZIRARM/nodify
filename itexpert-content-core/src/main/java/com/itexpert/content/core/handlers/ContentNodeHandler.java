@@ -482,5 +482,26 @@ public class ContentNodeHandler {
                         this.contentNodeRepository.deleteById(id).map(unused -> this.notify(content, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(content))
                 ).hasElement();
     }
+
+    public Mono<Boolean> publishVersion(String code, String version, String user) {
+        return contentNodeRepository.findByCodeAndVersion(code, version)
+                .flatMap(archived ->
+                        contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
+                                .flatMap(published -> {
+                                    published.setStatus(StatusEnum.ARCHIVE);
+                                    published.setModifiedBy(user);
+                                    published.setModificationDate(Instant.now().toEpochMilli());
+                                    return contentNodeRepository.save(published);
+                                })
+                                .then(Mono.defer(() -> {
+                                    archived.setStatus(StatusEnum.PUBLISHED);
+                                    archived.setModifiedBy(user);
+                                    archived.setModificationDate(Instant.now().toEpochMilli());
+                                    return contentNodeRepository.save(archived);
+                                }))
+                                .thenReturn(true)
+                )
+                .defaultIfEmpty(false); // si la version n’existe pas
+    }
 }
 

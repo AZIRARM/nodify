@@ -385,6 +385,29 @@ public class NodeEndPoint {
                 ;
     }
 
+    @PostMapping(value = "/code/{code}/version/{version}/deploy")
+    public Mono<ResponseEntity<Boolean>> deployVersion(
+                                    @PathVariable String code,
+                                    @PathVariable String version,
+                                    @RequestParam(name = "environment", required = false) String environmentCode,
+                                    Authentication authentication) {
+        String user = authentication.getPrincipal().toString();
+        Duration ttl = Duration.ofMinutes(30);
+
+        return redisHandler.canModify(code, user, ttl)
+                .flatMap(canModify -> {
+                    if (!canModify) {
+                        return Mono.error(new IllegalStateException("Resource locked by another user"));
+                    }
+
+                    return nodeHandler.publishVersion(code, version, user)
+                            .flatMap(saved -> redisHandler.releaseLock(code, user).thenReturn(saved))
+                            .onErrorResume(ex -> redisHandler.releaseLock(code, user).then(Mono.error(ex)))
+                            .map(ResponseEntity::ok);
+                });
+
+    }
+
     @GetMapping(value = "/code/{code}/slug/{slug}/exists")
     public Mono<Boolean> slugExists(@PathVariable String code, @PathVariable String slug) {
         return nodeHandler.slugAlreadyExists(code, slug);

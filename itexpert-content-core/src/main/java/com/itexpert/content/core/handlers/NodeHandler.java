@@ -679,5 +679,27 @@ public class NodeHandler {
                         this.nodeRepository.deleteById(node.getId()).map(unused -> this.notify(node, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(node))
                 ).hasElement();
     }
+
+    public Mono<Boolean> publishVersion(String code, String version, String user) {
+        return nodeRepository.findByCodeAndVersion(code, version)
+                .flatMap(archived ->
+                        nodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
+                                .flatMap(published -> {
+                                    published.setStatus(StatusEnum.ARCHIVE);
+                                    published.setModifiedBy(user);
+                                    published.setModificationDate(Instant.now().toEpochMilli());
+                                    return nodeRepository.save(published);
+                                })
+                                .then(Mono.defer(() -> {
+                                    archived.setStatus(StatusEnum.PUBLISHED);
+                                    archived.setModifiedBy(user);
+                                    archived.setModificationDate(Instant.now().toEpochMilli());
+                                    return nodeRepository.save(archived);
+                                }))
+                                .thenReturn(true)
+                )
+                .defaultIfEmpty(false); // si la version n’existe pas
+    }
+
 }
 

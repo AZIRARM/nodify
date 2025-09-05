@@ -43,7 +43,6 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.contentNode.code).subscribe(acquired => {
       if (!acquired) {
-        this.loggerService.error("Ce nœud est déjà en cours d'édition.");
          this.translateService.get("RESOURCE_LOCKED")
             .subscribe(translation => {
               this.loggerService.warn(translation);
