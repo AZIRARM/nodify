@@ -1,17 +1,19 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Rule} from "../../../modeles/Rule";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
 import {UserAccessService} from "../../../services/UserAccessService";
+import { LockService } from 'src/app/services/LockService';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-node-rules-conditions-dialog',
   templateUrl: './node-rules-conditions-dialog.component.html',
   styleUrls: ['./node-rules-conditions-dialog.component.css']
 })
-export class NodeRulesConditionsDialogComponent implements OnInit {
+export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
 
 
   node: any;
@@ -19,12 +21,15 @@ export class NodeRulesConditionsDialogComponent implements OnInit {
   rulesConditions: Rule[] = [];
 
   ruleType: string = "BOOL";
+    
+  private lockCheckSub: Subscription;
 
-  constructor(private translate: TranslateService,
+  constructor(private translateService: TranslateService,
               private loggerService: LoggerService,
               public userAccessService: UserAccessService,
               public dialogRef: MatDialogRef<NodeRulesConditionsDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public content: any
+              @Inject(MAT_DIALOG_DATA) public content: any,
+              private lockService: LockService
   ) {
     if (content) {
       this.node = content;
@@ -33,6 +38,48 @@ export class NodeRulesConditionsDialogComponent implements OnInit {
 
   ngOnInit() {
     this.init();
+
+    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
+    this.lockService.acquire(this.node.code).subscribe(acquired => {
+      if (!acquired) {
+         this.translateService.get("RESOURCE_LOCKED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
+        this.dialogRef.close();
+      } else {
+        // Si acquis → démarre la surveillance d’inactivité à 30 min
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
+         this.translateService.get("RESOURCE_RELEASED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
+          this.dialogRef.close();
+        });
+
+        
+        
+        // 🔄 Vérifie le lock toutes les 10s
+        this.lockCheckSub = interval(10000).subscribe(() => {
+          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
+            if (lockInfo.locked) {
+              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                .subscribe(translation => this.loggerService.warn(translation));
+              this.dialogRef.close();
+            }
+          });
+        });
+
+      }
+    });
+
+  }
+
+  ngOnDestroy(): void {
+    if (this.lockCheckSub) {
+      this.lockCheckSub.unsubscribe();
+    }
+    this.lockService.release();
   }
 
   init() {
@@ -115,7 +162,7 @@ export class NodeRulesConditionsDialogComponent implements OnInit {
 
   private checkCommonsFields(rule: Rule) {
     if (!rule.name) {
-      this.translate.get("NEED_RULE_NAME").subscribe((message:string)=>{
+      this.translateService.get("NEED_RULE_NAME").subscribe((message:string)=>{
         this.loggerService.warn(message);
       });
     }

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { LoaderService } from '../../../services/Loader.service';
 
 @Component({
@@ -8,14 +8,14 @@ import { LoaderService } from '../../../services/Loader.service';
 })
 export class LoaderComponent implements OnInit{
   isLoading = false;
-  constructor(public loaderService: LoaderService) {}
+  constructor(
+    public loaderService: LoaderService,
+    private cdr: ChangeDetectorRef) {}
 
 
   ngOnInit() {
-    // On s'abonne au service pour mettre à jour isLoading
     this.loaderService.loading$.subscribe((value: boolean) => {
-      console.log('Loader state:', value); // debug
-      this.isLoading = value;
+      setTimeout(() => this.isLoading = value);
     });
   }
 

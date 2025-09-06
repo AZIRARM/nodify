@@ -104,7 +104,7 @@ public class NodeHandlerPublishTest {
         parentSnapshot.setVersion("0");
 
         // Mocks
-        when(nodeRepository.findById(nodeUuid)).thenReturn(Mono.just(parentSnapshot));
+        when(nodeRepository.findByCodeAndStatus(parentSnapshot.getCode(), StatusEnum.SNAPSHOT.name())).thenReturn(Mono.just(parentSnapshot));
 
         when(nodeRepository.findByCodeAndStatus("PARENT-DEV", StatusEnum.PUBLISHED.name()))
                 .thenReturn(Mono.empty());
@@ -119,7 +119,7 @@ public class NodeHandlerPublishTest {
                 .findAllChildren(anyString());
 
         // Exécution et vérification du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, user))
+        StepVerifier.create(spyHandler.publish(parentSnapshot.getCode(), user))
                 .expectNextMatches(node ->
                         node.getStatus().equals(StatusEnum.PUBLISHED) &&
                                 node.getCode().equals("PARENT-DEV") &&
@@ -162,8 +162,10 @@ public class NodeHandlerPublishTest {
 
         // Mock des dépendances externes
         when(nodeRepository.findById(nodeUuid)).thenReturn(Mono.just(nodeToPublish));
-        when(nodeRepository.findByCodeAndStatus(any(), any()))
+        when(nodeRepository.findByCodeAndStatus(publishedNode.getCode(), StatusEnum.PUBLISHED.name()))
                 .thenReturn(Mono.just(publishedNode));
+        when(nodeRepository.findByCodeAndStatus(nodeToPublish.getCode(), StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(nodeToPublish));
 
         when(nodeRepository.save(any(Node.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
@@ -173,7 +175,7 @@ public class NodeHandlerPublishTest {
 
 
         // Exécution du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, user))
+        StepVerifier.create(spyHandler.publish(nodeToPublish.getCode(), user))
                 .assertNext(node -> {
                     assert node.getStatus().equals(StatusEnum.PUBLISHED);
                     assert node.getId().equals(nodeToPublish.getId());
@@ -214,6 +216,9 @@ public class NodeHandlerPublishTest {
 
         // Mock des dépendances externes
         when(nodeRepository.findById(nodeUuid)).thenReturn(Mono.just(nodeToPublish));
+        when(nodeRepository.findByCodeAndStatus(nodeToPublish.getCode(), StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(nodeToPublish));
+
         when(nodeRepository.findByCodeAndStatus(nodeToPublish.getCode(), StatusEnum.PUBLISHED.name()))
                 .thenReturn(Mono.just(publishedNode));
 
@@ -229,7 +234,7 @@ public class NodeHandlerPublishTest {
         doReturn(Flux.empty()).when(spyHandler).findAllChildren(childNode.getCode());
 
         // Exécution du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, user))
+        StepVerifier.create(spyHandler.publish(nodeToPublish.getCode(), user))
                 .assertNext(node -> {
                     assert node.getStatus().equals(StatusEnum.PUBLISHED);
                     assert node.getId().equals(nodeToPublish.getId());
@@ -279,6 +284,8 @@ public class NodeHandlerPublishTest {
         when(nodeRepository.findById(nodeUuid)).thenReturn(Mono.just(nodeToPublish));
         when(nodeRepository.findByCodeAndStatus(nodeToPublish.getCode(), StatusEnum.PUBLISHED.name()))
                 .thenReturn(Mono.just(publishedNode));
+        when(nodeRepository.findByCodeAndStatus(nodeToPublish.getCode(), StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(nodeToPublish));
 
         when(nodeRepository.save(any(Node.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
@@ -292,7 +299,7 @@ public class NodeHandlerPublishTest {
         doReturn(Flux.empty()).when(spyHandler).findAllChildren(childNode.getCode());
 
         // Exécution du test
-        StepVerifier.create(spyHandler.publish(nodeUuid, user))
+        StepVerifier.create(spyHandler.publish(nodeToPublish.getCode(), user))
                 .assertNext(node -> {
                     assert node.getStatus().equals(StatusEnum.PUBLISHED);
                     assert node.getId().equals(nodeToPublish.getId());

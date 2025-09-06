@@ -8,22 +8,22 @@ export class Service {
   }
 
 
-  post(service: string, data: any) {
+  post<T>(service: string, data: any) {
     let body = JSON.stringify(data);
-    return this.http.post(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service, body);
+    return this.http.post<T>(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service, body);
   }
 
-  remove(service: string) {
-    return this.http.delete(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service);
+  remove<T>(service: string) {
+    return this.http.delete<T>(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service);
   }
 
-  put(service: string, data: any) {
+  put<T>(service: string, data: any) {
     let body = JSON.stringify(data);
-    return this.http.put(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service, body);
+    return this.http.put<T>(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service, body);
   }
 
-  get(service: string) {
-    return this.http.get(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service);
+  get<T>(service: string) {
+    return this.http.get<T>(Env.EXPERT_CONTENT_CORE_URL + "/" + this.baseRequest + "/" + service);
   }
 
   login(userLogin: UserLogin) {

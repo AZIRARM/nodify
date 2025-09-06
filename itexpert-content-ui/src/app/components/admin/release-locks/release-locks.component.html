@@ -1,0 +1,56 @@
+<div mat-dialog-title class="dialog-title">
+  <mat-toolbar>
+    <span>{{ "LOCKED_RESOURCES" | translate }}</span>
+    <span class="spacer"></span>
+  </mat-toolbar>
+</div>
+
+<div mat-dialog-content>
+  <p>
+    {{ "ADMIN_LOCK_MANAGEMENT" | translate }}
+  </p>
+
+  @if(userAccessService.getCurrentUser()){
+    <table mat-table [dataSource]="dataSource">
+
+      <!-- Code -->
+      <ng-container matColumnDef="Code">
+        <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate }}</th>
+        <td mat-cell *matCellDef="let element">{{ element.resourceCode }}</td>
+      </ng-container>
+
+      <!-- Owner -->
+      <ng-container matColumnDef="Owner">
+        <th mat-header-cell *matHeaderCellDef> {{ "LOCK_OWNER" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.owner || ("NONE" | translate) }}
+        </td>
+      </ng-container>
+
+      <!-- Locked -->
+      <ng-container matColumnDef="Locked">
+        <th mat-header-cell *matHeaderCellDef> {{ "LOCKED" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          <mat-icon *ngIf="element.locked" class="danger">lock</mat-icon>
+          <mat-icon *ngIf="!element.locked" class="primary">lock_open</mat-icon>
+        </td>
+      </ng-container>
+
+      <!-- Actions -->
+      <ng-container matColumnDef="Actions">
+        <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          @if(userAccessService.isAdmin() && element.locked){
+            <mat-icon class="icon-display warn" (click)="unlock(element)" inline
+                      matTooltip="{{ 'UNLOCK' | translate }}">lock_open
+            </mat-icon>
+          }
+        </td>
+      </ng-container>
+
+      <!-- Header & Rows -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  }
+</div>

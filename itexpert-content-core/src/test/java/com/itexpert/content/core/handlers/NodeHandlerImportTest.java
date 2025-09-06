@@ -291,7 +291,7 @@ public class NodeHandlerImportTest {
                 .expectNextCount(3)  // ou le nombre exact de nodes importés
                 .verifyComplete();
 
-        verify(nodeRepository, times(9)).save(any(Node.class));
+        verify(nodeRepository, times(3)).save(any(Node.class));
         verify(contentNodeHandler, times(15)).importContentNode(any(ContentNode.class));
     }
 
@@ -338,7 +338,7 @@ public class NodeHandlerImportTest {
 
         List<com.itexpert.content.lib.models.Node> importedNodes = result.collectList().block();
 
-        verify(nodeRepository, times(18)).save(any(Node.class));
+        verify(nodeRepository, times(6)).save(any(Node.class));
         verify(contentNodeHandler, times(40)).importContentNode(any(ContentNode.class));
     }
 

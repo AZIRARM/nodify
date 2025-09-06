@@ -266,5 +266,20 @@
   "SLUG_ALREADY_USED": "Cet alias n'est pas disponible",
   "SLUG_AVAILABLE": "Cet alias est disponible",
 
-  "NEED_PLUGIN_NAME": "Le nom du plugin est nécessaire."
+  "NEED_PLUGIN_NAME": "Le nom du plugin est nécessaire.",
+
+  "REALEASE_LOCKS": "Débloquer les ressources",
+
+  "LOCKED_RESOURCES": "Ressources Vérouillées",
+
+  "LOCK_RELEASED_SUCCESS": "Déblocage réussi",
+  "LOCK_RELEASED_FAIL": "Echec du Vérous de la resource",
+  "ADMIN_LOCK_MANAGEMENT": "Gestion des ressources Vérouillés(encours de modification)",
+  "LOCK_OWNER": "Vérouillé par",
+  "LOCKED": "Vérouillé",
+  "UNLOCK": "Dévéroullez",
+  "LOCKED_BY": "Encours de modification par",
+  "RESOURCE_LOCKED": "La resource est encours de modification",
+  "RESOURCE_RELEASED": "La resource a été relachée aprés inactivité",
+  "RESOURCE_LOCKED_BY_OTHER": "La resource a été vérouillé par un autre utilisateur"
 }

@@ -70,7 +70,7 @@ export class DeletedContentsNodesDialogComponent implements OnInit{
     this.dialogValidationRef.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.contentNodeService.activate(element.code, this.user!.id).subscribe(() => {
+          this.contentNodeService.activate(element.code).subscribe(() => {
             this.translate.get("ACTIVATION_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
