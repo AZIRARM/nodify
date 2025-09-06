@@ -104,7 +104,7 @@ export class PublishedNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.nodeService.deployVersion(element.code, element.version, this.user!.id).subscribe(() => {
+          this.nodeService.deployVersion(element.code, element.version).subscribe(() => {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
@@ -131,7 +131,7 @@ export class PublishedNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.nodeService.deleteById(element.id).subscribe(() => {
+          this.nodeService.deleteVersionDefinitively(element.code, element.version).subscribe(() => {
             this.translate.get("DELETE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();
@@ -158,7 +158,7 @@ export class PublishedNodesDialogComponent implements OnInit {
     this.dialogRefPublish.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.nodeService.revertToVersion(element.code, element.version, this.user!.id).subscribe(() => {
+          this.nodeService.revertToVersion(element.code, element.version).subscribe(() => {
             this.translate.get("SAVE_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();

@@ -174,16 +174,12 @@ public class NodeHandler {
     @Transactional
     /**
      * Point d'entrée public pour la publication d'un noeud et de tous ses enfants.
-     * @param nodeUuid L'UUID du noeud parent à publier.
-     * @param userId L'utilisateur qui effectue l'opération.
+     * @param code Code du noeud parent à publier.
+     * @param modifiedBy L'utilisateur qui effectue l'opération.
      * @return Un Mono contenant le noeud parent publié.
      */
-    public Mono<Node> publish(UUID nodeUuid, String modifiedBy) {
-        return this.findById(nodeUuid)
-                .doOnNext(node -> {
-                    log.info("Node: {}, status: {} ", node.getName(), node.getStatus().name());
-                })
-                .filter(parentNode -> parentNode.getStatus().equals(StatusEnum.SNAPSHOT))
+    public Mono<Node> publish(String code, String modifiedBy) {
+        return this.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .switchIfEmpty(Mono.error(new IllegalStateException("Impossible de publier un noeud dont le statut n'est pas SNAPSHOT")))
                 .flatMap(parentNode -> this.publishRecursive(parentNode, modifiedBy));
     }
@@ -226,7 +222,7 @@ public class NodeHandler {
                 .flatMap(publishedParentNode ->
                         // Publier le contenu associé au nœud
                         this.contentNodeHandler.findAllByNodeCodeAndStatus(publishedParentNode.getCode(), StatusEnum.SNAPSHOT.name())
-                                .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getId(), true, modifiedBy))
+                                .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getCode(), true, modifiedBy))
                                 .then(Mono.just(publishedParentNode))
                 )
                 .flatMap(finalNode ->
@@ -675,5 +671,35 @@ public class NodeHandler {
                         this.nodeRepository.deleteById(id).map(unused -> this.notify(node, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(node))
                 ).hasElement();
     }
+
+    public Mono<Boolean> deleteDefinitivelyVersion(String code, String version) {
+        return this.nodeRepository.findByCodeAndVersion(code, version)
+                .map(this.nodeMapper::fromEntity)
+                .flatMap(node ->
+                        this.nodeRepository.deleteById(node.getId()).map(unused -> this.notify(node, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(node))
+                ).hasElement();
+    }
+
+    public Mono<Boolean> publishVersion(String code, String version, String user) {
+        return nodeRepository.findByCodeAndVersion(code, version)
+                .flatMap(archived ->
+                        nodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
+                                .flatMap(published -> {
+                                    published.setStatus(StatusEnum.ARCHIVE);
+                                    published.setModifiedBy(user);
+                                    published.setModificationDate(Instant.now().toEpochMilli());
+                                    return nodeRepository.save(published);
+                                })
+                                .then(Mono.defer(() -> {
+                                    archived.setStatus(StatusEnum.PUBLISHED);
+                                    archived.setModifiedBy(user);
+                                    archived.setModificationDate(Instant.now().toEpochMilli());
+                                    return nodeRepository.save(archived);
+                                }))
+                                .thenReturn(true)
+                )
+                .defaultIfEmpty(false); // si la version n’existe pas
+    }
+
 }
 

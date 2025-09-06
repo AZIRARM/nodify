@@ -146,6 +146,9 @@ import { SlugService } from './services/SlugService';
 import { CookiesService } from './services/CookiesService';
 import {LoaderService} from "./services/Loader.service";
 import {LoaderComponent} from "./components/ui/loader/loader.component";
+import { LockService } from './services/LockService';
+import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
+
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -209,7 +212,8 @@ export function defaultLanguage() {
     DeletedPluginsDialogComponent,
     PluginFilesDialogComponent,
     NodesViewDialogComponent,
-    LoaderComponent
+    LoaderComponent,
+    ReleaseLocksComponent
   ],
   imports: [
     BrowserModule,
@@ -289,7 +293,8 @@ export function defaultLanguage() {
     SlugService,
     AuthGuard,
     CookiesService,
-    LoaderService
+    LoaderService,
+    LockService
   ],
 
   bootstrap: [AppComponent],

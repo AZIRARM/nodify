@@ -3,6 +3,8 @@ spring:
     mongodb:
       uri: ${MONGO_URL}
       auto-index-creation:  true
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}  # prendra la variable d'environnement REDIS_URL ou localhost par défaut
 
   application:
     name: nodify-headless-cms-core

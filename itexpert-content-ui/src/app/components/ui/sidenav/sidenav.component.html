@@ -13,6 +13,9 @@
           <a mat-list-item routerLink="plugins">
             {{ 'PLUGINS' | translate }}
           </a>
+          <a mat-list-item routerLink="release-locks" *ngIf="userAccessService.isAdmin()">
+            {{ 'REALEASE_LOCKS' | translate }}
+          </a>
           <a mat-list-item routerLink="languages">
             {{ 'LANGUAGES' | translate }}
           </a>

@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContext;
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableReactiveMongoRepositories
+@EnableScheduling
 @AllArgsConstructor
 public class ContentCoreApplication {
     private final UserHandler userHandler;

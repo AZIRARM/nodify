@@ -3,6 +3,7 @@ import {Value} from "./Value";
 import {Rule} from "./Rule";
 import {ContentFile} from "./ContentFile";
 import {Translation} from "./Translation";
+import { LockInfo } from "./LockInfo";
 
 export class ContentNode {
 
@@ -51,4 +52,6 @@ export class ContentNode {
   public translations: Translation[];
 
   public userName: string;
+
+  public lockInfo: LockInfo;
 }

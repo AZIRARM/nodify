@@ -109,10 +109,8 @@ public class ContentNodeHandler {
                 .map(contentNodeMapper::fromEntity);
     }
 
-    public Mono<ContentNode> publish(UUID contentNodeUuid, Boolean publish, String modifiedBy) {
-        return this.contentNodeRepository.findById(contentNodeUuid)
-                .flatMap(contentNode ->
-                        this.contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.PUBLISHED.name())
+    public Mono<ContentNode> publish(String code, Boolean publish, String modifiedBy) {
+        return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
                                 .flatMap(alreadyPublished -> {
                                     // Cas où un PUBLISHED existe
                                     alreadyPublished.setStatus(StatusEnum.ARCHIVE);
@@ -154,15 +152,15 @@ public class ContentNodeHandler {
                                                         });
                                             });
                                 })
-                                .switchIfEmpty(Mono.defer(() -> createFirstPublication(contentNodeUuid, publish)))
-                )
+                                .switchIfEmpty(Mono.defer(() -> createFirstPublication(code, publish)))
+
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
     }
 
-    private Mono<com.itexpert.content.lib.entities.ContentNode> createFirstPublication(UUID contentNodeUuid, Boolean publish) {
+    private Mono<com.itexpert.content.lib.entities.ContentNode> createFirstPublication(String code, Boolean publish) {
         if (publish) {
-            return this.contentNodeRepository.findByIdAndStatus(contentNodeUuid, StatusEnum.SNAPSHOT)
+            return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                     .flatMap(contentNode -> {
                         contentNode.setStatus(StatusEnum.PUBLISHED);
                         contentNode.setModificationDate(Instant.now().toEpochMilli());
@@ -397,6 +395,16 @@ public class ContentNodeHandler {
                 .map(unused -> Boolean.TRUE)
                 .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
     }
+    public Mono<Boolean> deleteDefinitivelyVersion(String code, String version) {
+        return contentNodeRepository.findByCodeAndVersion(code, version)
+                .flatMap(node -> this.contentNodeRepository.delete(node)
+                        .map(unused -> this.dataHandler.deleteAllByContentNodeCode(code))
+                        .map(response -> node)
+                )
+                .flatMap(model -> this.notify(this.contentNodeMapper.fromEntity(model), NotificationEnum.DELETION_DEFINITIVELY))
+                .map(unused -> Boolean.TRUE)
+                .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
+    }
 
     public Mono<Boolean> nodeHaveContents(String code) {
         return this.contentNodeRepository.countDistinctByParentCode(code).map(count -> count > 0);
@@ -473,6 +481,27 @@ public class ContentNodeHandler {
                 .flatMap(content ->
                         this.contentNodeRepository.deleteById(id).map(unused -> this.notify(content, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(content))
                 ).hasElement();
+    }
+
+    public Mono<Boolean> publishVersion(String code, String version, String user) {
+        return contentNodeRepository.findByCodeAndVersion(code, version)
+                .flatMap(archived ->
+                        contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
+                                .flatMap(published -> {
+                                    published.setStatus(StatusEnum.ARCHIVE);
+                                    published.setModifiedBy(user);
+                                    published.setModificationDate(Instant.now().toEpochMilli());
+                                    return contentNodeRepository.save(published);
+                                })
+                                .then(Mono.defer(() -> {
+                                    archived.setStatus(StatusEnum.PUBLISHED);
+                                    archived.setModifiedBy(user);
+                                    archived.setModificationDate(Instant.now().toEpochMilli());
+                                    return contentNodeRepository.save(archived);
+                                }))
+                                .thenReturn(true)
+                )
+                .defaultIfEmpty(false); // si la version n’existe pas
     }
 }
 

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {TranslateService} from "@ngx-translate/core";
 import {Router} from '@angular/router';
 
@@ -8,6 +8,7 @@ import {MatTableDataSource} from "@angular/material/table";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NodeDialogComponent} from "../node-dialog/node-dialog.component";
 import {LoggerService} from "../../../services/LoggerService";
+import {LockService} from "../../../services/LockService";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {ValuesDialogComponent} from "../../commons/values-dialog/values-dialog.component";
 import {NodeAccessRolesDialogComponent} from "../node-access-roles-dialg/node-access-roles-dialog.component";
@@ -27,13 +28,14 @@ import {ToastrService} from "ngx-toastr";
 import {Env} from "../../../../assets/configurations/environment";
 import {DeletedNodesDialogComponent} from "../deleted-nodes-dialog/deleted-nodes-dialog.component";
 import {NodesViewDialogComponent} from "../nodes-view-dialog/nodes-view-dialog.component";
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-nodes',
   templateUrl: './nodes.component.html',
   styleUrls: ['./nodes.component.css']
 })
-export class NodesComponent implements OnInit {
+export class NodesComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['Status', 'Name', 'Version', 'Last Modification', 'Modified by', 'Translations', 'Rules', 'Values', 'Subnodes', 'Contents', 'Publication', 'Actions'];
 
   dataSource: MatTableDataSource<Node>;
@@ -55,6 +57,8 @@ export class NodesComponent implements OnInit {
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
   dialogRefTreeNode: MatDialogRef<NodesViewDialogComponent>;
 
+  private lockRefreshSub?: Subscription;
+
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
               public userAccessService: UserAccessService,
@@ -64,6 +68,7 @@ export class NodesComponent implements OnInit {
               private nodeService: NodeService,
               private contentNodeService: ContentNodeService,
               private userService: UserService,
+              private lockService: LockService,
               private dialog: MatDialog) {
   }
 
@@ -72,11 +77,34 @@ export class NodesComponent implements OnInit {
     this.user = this.userAccessService.getCurrentUser();
     this.init();
   }
+  ngOnDestroy(): void {
+    if (this.lockRefreshSub) {
+      this.lockRefreshSub.unsubscribe();
+    }
+  }
+  private initLocks(nodes: Node[]) {
+    this.fetchLocks(nodes);
 
-  init() {
+    this.lockRefreshSub = interval(10000).subscribe(() => {
+      this.fetchLocks(nodes);
+    });
+  }
+
+  private fetchLocks(nodes: Node[]) {
+    nodes.forEach((node: Node) => {
+      this.lockService.getLockInfo(node.code).subscribe((lockInfo: any) => {
+        node.lockInfo = lockInfo;
+      });
+    });
+  }
+
+
+init() {
     if (this.parentNode) {
       this.nodeService.getAllByParentCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
+          this.initLocks(response);
+
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
           response = response.sort((a: any, b: any) => {
@@ -93,20 +121,21 @@ export class NodesComponent implements OnInit {
     } else {
       this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
-          console.log('1 - Call user is Admin');
           const isAdmin: boolean = this.userAccessService.isAdmin();
           if (!isAdmin) {
             response = response.filter((node: Node) => {
-                console.log('2 - Call user is NOT Admin');
-                return this.user &&
-                  Array.isArray(this.user.projects) &&
-                  this.user.projects.includes(node.code)
-              }
-            );
+              return this.user &&
+                Array.isArray(this.user.projects) &&
+                this.user.projects.includes(node.code)
+            });
           }
+
+          this.initLocks(response);
+
           response.map((node: any) => this.haveContents(node));
           response.map((node: any) => this.haveChilds(node));
           this.dataSource = new MatTableDataSource(response);
+
           this.initEnvironments();
         },
         (error) => {
@@ -115,7 +144,6 @@ export class NodesComponent implements OnInit {
         });
     }
   }
-
 
   update(node: Node) {
     this.dialogRef = this.dialog.open(NodeDialogComponent, {
@@ -135,7 +163,7 @@ export class NodesComponent implements OnInit {
 
   save(node: Node) {
     node.modifiedBy = this.user.id;
-    this.nodeService.save(node, this.user.id).subscribe(
+    this.nodeService.save(node).subscribe(
       response => {
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
@@ -187,7 +215,7 @@ export class NodesComponent implements OnInit {
         if (result && result.data !== 'canceled') {
           let isSnapshot: boolean = true;
 
-          this.nodeService.publish(node.id, this.user.id).subscribe(
+          this.nodeService.publish(node.code).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -219,7 +247,7 @@ export class NodesComponent implements OnInit {
     this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.nodeService.delete(node.code, this.user.id).subscribe(
+          this.nodeService.delete(node.code).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -252,7 +280,7 @@ export class NodesComponent implements OnInit {
         if (result) {
           let contentNode: ContentNode = result.data;
           if (contentNode) {
-            this.contentNodeService.save(contentNode, this.user.id).subscribe(
+            this.contentNodeService.save(contentNode).subscribe(
               response => {
                 this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                   this.loggerService.success(trad);
@@ -536,5 +564,9 @@ export class NodesComponent implements OnInit {
       .subscribe(result => {
         this.init();
       });
+  }
+
+  canEdit(node: Node): boolean {
+    return node.lockInfo && !node.lockInfo.locked;
   }
 }

@@ -68,7 +68,7 @@ export class DeletedNodesDialogComponent implements OnInit {
     this.dialogValidationRef.afterClosed()
       .subscribe((result: any) => {
         if (result && result.data && result.data === "validated") {
-          this.nodeService.activate(element.code, this.user!.id).subscribe(() => {
+          this.nodeService.activate(element.code).subscribe(() => {
             this.translate.get("ACTIVATION_SUCCESS").subscribe(trad => {
               this.loggerService.success(trad);
               this.init();

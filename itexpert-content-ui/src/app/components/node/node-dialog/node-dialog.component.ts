@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Node} from "../../../modeles/Node";
 import {Language} from "../../../modeles/Language";
@@ -8,14 +8,15 @@ import {LoggerService} from "../../../services/LoggerService";
 import {TranslateService} from "@ngx-translate/core";
 import { SlugService } from 'src/app/services/SlugService';
 import { toArray, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
+import { LockService } from 'src/app/services/LockService';
 
 @Component({
   selector: 'app-node-dialog',
   templateUrl: './node-dialog.component.html',
   styleUrls: ['./node-dialog.component.css']
 })
-export class NodeDialogComponent implements OnInit {
+export class NodeDialogComponent implements OnInit, OnDestroy  {
 
   node: Node;
   isProject: boolean;
@@ -27,6 +28,8 @@ export class NodeDialogComponent implements OnInit {
 
   currentSlug: string  | null = null;
   slugAvailable: boolean | null = true;
+        
+  private lockCheckSub: Subscription;
 
   constructor(
     public dialogRef: MatDialogRef<NodeDialogComponent>,
@@ -35,7 +38,8 @@ export class NodeDialogComponent implements OnInit {
     private languageService: LanguageService,
     private translateService: TranslateService,
     private loggerService: LoggerService,
-    private slugService: SlugService
+    private slugService: SlugService,
+    private lockService: LockService
   ) {
     if (content) {
       this.node = content;
@@ -47,8 +51,48 @@ export class NodeDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.init();
+
+    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
+    this.lockService.acquire(this.node.code).subscribe(acquired => {
+      if (!acquired) {
+         this.translateService.get("RESOURCE_LOCKED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
+        this.dialogRef.close();
+      } else {
+        // Si acquis → démarre la surveillance d’inactivité à 30 min
+        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
+          
+         this.translateService.get("RESOURCE_RELEASED")
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
+          this.dialogRef.close();
+        });
+        
+        
+        // 🔄 Vérifie le lock toutes les 10s
+        this.lockCheckSub = interval(10000).subscribe(() => {
+          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
+            if (lockInfo.locked) {
+              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                .subscribe(translation => this.loggerService.warn(translation));
+              this.dialogRef.close();
+            }
+          });
+        });
+
+      }
+    });
   }
 
+   ngOnDestroy(): void {
+    if (this.lockCheckSub) {
+      this.lockCheckSub.unsubscribe();
+    }
+    this.lockService.release();
+   }
 
   cancel() {
     this.dialogRef.close();
@@ -114,7 +158,7 @@ export class NodeDialogComponent implements OnInit {
       this.slugAvailable = null;
       return;
     }
-  
+
     (this.slugService.exists(slug) as Observable<string[]>)
       .pipe(
         map((codes: (string | null)[]) => {
