@@ -271,5 +271,6 @@
   "UNLOCK": "Desbloquear",
   "LOCKED_BY": "En proceso de modificación por",
   "RESOURCE_LOCKED": "El recurso está en proceso de modificación",
-  "RESOURCE_RELEASED": "El recurso ha sido liberado después de la inactividad"
+  "RESOURCE_RELEASED": "El recurso ha sido liberado después de la inactividad",
+  "RESOURCE_LOCKED_BY_OTHER": "El recurso ha sido bloqueado por otro usuario"
 }

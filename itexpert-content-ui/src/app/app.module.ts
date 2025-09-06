@@ -147,7 +147,8 @@ import { CookiesService } from './services/CookiesService';
 import {LoaderService} from "./services/Loader.service";
 import {LoaderComponent} from "./components/ui/loader/loader.component";
 import { LockService } from './services/LockService';
-import { ReleaseLocksComponent } from './admin/release-locks/release-locks.component';
+import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
+
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {

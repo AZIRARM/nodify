@@ -8,6 +8,7 @@ import {LoggerService} from "../../../services/LoggerService";
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {ContentFile} from "../../../modeles/ContentFile";
 import { LockService } from 'src/app/services/LockService';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-code-dialog',
@@ -20,6 +21,8 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
   @Input() @Output() type: string;
   @Input() @Output() user: User;
   @Input() @Output() hasChanged: boolean = false;
+      
+  private lockCheckSub: Subscription;
 
   constructor(
     private translateService: TranslateService,
@@ -57,14 +60,30 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
             });
           this.dialogRef.close();
         });
+        
+                
+                
+        // 🔄 Vérifie le lock toutes les 10s
+        this.lockCheckSub = interval(10000).subscribe(() => {
+          this.lockService.getLockInfo(this.contentNode.code).subscribe((lockInfo:any) => {
+            if (lockInfo.locked) {
+              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                .subscribe(translation => this.loggerService.warn(translation));
+              this.dialogRef.close();
+            }
+          });
+        });
+
       }
     });
   }
 
 
-   ngOnDestroy(): void {
-      // Libère le lock proprement
-      this.lockService.release();
+  ngOnDestroy(): void {
+    if (this.lockCheckSub) {
+      this.lockCheckSub.unsubscribe();
+    }
+    this.lockService.release();
    }
 
   close(refesh: boolean): void {

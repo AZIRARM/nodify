@@ -8,7 +8,7 @@ import {LoggerService} from "../../../services/LoggerService";
 import {TranslateService} from "@ngx-translate/core";
 import { SlugService } from 'src/app/services/SlugService';
 import { toArray, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import { LockService } from 'src/app/services/LockService';
 
 @Component({
@@ -28,6 +28,8 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
 
   currentSlug: string  | null = null;
   slugAvailable: boolean | null = true;
+        
+  private lockCheckSub: Subscription;
 
   constructor(
     public dialogRef: MatDialogRef<NodeDialogComponent>,
@@ -68,13 +70,28 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
             });
           this.dialogRef.close();
         });
+        
+        
+        // 🔄 Vérifie le lock toutes les 10s
+        this.lockCheckSub = interval(10000).subscribe(() => {
+          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
+            if (lockInfo.locked) {
+              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                .subscribe(translation => this.loggerService.warn(translation));
+              this.dialogRef.close();
+            }
+          });
+        });
+
       }
     });
   }
 
    ngOnDestroy(): void {
-      // Libère le lock proprement
-      this.lockService.release();
+    if (this.lockCheckSub) {
+      this.lockCheckSub.unsubscribe();
+    }
+    this.lockService.release();
    }
 
   cancel() {

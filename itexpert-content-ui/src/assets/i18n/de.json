@@ -271,5 +271,6 @@
   "UNLOCK": "Entsperren",
   "LOCKED_BY": "Wird gerade geändert von",
   "RESOURCE_LOCKED": "Die Ressource wird gerade geändert",
-  "RESOURCE_RELEASED": "Die Ressource wurde nach Inaktivität freigegeben"
+  "RESOURCE_RELEASED": "Die Ressource wurde nach Inaktivität freigegeben",
+  "RESOURCE_LOCKED_BY_OTHER": "Die Ressource wurde von einem anderen Benutzer gesperrt"
 }
