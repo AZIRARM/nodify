@@ -271,5 +271,6 @@
   "UNLOCK": "إلغاء القفل",
   "LOCKED_BY": "قيد التعديل بواسطة",
   "RESOURCE_LOCKED": "المورد قيد التعديل",
-  "RESOURCE_RELEASED": "تم تحرير المورد بعد الخمول"
+  "RESOURCE_RELEASED": "تم تحرير المورد بعد الخمول",
+  "RESOURCE_LOCKED_BY_OTHER": "تم قفل المورد من قبل مستخدم آخر"
 }

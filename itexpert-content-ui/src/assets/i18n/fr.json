@@ -280,5 +280,6 @@
   "UNLOCK": "Dévéroullez",
   "LOCKED_BY": "Encours de modification par",
   "RESOURCE_LOCKED": "La resource est encours de modification",
-  "RESOURCE_RELEASED": "La resource a été relachée aprés inactivité"
+  "RESOURCE_RELEASED": "La resource a été relachée aprés inactivité",
+  "RESOURCE_LOCKED_BY_OTHER": "La resource a été vérouillé par un autre utilisateur"
 }

@@ -7,6 +7,7 @@ import {UserAccessService} from "../../../services/UserAccessService";
 import { LoggerService } from 'src/app/services/LoggerService';
 import { LockService } from 'src/app/services/LockService';
 import { TranslateService } from '@ngx-translate/core';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-values-dialog',
@@ -21,6 +22,8 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = ['Key', 'Value', 'Actions'];
   dataSource: MatTableDataSource<Value>;
+
+  private lockCheckSub: Subscription;
 
   constructor(
     public dialogRef: MatDialogRef<ValuesDialogComponent>,
@@ -61,13 +64,27 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
             });
           this.dialogRef.close();
         });
+
+        
+        // 🔄 Vérifie le lock toutes les 10s
+        this.lockCheckSub = interval(10000).subscribe(() => {
+          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
+            if (lockInfo.locked) {
+              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                .subscribe(translation => this.loggerService.warn(translation));
+              this.dialogRef.close();
+            }
+          });
+        });
       }
     });
   }
   
 
   ngOnDestroy(): void {
-    // Libère le lock proprement
+    if (this.lockCheckSub) {
+      this.lockCheckSub.unsubscribe();
+    }
     this.lockService.release();
   }
 

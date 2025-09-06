@@ -271,5 +271,6 @@
   "UNLOCK": "Unlock",
   "LOCKED_BY": "Currently being modified by",
   "RESOURCE_LOCKED": "The resource is currently being modified",
-  "RESOURCE_RELEASED": "The resource has been released after inactivity"
+  "RESOURCE_RELEASED": "The resource has been released after inactivity",
+  "RESOURCE_LOCKED_BY_OTHER": "The resource has been locked by another user"
 }

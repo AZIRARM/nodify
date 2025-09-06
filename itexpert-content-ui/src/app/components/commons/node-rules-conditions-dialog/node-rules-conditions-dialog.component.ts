@@ -6,6 +6,7 @@ import {TranslateService} from "@ngx-translate/core";
 import {LoggerService} from "../../../services/LoggerService";
 import {UserAccessService} from "../../../services/UserAccessService";
 import { LockService } from 'src/app/services/LockService';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-node-rules-conditions-dialog',
@@ -20,6 +21,8 @@ export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
   rulesConditions: Rule[] = [];
 
   ruleType: string = "BOOL";
+    
+  private lockCheckSub: Subscription;
 
   constructor(private translateService: TranslateService,
               private loggerService: LoggerService,
@@ -53,13 +56,29 @@ export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
             });
           this.dialogRef.close();
         });
+
+        
+        
+        // 🔄 Vérifie le lock toutes les 10s
+        this.lockCheckSub = interval(10000).subscribe(() => {
+          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
+            if (lockInfo.locked) {
+              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                .subscribe(translation => this.loggerService.warn(translation));
+              this.dialogRef.close();
+            }
+          });
+        });
+
       }
     });
 
   }
 
   ngOnDestroy(): void {
-    // Libère le lock proprement
+    if (this.lockCheckSub) {
+      this.lockCheckSub.unsubscribe();
+    }
     this.lockService.release();
   }
 

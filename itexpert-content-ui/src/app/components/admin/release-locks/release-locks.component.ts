@@ -58,7 +58,6 @@ export class ReleaseLocksComponent implements OnInit, OnDestroy {
         this.dataSource.data = locks;
       },
       error: err => {
-        this.loggerService.error("Erreur lors du chargement des locks"+err);
         this.toast.error(this.translate.instant("LOCKS_LOAD_FAIL"));
       }
     });
@@ -70,12 +69,12 @@ export class ReleaseLocksComponent implements OnInit, OnDestroy {
         if (success) {
           element.lockInfo = { owner: null, isOwner: false, locked: false };
           this.toast.success(this.translate.instant("LOCK_RELEASED_SUCCESS"));
+          this.loadLocks();
         } else {
           this.toast.error(this.translate.instant("LOCK_RELEASED_FAIL"));
         }
       },
       error: (err:any) => {
-        this.loggerService.error("Erreur lors de la libération du lock"+ err);
         this.toast.error(this.translate.instant("LOCK_RELEASED_FAIL"));
       }
     });
