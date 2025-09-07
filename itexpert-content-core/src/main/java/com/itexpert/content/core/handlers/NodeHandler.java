@@ -486,6 +486,9 @@ public class NodeHandler {
                                         existingNode.setStatus(StatusEnum.ARCHIVE);
                                         existingNode.setModificationDate(Instant.now().toEpochMilli());
 
+                                        if(ObjectUtils.isNotEmpty(node.getParentCode()) && ObjectUtils.isNotEmpty(existingNode.getParentCode())) {
+                                            existingNode.setParentCode(node.getParentCode());
+                                        }
                                         node.setParentCode(existingNode.getParentCode());
                                         node.setParentCodeOrigin(existingNode.getParentCodeOrigin());
                                         node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
