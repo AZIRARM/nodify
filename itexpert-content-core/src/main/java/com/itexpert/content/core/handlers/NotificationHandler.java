@@ -1,34 +1,42 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.mappers.NotificationMapper;
-import com.itexpert.content.core.repositories.NotificationRepository;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.models.Notification;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.jaxb.SpringDataJaxb;
+import org.springframework.data.domain.Range;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @AllArgsConstructor
+@Slf4j
 public class NotificationHandler {
-    private final NotificationRepository notificationRepository;
+
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final NotificationMapper notificationMapper;
 
-    public Flux<Notification> findAll() {
-        return notificationRepository.findAll().map(notificationMapper::fromEntity);
+    private String keyForUser(UUID userId) {
+        return "NOTIFICATIONS:" + userId.toString();
     }
 
+    /** Récupère toutes les notifications pour un utilisateur */
+    public Flux<Notification> findAll(UUID userId) {
+        return redisTemplate.opsForZSet()
+                .reverseRange(keyForUser(userId), Range.unbounded())
+                .map(notificationMapper::fromJson);
+    }
+
+    /** Crée une nouvelle notification pour un utilisateur */
     public Mono<Notification> create(NotificationEnum type,
                                      String description,
                                      String user,
@@ -36,97 +44,132 @@ public class NotificationHandler {
                                      String typeCode,
                                      String typeVersion) {
 
-
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
-                .user(user)
+                .user(UUID.fromString(user))
                 .type(elementType)
                 .typeCode(typeCode)
                 .typeVersion(typeVersion)
                 .code(type.name())
                 .date(Instant.now().toEpochMilli())
                 .description(description)
+                .readers(new ArrayList<>())
                 .build();
-        return Mono.just(notification)
-                .map(notificationMapper::fromModel)
-                .flatMap(notificationRepository::save).
-                map(notificationMapper::fromEntity);
+
+        return save(notification);
     }
 
-    public Mono<Notification> findById(UUID uuid) {
-        return notificationRepository.findById(uuid).map(notificationMapper::fromEntity);
-    }
-
+    /** Sauvegarde (ajoute ou met à jour) une notification */
     public Mono<Notification> save(Notification notification) {
-        if (ObjectUtils.isEmpty(notification.getId())) {
-            notification.setId(UUID.randomUUID());
-        }
+        String key = keyForUser(notification.getUser());
+        String json = notificationMapper.toJson(notification);
 
-        return notificationRepository.save(notificationMapper.fromModel(notification)).map(notificationMapper::fromEntity);
+        // Supprimer l'ancienne version pour éviter les doublons
+        return redisTemplate.opsForZSet()
+                .remove(key, json)
+                .then(redisTemplate.opsForZSet().add(key, json, notification.getDate()))
+                .thenReturn(notification);
     }
 
-
-    public Mono<Boolean> delete(UUID uuid) {
-        return notificationRepository.deleteById(uuid)
-                .map(unused -> Boolean.TRUE)
-                .onErrorReturn(Boolean.FALSE);
+    /** Supprime une notification par ID */
+    public Mono<Boolean> delete(UUID notificationId) {
+        return redisTemplate.keys("NOTIFICATIONS:*")
+                .flatMap(key -> redisTemplate.opsForZSet()
+                        .range(key, Range.unbounded())
+                        .flatMap(json -> {
+                            Notification n = notificationMapper.fromJson(json);
+                            if (n.getId().equals(notificationId)) {
+                                return redisTemplate.opsForZSet().remove(key, json);
+                            }
+                            return Mono.empty();
+                        })
+                )
+                .next()
+                .map(count -> count > 0)
+                .defaultIfEmpty(false);
     }
 
-    public Flux<Notification> unreadedByUserId(String userId, Integer currentPage, Integer pageSize) {
-        return notificationRepository.unreaderByUserId(userId,  PageRequest.of(currentPage, pageSize, Sort.by(Sort.Order.by("date")).descending()))
-                .map(notificationMapper::fromEntity);
+    /** Compte les notifications non lues pour un utilisateur */
+    public Mono<Long> countUnreaded(UUID userId) {
+        return findAll(userId)
+                .filter(n -> ObjectUtils.isEmpty(n.getReaders()) || !n.getReaders().contains(userId))
+                .count();
     }
 
-
-    public Flux<Notification> readedByUserId(String userId, Integer currentPage, Integer pageSize) {
-        return notificationRepository.readerByUserId(userId,  PageRequest.of(currentPage, pageSize, Sort.by(Sort.Order.by("date")).descending()))
-                .map(notificationMapper::fromEntity);
+    /** Compte les notifications lues pour un utilisateur */
+    public Mono<Long> countReaded(UUID userId) {
+        return findAll(userId)
+                .filter(n -> ObjectUtils.isNotEmpty(n.getReaders()) && n.getReaders().contains(userId))
+                .count();
     }
 
-    public Mono<Notification> markread(UUID notificationId, String userId) {
-        return notificationRepository.findById(notificationId)
-                .map(notification -> {
-                    if (ObjectUtils.isEmpty(notification.getReaders())) {
-                        notification.setReaders(List.of(userId));
-                    } else {
-                        notification.getReaders().add(userId);
+    /** Récupère une notification par son ID */
+    public Mono<Notification> findById(UUID userId, UUID notificationId) {
+        return redisTemplate.opsForZSet()
+                .range(keyForUser(userId), Range.unbounded())
+                .map(notificationMapper::fromJson)
+                .filter(n -> n.getId().equals(notificationId))
+                .next();
+    }
+
+    /** Notifications non lues avec pagination */
+    public Flux<Notification> unreadedByUserId(UUID userId, int currentPage, int pageSize) {
+        long start = (long) currentPage * pageSize;
+        long end = start + pageSize - 1;
+
+        return redisTemplate.opsForZSet()
+                .reverseRange(keyForUser(userId), Range.closed(start, end))
+                .map(notificationMapper::fromJson)
+                .filter(n -> ObjectUtils.isEmpty(n.getReaders()) || !n.getReaders().contains(userId));
+    }
+
+    /** Notifications lues avec pagination */
+    public Flux<Notification> readedByUserId(UUID userId, int currentPage, int pageSize) {
+        long start = (long) currentPage * pageSize;
+        long end = start + pageSize - 1;
+
+        return redisTemplate.opsForZSet()
+                .reverseRange(keyForUser(userId), Range.closed(start, end))
+                .map(notificationMapper::fromJson)
+                .filter(n -> ObjectUtils.isNotEmpty(n.getReaders()) && n.getReaders().contains(userId));
+    }
+
+    /** Marque une notification comme lue */
+    public Mono<Notification> markRead(UUID userId, UUID notificationId) {
+        return findById(userId, notificationId)
+                .flatMap(n -> {
+                    if (ObjectUtils.isEmpty(n.getReaders())) {
+                        n.setReaders(new ArrayList<>(List.of(userId)));
+                    } else if (!n.getReaders().contains(userId)) {
+                        n.getReaders().add(userId);
                     }
-                    return notification;
-                }).flatMap(this.notificationRepository::save)
-                .map(this.notificationMapper::fromEntity);
+                    return save(n);
+                });
     }
 
-    public Mono<Notification> markunread(UUID notificationId, String userId) {
-        return notificationRepository.findById(notificationId)
-                .map(notification -> {
-                    if (ObjectUtils.isNotEmpty(notification.getReaders())) {
-                        notification.getReaders().remove(userId);
+    /** Marque une notification comme non lue */
+    public Mono<Notification> markUnread(UUID userId, UUID notificationId) {
+        return findById(userId, notificationId)
+                .flatMap(n -> {
+                    if (ObjectUtils.isNotEmpty(n.getReaders())) {
+                        n.getReaders().remove(userId);
                     }
-                    return notification;
-                }).flatMap(this.notificationRepository::save)
-                .map(this.notificationMapper::fromEntity);
+                    return save(n);
+                });
     }
 
-    public Flux<Notification> markAllAsRead(String userId) {
-        return this.notificationRepository.findAllUnreadedByUserId(userId)
-                .map(notification -> {
-                    if (ObjectUtils.isEmpty(notification.getReaders())) {
-                        notification.setReaders(List.of(userId));
-                    } else {
-                        notification.getReaders().add(userId);
+    /** Marque toutes les notifications comme lues */
+    public Flux<Notification> markAllAsRead(UUID userId) {
+        return redisTemplate.opsForZSet()
+                .range(keyForUser(userId), Range.unbounded())
+                .map(notificationMapper::fromJson)
+                .flatMap(n -> {
+                    if (ObjectUtils.isEmpty(n.getReaders())) {
+                        n.setReaders(new ArrayList<>(List.of(userId)));
+                    } else if (!n.getReaders().contains(userId)) {
+                        n.getReaders().add(userId);
                     }
-                    return notification;
-                })
-                .flatMap(this.notificationRepository::save)
-                .map(this.notificationMapper::fromEntity);
-    }
-
-    public Mono<Long> countUnreaded(String userId) {
-        return this.notificationRepository.countUnreadedByUserId(userId);
-    }
-
-    public Mono<Long> countReaded(String userId) {
-        return this.notificationRepository.countReadedByUserId(userId);
+                    return save(n);
+                });
     }
 }
-

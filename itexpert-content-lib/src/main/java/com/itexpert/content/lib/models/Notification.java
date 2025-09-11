@@ -19,6 +19,6 @@ public class Notification {
     private String code;
     private Long date;
     private String description;
-    private String user;
+    private UUID user;
     private List<UUID> readers;
 }
