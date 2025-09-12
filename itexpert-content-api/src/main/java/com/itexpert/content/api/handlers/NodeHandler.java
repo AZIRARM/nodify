@@ -68,7 +68,7 @@ public class NodeHandler {
     }
 
     public Flux<Node> findAllByParentCode(String code, StatusEnum status) {
-        return nodeRepository.findChildreensByCodeParent(code, status.name())
+        return nodeRepository.findByParentCodeAndStatus(code, status.name())
                 .map(nodeMapper::fromEntity)
                 .flatMap(node -> RulesUtils.evaluateNode(node)
                         .filter(aBoolean -> aBoolean)
