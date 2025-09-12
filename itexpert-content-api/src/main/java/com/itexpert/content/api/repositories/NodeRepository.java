@@ -24,8 +24,8 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     @Query("{ $or: [  {'code' : ?0},{'parentCodeOrigin' : ?0},{'parentCode' : ?0}], 'status': ?1 }")
     Flux<Node> findAllByCodePatentAndStatus(String code, String status);
 
-    @Query("{ 'codeParent' : ?0, 'status': ?1 }")
-    Flux<Node> findChildreensByCodeParent(String code, String status);
+    //@Query("{ 'codeParent' : ?0, 'status': ?1 }")
+    Flux<Node> findByParentCodeAndStatus(String code, String status);
 
     @Query("{ 'codeParent' :{ $exists: false }, 'status': ?0 }")
      Flux<Node> findParentsNodesByStatus(String status);
