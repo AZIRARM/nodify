@@ -70,7 +70,8 @@ class NotificationHandlerTest {
                 userId,
                 "ALERT",
                 "CODE",
-                "1.0"
+                "1.0",
+                Boolean.TRUE
         );
 
         StepVerifier.create(result)

@@ -91,7 +91,7 @@ public class PluginHandler {
 
     public Mono<Plugin> notify(Plugin model, NotificationEnum type, String user) {
         return notificationHandler
-                .create(type, model.getCode(), user, "PLUGIN", model.getName(), null)
+                .create(type, model.getCode(), user, "PLUGIN", model.getName(), null, Boolean.TRUE)
                 .map(notification -> model);
     }
 

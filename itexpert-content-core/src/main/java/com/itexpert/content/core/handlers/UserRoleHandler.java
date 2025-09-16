@@ -71,7 +71,7 @@ public class UserRoleHandler {
     public Mono<UserRole> notify(UserRole model, NotificationEnum type) {
         return Mono.just(model).flatMap(user -> {
             return notificationHandler
-                    .create(type, user.getCode(), null, "USER_ROLE", model.getCode(), null)
+                    .create(type, user.getCode(), null, "USER_ROLE", model.getCode(), null, Boolean.TRUE)
                     .map(notification -> model);
         });
     }

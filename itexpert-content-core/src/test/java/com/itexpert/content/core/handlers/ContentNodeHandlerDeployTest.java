@@ -93,7 +93,7 @@ public class ContentNodeHandlerDeployTest {
         snapshotEntity.setSlug("my-beautifull-slug");
         snapshotEntity.setCreationDate(snapshotNode.getCreationDate());
 
-        when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
+        when(notificationHandler.create(any(), any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
     }
 
     @Test

@@ -140,7 +140,7 @@ public class FeedbackHandler {
     public Mono<Feedback> notify(Feedback model, NotificationEnum type) {
         return Mono.just(model).flatMap(feedback -> {
             return notificationHandler
-                    .create(type, feedback.getContentCode() + ", evaluation : " + feedback.getEvaluation(), null, "FEEDBACK", model.getContentCode(), null)
+                    .create(type, feedback.getContentCode() + ", evaluation : " + feedback.getEvaluation(), null, "FEEDBACK", model.getContentCode(), null, Boolean.TRUE)
                     .map(notification -> model);
         });
     }

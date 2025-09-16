@@ -274,7 +274,8 @@ public class ContentNodeHandler {
                             model.getModifiedBy(),
                             "CONTENT_NODE",
                             model.getCode(),
-                            model.getVersion())
+                            model.getVersion(),
+                            Boolean.TRUE)
                     .map(notification -> contentNode);
         });
     }
