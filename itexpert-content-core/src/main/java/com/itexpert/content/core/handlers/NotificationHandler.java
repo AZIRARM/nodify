@@ -1,6 +1,7 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.mappers.NotificationMapper;
+import com.itexpert.content.core.repositories.UserRepository;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.models.Notification;
 import lombok.AllArgsConstructor;
@@ -10,7 +11,6 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import org.springframework.data.redis.core.ZSetOperations;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -22,6 +22,7 @@ public class NotificationHandler {
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final NotificationMapper notificationMapper;
+    private final UserRepository userRepository;
 
     private String keyForUser(String user) {
         return "NOTIFICATIONS:" + user;
@@ -35,8 +36,31 @@ public class NotificationHandler {
                                      String user,
                                      String elementType,
                                      String typeCode,
-                                     String typeVersion) {
+                                     String typeVersion,
+                                     Boolean forAll) {
 
+
+        if (forAll) {
+            return this.userRepository.findAll()
+                    .filter(userPost -> !userPost.getEmail().equals(user))
+                    .flatMap(userPost -> createNotificationFactory(type, description, userPost.getEmail(), elementType, typeCode, typeVersion))
+                    .flatMap(this::save)
+                    .collectList()
+                    .then(this.createNotificationFactory(type, description, user, elementType, typeCode, typeVersion));
+        } else {
+
+            return this.createNotificationFactory(type, description, user, elementType, typeCode, typeVersion)
+                    .flatMap(this::save);
+        }
+
+    }
+
+    private Mono<Notification> createNotificationFactory(NotificationEnum type,
+                                                         String description,
+                                                         String user,
+                                                         String elementType,
+                                                         String typeCode,
+                                                         String typeVersion) {
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
                 .user(user)
@@ -46,10 +70,9 @@ public class NotificationHandler {
                 .code(type.name())
                 .date(Instant.now().toEpochMilli())
                 .description(description)
-                .read(false) // par défaut non lue
+                .read(false)
                 .build();
-
-        return save(notification);
+        return Mono.just(notification);
     }
 
 

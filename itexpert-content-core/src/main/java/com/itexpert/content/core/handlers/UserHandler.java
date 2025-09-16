@@ -57,14 +57,14 @@ public class UserHandler {
                                     ).flatMap(Mono::from)
                     )
                     .map(userMapper::fromEntity)
-                    .flatMap(model -> this.notify(model, NotificationEnum.CREATION_OR_UPDATE));
+                    .flatMap(model -> this.notify(model, NotificationEnum.CREATION_OR_UPDATE, Boolean.TRUE));
         } else {
             return userRepository.findById(user.getId())
                     .filter(userDb -> userDb.getEmail().toUpperCase().equals(user.getEmail().toUpperCase()))
                     .map(userDb -> userMapper.fromModel(user))
                     .flatMap(userRepository::save)
                     .map(userMapper::fromEntity)
-                    .flatMap(model -> this.notify(model, NotificationEnum.CREATION_OR_UPDATE));
+                    .flatMap(model -> this.notify(model, NotificationEnum.CREATION_OR_UPDATE, Boolean.TRUE));
         }
 
     }
@@ -76,7 +76,7 @@ public class UserHandler {
                     if (entity.getRoles() != null && entity.getRoles().contains("ADMIN")) {
                         return Mono.just(Boolean.FALSE);
                     }
-                    return this.notify(this.userMapper.fromEntity(entity), NotificationEnum.DELETION)
+                    return this.notify(this.userMapper.fromEntity(entity), NotificationEnum.DELETION, Boolean.TRUE)
                             .flatMap(notification ->
                                     this.userRepository.deleteById(uuid)
                                             .thenReturn(Boolean.TRUE)
@@ -96,16 +96,22 @@ public class UserHandler {
                     if (passwordEncoder.encode(user.getPassword()).equals(
                             passwordEncoder.encode(user.getPassword()))) {
                         user.setPassword(passwordEncoder.encode(userPassword.getNewPassword()));
-                        return userRepository.save(user).map(userBDD -> Boolean.TRUE);
+                        return userRepository.save(user)
+                                .map(this.userMapper::fromEntity)
+                                .flatMap(userPost -> this.notify(userPost, NotificationEnum.PASSWORD_CHANGE, Boolean.FALSE))
+                                .map(userBDD -> Boolean.TRUE);
                     }
-                    return userRepository.save(user).map(userBDD -> Boolean.FALSE);
+                    return userRepository.save(user)
+                            .map(this.userMapper::fromEntity)
+                            .flatMap(userPost -> this.notify(userPost, NotificationEnum.PASSWORD_CHANGE, Boolean.FALSE))
+                            .map(userPost -> Boolean.FALSE);
                 })
                 .flatMap(Mono::from)
                 .switchIfEmpty(Mono.just(Boolean.FALSE));
     }
 
 
-    public Mono<UserPost> notify(UserPost model, NotificationEnum type) {
+    public Mono<UserPost> notify(UserPost model, NotificationEnum type, Boolean notifyAll) {
         return Mono.just(model).flatMap(user -> {
             return notificationHandler
                     .create(type,
@@ -113,7 +119,9 @@ public class UserHandler {
                             null,
                             "USER",
                             model.getEmail(),
-                            null)
+                            null,
+                            notifyAll
+                            )
                     .map(notification -> model);
         });
     }

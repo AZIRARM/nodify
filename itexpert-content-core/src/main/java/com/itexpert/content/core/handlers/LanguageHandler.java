@@ -44,7 +44,7 @@ public class LanguageHandler {
     public Mono<Language> notify(Language model, NotificationEnum type) {
         return Mono.just(model).flatMap(language -> {
             return notificationHandler
-                    .create(type, language.getCode(), null, "LANGUAGE", model.getCode(), null)
+                    .create(type, language.getCode(), null, "LANGUAGE", model.getCode(), null, Boolean.TRUE)
                     .map(notification -> model);
         });
     }

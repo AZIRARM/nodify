@@ -88,7 +88,7 @@ public class ContentNodeHandlerImportTest {
         snapshotEntity.setSlug("my-beautifull-slug");
         snapshotEntity.setCreationDate(snapshotNode.getCreationDate());
 
-        when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
+        when(notificationHandler.create(any(), any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
     }
 
     @Test
@@ -146,7 +146,7 @@ public class ContentNodeHandlerImportTest {
 
         verify(contentNodeRepository).findByCodeAndStatus(eq("code123"), eq(StatusEnum.SNAPSHOT.name()));
         verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
-        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any());
+        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -192,7 +192,7 @@ public class ContentNodeHandlerImportTest {
 
         verify(contentNodeRepository).findByCodeAndStatus(eq("newCode"), eq(StatusEnum.SNAPSHOT.name()));
         verify(contentNodeRepository).save(any(ContentNode.class));
-        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any());
+        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any(), any());
     }
 
     private void updateConfiguration(ContentNodeSlugHelper contentNodeSlugHelperParam) {

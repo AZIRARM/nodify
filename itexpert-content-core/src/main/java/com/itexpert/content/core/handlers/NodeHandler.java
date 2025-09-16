@@ -333,7 +333,8 @@ public class NodeHandler {
                             model.getModifiedBy(),
                             "NODE",
                             model.getCode(),
-                            model.getVersion())
+                            model.getVersion(),
+                            Boolean.TRUE)
                     .map(notification -> node);
         });
     }

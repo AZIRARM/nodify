@@ -87,7 +87,7 @@ public class NodeHandlerPublishTest {
         childNode.setVersion("0");
 
         when(userHandler.findById(any())).thenReturn(Mono.just(mock(UserPost.class)));
-        when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
+        when(notificationHandler.create(any(), any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
 
     }
 

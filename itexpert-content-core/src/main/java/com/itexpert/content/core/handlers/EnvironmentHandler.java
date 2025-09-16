@@ -84,7 +84,7 @@ public class EnvironmentHandler {
     public Mono<Environment> notify(Environment model, NotificationEnum type) {
         return Mono.just(model).flatMap(environment -> {
             return notificationHandler
-                    .create(type, environment.getCode(), null, "ENVIRONMENT", model.getCode(), null)
+                    .create(type, environment.getCode(), null, "ENVIRONMENT", model.getCode(), null, Boolean.TRUE)
                     .map(notification -> model);
         });
     }
