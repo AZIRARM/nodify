@@ -5,13 +5,8 @@
 </p>
 
 <div style="text-align: center; width: 100%;">
-  <mat-slide-toggle (change)="markAllAsReaded()"  [disabled]="readed">
-    <span class="secondary" style="margin-left: 10px;margin-right: 10px;" *ngIf="!readed">{{ "MARK_AS_READ" | translate }}</span>
-    <span class="secondary" style="margin-left: 10px;margin-right: 10px;" *ngIf="readed">{{ "MARK_AS_READ" | translate }}</span>
-  </mat-slide-toggle>
-  <mat-slide-toggle (change)="allreadyReaded()">
-    <span class="secondary" style="margin-left: 10px;margin-right: 10px;" *ngIf="readed">{{ "ALREADY_READ" | translate }}</span>
-    <span class="secondary" style="margin-left: 10px;margin-right: 10px;" *ngIf="!readed">{{ "NOT_READ" | translate }}</span>
+  <mat-slide-toggle (change)="markAllAsReaded()" >
+    <span class="secondary" style="margin-left: 10px;margin-right: 10px;">{{ "MARK_AS_READ" | translate }}</span>
   </mat-slide-toggle>
 </div>
 
@@ -22,15 +17,15 @@
     <!-- Date Column -->
     <ng-container matColumnDef="Date">
       <th mat-header-cell *matHeaderCellDef>{{ "DATE" | translate }}</th>
-      <td mat-cell *matCellDef="let element" [ngClass]="{'read': readed, 'unread': !readed}" [title]="element.date">
-        {{ element.date | date: readed ? 'mediumDate' : 'dd/MM/YYYY HH:mm' }}
+      <td mat-cell *matCellDef="let element" class="unread" [title]="element.date">
+         {{ element.date | date:'dd/MM/yyyy' }}
       </td>
     </ng-container>
 
     <!-- Type Column -->
     <ng-container matColumnDef="Type">
       <th mat-header-cell *matHeaderCellDef>{{ "TYPE" | translate }}</th>
-      <td mat-cell *matCellDef="let element" [ngClass]="{'read': readed, 'unread': !readed}" [title]="element.type | translate">
+      <td mat-cell *matCellDef="let element"  class="unread" [title]="element.type | translate">
         {{ element.type | translate }}
       </td>
     </ng-container>
@@ -38,7 +33,7 @@
     <!-- Code Column -->
     <ng-container matColumnDef="Code">
       <th mat-header-cell *matHeaderCellDef>{{ "CODE" | translate }}</th>
-      <td mat-cell *matCellDef="let element" [ngClass]="{'read': readed, 'unread': !readed}" [title]="element.typeCode | translate">
+      <td mat-cell *matCellDef="let element"  class="unread" [title]="element.typeCode | translate">
         {{ element.typeCode | translate }}
       </td>
     </ng-container>
@@ -46,7 +41,7 @@
     <!-- Modified By Column -->
     <ng-container matColumnDef="By">
       <th mat-header-cell *matHeaderCellDef>{{ "MODIFIED_BY" | translate }}</th>
-      <td mat-cell *matCellDef="let element" [ngClass]="{'read': readed, 'unread': !readed}" [title]="element.userName">
+      <td mat-cell *matCellDef="let element"  class="unread" [title]="element.userName">
         {{ element.userName }}
       </td>
     </ng-container>
@@ -54,7 +49,7 @@
     <!-- Message Column -->
     <ng-container matColumnDef="Message">
       <th mat-header-cell *matHeaderCellDef>{{ "DESCRIPTION" | translate }}</th>
-      <td mat-cell *matCellDef="let element" [ngClass]="{'read': readed, 'unread': !readed}" [title]="element.code | translate">
+      <td mat-cell *matCellDef="let element"  class="unread" [title]="element.code | translate">
         {{ element.code | translate }}
       </td>
     </ng-container>
@@ -62,7 +57,7 @@
     <!-- Version Column -->
     <ng-container matColumnDef="Version">
       <th mat-header-cell *matHeaderCellDef>{{ "VERSION" | translate }}</th>
-      <td mat-cell *matCellDef="let element" [ngClass]="{'read': readed, 'unread': !readed}" [title]="element.typeVersion | translate">
+      <td mat-cell *matCellDef="let element"  class="unread" [title]="element.typeVersion | translate">
         {{ element.typeVersion | translate }}
       </td>
     </ng-container>
@@ -71,19 +66,12 @@
     <ng-container matColumnDef="Actions">
       <th mat-header-cell *matHeaderCellDef>{{ "ACTIONS" | translate }}</th>
       <td mat-cell *matCellDef="let element">
-        <mat-icon *ngIf="!readed"
+        <mat-icon 
           class="icon-display unread"
           (click)="markAsReaded(element)"
           matTooltip="{{ 'READED' | translate }}"
           [attr.aria-label]="'READED' | translate">
           check
-        </mat-icon>
-        <mat-icon  *ngIf="readed"
-          class="icon-display read"
-          (click)="markAsNotReaded(element)"
-          matTooltip="{{ 'NOT_READED' | translate }}"
-          [attr.aria-label]="'NOT_READED' | translate">
-          mark_chat_unread
         </mat-icon>
       </td>
     </ng-container>
@@ -96,7 +84,7 @@
     <tr
       mat-row
       *matRowDef="let row; columns: displayedColumns;"
-      [ngClass]="{'unread-row': !readed}" class="mat-row">
+     class="mat-row">
     </tr>
   </table>
 
