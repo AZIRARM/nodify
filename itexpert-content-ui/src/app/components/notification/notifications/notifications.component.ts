@@ -28,8 +28,6 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   total: number;
 
-  readed: boolean = false;
-
   constructor(private notificationService: NotificationService,
               private userService: UserService,
               private userAccessService: UserAccessService
@@ -56,38 +54,21 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   nextPage(nbPage: number, limit: number) {
-    if (!this.readed) {
-      this.notificationService.countUnreadedNotification(this.user!.id).subscribe(
-        (data: any) => {
-          this.total = data;
-          this.notificationService.findPaginated(this.user!.id, nbPage, limit).subscribe(
-            (response: any) => {
-              if (response) {
-                response.map((param: any) => this.setUserName(param));
-                this.dataSource = new MatTableDataSource(response);
-              }
-            },
-            error => {
-              console.error(error);
+    this.notificationService.countUnreadedNotification().subscribe(
+      (data: any) => {
+        this.total = data;
+        this.notificationService.unreaded(nbPage, limit).subscribe(
+          (response: any) => {
+            if (response) {
+              response.map((param: any) => this.setUserName(param));
+              this.dataSource = new MatTableDataSource(response);
             }
-          );
-        });
-    } else {
-      this.notificationService.countReadedNotification(this.user!.id).subscribe(
-        (data: any) => {
-          this.total = data;
-          this.notificationService.findReadedByUserId(this.user!.id, nbPage, limit).subscribe(
-            (response: any) => {
-              if (response) {
-                response.map((param: any) => this.setUserName(param));
-                this.dataSource = new MatTableDataSource(response);
-              }
-            },
-            error => {
-              console.error(error);
-            });
-        });
-    }
+          },
+          error => {
+            console.error(error);
+          }
+        );
+      });
   }
 
   setUserName(param: any) {
@@ -95,30 +76,22 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   markAsReaded(element: Notification) {
-    this.notificationService.markAsReaded(element.id, this.user!.id).subscribe((user: any) => {
+    this.notificationService.markAsReaded(element.id).subscribe((user: any) => {
       this.init();
     }, (error: any) => {
 
     });
   }
 
-  markAsNotReaded(element: Notification) {
-    this.notificationService.markAsNotReaded(element.id, this.user!.id).subscribe((user: any) => {
-      this.init();
-    }, (error: any) => {
-
-    });
-  }
 
   markAllAsReaded() {
-    this.notificationService.markAllReaded(this.user!.id).subscribe((user: any) => {
+    this.notificationService.markAllReaded().subscribe((user: any) => {
       this.init();
     }, (error: any) => {
     });
   }
 
   allreadyReaded() {
-    this.readed = !this.readed;
     this.paginator.pageIndex = 0;
     this.paginator.pageSize = 5;
     this.nextPage(this.paginator.pageIndex, this.paginator.pageSize);

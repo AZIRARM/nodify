@@ -5,16 +5,14 @@ import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.models.Notification;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.data.redis.core.ZSetOperations;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,18 +23,13 @@ public class NotificationHandler {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final NotificationMapper notificationMapper;
 
-    private String keyForUser(UUID userId) {
-        return "NOTIFICATIONS:" + userId.toString();
+    private String keyForUser(String user) {
+        return "NOTIFICATIONS:" + user;
     }
 
-    /** Récupère toutes les notifications pour un utilisateur */
-    public Flux<Notification> findAll(UUID userId) {
-        return redisTemplate.opsForZSet()
-                .reverseRange(keyForUser(userId), Range.unbounded())
-                .map(notificationMapper::fromJson);
-    }
-
-    /** Crée une nouvelle notification pour un utilisateur */
+    /**
+     * Crée une nouvelle notification
+     */
     public Mono<Notification> create(NotificationEnum type,
                                      String description,
                                      String user,
@@ -46,130 +39,156 @@ public class NotificationHandler {
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
-                .user(UUID.fromString(user))
+                .user(user)
                 .type(elementType)
                 .typeCode(typeCode)
                 .typeVersion(typeVersion)
                 .code(type.name())
                 .date(Instant.now().toEpochMilli())
                 .description(description)
-                .readers(new ArrayList<>())
+                .read(false) // par défaut non lue
                 .build();
 
         return save(notification);
     }
 
-    /** Sauvegarde (ajoute ou met à jour) une notification */
+
+    /**
+     * Sauvegarde : supprime d'abord toute entrée existante ayant le même id,
+     * puis ajoute la nouvelle JSON avec le score = date.
+     */
     public Mono<Notification> save(Notification notification) {
         String key = keyForUser(notification.getUser());
-        String json = notificationMapper.toJson(notification);
+        String newJson = notificationMapper.toJson(notification);
 
-        // Supprimer l'ancienne version pour éviter les doublons
+        Mono<Long> removedCount = redisTemplate.opsForZSet()
+                .range(key, Range.<Long>unbounded())
+                .flatMap(oldJson -> {
+                    Notification existing;
+                    try {
+                        existing = notificationMapper.fromJson(oldJson);
+                    } catch (Exception ex) {
+                        log.warn("save(): failed to parse existing JSON (skip): {}", oldJson, ex);
+                        return Mono.empty();
+                    }
+                    if (existing != null && existing.getId().equals(notification.getId())) {
+                        log.debug("save(): removing old JSON for key {} id {}", key, existing.getId());
+                        return redisTemplate.opsForZSet().remove(key, oldJson);
+                    }
+                    return Mono.empty();
+                })
+                .reduce(0L, Long::sum)
+                .defaultIfEmpty(0L);
+
+        return removedCount
+                .flatMap(r -> redisTemplate.opsForZSet().add(key, newJson, notification.getDate()))
+                .thenReturn(notification)
+                .doOnSuccess(n -> log.debug("Saved notification for {} id={}", key, n.getId()));
+    }
+
+    /**
+     * Notifications non lues avec pagination
+     */
+    public Flux<Notification> unreadedByUser(String user, int currentPage, int pageSize) {
+        String key = keyForUser(user);
+
         return redisTemplate.opsForZSet()
-                .remove(key, json)
-                .then(redisTemplate.opsForZSet().add(key, json, notification.getDate()))
-                .thenReturn(notification);
+                .reverseRange(key, Range.unbounded()) // récupérer toutes les notifications
+                .flatMap(json -> {
+                    try {
+                        Notification n = notificationMapper.fromJson(json);
+                        return Mono.just(n);
+                    } catch (Exception ex) {
+                        log.warn("unreadedByUser(): cannot parse JSON (skip): {}", json, ex);
+                        return Mono.empty();
+                    }
+                })
+                .filter(n -> !n.isRead())           // ne garder que les non lues
+                .skip((long) currentPage * pageSize) // appliquer la page
+                .take(pageSize);                     // limiter le nombre d'éléments
     }
 
-    /** Supprime une notification par ID */
-    public Mono<Boolean> delete(UUID notificationId) {
-        return redisTemplate.keys("NOTIFICATIONS:*")
-                .flatMap(key -> redisTemplate.opsForZSet()
-                        .range(key, Range.unbounded())
-                        .flatMap(json -> {
-                            Notification n = notificationMapper.fromJson(json);
-                            if (n.getId().equals(notificationId)) {
-                                return redisTemplate.opsForZSet().remove(key, json);
-                            }
-                            return Mono.empty();
-                        })
-                )
-                .next()
-                .map(count -> count > 0)
-                .defaultIfEmpty(false);
-    }
 
-    /** Compte les notifications non lues pour un utilisateur */
-    public Mono<Long> countUnreaded(UUID userId) {
-        return findAll(userId)
-                .filter(n -> ObjectUtils.isEmpty(n.getReaders()) || !n.getReaders().contains(userId))
+    public Mono<Long> countUnreaded(String user) {
+        return findAll(user)
+                .filter(n -> !n.isRead())
                 .count();
     }
 
-    /** Compte les notifications lues pour un utilisateur */
-    public Mono<Long> countReaded(UUID userId) {
-        return findAll(userId)
-                .filter(n -> ObjectUtils.isNotEmpty(n.getReaders()) && n.getReaders().contains(userId))
-                .count();
+    /**
+     * Récupère toutes les notifications (du plus récent au plus ancien)
+     */
+    private Flux<Notification> findAll(String user) {
+        String key = keyForUser(user);
+        return redisTemplate.opsForZSet()
+                .reverseRange(key, Range.<Long>unbounded())
+                .flatMap(json -> {
+                    try {
+                        return Mono.just(notificationMapper.fromJson(json));
+                    } catch (Exception ex) {
+                        log.warn("findAll(): cannot parse JSON (skip): {}", json, ex);
+                        return Mono.empty();
+                    }
+                });
     }
 
-    /** Récupère une notification par son ID */
-    public Mono<Notification> findById(UUID userId, UUID notificationId) {
+    public Mono<Notification> markRead(String user, UUID notificationId) {
+        return findById(user, notificationId)
+                .flatMap(n ->
+                        delete(notificationId)
+                                .flatMap(deleted -> deleted ? Mono.just(n) : Mono.empty())
+                );
+    }
+
+    public Flux<Notification> markAllAsRead(String user) {
+        return findAll(user)
+                .flatMap(n -> delete(n.getId())
+                        .flatMap(deleted -> deleted ? Mono.just(n) : Mono.empty())
+                );
+    }
+
+    /**
+     * Récupère une notification par ID
+     */
+    private Mono<Notification> findById(String user, UUID notificationId) {
+        String key = keyForUser(user);
         return redisTemplate.opsForZSet()
-                .range(keyForUser(userId), Range.unbounded())
-                .map(notificationMapper::fromJson)
+                .range(key, Range.<Long>unbounded())
+                .flatMap(json -> {
+                    try {
+                        return Mono.just(notificationMapper.fromJson(json));
+                    } catch (Exception ex) {
+                        log.warn("findById(): cannot parse JSON (skip): {}", json, ex);
+                        return Mono.empty();
+                    }
+                })
                 .filter(n -> n.getId().equals(notificationId))
                 .next();
     }
 
-    /** Notifications non lues avec pagination */
-    public Flux<Notification> unreadedByUserId(UUID userId, int currentPage, int pageSize) {
-        long start = (long) currentPage * pageSize;
-        long end = start + pageSize - 1;
-
-        return redisTemplate.opsForZSet()
-                .reverseRange(keyForUser(userId), Range.closed(start, end))
-                .map(notificationMapper::fromJson)
-                .filter(n -> ObjectUtils.isEmpty(n.getReaders()) || !n.getReaders().contains(userId));
-    }
-
-    /** Notifications lues avec pagination */
-    public Flux<Notification> readedByUserId(UUID userId, int currentPage, int pageSize) {
-        long start = (long) currentPage * pageSize;
-        long end = start + pageSize - 1;
-
-        return redisTemplate.opsForZSet()
-                .reverseRange(keyForUser(userId), Range.closed(start, end))
-                .map(notificationMapper::fromJson)
-                .filter(n -> ObjectUtils.isNotEmpty(n.getReaders()) && n.getReaders().contains(userId));
-    }
-
-    /** Marque une notification comme lue */
-    public Mono<Notification> markRead(UUID userId, UUID notificationId) {
-        return findById(userId, notificationId)
-                .flatMap(n -> {
-                    if (ObjectUtils.isEmpty(n.getReaders())) {
-                        n.setReaders(new ArrayList<>(List.of(userId)));
-                    } else if (!n.getReaders().contains(userId)) {
-                        n.getReaders().add(userId);
-                    }
-                    return save(n);
-                });
-    }
-
-    /** Marque une notification comme non lue */
-    public Mono<Notification> markUnread(UUID userId, UUID notificationId) {
-        return findById(userId, notificationId)
-                .flatMap(n -> {
-                    if (ObjectUtils.isNotEmpty(n.getReaders())) {
-                        n.getReaders().remove(userId);
-                    }
-                    return save(n);
-                });
-    }
-
-    /** Marque toutes les notifications comme lues */
-    public Flux<Notification> markAllAsRead(UUID userId) {
-        return redisTemplate.opsForZSet()
-                .range(keyForUser(userId), Range.unbounded())
-                .map(notificationMapper::fromJson)
-                .flatMap(n -> {
-                    if (ObjectUtils.isEmpty(n.getReaders())) {
-                        n.setReaders(new ArrayList<>(List.of(userId)));
-                    } else if (!n.getReaders().contains(userId)) {
-                        n.getReaders().add(userId);
-                    }
-                    return save(n);
-                });
+    /**
+     * Supprime une notification par ID (parcourt toutes les clés NOTIFICATIONS:*)
+     */
+    private Mono<Boolean> delete(UUID notificationId) {
+        return redisTemplate.keys("NOTIFICATIONS:*")
+                .flatMap(key -> redisTemplate.opsForZSet()
+                        .range(key, Range.<Long>unbounded())
+                        .flatMap(json -> {
+                            Notification n;
+                            try {
+                                n = notificationMapper.fromJson(json);
+                            } catch (Exception ex) {
+                                log.warn("delete(): cannot parse JSON (skip): {}", json, ex);
+                                return Mono.empty();
+                            }
+                            if (n.getId().equals(notificationId)) {
+                                log.debug("delete(): removing json for key {} id {}", key, notificationId);
+                                return redisTemplate.opsForZSet().remove(key, json);
+                            }
+                            return Mono.empty();
+                        }))
+                .next()
+                .map(count -> count > 0)
+                .defaultIfEmpty(false);
     }
 }
