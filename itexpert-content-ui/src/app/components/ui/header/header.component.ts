@@ -120,7 +120,7 @@ export class HeaderComponent {
       this.user = this.userAccessService.getCurrentUser()
 
       if (this.user && this.user!.id) {
-        this.notificationService.countUnreadedNotification(this.user!.id).subscribe(
+        this.notificationService.countUnreadedNotification().subscribe(
           (data: any) => {
             this.nbNotifications = data;
           }

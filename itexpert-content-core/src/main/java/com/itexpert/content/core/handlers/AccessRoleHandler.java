@@ -64,7 +64,7 @@ public class AccessRoleHandler {
     public Mono<AccessRole> notify(AccessRole model, NotificationEnum type) {
         return Mono.just(model).flatMap(accessRole -> {
             return notificationHandler
-                    .create(type, accessRole.getCode(), null, "ACCESS_ROLE", model.getCode(), null)
+                    .create(type, accessRole.getCode(), null, "ACCESS_ROLE", model.getCode(), null, Boolean.TRUE)
                     .map(notification -> model);
         });
     }

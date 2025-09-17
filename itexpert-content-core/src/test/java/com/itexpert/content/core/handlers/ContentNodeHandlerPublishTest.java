@@ -66,7 +66,7 @@ public class ContentNodeHandlerPublishTest {
 
         when(contentNodeRepository.save(any(ContentNode.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
-        when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
+        when(notificationHandler.create(any(), any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class ContentNodeHandlerPublishTest {
                 .verifyComplete();
 
         verify(contentNodeRepository, times(2)).save(any(ContentNode.class));
-        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any());
+        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -137,7 +137,7 @@ public class ContentNodeHandlerPublishTest {
         // THEN
         // 2 saves principaux : archiver l'ancien + publier le snapshot
         verify(contentNodeRepository, times(3)).save(any(ContentNode.class));
-        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any());
+        verify(notificationHandler, times(1)).create(any(), any(), any(), any(), any(), any(), any());
     }
 
 }
