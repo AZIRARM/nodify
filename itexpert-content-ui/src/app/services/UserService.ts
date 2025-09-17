@@ -29,7 +29,7 @@ export class UserService extends Service {
     return super.get("id/" + userId);
   }
 
-  setUserName(content: any): void {
+  setUserNamdde(content: any): void {
     if (content && !content.userName) {
       const userId = content.userId ?? content.modifiedBy;
 
