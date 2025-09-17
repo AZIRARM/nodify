@@ -39,9 +39,9 @@ public class WebSecurityConfig {
                         .pathMatchers("/authentication/login").permitAll()
                         .pathMatchers("/swagger-ui/**").permitAll()
                         .pathMatchers("/file").permitAll()
-                        .pathMatchers("/v0/ollama/test-ollama").permitAll()
                         .pathMatchers("/export").permitAll()
                         .pathMatchers("/health").permitAll()
+                        .pathMatchers("/ws/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .build();

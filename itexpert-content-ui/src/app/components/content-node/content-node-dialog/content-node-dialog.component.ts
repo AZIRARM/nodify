@@ -399,11 +399,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       this.currentContent.urls = this.currentContent.urls.filter((v: ContentUrl) => (v.url !== url.url && v.type !== url.type && v.description !== url.description));
     }
   }
-
-  setUserName(param: any) {
-    this.userService.setUserName(param);
-  }
-
+  
   export(element: ContentNode, environmentCode: string) {
 
     this.contentNodeService.export(element.code, environmentCode).subscribe((data: any) => {

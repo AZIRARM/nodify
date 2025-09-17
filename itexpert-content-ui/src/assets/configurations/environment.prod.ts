@@ -1,6 +1,7 @@
 export class  Env  {
   public static EXPERT_CONTENT_CORE_URL:string = "./core";
   public static EXPERT_CONTENT_API_URL:string = "_API_URL_";
+  public static EXPERT_CONTENT_CORE_WEBSOCKET:string = "./ws";
   public static EXPERT_CONTENT_AUTHENTICATION_URL:string = "./authentication";
 
   public static isProd() {
