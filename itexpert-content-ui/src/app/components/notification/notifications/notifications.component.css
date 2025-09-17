@@ -3,7 +3,7 @@
 }
 .unread {
   font-weight: bold;
-  color: var(--danger);
+  color: var(--seconday);
 }
 mat-paginator {
   justify-content: center;

@@ -46,7 +46,7 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   init() {
-    this.nextPage(this.paginator ? this.paginator?.pageIndex : 0, this.paginator ? this.paginator.pageSize : 5);
+    this.nextPage(this.paginator ? this.paginator?.pageIndex : 0, this.paginator ? this.paginator.pageSize : 10);
   }
 
   gotoNextPage(event: any) {
@@ -93,7 +93,7 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   allreadyReaded() {
     this.paginator.pageIndex = 0;
-    this.paginator.pageSize = 5;
+    this.paginator.pageSize = 10;
     this.nextPage(this.paginator.pageIndex, this.paginator.pageSize);
   }
 }

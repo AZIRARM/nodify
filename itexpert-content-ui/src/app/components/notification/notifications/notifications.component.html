@@ -42,7 +42,7 @@
     <ng-container matColumnDef="By">
       <th mat-header-cell *matHeaderCellDef>{{ "MODIFIED_BY" | translate }}</th>
       <td mat-cell *matCellDef="let element"  class="unread" [title]="element.userName">
-        {{ element.userName }}
+        {{ element.modifiedBy }}
       </td>
     </ng-container>
 
@@ -91,8 +91,8 @@
   <!-- Paginator -->
   <mat-paginator #MatPaginator
     [length]="total"
-    [pageSize]="5"
-    [pageSizeOptions]="[5, 10]"
+    [pageSize]="10"
+    [pageSizeOptions]="[5, 10, 20]"
     (page)="gotoNextPage($event)"
     [showFirstLastButtons]="true">
   </mat-paginator>

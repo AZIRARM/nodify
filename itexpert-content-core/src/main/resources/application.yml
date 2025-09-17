@@ -5,7 +5,13 @@ spring:
       auto-index-creation:  true
     redis:
       url: ${REDIS_URL:redis://localhost:6379}  # prendra la variable d'environnement REDIS_URL ou localhost par défaut
-
+      timeout: 2s    # timeout des opérations Redis (par défaut 1 min)
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 2
+          time-between-eviction-runs: 1s
   application:
     name: nodify-headless-cms-core
     version: 3.0.0
@@ -52,5 +58,8 @@ server:
   port : 8080
 logging:
   level:
-    root: INFO
-    com.itexpert.content: INFO
+    root: INFO                              # niveau global
+    com.itexpert: INFO                      # ton package principal pour debug
+    org.springframework.data.redis: DEBUG   # debug Redis (Spring Data Redis)
+    io.lettuce.core: DEBUG                  # debug Lettuce client (commandes Redis, timeout)
+    reactor.netty: WARN                     # réduire le bruit des logs Netty si trop verbeux
