@@ -466,10 +466,6 @@ init() {
       });
   }
 
-  setUserName(param: any) {
-    this.userService.setUserName(param);
-  }
-
   export(element: Node, environmentCode: string) {
     this.nodeService.export(element.code, environmentCode).subscribe((data: any) => {
 

@@ -7,6 +7,7 @@ import {NotificationService} from "../../../services/NotificationService";
 import {Notification} from "../../../modeles/Notification";
 import {MatPaginator} from "@angular/material/paginator";
 import {UserAccessService} from "../../../services/UserAccessService";
+import { AuthenticationService } from 'src/app/services/AuthenticationService';
 
 @Component({
   selector: 'app-notifications',
@@ -30,7 +31,8 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
 
   constructor(private notificationService: NotificationService,
               private userService: UserService,
-              private userAccessService: UserAccessService
+              private userAccessService: UserAccessService,
+              private authenticationService: AuthenticationService
   ) {
   }
 
@@ -54,25 +56,17 @@ export class NotificationsComponent implements OnInit, AfterViewInit {
   }
 
   nextPage(nbPage: number, limit: number) {
-    this.notificationService.countUnreadedNotification().subscribe(
-      (data: any) => {
-        this.total = data;
-        this.notificationService.unreaded(nbPage, limit).subscribe(
-          (response: any) => {
-            if (response) {
-              response.map((param: any) => this.setUserName(param));
-              this.dataSource = new MatTableDataSource(response);
-            }
-          },
-          error => {
-            console.error(error);
-          }
-        );
-      });
-  }
 
-  setUserName(param: any) {
-    this.userService.setUserName(param);
+     if (this.authenticationService.isAuthenticated()) {
+      this.notificationService.connectWebSocket(this.authenticationService.getAccessToken(), nbPage, limit).subscribe({
+        next: (data: any) => {
+          this.total = data.count;
+          this.dataSource = new MatTableDataSource(data.unread);
+        },
+        error: (err:any) => console.error("Erreur WebSocket:", err),
+        complete: () => console.log("Socket fermé")
+      });
+    }
   }
 
   markAsReaded(element: Notification) {
