@@ -365,11 +365,17 @@ public class NodeEndPoint {
                         log.debug("[EXPORT] Node to import: code={}, status={}",
                                 node.getCode(), node.getStatus());
 
+                        node.setModifiedBy(authentication.getPrincipal().toString());
+
                         // Log chaque ContentNode à l'intérieur de Node
                         Optional.ofNullable(node.getContents()).orElse(List.of())
-                                .forEach(contentNode -> log.debug(
+                                .forEach(contentNode -> {
+                                    log.debug(
                                         "[EXPORT]   ContentNode: code={}, status={}",
-                                        contentNode.getCode(), contentNode.getStatus()));
+                                        contentNode.getCode(), contentNode.getStatus());
+
+                                    contentNode.setModifiedBy(authentication.getPrincipal().toString());
+                                });
                     });
 
                     return this.importNodes(nodes, environmentCode, false);

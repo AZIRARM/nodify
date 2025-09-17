@@ -44,7 +44,7 @@ public class UserHandlerTest {
                 .type("USER_ACTIONS")
                 .build();
 
-        when(notificationHandler.create(any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
+        when(notificationHandler.create(any(), any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
 
     }
 
