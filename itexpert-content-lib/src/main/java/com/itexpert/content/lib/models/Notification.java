@@ -22,5 +22,6 @@ public class Notification {
     private Long date;
     private String description;
     private String user;
+    private String modifiedBy;
     private boolean read;
 }

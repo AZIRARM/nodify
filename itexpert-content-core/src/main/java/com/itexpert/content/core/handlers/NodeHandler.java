@@ -692,17 +692,27 @@ public class NodeHandler {
                                     published.setStatus(StatusEnum.ARCHIVE);
                                     published.setModifiedBy(user);
                                     published.setModificationDate(Instant.now().toEpochMilli());
-                                    return nodeRepository.save(published);
+
+                                    return nodeRepository.save(published)
+                                            .flatMap(saved ->
+                                                    this.notify(nodeMapper.fromEntity(saved), NotificationEnum.ARCHIVING)
+                                            )
+                                            .thenReturn(published);
                                 })
                                 .then(Mono.defer(() -> {
                                     archived.setStatus(StatusEnum.PUBLISHED);
                                     archived.setModifiedBy(user);
                                     archived.setModificationDate(Instant.now().toEpochMilli());
-                                    return nodeRepository.save(archived);
+
+                                    return nodeRepository.save(archived)
+                                            .flatMap(saved ->
+                                                    this.notify(nodeMapper.fromEntity(saved), NotificationEnum.DEPLOYMENT_VERSION)
+                                            )
+                                            .thenReturn(archived);
                                 }))
                                 .thenReturn(true)
                 )
-                .defaultIfEmpty(false); // si la version n’existe pas
+                .defaultIfEmpty(false);
     }
 
 }

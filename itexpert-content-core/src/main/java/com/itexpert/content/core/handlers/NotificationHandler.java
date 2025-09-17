@@ -13,6 +13,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,17 +41,17 @@ public class NotificationHandler {
                                      String typeVersion,
                                      Boolean forAll) {
 
-
-        if (forAll) {
+        if (Boolean.TRUE.equals(forAll)) {
             return this.userRepository.findAll()
                     .filter(userPost -> !userPost.getEmail().equals(user))
-                    .flatMap(userPost -> createNotificationFactory(type, description, userPost.getEmail(), elementType, typeCode, typeVersion))
-                    .flatMap(this::save)
-                    .collectList()
-                    .then(this.createNotificationFactory(type, description, user, elementType, typeCode, typeVersion));
+                    .flatMap(userPost -> createNotificationFactory(type, description, userPost.getEmail(), user, elementType, typeCode, typeVersion)
+                            .flatMap(this::save))
+                    .then( // quand toutes les notifs "forAll" sont enregistrées
+                            this.createNotificationFactory(type, description, user, user, elementType, typeCode, typeVersion)
+                                    .flatMap(this::save) // on sauvegarde celle de l’utilisateur passé en param
+                    );
         } else {
-
-            return this.createNotificationFactory(type, description, user, elementType, typeCode, typeVersion)
+            return this.createNotificationFactory(type, description, user, user, elementType, typeCode, typeVersion)
                     .flatMap(this::save);
         }
 
@@ -58,12 +60,14 @@ public class NotificationHandler {
     private Mono<Notification> createNotificationFactory(NotificationEnum type,
                                                          String description,
                                                          String user,
+                                                         String modifiedBy,
                                                          String elementType,
                                                          String typeCode,
                                                          String typeVersion) {
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
                 .user(user)
+                .modifiedBy(modifiedBy)
                 .type(elementType)
                 .typeCode(typeCode)
                 .typeVersion(typeVersion)
@@ -165,9 +169,18 @@ public class NotificationHandler {
 
     public Flux<Notification> markAllAsRead(String user) {
         return findAll(user)
-                .flatMap(n -> delete(n.getId())
-                        .flatMap(deleted -> deleted ? Mono.just(n) : Mono.empty())
-                );
+                .collectList() // récupérer toutes les notifications
+                .flatMapMany(notifications -> {
+                    List<Mono<Notification>> results = new ArrayList<>();
+
+                    for (Notification n : notifications) {
+                        Mono<Notification> mono = delete(n.getId())
+                                .flatMap(deleted -> deleted ? Mono.just(n) : Mono.empty());
+                        results.add(mono);
+                    }
+
+                    return Flux.concat(results); // concatène les Monos séquentiellement
+                });
     }
 
     /**

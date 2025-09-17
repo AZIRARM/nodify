@@ -115,11 +115,11 @@ public class UserHandler {
         return Mono.just(model).flatMap(user -> {
             return notificationHandler
                     .create(type,
-                            user.getFirstname() + " " + user.getLastname(),
-                            null,
+                           "",
+                            user.getEmail(),
                             "USER",
-                            model.getEmail(),
-                            null,
+                            "",
+                            "",
                             notifyAll
                             )
                     .map(notification -> model);
