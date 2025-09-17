@@ -20,18 +20,6 @@ import java.util.UUID;
 public class NotificationEndPoint {
     private final NotificationHandler notificationHandler;
 
-    @GetMapping(value = "/unreaded")
-        public Flux<Notification> unreadedByUserId(@RequestParam(name = "currentPage", required = true) Integer currentPage,
-                                               @RequestParam(name = "limit", required = false, defaultValue = "50") Integer limit,
-                                               Authentication authentication) {
-        return notificationHandler.unreadedByUser(authentication.getPrincipal().toString(), currentPage, limit);
-    }
-
-    @GetMapping(value = "/countUnreaded")
-    public Mono<Long> countUnreaded(Authentication authentication) {
-        return notificationHandler.countUnreaded(authentication.getPrincipal().toString());
-    }
-
     @PostMapping(value = "/id/{notificationId}/markread")
     public Mono<Notification> markread(@PathVariable UUID notificationId, Authentication authentication) {
         return notificationHandler.markRead(authentication.getPrincipal().toString(), notificationId);

@@ -44,7 +44,6 @@ export class DeletedPluginsDialogComponent implements OnInit {
     this.pluginService.getDeleted().subscribe(
       (response: any) => {
         if (response) {
-          response.map((content: any) => this.setUserName(content));
           response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
           this.dataSource = new MatTableDataSource(response);
         }
@@ -82,10 +81,6 @@ export class DeletedPluginsDialogComponent implements OnInit {
           });
         }
       });
-  }
-
-  setUserName(param: any) {
-    this.userService.setUserName(param);
   }
 
   delete(element: Plugin) {

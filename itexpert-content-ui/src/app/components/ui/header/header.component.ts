@@ -57,12 +57,6 @@ export class HeaderComponent {
     this.initCountUreadedNotifications();
   }
 
-  initCountUreadedNotifications() {
-    try{
-      setInterval(() => this.countUnreadedNotifications(), 30000);
-    } catch(error:any){}
-
-  }
 
   toggleSidenav(): void {
     if (this.isOpen) {
@@ -100,32 +94,15 @@ export class HeaderComponent {
     });
   }
 
-  countUnreadedNotifications() {
-    if(this.authenticationService.isAuthenticated()) {
-      this.countUnreadedNotificationsFactory();
-    }
-  }
-
-
-  async countUnreadedNotificationsFactory(){
-    if (!this.lastNotificationUpdate) {
-      this.lastNotificationUpdate = (new Date()).getTime();
-    }
-    var currentTime = (new Date()).getTime();
-
-    if (((currentTime - this.lastNotificationUpdate) / 1000) >= 5) {
-
-      this.lastNotificationUpdate = (new Date()).getTime();
-
-      this.user = this.userAccessService.getCurrentUser()
-
-      if (this.user && this.user!.id) {
-        this.notificationService.countUnreadedNotification().subscribe(
-          (data: any) => {
-            this.nbNotifications = data;
-          }
-        );
-      }
+  initCountUreadedNotifications() {
+     if (this.authenticationService.isAuthenticated()) {
+      this.notificationService.connectWebSocket(this.authenticationService.getAccessToken()).subscribe({
+        next: (data: any) => {
+          this.nbNotifications = data.count;
+        },
+        error: (err:any) => console.error("Erreur WebSocket:", err),
+        complete: () => console.log("Socket fermé")
+      });
     }
   }
 
