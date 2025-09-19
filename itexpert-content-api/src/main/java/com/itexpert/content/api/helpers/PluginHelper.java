@@ -38,24 +38,37 @@ public class PluginHelper {
     }
 
     private ContentNode fillPlugin(Plugin plugin, ContentNode content) {
-        if (ObjectUtils.isNotEmpty(content) && ObjectUtils.isNotEmpty(plugin) && ObjectUtils.isNotEmpty(plugin.getCode()) && ObjectUtils.isNotEmpty(content.getContent())) {
-            if(plugin.isEnabled()) {
-                content.setContent(content.getContent().replace("$with(" + plugin.getName() + ")", "\n<script>\n" + plugin.getCode() + "\n</script>\n"));
-            }else {
-                content.setContent(content.getContent().replace("$with(" + plugin.getName() + ")",""));
+        if (ObjectUtils.isNotEmpty(content)
+                && ObjectUtils.isNotEmpty(plugin)
+                && ObjectUtils.isNotEmpty(plugin.getCode())
+                && ObjectUtils.isNotEmpty(content.getContent())) {
+
+            String withSimple = "$with(" + plugin.getName() + ")";
+            String code = plugin.getCode();
+
+            if (plugin.isEnabled()) {
+                content.setContent(
+                        content.getContent().replace(
+                                withSimple,
+                                "\n<script>\n" + code + "\n</script>\n"
+                        )
+                );
+            } else {
+                content.setContent(content.getContent().replace(withSimple, ""));
             }
         }
         return content;
     }
 
     private Flux<String> getContentPlugin(ContentNode element) {
-        Matcher matcher = Pattern.compile("\\$with\\(.*\\)").matcher(element.getContent());
+        Matcher matcher = Pattern.compile("\\$with\\(([^)]*)\\)").matcher(element.getContent());
         List<String> plugins = new LinkedList<>();
         while (matcher.find()) {
-            String fragment = matcher.group();
-            String code = fragment.replace("$with(", "").replace(")", "");
-            plugins.add(code);
+            String fragment = matcher.group(1); // contenu entre parenthèses
+            plugins.add(fragment.trim()); // plus besoin de split sur ","
         }
         return Flux.fromIterable(plugins);
     }
+
+
 }
