@@ -53,38 +53,40 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
     this.init();
 
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
-    this.lockService.acquire(this.node.code).subscribe(acquired => {
-      if (!acquired) {
-         this.translateService.get("RESOURCE_LOCKED")
-            .subscribe(translation => {
-              this.loggerService.warn(translation);
-            });
-        this.dialogRef.close();
-      } else {
-        // Si acquis → démarre la surveillance d’inactivité à 30 min
-        this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-          
-         this.translateService.get("RESOURCE_RELEASED")
-            .subscribe(translation => {
-              this.loggerService.warn(translation);
-            });
+    if(this.node && this.node.code) {
+      this.lockService.acquire(this.node.code).subscribe(acquired => {
+        if (!acquired) {
+          this.translateService.get("RESOURCE_LOCKED")
+              .subscribe(translation => {
+                this.loggerService.warn(translation);
+              });
           this.dialogRef.close();
-        });
-        
-        
-        // 🔄 Vérifie le lock toutes les 10s
-        this.lockCheckSub = interval(10000).subscribe(() => {
-          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
-            if (lockInfo.locked) {
-              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
-                .subscribe(translation => this.loggerService.warn(translation));
-              this.dialogRef.close();
-            }
+        } else {
+          // Si acquis → démarre la surveillance d’inactivité à 30 min
+          this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
+            
+          this.translateService.get("RESOURCE_RELEASED")
+              .subscribe(translation => {
+                this.loggerService.warn(translation);
+              });
+            this.dialogRef.close();
           });
-        });
+          
+          
+          // 🔄 Vérifie le lock toutes les 10s
+          this.lockCheckSub = interval(10000).subscribe(() => {
+            this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
+              if (lockInfo.locked) {
+                this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                  .subscribe(translation => this.loggerService.warn(translation));
+                this.dialogRef.close();
+              }
+            });
+          });
 
-      }
-    });
+        }
+      });
+    }
   }
 
    ngOnDestroy(): void {
