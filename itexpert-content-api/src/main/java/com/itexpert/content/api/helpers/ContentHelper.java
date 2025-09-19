@@ -8,7 +8,6 @@ import com.itexpert.content.api.repositories.PluginRepository;
 import com.itexpert.content.api.utils.RulesUtils;
 import com.itexpert.content.lib.entities.ContentNode;
 import com.itexpert.content.lib.entities.Node;
-import com.itexpert.content.lib.entities.Plugin;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentDisplay;
 import com.itexpert.content.lib.models.Translation;
@@ -19,9 +18,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +35,7 @@ public class ContentHelper {
     private final ContentNodeRepository contentNodeRepository;
     private final NodeRepository nodeRepository;
     private final PluginRepository pluginRepository;
+    private final PluginHelper pluginHelper;
     private static final Pattern CONTENT_PATTERN = Pattern.compile("\\$content\\(([^)]+)\\)");
 
     /**
@@ -127,24 +128,8 @@ public class ContentHelper {
                     }
                     return element;
                 })
-                .flatMap(contentNode -> getContentPlugin(contentNode)
-                        .flatMap(this.pluginRepository::findByName)
-                        .map(plugin -> this.fillPlugin(plugin, contentNode))
-                        .collectList()
+                .flatMap(contentNode -> this.pluginHelper.fillPlugin(contentNode)
                         .thenReturn(element));
-    }
-
-
-    private ContentNode fillPlugin(Plugin plugin, ContentNode content) {
-
-            if (ObjectUtils.isNotEmpty(content) && ObjectUtils.isNotEmpty(plugin) && ObjectUtils.isNotEmpty(plugin.getCode()) && ObjectUtils.isNotEmpty(content.getContent())) {
-                if(plugin.isEnabled()) {
-                    content.setContent(content.getContent().replace("$with(" + plugin.getName() + ")", "\n<script>\n" + plugin.getCode() + "\n</script>\n"));
-                }else {
-                    content.setContent(content.getContent().replace("$with(" + plugin.getName() + ")",""));
-                }
-            }
-         return content;
     }
 
     /**
@@ -243,13 +228,6 @@ public class ContentHelper {
                     }
                     return Flux.just(contentNode);
                 })
-                .doOnNext(contentNode -> {
-                    log.info("---> content code {}", contentNode.getCode());
-                })
-                /*.filterWhen(contentNode ->
-                        this.evaluateContent(contentNode.getCode(), status).hasElement()
-                                .defaultIfEmpty(false)
-                )*/
                 .distinct(ContentNode::getCode);
     }
 
@@ -268,17 +246,6 @@ public class ContentHelper {
             codes.add(code);
         }
         return codes;
-    }
-
-    private  Flux<String> getContentPlugin(ContentNode element) {
-        Matcher matcher = Pattern.compile("\\$with\\(.*\\)").matcher(element.getContent());
-        List<String> plugins = new LinkedList<>();
-        while (matcher.find()) {
-            String fragment = matcher.group();
-            String code = fragment.replace("$with(", "").replace(")", "");
-            plugins.add(code);
-        }
-        return Flux.fromIterable(plugins);
     }
 
     /**
