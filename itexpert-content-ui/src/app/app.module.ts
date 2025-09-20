@@ -148,6 +148,10 @@ import {LoaderService} from "./services/Loader.service";
 import {LoaderComponent} from "./components/ui/loader/loader.component";
 import { LockService } from './services/LockService';
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
+import { ResourceParameterService } from './services/ResourceParameterService';
+import { CleanArchivedComponent } from './components/jobs/jobs/clean-archived/clean-archived.component';
+import { ResourceParameterDialogComponent } from './components/jobs/resource-parameters/resource-parameter-dialog/resource-parameter-dialog.component';
+import { ResourceParametersComponent } from './components/jobs/resource-parameters/resource-parameters.component';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -213,7 +217,10 @@ export function defaultLanguage() {
     PluginFilesDialogComponent,
     NodesViewDialogComponent,
     LoaderComponent,
-    ReleaseLocksComponent
+    ReleaseLocksComponent,
+    CleanArchivedComponent,
+    ResourceParameterDialogComponent,
+    ResourceParametersComponent
   ],
   imports: [
     BrowserModule,
@@ -294,7 +301,8 @@ export function defaultLanguage() {
     AuthGuard,
     CookiesService,
     LoaderService,
-    LockService
+    LockService,
+    ResourceParameterService
   ],
 
   bootstrap: [AppComponent],

@@ -284,5 +284,11 @@
   "LOCKED_BY": "Encours de modification par",
   "RESOURCE_LOCKED": "La resource est encours de modification",
   "RESOURCE_RELEASED": "La resource a été relachée aprés inactivité",
-  "RESOURCE_LOCKED_BY_OTHER": "La resource a été vérouillé par un autre utilisateur"
+  "RESOURCE_LOCKED_BY_OTHER": "La resource a été vérouillé par un autre utilisateur",
+
+  "JOBS": "Tâches",
+  "JOBS_CONFIGURATIONS": "Configuration des tâches",
+  "ARCHIVED_CLEANDER": "Archivage",
+  "NEW_TASK": "Nouvelle tâche",
+  "EDIT_TASK": "Modification de la tâche"
 }

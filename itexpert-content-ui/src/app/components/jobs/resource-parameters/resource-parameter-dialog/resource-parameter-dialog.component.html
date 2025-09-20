@@ -1,0 +1,46 @@
+<h1 mat-dialog-title>
+  {{ resourceParameter.id ? ('EDIT_TASK' | translate) : ('NEW_TASK' | translate) }}
+</h1>
+
+<div mat-dialog-content>
+  <!-- Code -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'CODE' | translate }}</mat-label>
+    <mat-select [(ngModel)]="resourceParameter.code">
+      <mat-option *ngFor="let c of codes" [value]="c">{{ c }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Action -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'ACTION' | translate }}</mat-label>
+    <mat-select [(ngModel)]="resourceParameter.action">
+      <mat-option *ngFor="let a of actions" [value]="a">{{ a }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Type -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'TYPE' | translate }}</mat-label>
+    <mat-select [(ngModel)]="resourceParameter.type">
+      <mat-option *ngFor="let t of types" [value]="t">{{ t }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Value -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'VALUE' | translate }}</mat-label>
+    <input matInput type="number" [(ngModel)]="resourceParameter.value">
+  </mat-form-field>
+
+  <!-- Description -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'DESCRIPTION' | translate }}</mat-label>
+    <textarea matInput rows="3" [(ngModel)]="resourceParameter.description"></textarea>
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'CANCEL' | translate }}</button>
+  <button mat-flat-button color="primary" (click)="onSave()">{{ 'SAVE' | translate }}</button>
+</div>

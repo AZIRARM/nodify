@@ -25,6 +25,21 @@
         </mat-nav-list>
       </mat-expansion-panel>
       @if(isAdmin()) {
+         <mat-expansion-panel [class.mat-elevation-z0]="true">
+          <mat-expansion-panel-header>
+            {{ 'JOBS' | translate }}
+          </mat-expansion-panel-header>
+          <mat-nav-list>
+            <a mat-list-item routerLink="resource-configurations" *ngIf="userAccessService.isAdmin()">
+              {{ 'JOBS_CONFIGURATIONS' | translate }}
+            </a>
+            <a mat-list-item routerLink="archived-cleaner" *ngIf="userAccessService.isAdmin()">
+              {{ 'ARCHIVED_CLEANDER' | translate }}
+            </a>
+          </mat-nav-list>
+        </mat-expansion-panel>
+      }
+      @if(isAdmin()) {
         <mat-expansion-panel [class.mat-elevation-z0]="true">
           <mat-expansion-panel-header>
             {{ 'USERS' | translate }}

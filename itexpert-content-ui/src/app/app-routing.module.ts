@@ -17,6 +17,8 @@ import {ContentChartsComponent} from "./components/analytics/content-charts/cont
 import {AuthGuard} from "./services/AuthGuard";
 import {PluginComponent} from "./components/plugins/plugin/plugin.component";
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
+import { CleanArchivedComponent } from './components/jobs/jobs/clean-archived/clean-archived.component';
+import { ResourceParametersComponent } from './components/jobs/resource-parameters/resource-parameters.component';
 
 const routes: Routes =
   [
@@ -89,6 +91,18 @@ const routes: Routes =
     {
       path: 'release-locks',
       component: ReleaseLocksComponent,
+      canActivate: [AuthGuard]
+    },
+
+    {
+      path: 'archived-cleaner',
+      component: CleanArchivedComponent,
+      canActivate: [AuthGuard]
+    },
+
+    {
+      path: 'resource-configurations',
+      component: ResourceParametersComponent,
       canActivate: [AuthGuard]
     },
 
