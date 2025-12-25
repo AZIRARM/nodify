@@ -32,6 +32,7 @@ import {DataService} from "../../../services/DataService";
 import {ContentCodeComponent} from "../content-code/content-code.component";
 import { LockService } from 'src/app/services/LockService';
 import { interval, Subscription } from 'rxjs';
+import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
   selector: 'app-node-content-dialog',
@@ -79,6 +80,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
               @Inject(MAT_DIALOG_DATA) public content: Node,
               private userService: UserService,
               private lockService: LockService,
+              private authenticationService: AuthenticationService,
               private dialog: MatDialog
   ) {
     if (content) {
@@ -98,21 +100,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   private initLocks(contents: ContentNode[]) {
-    this.fetchLocks(contents);
-
-    this.lockRefreshSub = interval(10000).subscribe(() => {
-      this.fetchLocks(contents);
-    });
-  }
-
-  private fetchLocks(contents: ContentNode[]) {
     contents.forEach((content: ContentNode) => {
-      this.lockService.getLockInfo(content.code).subscribe((lockInfo: any) => {
-        content.lockInfo = lockInfo;
-      });
+     this.lockService.getLockInfoSocket(content.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+           content.lockInfo = lockInfo;
+         });
     });
   }
-  
+
 
   init() {
     this.currentContent = null as any;
@@ -123,7 +117,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         //next() callback
         this.fetchDatas(response);
         this.initLocks(response);
-        
+
         response = response.sort((a: any, b: any) => {
           if (a.favorite && !b.favorite) return -1;
           if (!a.favorite && b.favorite) return 1;
@@ -399,7 +393,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       this.currentContent.urls = this.currentContent.urls.filter((v: ContentUrl) => (v.url !== url.url && v.type !== url.type && v.description !== url.description));
     }
   }
-  
+
   export(element: ContentNode, environmentCode: string) {
 
     this.contentNodeService.export(element.code, environmentCode).subscribe((data: any) => {
@@ -501,15 +495,22 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       this.fetchLocksFactory(contents);
     });
   }
-  fetchLocksFactory(contents:any) {
-    contents.forEach((content:any) => {
-      return this.dataService.countDatasByContentNodeCode(content.code).subscribe(
-      (count: any) => {
-        this.mapDatas.set(content.code, count > 0);
-        return this.mapDatas.get(content.code);
-      });
+  fetchLocksFactory(contents: any[]) {
+    contents.forEach((content: any) => {
+      this.dataService
+        .countDatasByContentNodeCodeWebSocket(content.code)
+        .subscribe({
+          next: (count: number) => {
+            this.mapDatas.set(content.code, count > 0);
+          },
+          error: (err) => {
+            console.error('WebSocket error', err);
+            this.mapDatas.set(content.code, false);
+          }
+        });
     });
   }
+
 
   haveDatas(code: string): boolean {
     return this.mapDatas.get(code) ?? false;

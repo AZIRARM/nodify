@@ -56,6 +56,21 @@
   </p>
   <p>
     <mat-form-field appearance="outline">
+      <mat-label>{{ "MAX_VERSIONS_TO_KEEP" | translate }}</mat-label>
+      <input
+        matInput
+        type="number"
+        [defaultValue]="0"
+        min="0"
+        step="1"
+        [(ngModel)]="node.maxVersionsToKeep"
+        placeholder="{{ 'MAX_VERSIONS_TO_KEEP' | translate }}"
+        required
+      />
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field appearance="outline">
       <mat-label>{{ "NODE_TYPE" | translate }}</mat-label>
       <input matInput [(ngModel)]="node.type" placeholder="{{ 'NODE_TYPE' | translate }}">
     </mat-form-field>

@@ -73,6 +73,8 @@ public class ContentNode implements Serializable, Cloneable {
     private Long modificationDate;
     private String modifiedBy;
 
+    private Integer maxVersionsToKeep;
+
     private List<Translation> translations;
 
     public ContentNode clone() throws CloneNotSupportedException {

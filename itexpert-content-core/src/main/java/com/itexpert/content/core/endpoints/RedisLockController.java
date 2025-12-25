@@ -37,7 +37,7 @@ public class RedisLockController {
 
     @GetMapping("/owner/{code}")
     public Mono<LockInfo> getOwner(@PathVariable String code, Authentication authentication) {
-        return redisHandler.getLockInfo(code, authentication);
+        return redisHandler.getLockInfo(code, authentication.getPrincipal().toString());
     }
 
     @PostMapping("/admin/release/{code}")

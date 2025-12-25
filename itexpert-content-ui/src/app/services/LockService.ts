@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Service } from "./Service";
 import { interval, fromEvent, merge, Subscription, timer, forkJoin, Observable, of } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
+import {Env} from "../../assets/configurations/environment";
 
 @Injectable()
 export class LockService extends Service {
@@ -17,22 +18,44 @@ export class LockService extends Service {
     super("locks", httpClient);
   }
 
-  // --- Récupère le lock pour un node ---
-  getLockInfo(code: string) {
-    return super.get(`owner/${code}`);
+  getLockInfoSocket(code: string, token: string): Observable<LockInfo> {
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/owner/?code=${code}&token=${token}`;
+
+    return new Observable<LockInfo>(observer => {
+
+      const socket = new WebSocket(url);
+
+      socket.onmessage = event => {
+        observer.next(JSON.parse(event.data));
+      };
+
+      socket.onerror = err => {
+        observer.error(err);
+      };
+
+      socket.onclose = () => {
+        observer.complete();
+      };
+
+      // cleanup automatique quand unsubscribe
+      return () => {
+        socket.close();
+      };
+    });
   }
+
 
 getAll(): Observable<any[]>{
   return super.get("all");
 }
 
   // --- Récupère les locks de plusieurs nodes ---
-  getLockInfos(codes: string[]){
+  /*getLockInfos(codes: string[]){
     if (!codes?.length) return of({});
     const calls: Record<string, any> = {};
     codes.forEach((code:string) => calls[code] = this.getLockInfo(code));
     return forkJoin(calls);
-  }
+  }*/
 
   // --- Acquérir un lock ---
   acquire(code: string) {
@@ -71,7 +94,7 @@ getAll(): Observable<any[]>{
   adminRelease(code: string): Observable<any> {
     return super.post(`admin/release/${code}`, {});
   }
-  
+
 
   private stopHeartbeat(): void {
     if (this.heartbeatSub) {
