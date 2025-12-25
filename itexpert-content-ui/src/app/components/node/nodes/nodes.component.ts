@@ -83,20 +83,13 @@ export class NodesComponent implements OnInit, OnDestroy {
     }
   }
   private initLocks(nodes: Node[]) {
-    this.fetchLocks(nodes);
+   nodes.forEach((node: Node) => {
+     this.lockService.getLockInfoSocket(node.code, this.authService.getAccessToken()).subscribe((lockInfo: any) => {
+       node.lockInfo = lockInfo;
+     });
+   });
+ }
 
-    this.lockRefreshSub = interval(10000).subscribe(() => {
-      this.fetchLocks(nodes);
-    });
-  }
-
-  private fetchLocks(nodes: Node[]) {
-    nodes.forEach((node: Node) => {
-      this.lockService.getLockInfo(node.code).subscribe((lockInfo: any) => {
-        node.lockInfo = lockInfo;
-      });
-    });
-  }
 
 
 init() {

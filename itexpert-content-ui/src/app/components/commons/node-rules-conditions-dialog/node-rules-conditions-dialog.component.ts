@@ -7,6 +7,7 @@ import {LoggerService} from "../../../services/LoggerService";
 import {UserAccessService} from "../../../services/UserAccessService";
 import { LockService } from 'src/app/services/LockService';
 import { interval, Subscription } from 'rxjs';
+import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
   selector: 'app-node-rules-conditions-dialog',
@@ -21,12 +22,13 @@ export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
   rulesConditions: Rule[] = [];
 
   ruleType: string = "BOOL";
-    
+
   private lockCheckSub: Subscription;
 
   constructor(private translateService: TranslateService,
               private loggerService: LoggerService,
               public userAccessService: UserAccessService,
+              private authenticationService: AuthenticationService,
               public dialogRef: MatDialogRef<NodeRulesConditionsDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public content: any,
               private lockService: LockService
@@ -57,18 +59,17 @@ export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
           this.dialogRef.close();
         });
 
-        
-        
-        // 🔄 Vérifie le lock toutes les 10s
-        this.lockCheckSub = interval(10000).subscribe(() => {
-          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
-            if (lockInfo.locked) {
-              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
-                .subscribe(translation => this.loggerService.warn(translation));
-              this.dialogRef.close();
-            }
-          });
-        });
+
+
+        // 🔄 Connexion WebSocket pour ce node
+       this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+         if (lockInfo.locked) {
+           this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+             .subscribe(translation => this.loggerService.warn(translation));
+           this.dialogRef.close();
+         }
+       });
+
 
       }
     });

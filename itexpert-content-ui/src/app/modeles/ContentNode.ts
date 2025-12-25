@@ -49,6 +49,8 @@ export class ContentNode {
   public favorite: boolean;
   public publicationStatus: string;
 
+  public maxVersionsToKeep: number;
+
   public translations: Translation[];
 
   public userName: string;

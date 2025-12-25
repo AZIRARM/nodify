@@ -209,29 +209,30 @@ public class NodeHandler {
     }
 
     private Mono<Node> publishParentNode(Node nodeToProcess, String modifiedBy) {
-        // Cette méthode gère la logique de publication d'un seul nœud parent et de son contenu
         return this.nodeRepository.findByCodeAndStatus(nodeToProcess.getCode(), StatusEnum.PUBLISHED.name())
-                .flatMap(publishedParentNode ->
-                        // Si une version publiée existe, l'archiver d'abord
-                        this.archiveNode(this.nodeMapper.fromEntity(publishedParentNode), modifiedBy)
+                .flatMap(existingPublishedNode ->
+                        // Étape 1 : Archiver la version existante s’il y en a une
+                        this.archiveNode(this.nodeMapper.fromEntity(existingPublishedNode), modifiedBy)
                 )
-                .then(
-                        // Que l'archivage ait eu lieu ou non, publier le nœud actuel
+                .defaultIfEmpty(nodeToProcess) // Si aucun nœud publié n’existe, continuer normalement
+                .flatMap(ignored ->
+                        // Étape 2 : Publier le nœud courant
                         this.publishNode(nodeToProcess, modifiedBy)
                 )
                 .flatMap(publishedParentNode ->
-                        // Publier le contenu associé au nœud
+                        // Étape 3 : Publier les contenus associés
                         this.contentNodeHandler.findAllByNodeCodeAndStatus(publishedParentNode.getCode(), StatusEnum.SNAPSHOT.name())
                                 .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getCode(), true, modifiedBy))
                                 .then(Mono.just(publishedParentNode))
                 )
-                .flatMap(finalNode ->
-                        // Créer un nouveau snapshot du nœud
-                        this.createSnapshot(finalNode, modifiedBy)
+                .flatMap(publishedParentNode ->
+                        // Étape 4 : Créer la version snapshot
+                        this.createSnapshot(publishedParentNode, modifiedBy)
                 )
-                .flatMap(finalNode ->
-                        // Envoyer la notification de déploiement
-                        this.notify(finalNode, NotificationEnum.DEPLOYMENT)
+                .flatMap(snapshotNode ->
+                        // Étape 5 : Créer la notification
+                        this.notify(snapshotNode, NotificationEnum.DEPLOYMENT)
+                                .thenReturn(snapshotNode)
                 );
     }
 

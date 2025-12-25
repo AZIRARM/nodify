@@ -1,10 +1,9 @@
-package com.itexpert.content.core.handlers;
+package com.itexpert.content.core.handlers.websockets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itexpert.content.core.handlers.NotificationHandler;
 import com.itexpert.content.core.utils.auth.JWTUtil;
-import com.itexpert.content.lib.models.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,7 +16,6 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 
 

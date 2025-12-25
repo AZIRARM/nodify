@@ -33,6 +33,8 @@ export class Node {
   public status: string;
   public favorite: boolean;
 
+  public maxVersionsToKeep: number;
+
   public publicationStatus: string;
 
   public translations: Translation[];

@@ -10,6 +10,7 @@ import { SlugService } from 'src/app/services/SlugService';
 import { toArray, map } from 'rxjs/operators';
 import { interval, Observable, Subscription } from 'rxjs';
 import { LockService } from 'src/app/services/LockService';
+import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
   selector: 'app-node-dialog',
@@ -28,7 +29,7 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
 
   currentSlug: string  | null = null;
   slugAvailable: boolean | null = true;
-        
+
   private lockCheckSub: Subscription;
 
   constructor(
@@ -39,6 +40,7 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
     private translateService: TranslateService,
     private loggerService: LoggerService,
     private slugService: SlugService,
+    private authenticationService: AuthenticationService,
     private lockService: LockService
   ) {
     if (content) {
@@ -64,18 +66,18 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
         } else {
           // Si acquis → démarre la surveillance d’inactivité à 30 min
           this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-            
+
           this.translateService.get("RESOURCE_RELEASED")
               .subscribe(translation => {
                 this.loggerService.warn(translation);
               });
             this.dialogRef.close();
           });
-          
-          
+
+
           // 🔄 Vérifie le lock toutes les 10s
           this.lockCheckSub = interval(10000).subscribe(() => {
-            this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
+            this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo:any) => {
               if (lockInfo.locked) {
                 this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
                   .subscribe(translation => this.loggerService.warn(translation));
