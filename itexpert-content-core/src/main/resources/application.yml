@@ -60,6 +60,6 @@ logging:
   level:
     root: INFO                              # niveau global
     com.itexpert: INFO                      # ton package principal pour debug
-    org.springframework.data.redis: DEBUG   # debug Redis (Spring Data Redis)
-    io.lettuce.core: DEBUG                  # debug Lettuce client (commandes Redis, timeout)
-    reactor.netty: WARN                     # réduire le bruit des logs Netty si trop verbeux
+    org.springframework.data.redis: ERROR   # debug Redis (Spring Data Redis)
+    io.lettuce.core: ERROR                  # debug Lettuce client (commandes Redis, timeout)
+    reactor.netty: ERROR                     # réduire le bruit des logs Netty si trop verbeux
