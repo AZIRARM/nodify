@@ -242,11 +242,8 @@ public class ContentNodeEndPoint {
                     contentNode.setModifiedBy(user);
 
                     return Mono.defer(() -> {
-                                try {
                                     return contentNodeHandler.save(contentNode);
-                                } catch (CloneNotSupportedException ex) {
-                                    return Mono.error(new RuntimeException("Erreur lors du clone du contentNode", ex));
-                                }
+
                             })
                             .flatMap(contentNodeHandler::setPublicationStatus)
                             .flatMap(saved -> redisHandler.releaseLock(resourceKey, user).thenReturn(saved))

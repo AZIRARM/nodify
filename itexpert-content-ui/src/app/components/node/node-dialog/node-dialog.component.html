@@ -68,6 +68,14 @@
         required
       />
     </mat-form-field>
+    <button *ngIf=" node.maxVersionsToKeep && node.maxVersionsToKeep > 0"
+      mat-icon-button
+      color="warn"
+      matTooltip="{{ 'PROPAGATION_MAX_HISTORY_TOOLTIP' | translate }}"
+      (click)="forcePropagation()"
+    >
+      <mat-icon>sync</mat-icon>
+    </button>
   </p>
   <p>
     <mat-form-field appearance="outline">
