@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
 import java.nio.charset.StandardCharsets;
@@ -180,8 +181,12 @@ public class NodeHandler {
      */
     public Mono<Node> publish(String code, String modifiedBy) {
         return this.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
-                .switchIfEmpty(Mono.error(new IllegalStateException("Impossible de publier un noeud dont le statut n'est pas SNAPSHOT")))
-                .flatMap(parentNode -> this.publishRecursive(parentNode, modifiedBy));
+                .switchIfEmpty(Mono.error(
+                        new IllegalStateException("Impossible de publier un noeud dont le statut n'est pas SNAPSHOT")
+                ))
+                .flatMap(parentNode ->
+                        publishRecursive(parentNode, modifiedBy)
+                );
     }
 
     /**
@@ -195,45 +200,81 @@ public class NodeHandler {
      */
     private Mono<Node> publishRecursive(Node nodeToProcess, String modifiedBy) {
         log.info("Publish Node Parent {}, version {}", nodeToProcess.getCode(), nodeToProcess.getVersion());
-        // Étape 1 : Publier le nœud parent
-        return this.publishParentNode(nodeToProcess, modifiedBy)
+
+        return Mono.fromCallable(() ->
+                        publishParentNodeSync(nodeToProcess, modifiedBy)
+                )
+                .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(publishedParentNode ->
-                        // Étape 2 : Publier tous les enfants (déjà trouvés)
                         this.findAllChildren(publishedParentNode.getCode())
-                                .doOnNext(childreen -> {
-                                    log.info("Publish Node Child {}, version {}", childreen.getCode(), childreen.getVersion());
-                                })
-                                .flatMap(childNode -> this.publishParentNode(childNode, modifiedBy))
-                                .then(Mono.just(publishedParentNode))
+                                .doOnNext(child -> log.info(
+                                        "Publish Node Child {}, version {}",
+                                        child.getCode(),
+                                        child.getVersion()
+                                ))
+                                .flatMap(childNode ->
+                                        Mono.fromCallable(() ->
+                                                publishParentNodeSync(childNode, modifiedBy)
+                                        ).subscribeOn(Schedulers.boundedElastic())
+                                )
+                                .collectList()
+                                .thenReturn(publishedParentNode)
                 );
     }
 
-    private Mono<Node> publishParentNode(Node nodeToProcess, String modifiedBy) {
-        return this.nodeRepository.findByCodeAndStatus(nodeToProcess.getCode(), StatusEnum.PUBLISHED.name())
-                .flatMap(existingPublishedNode ->
-                        // Étape 1 : Archiver la version existante s’il y en a une
-                        this.archiveNode(this.nodeMapper.fromEntity(existingPublishedNode), modifiedBy)
+    @Transactional
+    public synchronized Node publishParentNodeSync(Node nodeToProcess, String modifiedBy) {
+
+        // Étape 1 : chercher un node publié existant
+        Node existingPublishedNode =
+                this.nodeRepository
+                        .findByCodeAndStatus(
+                                nodeToProcess.getCode(),
+                                StatusEnum.PUBLISHED.name()
+                        )
+                        .map(this.nodeMapper::fromEntity)
+                        .block();
+
+        if (existingPublishedNode != null) {
+            this.archiveNode(existingPublishedNode, modifiedBy).block();
+        }
+
+        // Étape 2 : publier le nœud courant
+        Node publishedParentNode =
+                this.publishNode(nodeToProcess, modifiedBy).block();
+
+        if (publishedParentNode == null) {
+            throw new IllegalStateException("publishNode a retourné null");
+        }
+
+        // Étape 3 : publier les contenus associés
+        this.contentNodeHandler
+                .findAllByNodeCodeAndStatus(
+                        publishedParentNode.getCode(),
+                        StatusEnum.SNAPSHOT.name()
                 )
-                .defaultIfEmpty(nodeToProcess) // Si aucun nœud publié n’existe, continuer normalement
-                .flatMap(ignored ->
-                        // Étape 2 : Publier le nœud courant
-                        this.publishNode(nodeToProcess, modifiedBy)
+                .flatMap(contentNode ->
+                        this.contentNodeHandler.publish(
+                                contentNode.getCode(),
+                                true,
+                                modifiedBy
+                        )
                 )
-                .flatMap(publishedParentNode ->
-                        // Étape 3 : Publier les contenus associés
-                        this.contentNodeHandler.findAllByNodeCodeAndStatus(publishedParentNode.getCode(), StatusEnum.SNAPSHOT.name())
-                                .flatMap(contentNode -> this.contentNodeHandler.publish(contentNode.getCode(), true, modifiedBy))
-                                .then(Mono.just(publishedParentNode))
-                )
-                .flatMap(publishedParentNode ->
-                        // Étape 4 : Créer la version snapshot
-                        this.createSnapshot(publishedParentNode, modifiedBy)
-                )
-                .flatMap(snapshotNode ->
-                        // Étape 5 : Créer la notification
-                        this.notify(snapshotNode, NotificationEnum.DEPLOYMENT)
-                                .thenReturn(snapshotNode)
-                );
+                .collectList()
+                .block();
+
+        // Étape 4 : créer la version snapshot
+        Node snapshotNode =
+                this.createSnapshot(publishedParentNode, modifiedBy).block();
+
+        if (snapshotNode == null) {
+            throw new IllegalStateException("createSnapshot n’a pas créé de snapshot");
+        }
+
+        // Étape 5 : notification
+        this.notify(snapshotNode, NotificationEnum.DEPLOYMENT).block();
+
+        return snapshotNode;
     }
 
 
@@ -488,7 +529,7 @@ public class NodeHandler {
                                         existingNode.setStatus(StatusEnum.ARCHIVE);
                                         existingNode.setModificationDate(Instant.now().toEpochMilli());
 
-                                        if(ObjectUtils.isNotEmpty(node.getParentCode()) && ObjectUtils.isNotEmpty(existingNode.getParentCode())) {
+                                        if (ObjectUtils.isNotEmpty(node.getParentCode()) && ObjectUtils.isNotEmpty(existingNode.getParentCode())) {
                                             existingNode.setParentCode(node.getParentCode());
                                         }
                                         node.setParentCode(existingNode.getParentCode());
@@ -524,9 +565,7 @@ public class NodeHandler {
                                 })
                 )
                 // Mise à jour du slug pour chaque node
-                .flatMap(node -> {
-                    return this.nodeSlugHelper.update(node);
-                })
+                .flatMap(this.nodeSlugHelper::update)
                 .collectList()
                 .flatMapMany(nodesList -> Flux.fromIterable(
                                         nodesList.stream()
