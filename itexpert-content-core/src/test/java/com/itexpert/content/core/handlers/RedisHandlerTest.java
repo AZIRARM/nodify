@@ -96,7 +96,7 @@ public class RedisHandlerTest {
         when(auth.getPrincipal()).thenReturn("user1");
         when(valueOperations.get("lock:node:resource1")).thenReturn(Mono.just("user1"));
 
-        StepVerifier.create(redisHandler.getLockInfo("resource1", auth))
+        StepVerifier.create(redisHandler.getLockInfo("resource1", auth.getPrincipal().toString()))
                 .assertNext(lockInfo -> {
                     assert lockInfo.getOwner().equals("user1");
                     assert lockInfo.getMine();     // le lock est à moi
@@ -112,7 +112,7 @@ public class RedisHandlerTest {
         when(auth.getPrincipal()).thenReturn("user1");
         when(valueOperations.get("lock:node:resource1")).thenReturn(Mono.just("user2"));
 
-        StepVerifier.create(redisHandler.getLockInfo("resource1", auth))
+        StepVerifier.create(redisHandler.getLockInfo("resource1", auth.getPrincipal().toString()))
                 .assertNext(lockInfo -> {
                     assert lockInfo.getOwner().equals("user2");
                     assert !lockInfo.getMine();    // ce n’est pas moi

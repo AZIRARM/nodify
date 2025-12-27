@@ -51,7 +51,7 @@ public class ContentNodeHandler {
         return contentNodeRepository.findById(uuid).map(contentNodeMapper::fromEntity);
     }
 
-    public Mono<ContentNode> save(ContentNode contentNode) throws CloneNotSupportedException {
+    public Mono<ContentNode> save(ContentNode contentNode) {
         return Mono.just(contentNode).filter(model -> ObjectUtils.isEmpty(model.getId()))
                 .flatMap(model ->
                         contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
@@ -392,6 +392,7 @@ public class ContentNodeHandler {
                 .map(unused -> Boolean.TRUE)
                 .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
     }
+
     public Mono<Boolean> deleteDefinitivelyVersion(String code, String version) {
         return contentNodeRepository.findByCodeAndVersion(code, version)
                 .flatMap(node -> this.contentNodeRepository.delete(node)
@@ -500,5 +501,16 @@ public class ContentNodeHandler {
                 )
                 .defaultIfEmpty(false); // si la version n’existe pas
     }
+
+    protected Mono<Boolean> setMaxHostoryToKeep(String code, Integer maxVersionsToKeep) {
+        return this.contentNodeRepository
+                .findByNodeCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                .flatMap(contentNode -> {
+                    contentNode.setMaxVersionsToKeep(maxVersionsToKeep);
+                    return this.contentNodeRepository.save(contentNode);
+                })
+                .then(Mono.just(Boolean.TRUE));
+    }
+
 }
 

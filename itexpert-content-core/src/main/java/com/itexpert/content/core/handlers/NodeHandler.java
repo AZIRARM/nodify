@@ -755,5 +755,38 @@ public class NodeHandler {
                 .defaultIfEmpty(false);
     }
 
+    public Mono<Boolean> propagateMaxHistoryToKeep(String nodeCode) {
+        return this.findByCodeAndStatus(nodeCode, StatusEnum.SNAPSHOT.name())
+                .flatMap(parentNode ->
+                        propagateOnSubtree(parentNode, parentNode.getMaxVersionsToKeep())
+                )
+                .thenReturn(Boolean.TRUE);
+    }
+    private Mono<Void> propagateOnSubtree(Node parent, Integer maxVersionsToKeep) {
+
+        return this.nodeRepository
+                .findChildrenByCodeAndStatus(parent.getCode(), StatusEnum.SNAPSHOT.name())
+                .flatMap(childNode -> {
+
+                    // 1️⃣ appliquer la valeur
+                    childNode.setMaxVersionsToKeep(maxVersionsToKeep);
+
+                    // 2️⃣ sauvegarder
+                    return nodeRepository.save(childNode)
+                            // 3️⃣ propager aux contents
+                            .flatMap(savedNode ->
+                                    contentNodeHandler
+                                            .setMaxHostoryToKeep(savedNode.getCode(), maxVersionsToKeep)
+                                            // 4️⃣ récursion sur les enfants
+                                            .then(
+                                                    propagateOnSubtree(nodeMapper.fromEntity(savedNode), maxVersionsToKeep)
+                                            )
+                            );
+                })
+                .then();
+    }
+
+
+
 }
 

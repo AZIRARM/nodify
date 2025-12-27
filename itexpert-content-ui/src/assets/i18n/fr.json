@@ -285,5 +285,12 @@
   "RESOURCE_LOCKED": "La resource est encours de modification",
   "RESOURCE_RELEASED": "La resource a été relachée aprés inactivité",
   "RESOURCE_LOCKED_BY_OTHER": "La resource a été vérouillé par un autre utilisateur",
-  "MAX_VERSIONS_TO_KEEP": "Historique des Versions Maximum à garder"
+  "MAX_VERSIONS_TO_KEEP": "Historique des Versions Maximum à garder",
+
+  "PROPAGATION_MAX_HISTORY_TOOLTIP": "Forcer la propagation aux sous noeuds et à leurs contenus",
+  "PROPAGATION_MAX_HISTORY_TITLE": "Historique à garder",
+  "PROPAGATION_MAX_HISTORY_MESSAGE": "Souhaitez vous forcer la propagation aux sous noeuds et à leurs contenus ?",
+  "PROPAGATION_MAX_HISTORY_SUCCESS": "La propagation aux sous noeuds et à leurs contenus à bien été effectuée.",
+  "PROPAGATION_MAX_HISTORY_ERROR": "Erreur lors de la propagation aux sous noeuds et à leurs contenus !"
+
 }

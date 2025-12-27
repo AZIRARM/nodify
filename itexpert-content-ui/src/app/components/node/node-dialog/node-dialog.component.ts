@@ -1,5 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {Node} from "../../../modeles/Node";
 import {Language} from "../../../modeles/Language";
 import {NodeService} from "../../../services/NodeService";
@@ -11,6 +11,7 @@ import { toArray, map } from 'rxjs/operators';
 import { interval, Observable, Subscription } from 'rxjs';
 import { LockService } from 'src/app/services/LockService';
 import {AuthenticationService} from "../../../services/AuthenticationService";
+import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 
 @Component({
   selector: 'app-node-dialog',
@@ -32,6 +33,8 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
 
   private lockCheckSub: Subscription;
 
+  validationModal: MatDialogRef<ValidationDialogComponent>;
+
   constructor(
     public dialogRef: MatDialogRef<NodeDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public content: Node,
@@ -41,7 +44,8 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
     private loggerService: LoggerService,
     private slugService: SlugService,
     private authenticationService: AuthenticationService,
-    private lockService: LockService
+    private lockService: LockService,
+    private dialog: MatDialog
   ) {
     if (content) {
       this.node = content;
@@ -179,6 +183,37 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
           this.node.slug = slug;
         }
       });
+    }
+
+  forcePropagation() {
+     this.validationModal = this.dialog.open(ValidationDialogComponent, {
+          data: {
+            title: "PROPAGATION_MAX_HISTORY_TITLE",
+            message: "PROPAGATION_MAX_HISTORY_MESSAGE"
+          },
+          height: '80vh',
+          width: '80vw',
+          disableClose: true
+        });
+        this.validationModal.afterClosed()
+          .subscribe(result => {
+            if (result && result.data !== 'canceled') {
+              let isSnapshot: boolean = true;
+
+              this.nodeService.propagateMaxHistoryToKeep(this.node.code).subscribe(
+                response => {
+                  this.translateService.get("PROPAGATION_MAX_HISTORY_SUCCESS").subscribe(trad => {
+                    this.loggerService.success(trad);
+                    this.init();
+                  })
+                },
+                error => {
+                  this.translateService.get("PROPAGATION_MAX_HISTORY_ERROR").subscribe(trad1 => {
+                      this.loggerService.error(trad1);
+                  })
+                });
+            }
+          });
     }
 
 }
