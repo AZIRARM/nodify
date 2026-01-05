@@ -81,7 +81,7 @@ export class NodesViewDialogComponent implements OnInit {
     };
   }
 
-  
+
   private sortTreeByCode(nodes: any[]): any[] {
     if (!Array.isArray(nodes) || nodes.length === 0) return nodes;
 
