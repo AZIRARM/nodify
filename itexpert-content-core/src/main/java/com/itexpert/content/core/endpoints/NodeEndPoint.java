@@ -174,7 +174,6 @@ public class NodeEndPoint {
     }
 
 
-
     @PostMapping(value = "/code/{code}/activate")
     public Mono<ResponseEntity<Boolean>> activate(@PathVariable String code, Authentication authentication) {
         String user = authentication.getPrincipal().toString();
@@ -371,8 +370,8 @@ public class NodeEndPoint {
                         Optional.ofNullable(node.getContents()).orElse(List.of())
                                 .forEach(contentNode -> {
                                     log.debug(
-                                        "[EXPORT]   ContentNode: code={}, status={}",
-                                        contentNode.getCode(), contentNode.getStatus());
+                                            "[EXPORT]   ContentNode: code={}, status={}",
+                                            contentNode.getCode(), contentNode.getStatus());
 
                                     contentNode.setModifiedBy(authentication.getPrincipal().toString());
                                 });
@@ -393,10 +392,10 @@ public class NodeEndPoint {
 
     @PostMapping(value = "/code/{code}/version/{version}/deploy")
     public Mono<ResponseEntity<Boolean>> deployVersion(
-                                    @PathVariable String code,
-                                    @PathVariable String version,
-                                    @RequestParam(name = "environment", required = false) String environmentCode,
-                                    Authentication authentication) {
+            @PathVariable String code,
+            @PathVariable String version,
+            @RequestParam(name = "environment", required = false) String environmentCode,
+            Authentication authentication) {
         String user = authentication.getPrincipal().toString();
         Duration ttl = Duration.ofMinutes(30);
 
@@ -485,5 +484,11 @@ public class NodeEndPoint {
         }
 
         return base + "?" + String.join("&", kept);
+    }
+
+    @PostMapping(value = "/propagateMaxHistoryToKeep/{nodeCodePatent}")
+    public Mono<Boolean> propagateMaxHistoryToKeep(
+            @PathVariable String nodeCodePatent) {
+        return nodeHandler.propagateMaxHistoryToKeep(nodeCodePatent);
     }
 }

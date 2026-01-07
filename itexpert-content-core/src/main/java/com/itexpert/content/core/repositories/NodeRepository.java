@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,4 +72,20 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     Flux<Node> findAllBySlug(String slug);
 
     Flux<Node> findBySlugAndCode(String slug, String code);
+
+    @Query("{ 'status': 'SNAPSHOT', 'maxVersionsToKeep': { $gt: 0 } }")
+    Flux<Node> findActiveNodesToClean();
+
+    @Query("{ 'status': 'ARCHIVE', 'code': ?0 }")
+    Flux<Node> findArchivedByCode(String code);
+
+    @Query("{ 'maxVersionsToKeep': { $gt: 0 },'status': 'ARCHIVE'}")
+    Flux<Node> findNodeToClean();
+
+
+    @Query("{ 'status': 'ARCHIVE' }")
+    Flux<Node> findAllArchived();
+
+    @Query("{ 'status': 'ARCHIVE', 'nodeId': ?0 }")
+    Flux<Node> findArchivedByNodeId(UUID nodeId);
 }

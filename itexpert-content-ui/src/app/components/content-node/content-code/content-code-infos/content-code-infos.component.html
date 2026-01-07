@@ -1,6 +1,13 @@
 <div fxLayout="row" class="infos-container">
-  <input type="text" class="input-field" matInput [(ngModel)]="contentNode.code" disabled placeholder="{{ 'CODE' | translate }}">
-  
+  <input
+    type="text"
+    class="input-field"
+    matInput
+    [(ngModel)]="contentNode.code"
+    disabled
+    placeholder="{{ 'CODE' | translate }}"
+  >
+
   <input
     type="text"
     class="input-field"
@@ -9,14 +16,33 @@
     (ngModelChange)="onSlugChange($event)"
     placeholder="{{ 'SLUG' | translate }}"
   >
-  <input type="text" class="input-field" matInput [(ngModel)]="contentNode.description" placeholder="{{ 'DESCRIPTION' | translate }}">
+
+  <input
+    type="number"
+    class="input-field"
+    matInput
+    [(ngModel)]="contentNode.maxVersionsToKeep"
+    placeholder="{{ 'MAX_VERSIONS_TO_KEEP' | translate }}"
+    [defaultValue]="0"
+    min="0"
+    step="1"
+    required
+  >
+
+  <input
+    type="text"
+    class="input-field"
+    matInput
+    [(ngModel)]="contentNode.description"
+    placeholder="{{ 'DESCRIPTION' | translate }}"
+  >
 </div>
+
 <div>
-  
   <ng-container *ngIf="slugAvailable === true">
-    ✅ {{'SLUG_AVAILABLE' | translate}}
+    ✅ {{ 'SLUG_AVAILABLE' | translate }}
   </ng-container>
   <ng-container *ngIf="slugAvailable === false">
-    ❌ {{'SLUG_ALREADY_USED' | translate}}
+    ❌ {{ 'SLUG_ALREADY_USED' | translate }}
   </ng-container>
 </div>

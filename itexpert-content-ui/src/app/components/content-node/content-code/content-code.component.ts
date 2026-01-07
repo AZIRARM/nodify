@@ -9,6 +9,7 @@ import {ContentNodeService} from "../../../services/ContentNodeService";
 import {ContentFile} from "../../../modeles/ContentFile";
 import { LockService } from 'src/app/services/LockService';
 import { interval, Subscription } from 'rxjs';
+import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
   selector: 'app-code-dialog',
@@ -21,13 +22,14 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
   @Input() @Output() type: string;
   @Input() @Output() user: User;
   @Input() @Output() hasChanged: boolean = false;
-      
+
   private lockCheckSub: Subscription;
 
   constructor(
     private translateService: TranslateService,
     private loggerService: LoggerService,
     private contentNodeService: ContentNodeService,
+    private authenticationService: AuthenticationService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<ContentCodeComponent>,
     private lockService: LockService
@@ -40,7 +42,7 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
     }
   }
 
-  
+
   ngOnInit(): void {
 
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
@@ -61,18 +63,14 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
               });
             this.dialogRef.close();
           });
-          
-                  
-                  
-          // 🔄 Vérifie le lock toutes les 10s
-          this.lockCheckSub = interval(10000).subscribe(() => {
-            this.lockService.getLockInfo(this.contentNode.code).subscribe((lockInfo:any) => {
-              if (lockInfo.locked) {
-                this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
-                  .subscribe(translation => this.loggerService.warn(translation));
-                this.dialogRef.close();
-              }
-            });
+
+          // Connexion WebSocket pour ce node
+          this.lockService.getLockInfoSocket(this.contentNode.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+            if (lockInfo.locked) {
+              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+                .subscribe(translation => this.loggerService.warn(translation));
+              this.dialogRef.close();
+            }
           });
 
         }

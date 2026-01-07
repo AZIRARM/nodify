@@ -106,4 +106,8 @@ export class NodeService extends Service {
   getNodeView(code: string) {
     return super.get("code/" + code + "/tree-view");
   }
+
+  propagateMaxHistoryToKeep(nodeCodePatent: string) {
+    return super.post("propagateMaxHistoryToKeep/" + nodeCodePatent, null);
+  }
 }

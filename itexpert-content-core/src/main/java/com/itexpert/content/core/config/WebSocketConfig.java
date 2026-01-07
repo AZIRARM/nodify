@@ -1,25 +1,45 @@
 package com.itexpert.content.core.config;
-import com.itexpert.content.core.handlers.NotificationSocketHandler;
+
+import com.itexpert.content.core.handlers.websockets.DatasSocketHandler;
+import com.itexpert.content.core.handlers.websockets.NotificationSocketHandler;
+import com.itexpert.content.core.handlers.websockets.RedisSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
+import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
 @Configuration
 public class WebSocketConfig {
-    private final NotificationSocketHandler handler;
+    private final NotificationSocketHandler notificationSocketHandler;
+    private final RedisSocketHandler redisSocketHandler;
+    private final DatasSocketHandler datasSocketHandler;
 
-    public WebSocketConfig(NotificationSocketHandler handler) {
-        this.handler = handler;
+
+    public WebSocketConfig(NotificationSocketHandler notificationSocketHandler, RedisSocketHandler redisSocketHandler, DatasSocketHandler datasSocketHandler) {
+        this.notificationSocketHandler = notificationSocketHandler;
+        this.redisSocketHandler = redisSocketHandler;
+        this.datasSocketHandler = datasSocketHandler;
     }
 
     @Bean
     public HandlerMapping webSocketMapping() {
-        return new SimpleUrlHandlerMapping(Map.of("/ws/notifications", handler), -1);
+        Map<String, WebSocketHandler> map = new HashMap<>();
+
+        map.put("/ws/notifications", notificationSocketHandler);
+        map.put("/ws/owner/**", redisSocketHandler);
+        map.put("/ws/datas/contentCode/**", datasSocketHandler);
+
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+        mapping.setUrlMap(map);
+        mapping.setOrder(-1); // priorité max
+
+        return mapping;
     }
 
     @Bean
