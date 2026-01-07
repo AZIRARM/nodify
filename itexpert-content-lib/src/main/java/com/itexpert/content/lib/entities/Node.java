@@ -76,6 +76,8 @@ public class Node implements Serializable, Cloneable {
     private Long publicationDate;
     private StatusEnum status;
 
+    private Integer maxVersionsToKeep;
+
     private boolean favorite;
 
     private List<Translation> translations;

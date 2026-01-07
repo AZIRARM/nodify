@@ -52,7 +52,9 @@ public class Node implements Serializable, Cloneable {
 
     private String version;
     private Long publicationDate;
-    private StatusEnum status;;
+    private StatusEnum status;
+
+    private Integer maxVersionsToKeep;
 
     private boolean favorite;
 

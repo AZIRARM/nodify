@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
 import java.time.Instant;
@@ -50,7 +51,7 @@ public class ContentNodeHandler {
         return contentNodeRepository.findById(uuid).map(contentNodeMapper::fromEntity);
     }
 
-    public Mono<ContentNode> save(ContentNode contentNode) throws CloneNotSupportedException {
+    public Mono<ContentNode> save(ContentNode contentNode) {
         return Mono.just(contentNode).filter(model -> ObjectUtils.isEmpty(model.getId()))
                 .flatMap(model ->
                         contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
@@ -110,89 +111,84 @@ public class ContentNodeHandler {
     }
 
     public Mono<ContentNode> publish(String code, Boolean publish, String modifiedBy) {
-        return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
-                                .flatMap(alreadyPublished -> {
-                                    // Cas où un PUBLISHED existe
-                                    alreadyPublished.setStatus(StatusEnum.ARCHIVE);
-                                    alreadyPublished.setModificationDate(Instant.now().toEpochMilli());
-
-                                    return this.contentNodeRepository.save(alreadyPublished)
-                                            .flatMap(archived -> this.contentNodeRepository.findByCodeAndStatus(archived.getCode(), StatusEnum.SNAPSHOT.name()))
-                                            .flatMap(snapshotNode -> {
-                                                snapshotNode.setStatus(StatusEnum.PUBLISHED);
-                                                snapshotNode.setModifiedBy(modifiedBy);
-                                                snapshotNode.setModificationDate(Instant.now().toEpochMilli());
-                                                snapshotNode.setPublicationDate(snapshotNode.getModificationDate());
-
-                                                String content = snapshotNode.getContent();
-                                                String snapshotContent = content != null ? new String(content) : "";
-
-                                                snapshotNode.setContent(SnapshotUtils.clearSnapshotIfCode(snapshotNode.getContent()));
-
-                                                return this.contentNodeRepository.save(snapshotNode)
-                                                        .flatMap(publishedContent -> {
-                                                            try {
-                                                                // Création du SNAPSHOT en arrière-plan
-                                                                long version = ObjectUtils.isNotEmpty(publishedContent.getVersion())
-                                                                        ? Long.parseLong(publishedContent.getVersion()) + 1L
-                                                                        : 1L;
-                                                                com.itexpert.content.lib.entities.ContentNode newSnapshot = publishedContent.clone();
-                                                                newSnapshot.setStatus(StatusEnum.SNAPSHOT);
-                                                                newSnapshot.setModifiedBy(modifiedBy);
-                                                                newSnapshot.setId(UUID.randomUUID());
-                                                                newSnapshot.setVersion(Long.toString(version));
-                                                                newSnapshot.setContent(snapshotContent);
-
-                                                                return this.contentNodeRepository.save(newSnapshot)
-                                                                        .then(Mono.just(publishedContent));
-
-                                                            } catch (CloneNotSupportedException e) {
-                                                                return Mono.error(e);
-                                                            }
-                                                        });
-                                            });
-                                })
-                                .switchIfEmpty(Mono.defer(() -> createFirstPublication(code, publish)))
-
-                .map(contentNodeMapper::fromEntity)
-                .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
+        return Mono.fromCallable(() ->
+                publishContentSync(code, publish, modifiedBy)
+        ).subscribeOn(Schedulers.boundedElastic());
     }
 
-    private Mono<com.itexpert.content.lib.entities.ContentNode> createFirstPublication(String code, Boolean publish) {
-        if (publish) {
-            return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
-                    .flatMap(contentNode -> {
-                        contentNode.setStatus(StatusEnum.PUBLISHED);
-                        contentNode.setModificationDate(Instant.now().toEpochMilli());
-                        contentNode.setPublicationDate(contentNode.getModificationDate());
+    @Transactional
+    public synchronized ContentNode publishContentSync(
+            String code,
+            boolean publish,
+            String modifiedBy
+    ) {
 
-                        String content = contentNode.getContent();
-                        String snapshotContent = content != null ? new String(content) : "";
+        // 1️⃣ Chercher un PUBLISHED existant
+        com.itexpert.content.lib.entities.ContentNode alreadyPublished =
+                contentNodeRepository
+                        .findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
+                        .block();
 
-                        contentNode.setContent(SnapshotUtils.clearSnapshotIfCode(contentNode.getContent()));
-
-
-                        return this.contentNodeRepository.save(contentNode)
-                                .flatMap(savedPublishedNode -> {
-                                    // Crée le SNAPSHOT en flux réactif
-                                    return Mono.fromCallable(() -> {
-                                                com.itexpert.content.lib.entities.ContentNode newSnapshot = savedPublishedNode.clone();
-                                                newSnapshot.setId(UUID.randomUUID());
-                                                newSnapshot.setStatus(StatusEnum.SNAPSHOT);
-                                                long version = ObjectUtils.isNotEmpty(savedPublishedNode.getVersion())
-                                                        ? Long.parseLong(savedPublishedNode.getVersion()) + 1L
-                                                        : 1L;
-                                                newSnapshot.setVersion(Long.toString(version));
-                                                newSnapshot.setContent(snapshotContent);
-                                                return newSnapshot;
-                                            })
-                                            .flatMap(newSnapshot -> this.contentNodeRepository.save(newSnapshot))
-                                            // On ignore le SNAPSHOT créé et on retourne le PUBLISHED
-                                            .thenReturn(savedPublishedNode);
-                                });
-                    });
+        if (alreadyPublished != null) {
+            // 2️⃣ Archiver le PUBLISHED existant
+            alreadyPublished.setStatus(StatusEnum.ARCHIVE);
+            alreadyPublished.setModificationDate(Instant.now().toEpochMilli());
+            contentNodeRepository.save(alreadyPublished).block();
         }
-        return Mono.empty();
+
+        // 3️⃣ Chercher le SNAPSHOT à publier
+        com.itexpert.content.lib.entities.ContentNode snapshot =
+                contentNodeRepository
+                        .findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                        .block();
+
+        if (snapshot == null) {
+            throw new IllegalStateException("Aucun SNAPSHOT à publier pour le content " + code);
+        }
+
+        // 4️⃣ Publier le SNAPSHOT
+        snapshot.setStatus(StatusEnum.PUBLISHED);
+        snapshot.setModifiedBy(modifiedBy);
+        snapshot.setModificationDate(Instant.now().toEpochMilli());
+        snapshot.setPublicationDate(snapshot.getModificationDate());
+
+        String originalContent = snapshot.getContent();
+        String snapshotContent = originalContent != null ? new String(originalContent) : "";
+
+        snapshot.setContent(SnapshotUtils.clearSnapshotIfCode(snapshot.getContent()));
+
+        com.itexpert.content.lib.entities.ContentNode published =
+                contentNodeRepository.save(snapshot).block();
+
+        if (published == null) {
+            throw new IllegalStateException("Échec publication content " + code);
+        }
+
+        // 5️⃣ Créer le NOUVEAU SNAPSHOT
+        try {
+            long version =
+                    ObjectUtils.isNotEmpty(published.getVersion())
+                            ? Long.parseLong(published.getVersion()) + 1L
+                            : 1L;
+
+            com.itexpert.content.lib.entities.ContentNode newSnapshot = published.clone();
+            newSnapshot.setId(UUID.randomUUID());
+            newSnapshot.setStatus(StatusEnum.SNAPSHOT);
+            newSnapshot.setModifiedBy(modifiedBy);
+            newSnapshot.setVersion(Long.toString(version));
+            newSnapshot.setContent(snapshotContent);
+
+            contentNodeRepository.save(newSnapshot).block();
+
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException("Impossible de cloner ContentNode", e);
+        }
+
+        // 6️⃣ Notification
+        ContentNode model = contentNodeMapper.fromEntity(published);
+        notify(model, NotificationEnum.DEPLOYMENT).block();
+
+        return model;
     }
 
 
@@ -396,6 +392,7 @@ public class ContentNodeHandler {
                 .map(unused -> Boolean.TRUE)
                 .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
     }
+
     public Mono<Boolean> deleteDefinitivelyVersion(String code, String version) {
         return contentNodeRepository.findByCodeAndVersion(code, version)
                 .flatMap(node -> this.contentNodeRepository.delete(node)
@@ -504,5 +501,16 @@ public class ContentNodeHandler {
                 )
                 .defaultIfEmpty(false); // si la version n’existe pas
     }
+
+    protected Mono<Boolean> setMaxHostoryToKeep(String code, Integer maxVersionsToKeep) {
+        return this.contentNodeRepository
+                .findByNodeCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                .flatMap(contentNode -> {
+                    contentNode.setMaxVersionsToKeep(maxVersionsToKeep);
+                    return this.contentNodeRepository.save(contentNode);
+                })
+                .then(Mono.just(Boolean.TRUE));
+    }
+
 }
 

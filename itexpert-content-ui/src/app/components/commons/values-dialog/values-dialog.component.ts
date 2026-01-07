@@ -8,6 +8,7 @@ import { LoggerService } from 'src/app/services/LoggerService';
 import { LockService } from 'src/app/services/LockService';
 import { TranslateService } from '@ngx-translate/core';
 import { interval, Subscription } from 'rxjs';
+import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
   selector: 'app-values-dialog',
@@ -31,6 +32,7 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
     private loggerService: LoggerService,
     private lockService: LockService,
     private translateService: TranslateService,
+    private authenticationService: AuthenticationService,
     @Inject(MAT_DIALOG_DATA) public content: any
   ) {
     if (content) {
@@ -41,14 +43,14 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-  
+
   ngOnInit() {
     this.init();
-    
+
     // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.node.code).subscribe(acquired => {
       if (!acquired) {
-        
+
          this.translateService.get("RESOURCE_LOCKED")
             .subscribe(translation => {
               this.loggerService.warn(translation);
@@ -65,21 +67,20 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
           this.dialogRef.close();
         });
 
-        
-        // 🔄 Vérifie le lock toutes les 10s
-        this.lockCheckSub = interval(10000).subscribe(() => {
-          this.lockService.getLockInfo(this.node.code).subscribe((lockInfo:any) => {
-            if (lockInfo.locked) {
-              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
-                .subscribe(translation => this.loggerService.warn(translation));
-              this.dialogRef.close();
-            }
-          });
-        });
+
+        // 🔄 Connexion WebSocket pour ce node
+       this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+         if (lockInfo.locked) {
+           this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+             .subscribe(translation => this.loggerService.warn(translation));
+           this.dialogRef.close();
+         }
+       });
+
       }
     });
   }
-  
+
 
   ngOnDestroy(): void {
     if (this.lockCheckSub) {

@@ -1,10 +1,7 @@
 package com.itexpert.content.core.repositories;
 
 import com.itexpert.content.lib.entities.ContentNode;
-import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
-import org.reactivestreams.Publisher;
-import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
@@ -35,7 +32,7 @@ public interface ContentNodeRepository extends ReactiveMongoRepository<ContentNo
     Mono<ContentNode> findByCodeAndStatus(String code, String status);
 
     @Query("{ 'code' : ?0, 'version': ?1}")
-    Mono<ContentNode>  findByCodeAndVersion(String code, String version);
+    Mono<ContentNode> findByCodeAndVersion(String code, String version);
 
     Mono<Long> countDistinctByParentCode(String code);
 
@@ -51,4 +48,21 @@ public interface ContentNodeRepository extends ReactiveMongoRepository<ContentNo
     Flux<ContentNode> findBySlugAndCode(String slug, String code);
 
     Flux<ContentNode> findAllBySlug(String slug);
+
+
+    @Query("{ 'status': 'ARCHIVE' }")
+    Flux<ContentNode> findAllArchived();
+
+
+    @Query("""
+            {
+              status: 'SNAPSHOT',
+              maxVersionsToKeep: { $exists: true, $gt: 0 }
+            }
+            """)
+    Flux<ContentNode> findContentToClean();
+
+    @Query("{ 'status': 'ARCHIVE', 'code': ?0 }")
+    Flux<ContentNode> findArchivedByNodeCode(String code);
+
 }

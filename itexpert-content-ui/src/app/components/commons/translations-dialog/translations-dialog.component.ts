@@ -9,6 +9,7 @@ import { LockService } from 'src/app/services/LockService';
 import { LoggerService } from 'src/app/services/LoggerService';
 import { TranslateService } from '@ngx-translate/core';
 import { interval, Subscription } from 'rxjs';
+import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
   selector: 'app-translations-dialog',
@@ -25,7 +26,7 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   displayedColumns: string[] = ['Language', 'Key', 'Value', 'Actions'];
 
   dataSource: MatTableDataSource<Translation>;
-  
+
   private lockCheckSub: Subscription;
 
   constructor(
@@ -35,6 +36,7 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
     private languageService: LanguageService,
     private loggerService: LoggerService,
     private lockService: LockService,
+    private authenticationService: AuthenticationService,
     private translateService: TranslateService,
   ) {
     if (content) {
@@ -68,16 +70,14 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
         });
 
 
-        // 🔄 Vérifie le lock toutes les 10s
-        this.lockCheckSub = interval(10000).subscribe(() => {
-          this.lockService.getLockInfo(this.data.code).subscribe((lockInfo:any) => {
-            if (lockInfo.locked) {
-              this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
-                .subscribe(translation => this.loggerService.warn(translation));
-              this.dialogRef.close();
-            }
-          });
-        });
+        // 🔄 Connexion WebSocket pour ce node
+       this.lockService.getLockInfoSocket(this.data.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+         if (lockInfo.locked) {
+           this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+             .subscribe(translation => this.loggerService.warn(translation));
+           this.dialogRef.close();
+         }
+       });
 
       }
     });

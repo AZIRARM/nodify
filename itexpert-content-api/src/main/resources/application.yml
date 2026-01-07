@@ -19,4 +19,4 @@ spring:
   jackson:
     default-property-inclusion: non_empty
 server:
-  port: 1080
+  port: 9080

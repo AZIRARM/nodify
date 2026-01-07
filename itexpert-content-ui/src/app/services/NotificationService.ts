@@ -22,7 +22,7 @@ export class NotificationService extends Service {
   }
 
   connectWebSocket(token: string, page: number = 0, limit: number = 1): Observable<any> {
-    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}?token=${token}&page=${page}&limit=${limit}`;
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/notifications?token=${token}&page=${page}&limit=${limit}`;
 
     return new Observable(observer => {
 

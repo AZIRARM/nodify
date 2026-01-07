@@ -53,8 +53,7 @@ public class RedisHandler {
     }
 
     // --- Récupérer le lock sous forme de DTO LockInfo ---
-    public Mono<LockInfo> getLockInfo(String resourceCode, Authentication authentication) {
-        String currentUser = authentication.getPrincipal().toString();
+    public Mono<LockInfo> getLockInfo(String resourceCode, String currentUser) {
         String key = "lock:node:" + resourceCode;
 
         return redisTemplate.opsForValue().get(key)
