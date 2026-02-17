@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -88,4 +86,6 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
 
     @Query("{ 'status': 'ARCHIVE', 'nodeId': ?0 }")
     Flux<Node> findArchivedByNodeId(UUID nodeId);
+
+    Flux<Node> findByParentCodeAndStatus(String parentCode, String status);
 }

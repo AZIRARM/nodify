@@ -34,7 +34,7 @@ public interface ContentNodeRepository extends ReactiveMongoRepository<ContentNo
     @Query("{ 'code' : ?0, 'version': ?1}")
     Mono<ContentNode> findByCodeAndVersion(String code, String version);
 
-    Mono<Long> countDistinctByParentCode(String code);
+    Mono<Long> countDistinctByParentCodeAndStatus(String code, String status);
 
     @Query("{_id: ?0, status:  ?1}")
     Mono<ContentNode> findByIdAndStatus(UUID contentNodeUuid, StatusEnum statusEnum);
