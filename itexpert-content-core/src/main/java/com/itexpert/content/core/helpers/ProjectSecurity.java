@@ -1,247 +1,160 @@
 package com.itexpert.content.core.helpers;
 
+import com.itexpert.content.core.handlers.NodeHandler;
 import com.itexpert.content.core.handlers.UserHandler;
+import com.itexpert.content.lib.enums.StatusEnum;
+import com.itexpert.content.lib.models.Node;
 import com.itexpert.content.lib.models.UserPost;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthorizationSecurity {
+public class ProjectSecurity {
 
-    private final UserHandler userHandler; // Votre handler pour récupérer l'utilisateur
+    private final UserHandler userHandler;
+    private final NodeHandler nodeHandler;
 
     /**
-     * Vérifie si l'utilisateur a le droit de modifier un contenu
+     * Vérifie si l'utilisateur a accès au projet correspondant au code du node
      *
-     * @param projectCode             Le code du projet à modifier
-     * @param authenticationPrincipal Le principal de l'authentification
-     * @return true si l'utilisateur peut modifier
+     * @param nodeCode Le code du node à vérifier
+     * @return true si l'utilisateur a accès
      */
-    public boolean canModify(String projectCode, String authenticationPrincipal) {
-        try {
-            // 1. Récupérer l'utilisateur complet
-            UserPost user = userHandler.findByEmail(authenticationPrincipal).block();
-
-            if (user == null) {
-                log.warn("Utilisateur non trouvé: {}", authenticationPrincipal);
-                return false;
-            }
-
-            log.debug("Vérification droits pour utilisateur: {}, rôles: {}, projets: {}",
-                    user.getEmail(), user.getRoles(), user.getProjects());
-
-            // 2. Vérifier les rôles
-            if (!hasEditRole(user)) {
-                log.warn("Utilisateur {} n'a pas le rôle approprié pour modifier. Rôles: {}",
-                        user.getEmail(), user.getRoles());
-                return false;
-            }
-
-            // 3. Vérifier les droits sur le projet
-            if (!canAccessProject(user, projectCode)) {
-                log.warn("Utilisateur {} n'a pas accès au projet {}. Projets autorisés: {}",
-                        user.getEmail(), projectCode, user.getProjects());
-                return false;
-            }
-
-            return true;
-
-        } catch (Exception e) {
-            log.error("Erreur lors de la vérification des droits pour {}: {}",
-                    authenticationPrincipal, e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Vérifie si l'utilisateur peut modifier (sans vérification de projet spécifique)
-     */
-    public boolean canModify(String authenticationPrincipal) {
-        try {
-            UserPost user = userHandler.findByEmail(authenticationPrincipal).block();
-
-            if (user == null) {
-                log.warn("Utilisateur non trouvé: {}", authenticationPrincipal);
-                return false;
-            }
-
-            return hasEditRole(user);
-
-        } catch (Exception e) {
-            log.error("Erreur vérification droits pour {}: {}", authenticationPrincipal, e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Vérifie si l'utilisateur a les rôles permettant la modification
-     */
-    private boolean hasEditRole(UserPost user) {
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+    public boolean hasProjectAccess(String nodeCode) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            log.warn("Pas d'authentification trouvée");
             return false;
         }
 
-        // Rôles autorisés à modifier
-        List<String> allowedRoles = List.of("ADMIN", "EDITOR");
+        String principal = auth.getPrincipal().toString();
+        log.debug("Vérification accès pour utilisateur: {}, node: {}", principal, nodeCode);
 
-        return user.getRoles().stream()
-                .map(String::toUpperCase)
-                .anyMatch(allowedRoles::contains);
-    }
-
-    /**
-     * Vérifie si l'utilisateur peut accéder au projet
-     */
-    private boolean canAccessProject(UserPost user, String projectCode) {
-        // ADMIN a tous les droits
-        if (isAdmin(user)) {
-            return true;
+        // Récupérer l'utilisateur
+        UserPost user = userHandler.findByEmail(principal).block();
+        if (user == null) {
+            log.warn("Utilisateur non trouvé: {}", principal);
+            return false;
         }
 
-        // EDITOR doit avoir le projet dans sa liste
+        // Si l'utilisateur n'a pas de projets, accès refusé
         if (user.getProjects() == null || user.getProjects().isEmpty()) {
+            log.warn("Utilisateur {} n'a aucun projet assigné", principal);
             return false;
         }
 
-        return user.getProjects().stream()
-                .anyMatch(project -> project.equalsIgnoreCase(projectCode));
-    }
-
-    /**
-     * Vérifie si l'utilisateur est admin
-     */
-    private boolean isAdmin(UserPost user) {
-        return user.getRoles() != null &&
-                user.getRoles().stream()
-                        .map(String::toUpperCase)
-                        .anyMatch(role -> role.equals("ADMIN"));
-    }
-
-    /**
-     * Version avec vérification plus détaillée et message d'erreur
-     */
-    public AuthorizationResult checkAuthorization(String projectCode, String authenticationPrincipal) {
-        try {
-            UserPost user = userHandler.findByEmail(authenticationPrincipal).block();
-
-            if (user == null) {
-                return AuthorizationResult.denied("Utilisateur non trouvé: " + authenticationPrincipal);
-            }
-
-            // Vérification des rôles
-            if (!hasEditRole(user)) {
-                return AuthorizationResult.denied(
-                        "Rôle insuffisant. Nécessite ADMIN ou EDITOR. Rôles actuels: " + user.getRoles()
-                );
-            }
-
-            // Vérification du projet pour non-admin
-            if (!isAdmin(user) && !canAccessProject(user, projectCode)) {
-                return AuthorizationResult.denied(
-                        "Accès non autorisé au projet " + projectCode +
-                                ". Projets autorisés: " + user.getProjects()
-                );
-            }
-
-            return AuthorizationResult.allowed(user);
-
-        } catch (Exception e) {
-            log.error("Erreur vérification droits", e);
-            return AuthorizationResult.denied("Erreur technique: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Vérifie si l'utilisateur est autorisé pour au moins un projet parmi une liste
-     */
-    public boolean canModifyAnyProject(String authenticationPrincipal, List<String> projectCodes) {
-        try {
-            UserPost user = userHandler.findByEmail(authenticationPrincipal).block();
-
-            if (user == null || !hasEditRole(user)) {
-                return false;
-            }
-
-            // Admin peut tout modifier
-            if (isAdmin(user)) {
-                return true;
-            }
-
-            // Vérifier si l'utilisateur a accès à au moins un des projets
-            if (user.getProjects() == null || user.getProjects().isEmpty()) {
-                return false;
-            }
-
-            return projectCodes.stream()
-                    .anyMatch(project -> user.getProjects().contains(project));
-
-        } catch (Exception e) {
-            log.error("Erreur vérification droits multiples", e);
+        // Récupérer le projet racine pour ce node
+        String rootProjectCode = findRootProjectCode(nodeCode);
+        if (rootProjectCode == null) {
+            log.warn("Impossible de trouver le projet racine pour le node: {}", nodeCode);
             return false;
         }
+
+        // Vérifier si l'utilisateur a accès à ce projet
+        boolean hasAccess = user.getProjects().contains(rootProjectCode);
+
+        log.debug("Accès au projet {} pour node {}: {}", rootProjectCode, nodeCode, hasAccess);
+        return hasAccess;
     }
 
     /**
-     * Récupère la liste des projets autorisés pour un utilisateur
+     * Remonte l'arbre des parents pour trouver le code du projet racine
      */
-    public List<String> getAllowedProjects(String authenticationPrincipal) {
-        try {
-            UserPost user = userHandler.findByEmail(authenticationPrincipal).block();
+    private String findRootProjectCode(String nodeCode) {
+        String currentCode = nodeCode;
+        int maxDepth = 50; // Sécurité pour éviter les boucles infinies
+        int depth = 0;
 
-            if (user == null) {
-                return List.of();
+        while (currentCode != null && depth < maxDepth) {
+            Node node = nodeHandler.findByCodeAndStatus(currentCode, StatusEnum.SNAPSHOT.name()).block();
+
+            if (node == null) {
+                log.warn("Node non trouvé: {}", currentCode);
+                return null;
             }
 
-            // Admin a accès à tous les projets (retourne liste vide = tous)
-            if (isAdmin(user)) {
-                return List.of(); // ou null selon votre convention
+            // Si pas de parentCodeOrigin, on est à la racine
+            if (node.getParentCodeOrigin() == null || node.getParentCodeOrigin().isEmpty()) {
+                log.debug("Projet racine trouvé: {} pour node: {}", node.getCode(), nodeCode);
+                return node.getCode();
             }
 
-            return user.getProjects() != null ? user.getProjects() : List.of();
-
-        } catch (Exception e) {
-            log.error("Erreur récupération projets autorisés", e);
-            return List.of();
+            // Remonter au parent
+            currentCode = node.getParentCodeOrigin();
+            depth++;
         }
+
+        log.warn("Profondeur maximale atteinte pour node: {}", nodeCode);
+        return null;
     }
 
     /**
-     * Classe pour retourner un résultat détaillé
+     * Version avec Mono pour utilisation réactive
      */
-    public static class AuthorizationResult {
-        private final boolean allowed;
-        private final String message;
-        private final UserPost user;
-
-        private AuthorizationResult(boolean allowed, String message, UserPost user) {
-            this.allowed = allowed;
-            this.message = message;
-            this.user = user;
+    public Mono<Boolean> hasProjectAccessReactive(String nodeCode) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return Mono.just(false);
         }
 
-        public static AuthorizationResult allowed(UserPost user) {
-            return new AuthorizationResult(true, "OK", user);
-        }
+        String principal = auth.getPrincipal().toString();
 
-        public static AuthorizationResult denied(String message) {
-            return new AuthorizationResult(false, message, null);
-        }
-
-        public boolean isAllowed() {
-            return allowed;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public UserPost getUser() {
-            return user;
-        }
+        return userHandler.findByEmail(principal)
+                .flatMap(user -> {
+                    if (user.getProjects() == null || user.getProjects().isEmpty()) {
+                        return Mono.just(false);
+                    }
+                    return findRootProjectCodeReactive(nodeCode)
+                            .map(rootCode -> user.getProjects().contains(rootCode));
+                })
+                .defaultIfEmpty(false);
     }
+
+    /**
+     * Version réactive pour remonter l'arbre
+     */
+    private Mono<String> findRootProjectCodeReactive(String nodeCode) {
+        return findRootProjectCodeReactive(nodeCode, 0);
+    }
+
+    private Mono<String> findRootProjectCodeReactive(String nodeCode, int depth) {
+        if (depth > 50) {
+            return Mono.empty();
+        }
+
+        return nodeHandler.findByCodeAndStatus(nodeCode, StatusEnum.SNAPSHOT.name())
+                .flatMap(node -> {
+                    if (node.getParentCodeOrigin() == null || node.getParentCodeOrigin().isEmpty()) {
+                        return Mono.just(node.getCode());
+                    }
+                    return findRootProjectCodeReactive(node.getParentCodeOrigin(), depth + 1);
+                });
+    }
+
+    /**
+     * Vérifie si l'utilisateur a accès à au moins un des nodes dans une liste
+     */
+    public boolean hasAnyProjectAccess(List<String> nodeCodes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+
+        UserPost user = userHandler.findByEmail(auth.getPrincipal().toString()).block();
+        if (user == null || user.getProjects() == null || user.getProjects().isEmpty()) {
+            return false;
+        }
+
+        return nodeCodes.stream()
+                .map(this::findRootProjectCode)
+                .anyMatch(rootCode -> rootCode != null && user.getProjects().contains(rootCode));
+    }
+
+
 }

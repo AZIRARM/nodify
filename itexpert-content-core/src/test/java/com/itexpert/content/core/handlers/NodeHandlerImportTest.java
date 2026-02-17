@@ -8,7 +8,6 @@ import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
-import com.itexpert.content.lib.models.ContentNode;
 import com.itexpert.content.lib.models.Notification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,8 +25,10 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 
 public class NodeHandlerImportTest {
     private NodeRepository nodeRepository;
@@ -166,180 +167,21 @@ public class NodeHandlerImportTest {
                 .verifyComplete();
     }
 
-    @Test
-    void importNodes_parentNotFound_createsNodesDirectly() {
-        // GIVEN: parent introuvable
-        when(nodeRepository.findByCodeAndStatus("PARENT-DEV", StatusEnum.SNAPSHOT.name()))
-                .thenReturn(Mono.empty());
-        when(nodeRepository.findByCode("NODE-DEV"))
-                .thenReturn(Flux.empty());
-        when(nodeRepository.save(any()))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-
-        nodeSlugHelper = mock(NodeSlugHelper.class);
-
-        this.updateConfiguration(nodeSlugHelper);
-
-        when(nodeSlugHelper.update(any()))
-                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
-                    @Override
-                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
-                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
-                        node.setSlug("my-beautifull-slug-prod");
-                        return Mono.just(node);
-                    }
-                });
-
-        // WHEN
-        Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
-                List.of(nodeMapper.fromEntity(cloneNode(childNode))),
-                "PARENT-DEV",
-                false
-        );
-
-        // THEN
-        StepVerifier.create(result)
-                .assertNext(node -> {
-                    assert node.getVersion().equals("0"); // version incrémentée
-                    assert node.getStatus().equals(StatusEnum.SNAPSHOT);
-                })
-                .verifyComplete();
-    }
 
     @Test
-    void importNodesWithSlug_parentNotFound_createsNodesDirectlyWithDifferentSlug() {
-        // GIVEN: parent introuvable
-        when(nodeRepository.findByCodeAndStatus("PARENT-DEV", StatusEnum.SNAPSHOT.name()))
-                .thenReturn(Mono.empty());
-        when(nodeRepository.findByCode("NODE-DEV"))
-                .thenReturn(Flux.empty());
-        when(nodeRepository.save(any()))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-
-        com.itexpert.content.lib.models.Node model = nodeMapper.fromEntity(cloneNode(childNode));
-        model.setSlug("my-beautifull-node-slug");
-
-
-        nodeSlugHelper = mock(NodeSlugHelper.class);
-
-        this.updateConfiguration(nodeSlugHelper);
-
-        when(nodeSlugHelper.update(any()))
-                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
-                    @Override
-                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
-                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
-                        node.setSlug("my-beautifull-slug-prod");
-                        return Mono.just(node);
-                    }
-                });
-
-        // WHEN
-        Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
-                List.of(model),
-                "PARENT-DEV",
-                false
-        );
-
-        // THEN
-        StepVerifier.create(result)
-                .assertNext(node -> {
-                    assert node.getVersion().equals("0"); // version incrémentée
-                    assert node.getStatus().equals(StatusEnum.SNAPSHOT);
-                    assert !node.getSlug().equals(model.getSlug());
-                })
-                .verifyComplete();
-    }
-
-
-    @Test
-    void importNodesBlogFromFile_parentNotFound_childExists_createNodesAndChildes() {
+    void importNodesBlogFromFile_parentNotFound_childExists_shoutHaveException() {
         when(nodeRepository.findByCodeAndStatus(any(), any()))
                 .thenReturn(Mono.empty());
 
-        when(nodeRepository.findByCode(any()))
-                .thenReturn(Flux.empty());
 
-        when(contentNodeHandler.importContentNode(any()))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        assertThrows(RuntimeException.class, () -> {
+            nodeHandler.importNodes(
+                    this.getFromFile("tests/templates/BLOG-DEV.json"), // Liste à importer
+                    "PARENT-DEV",
+                    true
+            );
+        });
 
-        when(nodeRepository.save(any()))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-
-        nodeSlugHelper = mock(NodeSlugHelper.class);
-
-        this.updateConfiguration(nodeSlugHelper);
-
-        when(nodeSlugHelper.update(any()))
-                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
-                    @Override
-                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
-                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
-                        node.setSlug("my-beautifull-slug-prod");
-                        return Mono.just(node);
-                    }
-                });
-
-        Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
-                this.getFromFile("tests/templates/BLOG-DEV.json"), // Liste à importer
-                "PARENT-DEV",
-                true
-        );
-
-        // Assure-toi que le flux est déclenché
-        StepVerifier.create(result)
-                .expectNextCount(3)  // ou le nombre exact de nodes importés
-                .verifyComplete();
-
-        verify(nodeRepository, times(3)).save(any(Node.class));
-        verify(contentNodeHandler, times(15)).importContentNode(any(ContentNode.class));
-    }
-
-    @Test
-    void importNodesLandingPageFromFile_parentNotFound_childExists_createNodesAndChildes() {
-        when(nodeRepository.findByCodeAndStatus(any(), any()))
-                .thenReturn(Mono.empty());
-
-        when(nodeRepository.findByCode(any()))
-                .thenReturn(Flux.empty());
-
-        when(contentNodeHandler.importContentNode(any()))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-
-        when(nodeRepository.save(any()))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-
-        nodeSlugHelper = mock(NodeSlugHelper.class);
-
-        this.updateConfiguration(nodeSlugHelper);
-
-        when(nodeSlugHelper.update(any()))
-                .thenAnswer(new Answer<Mono<com.itexpert.content.lib.models.Node>>() {
-                    @Override
-                    public Mono<com.itexpert.content.lib.models.Node> answer(InvocationOnMock invocationOnMock) {
-                        com.itexpert.content.lib.models.Node node = invocationOnMock.getArgument(0);
-                        node.setSlug("my-beautifull-slug-prod");
-                        return Mono.just(node);
-                    }
-                });
-
-        List<com.itexpert.content.lib.models.Node> nodes = this.getFromFile("tests/templates/LANDINGPAGE-DEV.json");
-        Flux<com.itexpert.content.lib.models.Node> result = nodeHandler.importNodes(
-                nodes, // Liste à importer
-                "PARENT-DEV",
-                true
-        );
-
-        // Assure-toi que le flux est déclenché
-        StepVerifier.create(result)
-                .expectNextCount(3)  // ou le nombre exact de nodes importés
-                .verifyComplete();
-
-
-        List<com.itexpert.content.lib.models.Node> importedNodes = result.collectList().block();
-
-        verify(nodeRepository, times(6)).save(any(Node.class));
-        verify(contentNodeHandler, times(40)).importContentNode(any(ContentNode.class));
     }
 
     private Node cloneNode(Node original) {
