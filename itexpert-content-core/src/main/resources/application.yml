@@ -55,11 +55,11 @@ springbootwebfluxjjwt:
       iteration:  33
       keylength:  256
 server:
-  port : 8880
+  port : 8080
 logging:
   level:
     root: ERROR                              # niveau global
-    com.itexpert: ERROR                      # ton package principal pour debug
+    com.itexpert: DEBUG                      # ton package principal pour debug
     org.springframework.data.redis: ERROR   # debug Redis (Spring Data Redis)
     io.lettuce.core: ERROR                  # debug Lettuce client (commandes Redis, timeout)
     reactor.netty: ERROR                     # réduire le bruit des logs Netty si trop verbeux
