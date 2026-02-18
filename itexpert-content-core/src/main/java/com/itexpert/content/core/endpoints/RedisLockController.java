@@ -2,7 +2,6 @@ package com.itexpert.content.core.endpoints;
 
 import com.itexpert.content.core.handlers.RedisHandler;
 import com.itexpert.content.core.models.LockInfo;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

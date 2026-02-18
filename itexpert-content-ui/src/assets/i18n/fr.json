@@ -270,7 +270,7 @@
   "SLUG_AVAILABLE": "Cet alias est disponible",
 
   "NEED_PLUGIN_NAME": "Le nom du plugin est nécessaire.",
-
+  "LOCKS_LOAD_FAIL": "Erreur de chargement des vérous",
   "REALEASE_LOCKS": "Débloquer les ressources",
 
   "LOCKED_RESOURCES": "Ressources Vérouillées",

@@ -59,6 +59,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+            <version>3.2.2</version>
         </dependency>
 
         <dependency>

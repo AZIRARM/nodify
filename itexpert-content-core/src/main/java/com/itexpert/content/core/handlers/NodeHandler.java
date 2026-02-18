@@ -23,8 +23,6 @@ import reactor.util.function.Tuples;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -505,109 +503,162 @@ public class NodeHandler {
                 .flatMap(node -> this.notify(node, NotificationEnum.IMPORT));
     }
 
-    public Flux<Node> importNodes(List<Node> nodes, String nodeParentCode, Boolean fromFile) {
-        log.debug("[IMPORT] Start importNodes, parentCode={}, nodesCount={}", nodeParentCode, nodes.size());
+    public Flux<Node> importNodes(List<Node> nodes,
+                                      String nodeParentCode,
+                                      Boolean fromFile) {
 
-        return this.nodeRepository.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
-                .flatMapMany(nodeParent -> {
-                    String parentCodeOrigin = ObjectUtils.isEmpty(nodeParent.getParentCodeOrigin())
-                            ? nodeParent.getCode()
-                            : nodeParent.getParentCodeOrigin();
-
-                    return this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
-                            .map(node -> {
-                                if (ObjectUtils.isEmpty(node.getParentCode())) {
-                                    node.setParentCode(nodeParent.getCode());
-                                    node.setParentCodeOrigin(nodeParent.getCode());
-                                } else {
-                                    node.setParentCodeOrigin(nodeParent.getCode());
-                                }
-                                return node;
-                            })
-                            .flatMap(node -> this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
-                                    .flatMap(existingNode -> {
-                                        existingNode.setStatus(StatusEnum.ARCHIVE);
-                                        existingNode.setModificationDate(Instant.now().toEpochMilli());
-
-                                        if (ObjectUtils.isNotEmpty(node.getParentCode()) && ObjectUtils.isNotEmpty(existingNode.getParentCode())) {
-                                            existingNode.setParentCode(node.getParentCode());
-                                        }
-                                        node.setParentCode(existingNode.getParentCode());
-                                        node.setParentCodeOrigin(existingNode.getParentCodeOrigin());
-                                        node.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
-                                        node.setStatus(StatusEnum.SNAPSHOT);
-                                        node.setModificationDate(Instant.now().toEpochMilli());
-                                        if (ObjectUtils.isNotEmpty(existingNode.getSlug())) {
-                                            node.setSlug(existingNode.getSlug());
-                                        }
-                                        node.setFavorite(existingNode.isFavorite());
-
-                                        return this.nodeRepository.save(existingNode)
-                                                .then(Mono.just(node));
-                                    })
-                                    .switchIfEmpty(Mono.just(node).map(model -> {//si c'est un ajout
-                                        model.setModificationDate(Instant.now().toEpochMilli());
-                                        model.setCreationDate(model.getModificationDate());
-                                        model.setStatus(StatusEnum.SNAPSHOT);//Normalement déjà SNAPSHOT
-                                        model.setVersion("0");
-                                        return model;
-                                    }))
-                            );
-                })
-                .switchIfEmpty(//ici normalement c'est le premier import
-                        this.renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, "", fromFile)
-                                .map(node -> {
-                                    node.setStatus(StatusEnum.SNAPSHOT);
-                                    node.setVersion("0");
-                                    node.setModificationDate(Instant.now().toEpochMilli());
-                                    node.setCreationDate(node.getModificationDate());
-                                    return node;
-                                })
+        return Mono.fromCallable(() ->
+                        importNodesBlocking(nodes, nodeParentCode, fromFile)
                 )
-                // Mise à jour du slug pour chaque node
-                .flatMap(this.nodeSlugHelper::update)
-                .collectList()
-                .flatMapMany(nodesList -> Flux.fromIterable(
-                                        nodesList.stream()
-                                                .collect(Collectors.toMap(
-                                                        Node::getCode,
-                                                        Function.identity(),
-                                                        (existing, replacement) -> existing
-                                                ))
-                                                .values()
-                                )
-                                .flatMap(this::importContent)
-                                .collectList()
-                                .flatMapMany(entities -> Flux.fromIterable(
-                                        nodesList.stream()
-                                                .collect(Collectors.toMap(
-                                                        Node::getCode,
-                                                        Function.identity(),
-                                                        (existing, replacement) -> existing
-                                                ))
-                                                .values()
-                                ))
-                                .map(nodeMapper::fromModel)
-                                .flatMap(nodeRepository::save)
-                )
-                .map(nodeMapper::fromEntity)
-                .flatMap(node -> {
-                    return this.notify(node, NotificationEnum.IMPORT);
-                })
-                .doOnComplete(() -> log.debug("[IMPORT] importNodes finished, parentCode={}", nodeParentCode));
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMapMany(Flux::fromIterable);
     }
 
-    private Mono<Node> importContent(Node node) {
-        log.debug("[IMPORT] Start importContent, node {}", node.getCode());
-        if (ObjectUtils.isEmpty(node) || ObjectUtils.isEmpty(node.getContents())) {
-            return Mono.just(node);
-        }
-        return Flux.fromIterable(node.getContents())
-                .flatMap(this.contentNodeHandler::importContentNode)
+    public List<Node> importNodesBlocking(List<Node> nodes,
+                                          String nodeParentCode,
+                                          Boolean fromFile) {
+
+        log.debug("[IMPORT] Start importNodes, parentCode={}, nodesCount={}",
+                nodeParentCode, nodes.size());
+
+        com.itexpert.content.lib.entities.Node nodeParent = this.nodeRepository
+                .findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
+                .blockOptional()
+                .orElseThrow(() ->
+                        new RuntimeException("Parent node not found: " + nodeParentCode));
+
+        String parentCodeOrigin = ObjectUtils.isEmpty(nodeParent.getParentCodeOrigin())
+                ? nodeParent.getCode()
+                : nodeParent.getParentCodeOrigin();
+
+        List<Node> nodesToImport = this.renameNodeCodesHelper
+                .changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
                 .collectList()
-                .hasElement()
-                .map(haveElements -> node)
-                .doOnSuccess(n -> log.debug("[IMPORT] importContent finished, node {}", n.getCode()));
+                .block();
+
+        if (ObjectUtils.isEmpty(nodesToImport)) {
+            return Collections.emptyList();
+        }
+
+        List<Node> processedNodes = new ArrayList<>();
+
+        for (Node node : nodesToImport) {
+            node.setParentCodeOrigin(nodeParent.getCode());
+            if (ObjectUtils.isEmpty(node.getParentCode())) {
+                com.itexpert.content.lib.entities.Node entity = this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name()).block();
+                if(ObjectUtils.isEmpty(entity)) {
+                    node.setParentCode(nodeParent.getCode());
+                } else {
+                    node.setParentCode(entity.getParentCode());
+                }
+            }
+        }
+
+        for (Node node : nodesToImport) {
+
+            com.itexpert.content.lib.entities.Node existingNode =
+                    this.nodeRepository
+                            .findByCodeAndStatus(node.getCode(),
+                                    StatusEnum.SNAPSHOT.name())
+                            .blockOptional()
+                            .orElse(null);
+
+            if (existingNode != null) {
+
+                existingNode.setStatus(StatusEnum.ARCHIVE);
+                existingNode.setModificationDate(
+                        Instant.now().toEpochMilli());
+
+                this.nodeRepository.save(existingNode).block();
+
+                node.setVersion(Integer.toString(
+                        Integer.parseInt(existingNode.getVersion()) + 1));
+
+                node.setCreationDate(existingNode.getCreationDate());
+
+                if (ObjectUtils.isNotEmpty(existingNode.getSlug())) {
+                    node.setSlug(existingNode.getSlug());
+                }
+
+                node.setFavorite(existingNode.isFavorite());
+
+            } else {
+
+                node.setCreationDate(
+                        Instant.now().toEpochMilli());
+
+                node.setVersion("0");
+            }
+
+            node.setModificationDate(
+                    Instant.now().toEpochMilli());
+
+            node.setStatus(StatusEnum.SNAPSHOT);
+        }
+
+        for (Node node : nodesToImport) {
+
+            Node updatedNode =
+                    this.nodeSlugHelper.update(node).block();
+
+            if (updatedNode != null) {
+                node = updatedNode;
+            }
+        }
+
+        for (Node node : nodesToImport) {
+
+            com.itexpert.content.lib.entities.Node entity =
+                    this.nodeMapper.fromModel(node);
+
+            com.itexpert.content.lib.entities.Node savedEntity =
+                    this.nodeRepository.save(entity).block();
+
+            Node savedNode =
+                    this.nodeMapper.fromEntity(savedEntity);
+
+            if (ObjectUtils.isNotEmpty(node.getContents())) {
+                savedNode = importContentBlocking(node);
+            }
+
+            processedNodes.add(savedNode);
+        }
+
+        for (Node node : processedNodes) {
+            this.notify(node, NotificationEnum.IMPORT)
+                    .subscribe();
+        }
+
+        log.debug("[IMPORT] importNodes finished, parentCode={}, importedCount={}",
+                nodeParentCode, processedNodes.size());
+
+        return processedNodes;
+    }
+
+    private Node importContentBlocking(Node node) {
+
+        log.debug("[IMPORT] Start importContent, node {}",
+                node.getCode());
+
+        if (ObjectUtils.isEmpty(node)
+                || ObjectUtils.isEmpty(node.getContents())) {
+            return node;
+        }
+
+        for (ContentNode content : node.getContents()) {
+
+            content = this.contentNodeHandler
+                    .importContentNode(content)
+                    .block();
+
+            log.debug("[IMPORT] importContent finished, content {}",
+                    content.getCode());
+        }
+
+        log.debug("[IMPORT] importContent finished, node {}",
+                node.getCode());
+
+        return node;
     }
 
 
@@ -762,6 +813,7 @@ public class NodeHandler {
                 )
                 .thenReturn(Boolean.TRUE);
     }
+
     private Mono<Void> propagateOnSubtree(Node parent, Integer maxVersionsToKeep) {
 
         return this.nodeRepository
@@ -785,7 +837,6 @@ public class NodeHandler {
                 })
                 .then();
     }
-
 
 
 }

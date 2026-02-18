@@ -79,4 +79,9 @@ public class RenameNodeCodesHelper {
                 .map(jsons -> CodesUtils.changeCodes(jsons, parentCodeOrigin, fromFile));
     }
 
+    public List<Node> changeNodesCodesAndReturnList(List<Node> nodes, String parentCodeOrigin, Boolean fromFile) {
+        return changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
+                .collectList()
+                .block();
+    }
 }

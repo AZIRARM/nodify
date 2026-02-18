@@ -149,6 +149,29 @@ import {LoaderComponent} from "./components/ui/loader/loader.component";
 import { LockService } from './services/LockService';
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
 
+
+
+// Modules PrimeNG principaux
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { CheckboxModule } from 'primeng/checkbox';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
+import { MenuModule } from 'primeng/menu';
+import { PanelModule } from 'primeng/panel';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { CalendarModule } from 'primeng/calendar';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TabViewModule } from 'primeng/tabview';
+import { AccordionModule } from 'primeng/accordion';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { FileUploadModule } from 'primeng/fileupload';
+
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {

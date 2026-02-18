@@ -10,10 +10,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
@@ -30,31 +26,25 @@ public class WebSecurityConfig {
         System.out.println("Loading Security Configuration...");
 
         return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)  // Désactive la protection CSRF
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .authenticationManager(authenticationManager) // AJOUTER cette ligne
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         .pathMatchers("/authentication/login").permitAll()
-                        .pathMatchers("/swagger-ui/**").permitAll()
                         .pathMatchers("/file").permitAll()
                         .pathMatchers("/export").permitAll()
                         .pathMatchers("/health").permitAll()
                         .pathMatchers("/ws/**").permitAll()
+                        .pathMatchers("/v3/api-docs/**").permitAll()
+                        .pathMatchers("/swagger-ui/**").permitAll()
+                        .pathMatchers("/swagger-ui.html").permitAll()
+                        .pathMatchers("/webjars/swagger-ui/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .build();
-    }
-
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.withUsername("user")
-                .password("{noop}user") // "{noop}" signifie pas de hachage
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
     }
 
     @Bean

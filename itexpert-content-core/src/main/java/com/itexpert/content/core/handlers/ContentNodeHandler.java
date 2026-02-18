@@ -8,6 +8,7 @@ import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.core.utils.SnapshotUtils;
+import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
@@ -405,7 +406,7 @@ public class ContentNodeHandler {
     }
 
     public Mono<Boolean> nodeHaveContents(String code) {
-        return this.contentNodeRepository.countDistinctByParentCode(code).map(count -> count > 0);
+        return this.contentNodeRepository.countDistinctByParentCodeAndStatus(code, StatusEnum.SNAPSHOT.name()).map(count -> count > 0);
     }
 
     public Mono<ContentNode> deployContent(String contentNodeCode, String environmentCode) {
@@ -440,6 +441,12 @@ public class ContentNodeHandler {
 
                                 })
                                 .switchIfEmpty(Mono.just(contentNode).map(newContentNode -> {
+
+                                    Node parent = this.nodeRepository.findByCodeAndStatus(newContentNode.getParentCode(), StatusEnum.SNAPSHOT.name()).block();
+                                    if(ObjectUtils.isEmpty(parent)) {
+                                        newContentNode.setParentCodeOrigin(environmentCode);
+                                        newContentNode.setParentCode(environmentCode);
+                                    }
                                     newContentNode.setId(UUID.randomUUID());
                                     newContentNode.setVersion("0");
                                     newContentNode.setStatus(StatusEnum.SNAPSHOT);

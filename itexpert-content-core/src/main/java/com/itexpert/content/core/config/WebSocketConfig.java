@@ -1,8 +1,10 @@
 package com.itexpert.content.core.config;
 
 import com.itexpert.content.core.handlers.websockets.DatasSocketHandler;
+import com.itexpert.content.core.handlers.websockets.LockContentsSocketHandler;
 import com.itexpert.content.core.handlers.websockets.NotificationSocketHandler;
 import com.itexpert.content.core.handlers.websockets.RedisSocketHandler;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.HandlerMapping;
@@ -15,17 +17,13 @@ import java.util.Map;
 
 
 @Configuration
+@AllArgsConstructor
 public class WebSocketConfig {
     private final NotificationSocketHandler notificationSocketHandler;
     private final RedisSocketHandler redisSocketHandler;
     private final DatasSocketHandler datasSocketHandler;
+    private final LockContentsSocketHandler lockContentSocketHandler;
 
-
-    public WebSocketConfig(NotificationSocketHandler notificationSocketHandler, RedisSocketHandler redisSocketHandler, DatasSocketHandler datasSocketHandler) {
-        this.notificationSocketHandler = notificationSocketHandler;
-        this.redisSocketHandler = redisSocketHandler;
-        this.datasSocketHandler = datasSocketHandler;
-    }
 
     @Bean
     public HandlerMapping webSocketMapping() {
@@ -34,6 +32,7 @@ public class WebSocketConfig {
         map.put("/ws/notifications", notificationSocketHandler);
         map.put("/ws/owner/**", redisSocketHandler);
         map.put("/ws/datas/contentCode/**", datasSocketHandler);
+        map.put("/ws/lock-contents/**", lockContentSocketHandler);
 
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setUrlMap(map);
