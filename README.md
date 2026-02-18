@@ -8,7 +8,7 @@
 ## 🚀 Demo
 
 You can explore a live demo of **Nodify Headless CMS** here:  
-🔗 [Nodify Demo](https://azirar.ovh:7822)
+🔗 [Nodify Demo](https://nodify.azirar.ovh)
 
 **Credentials:**
 - **Username:** `admin`

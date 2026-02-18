@@ -8,7 +8,7 @@
 ## 🚀 演示
 
 您可以在此体验 **Nodify Headless CMS** 的在线演示：  
-🔗 [Nodify Demo](https://azirar.ovh:7822)
+🔗 [Nodify Demo](https://nodify.azirar.ovh)
 
 **登录信息：**
 - **用户名：** `admin`

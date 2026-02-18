@@ -8,7 +8,7 @@
 ## 🚀 العرض التجريبي
 
 يمكنك تجربة **Nodify Headless CMS** من خلال الرابط التالي:  
-🔗 [Nodify Demo](https://azirar.ovh:7822)
+🔗 [Nodify Demo](https://nodify.azirar.ovh)
 
 **بيانات الدخول:**
 - **اسم المستخدم:** `admin`

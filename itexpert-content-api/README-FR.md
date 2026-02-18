@@ -25,7 +25,7 @@ L'API Nodify permet aux développeurs d'interagir avec le CMS Headless Nodify de
 
 ## 2. URL de base
 
-L'URL de base de l'API Nodify est : `http://localhost:9080`
+L'URL de base de l'API Nodify est : `http://localhost:1080`
 
 ## 3. Points de terminaison de l'API
 
