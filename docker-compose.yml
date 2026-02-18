@@ -32,9 +32,9 @@ services:
       TZ: "${TZ:-Europe/Paris}"
       REDIS_URL: "${REDIS_URL:-redis://redis:6379}"
     expose:
-      - "9080"
+      - "1080"
     ports:
-      - 9080:9080
+      - 9080:1080
 
   nodify-ui:
     build:
@@ -46,7 +46,7 @@ services:
       - 80:80
     environment:
       CORE_URL: "${CORE_URL:-http://nodify-core:8080}"
-      API_URL: "${API_URL:-http://localhost:9080}"
+      API_URL: "${API_URL:-http://localhost:1080}"
 
 volumes:
   mongo:
