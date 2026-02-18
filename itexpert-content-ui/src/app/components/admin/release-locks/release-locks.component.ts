@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
@@ -15,13 +15,10 @@ import { interval, Subscription } from 'rxjs';
   templateUrl: './release-locks.component.html',
   styleUrls: ['./release-locks.component.css']
 })
-export class ReleaseLocksComponent implements OnInit, OnDestroy {
+export class ReleaseLocksComponent implements OnInit {
 
   displayedColumns: string[] = ["Code", "Owner", "Locked", "Actions"];
   dataSource = new MatTableDataSource<any>([]);
-
-  private refreshSub?: Subscription;
-
 
   constructor(
     private translate: TranslateService,
@@ -31,37 +28,37 @@ export class ReleaseLocksComponent implements OnInit, OnDestroy {
     private nodeService: NodeService,
     private contentNodeService: ContentNodeService,
     public lockService: LockService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    // 🔹 Charger une première fois
     this.loadLocks();
-
-    // 🔹 Relancer toutes les 10 secondes
-    this.refreshSub = interval(10000).subscribe(() => {
-      this.loadLocks();
-    });
   }
 
-  ngOnDestroy(): void {
-    // 🔹 Évite les fuites mémoire
-    if (this.refreshSub) {
-      this.refreshSub.unsubscribe();
-    }
-  }
+loadLocks(): void {
+  console.log("loadLocks appelé");
 
-  private loadLocks(): void {
-    this.lockService.getAll().subscribe({
-      next: (locks: any[]) => {
-        // ⚠️ à adapter selon ce que ton backend renvoie (LockInfo + nodeId)
-        this.dataSource.data = locks;
-      },
-      error: err => {
-        this.toast.error(this.translate.instant("LOCKS_LOAD_FAIL"));
+  this.lockService.handleAllLocks().subscribe({
+    next: (locks: any) => {
+      console.log("Données reçues:", locks);
+
+      if (Array.isArray(locks)) {
+        // SOLUTION : Créer une NOUVELLE instance du MatTableDataSource
+        this.dataSource = new MatTableDataSource<any>(locks);
+
+        // Forcer la détection de changements
+        this.cdRef.detectChanges();
+
+        console.log("dataSource mis à jour:", this.dataSource.data);
       }
-    });
-  }
+    },
+    error: (err: any) => {
+      console.error("Erreur WebSocket:", err);
+      this.toast.error(this.translate.instant("LOCKS_LOAD_FAIL"));
+    }
+  });
+}
 
   unlock(element: any) {
     this.lockService.adminRelease(element.resourceCode).subscribe({

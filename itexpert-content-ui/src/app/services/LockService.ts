@@ -44,18 +44,10 @@ export class LockService extends Service {
     });
   }
 
-
+/*
 getAll(): Observable<any[]>{
   return super.get("all");
-}
-
-  // --- Récupère les locks de plusieurs nodes ---
-  /*getLockInfos(codes: string[]){
-    if (!codes?.length) return of({});
-    const calls: Record<string, any> = {};
-    codes.forEach((code:string) => calls[code] = this.getLockInfo(code));
-    return forkJoin(calls);
-  }*/
+}*/
 
   // --- Acquérir un lock ---
   acquire(code: string) {
@@ -131,6 +123,30 @@ getAll(): Observable<any[]>{
           if (onTimeout) onTimeout();
         });
       });
+    });
+  }
+
+handleAllLocks(): Observable<any> {
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/lock-contents`;
+
+    return new Observable(observer => {
+
+      const socket = new WebSocket(url);
+
+      socket.onmessage = (event) => {
+        observer.next(JSON.parse(event.data));
+      };
+
+      socket.onerror = (event) => {
+        observer.error(event);
+      };
+
+      socket.onclose = () => {
+        observer.complete();
+      };
+
+      // Cleanup à l’unsubscribe
+      return () => socket.close();
     });
   }
 
