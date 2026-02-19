@@ -21,7 +21,7 @@ export class TokenInterceptor implements HttpInterceptor {
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
 
-    if (token) {
+    if (token && req.url && !req.url.includes("/authentication/login")) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
