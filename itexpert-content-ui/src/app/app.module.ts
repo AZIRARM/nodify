@@ -26,6 +26,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatSortModule} from '@angular/material/sort';
 import {MatDialogModule} from '@angular/material/dialog';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {ToastrModule} from 'ngx-toastr';
 import {NodesComponent} from './components/node/nodes/nodes.component';
@@ -63,9 +64,6 @@ import {TokenInterceptor} from "./interceptors/TokenInterceptor";
 import {ContentNodeDialogComponent} from './components/content-node/content-node-dialog/content-node-dialog.component';
 import {AccessRoleService} from "./services/AccessRoleService";
 import {ValuesDialogComponent} from './components/commons/values-dialog/values-dialog.component';
-import {
-  NodeAccessRolesDialogComponent
-} from './components/node/node-access-roles-dialg/node-access-roles-dialog.component';
 import {
   NodeRulesConditionsDialogComponent
 } from './components/commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component';
@@ -149,7 +147,6 @@ import {LoaderComponent} from "./components/ui/loader/loader.component";
 import { LockService } from './services/LockService';
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
 
-
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -185,7 +182,6 @@ export function defaultLanguage() {
     UserParametersComponent,
     ContentNodeDialogComponent,
     ValuesDialogComponent,
-    NodeAccessRolesDialogComponent,
     NodeRulesConditionsDialogComponent,
     PublishedNodesDialogComponent,
     PublishedContentsNodesDialogComponent,
@@ -257,6 +253,7 @@ export function defaultLanguage() {
     MatPaginatorModule,
     MatSortModule,
     MatDialogModule,
+    MatCheckboxModule,
     MatSlideToggleModule,
     MatDatepickerModule,
     MatBadgeModule,

@@ -1,18 +1,41 @@
-<p>
-  <mat-toolbar>
-    <span> {{ title | translate }}</span>
-  </mat-toolbar>
-</p>
+<div class="validation-dialog">
 
-<mat-card class="validation-card" appearance="outlined">
-  <img mat-card-image src="assets/pictures/logos/nodify_transparent.png" alt=" {{ title | translate }}"/>
-  <mat-card-content>
-    <div>
-      <p>{{ message | translate }}</p>
+  <!-- En-tête identique aux traductions -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>warning</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ title | translate }}</span>
+      </div>
     </div>
-  </mat-card-content>
-  <mat-card-actions>
-    <button mat-button (click)="cancel()">{{ "NO" | translate }}</button>
-    <button mat-button (click)="validate()">{{ "YES" | translate }}</button>
-  </mat-card-actions>
-</mat-card>
+    <button mat-icon-button class="close-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Contenu -->
+  <div mat-dialog-content class="dialog-content">
+    <div class="validation-content">
+      <div class="logo-container">
+        <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ title | translate }}">
+      </div>
+      <div class="message-container">
+        <p>{{ message | translate }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions avec boutons visibles -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button class="cancel-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+      {{ "NO" | translate }}
+    </button>
+    <button mat-flat-button class="save-btn" (click)="validate()">
+      <mat-icon>check</mat-icon>
+      {{ "YES" | translate }}
+    </button>
+  </div>
+</div>

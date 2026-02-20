@@ -26,6 +26,8 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
 
   private lockCheckSub: Subscription;
 
+  editingItem: any = null;
+
   constructor(
     public dialogRef: MatDialogRef<ValuesDialogComponent>,
     public userAccessService: UserAccessService,
@@ -115,14 +117,22 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
 
     this.node.values = values;
     this.init();
+    this.resetForm();
   }
 
-  edit(val: Value) {
-    this.key = val.key;
-    this.value = val.value;
+  edit(element: any) {
+    this.editingItem = element;
+    this.key = element.key;
+    this.value = element.value;
   }
 
   private init() {
     this.dataSource = new MatTableDataSource(this.node.values);
+  }
+
+  resetForm() {
+    this.key = '';
+    this.value = '';
+    this.editingItem = null;
   }
 }

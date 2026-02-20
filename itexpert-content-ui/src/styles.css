@@ -9,13 +9,13 @@
   --table-row-secondary: rgb(244, 194, 213);/* Rose pâle, pour alterner avec la ligne primaire sans perturber la lecture */
   --table-row-header: rgb(180, 82, 128);     /* Rose soutenu, pour marquer les en-têtes de tableau avec distinction */
 }
-
+/*
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden; /* empêche le débordement de la page */
+  overflow: hidden;
 }
 
 mat-toolbar{
@@ -137,7 +137,7 @@ h2{
   height: 70vh;
   margin-bottom: 15px;
 }
-
+*/
 @import 'ngx-toastr/toastr';
 
 @import 'codemirror/lib/codemirror';
@@ -146,3 +146,43 @@ h2{
 @import 'codemirror/theme/material';
 @import 'codemirror/theme/idea';
 @import 'codemirror/theme/monokai';
+
+@import 'tables.css';
+@import 'headers.css';
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 128px); // 64px header + 64px footer
+
+  .content-wrapper {
+    flex: 1;
+    padding: 20px;
+    background-color: var(--background-color);
+  }
+}
+
+// Variables de thème (à adapter selon votre configuration)
+:root {
+  --primary-color: #3f51b5;
+  --background-color: #f5f5f5;
+  --text-color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #303030;
+    --text-color: #fff;
+  }
+}

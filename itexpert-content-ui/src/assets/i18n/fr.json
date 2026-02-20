@@ -291,6 +291,9 @@
   "PROPAGATION_MAX_HISTORY_TITLE": "Historique à garder",
   "PROPAGATION_MAX_HISTORY_MESSAGE": "Souhaitez vous forcer la propagation aux sous noeuds et à leurs contenus ?",
   "PROPAGATION_MAX_HISTORY_SUCCESS": "La propagation aux sous noeuds et à leurs contenus à bien été effectuée.",
-  "PROPAGATION_MAX_HISTORY_ERROR": "Erreur lors de la propagation aux sous noeuds et à leurs contenus !"
+  "PROPAGATION_MAX_HISTORY_ERROR": "Erreur lors de la propagation aux sous noeuds et à leurs contenus !",
 
+  "BASIC_INFORMATION": "Informations basiques",
+  "TECHNICAL_CONFIGURATION": "Configuration technique",
+  "LANGUAGE_CONFIGURATION": "Configuration des langues"
 }

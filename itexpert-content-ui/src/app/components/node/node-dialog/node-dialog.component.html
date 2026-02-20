@@ -1,112 +1,202 @@
-<p>
-  <mat-toolbar *ngIf="!isCreation && isProject">
-    <span> {{ "PROJECT_UPDATE" | translate }}</span>
-  </mat-toolbar>
-  <mat-toolbar *ngIf="isCreation && isProject">
-    <span> {{ "PROJECT_CREATE" | translate }}</span>
-  </mat-toolbar>
-  <mat-toolbar *ngIf="!isCreation && !isProject">
-    <span> {{ "NODE_UPDATE" | translate }}</span>
-  </mat-toolbar>
-  <mat-toolbar *ngIf="isCreation && !isProject">
-    <span> {{ "NODE_CREATE" | translate }}</span>
-  </mat-toolbar>
-</p>
-
-<div mat-dialog-content>
-
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "NODE_NAME" | translate }}</mat-label>
-      <input matInput [(ngModel)]="node.name" (ngModelChange)="generateCode()" placeholder="{{ 'NODE_NAME' | translate }}" required>
-    </mat-form-field>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "NODE_CODE" | translate }}</mat-label>
-      <input matInput [(ngModel)]="node.code" disabled placeholder="{{ 'NODE_CODE' | translate }}" required>
-    </mat-form-field>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "SLUG" | translate }}</mat-label>
-      <input
-        matInput
-        [(ngModel)]="currentSlug"
-        (ngModelChange)="onSlugChange($event)"
-        placeholder="{{ 'SLUG' | translate }}"
-        required
-      >
-    </mat-form-field>
-  </p>
-  <p>
-
-      <ng-container *ngIf="slugAvailable === true">
-        ✅ {{'SLUG_AVAILABLE' | translate}}
-      </ng-container>
-      <ng-container *ngIf="slugAvailable === false">
-        ❌ {{'SLUG_ALREADY_USED' | translate}}
-      </ng-container>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "NODE_DESCRIPTION" | translate }}</mat-label>
-      <input matInput [(ngModel)]="node.description" placeholder="{{ 'NODE_DESCRIPTION' | translate }}">
-    </mat-form-field>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "MAX_VERSIONS_TO_KEEP" | translate }}</mat-label>
-      <input
-        matInput
-        type="number"
-        [defaultValue]="0"
-        min="0"
-        step="1"
-        [(ngModel)]="node.maxVersionsToKeep"
-        placeholder="{{ 'MAX_VERSIONS_TO_KEEP' | translate }}"
-        required
-      />
-    </mat-form-field>
-    <button *ngIf=" node.maxVersionsToKeep && node.maxVersionsToKeep > 0"
-      mat-icon-button
-      color="warn"
-      matTooltip="{{ 'PROPAGATION_MAX_HISTORY_TOOLTIP' | translate }}"
-      (click)="forcePropagation()"
-    >
-      <mat-icon>sync</mat-icon>
-    </button>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "NODE_TYPE" | translate }}</mat-label>
-      <input matInput [(ngModel)]="node.type" placeholder="{{ 'NODE_TYPE' | translate }}">
-    </mat-form-field>
-  </p>
-
-  <p>
-    <mat-form-field>
-      <mat-label>{{ "NODE_DEFAULT_LANGUAGE" | translate }}</mat-label>
-      <mat-select [(ngModel)]="node.defaultLanguage" name="selectLanguage" required>
-        <mat-option *ngFor="let lang of languages" [value]="lang.code">{{lang.code}}</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </p>
-
-  <p>
-    <mat-form-field>
-      <mat-label>{{ "NODE_LANGUAGE" | translate }}</mat-label>
-      <mat-select [(ngModel)]="node.languages" name="selectLanguages" multiple>
-        <mat-option *ngFor="let lang of languages" [value]="lang.code">{{lang.code}}</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </p>
+<!-- ===== EN-TÊTE AVEC FIL D'ARIANE ===== -->
+<div class="dialog-header">
+  <div class="header-content">
+    <div class="header-icon">
+      <mat-icon *ngIf="isProject" class="project-icon">folder</mat-icon>
+      <mat-icon *ngIf="!isProject" class="node-icon">account_tree</mat-icon>
+    </div>
+    <div class="header-title">
+      <span class="title-main">
+        <ng-container *ngIf="!isCreation && isProject">{{ "PROJECT_UPDATE" | translate }}</ng-container>
+        <ng-container *ngIf="isCreation && isProject">{{ "PROJECT_CREATE" | translate }}</ng-container>
+        <ng-container *ngIf="!isCreation && !isProject">{{ "NODE_UPDATE" | translate }}</ng-container>
+        <ng-container *ngIf="isCreation && !isProject">{{ "NODE_CREATE" | translate }}</ng-container>
+      </span>
+      <span class="title-code" *ngIf="node.code">({{ node.code }})</span>
+    </div>
+  </div>
+  <button mat-icon-button class="close-btn" (click)="cancel()" matTooltip="{{ 'CLOSE' | translate }}">
+    <mat-icon>close</mat-icon>
+  </button>
 </div>
 
-<div mat-dialog-actions>
-  <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-  <button mat-button [disabled]="!node.defaultLanguage
-                                || !node.code
-                                || !slugAvailable
-                                || !node.name || node.name.trim().length<4" (click)="validate()">{{ "SAVE" | translate }}</button>
+<!-- ===== CONTENU PRINCIPAL AVEC SCROLL CONTROLÉ ===== -->
+<div mat-dialog-content class="dialog-content">
+
+  <!-- Section Informations de base -->
+  <div class="form-section compact">
+    <h3 class="section-title">
+      <mat-icon>info</mat-icon>
+      {{ 'BASIC_INFORMATION' | translate }}
+    </h3>
+
+    <!-- Ligne 1: Nom et Code -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field compact nom-field">
+        <mat-label>{{ "NODE_NAME" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="node.name"
+          (ngModelChange)="generateCode()"
+          placeholder="{{ 'NODE_NAME' | translate }}"
+          required
+        >
+        <mat-icon matSuffix>badge</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field compact code-field">
+        <mat-label>{{ "NODE_CODE" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="node.code"
+          disabled
+          placeholder="{{ 'NODE_CODE' | translate }}"
+          required
+        >
+        <mat-icon matSuffix>fingerprint</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- Slug avec validation -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field compact slug-field">
+        <mat-label>{{ "SLUG" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="currentSlug"
+          (ngModelChange)="onSlugChange($event)"
+          placeholder="{{ 'SLUG' | translate }}"
+          required
+          [class.invalid]="slugAvailable === false"
+          [class.valid]="slugAvailable === true"
+        >
+        <mat-icon matSuffix>link</mat-icon>
+      </mat-form-field>
+
+      <!-- Validation slug (à côté) -->
+      <div class="slug-validation" *ngIf="slugAvailable !== undefined && currentSlug">
+        <span *ngIf="slugAvailable === true" class="success-badge">
+          <mat-icon>check_circle</mat-icon> {{'SLUG_AVAILABLE' | translate}}
+        </span>
+        <span *ngIf="slugAvailable === false" class="error-badge">
+          <mat-icon>error</mat-icon> {{'SLUG_ALREADY_USED' | translate}}
+        </span>
+      </div>
+    </div>
+
+    <!-- Description (réduite) -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field compact description-field">
+        <mat-label>{{ "NODE_DESCRIPTION" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="node.description"
+          placeholder="{{ 'NODE_DESCRIPTION' | translate }}"
+        >
+        <mat-icon matSuffix>description</mat-icon>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Section Configuration technique (compacte) -->
+  <div class="form-section compact">
+    <h3 class="section-title">
+      <mat-icon>settings</mat-icon>
+      {{ 'TECHNICAL_CONFIGURATION' | translate }}
+    </h3>
+
+    <!-- Ligne: Type et Version max -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field compact type-field">
+        <mat-label>{{ "NODE_TYPE" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="node.type"
+          placeholder="{{ 'NODE_TYPE' | translate }}"
+        >
+        <mat-icon matSuffix>category</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field compact version-field">
+        <mat-label>{{ "MAX_VERSIONS" | translate }}</mat-label>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="1"
+          [(ngModel)]="node.maxVersionsToKeep"
+          placeholder="0"
+        >
+        <mat-icon matSuffix>history</mat-icon>
+      </mat-form-field>
+
+      <button
+        *ngIf="node.maxVersionsToKeep && node.maxVersionsToKeep > 0"
+        mat-icon-button
+        class="propagation-btn compact"
+        matTooltip="{{ 'PROPAGATION_MAX_HISTORY_TOOLTIP' | translate }}"
+        (click)="forcePropagation()"
+      >
+        <mat-icon>sync</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Section Langues (compacte) -->
+  <div class="form-section compact">
+    <h3 class="section-title">
+      <mat-icon>language</mat-icon>
+      {{ 'LANGUAGE_CONFIGURATION' | translate }}
+    </h3>
+
+    <div class="form-row">
+      <!-- Langue par défaut -->
+      <mat-form-field appearance="outline" class="form-field compact default-lang-field">
+        <mat-label>{{ "DEFAULT_LANGUAGE" | translate }}</mat-label>
+        <mat-select [(ngModel)]="node.defaultLanguage" name="selectLanguage" required>
+          <mat-option *ngFor="let lang of languages" [value]="lang.code">
+            {{ lang.name || lang.code }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>star</mat-icon>
+      </mat-form-field>
+
+      <!-- Langues disponibles -->
+      <mat-form-field appearance="outline" class="form-field compact languages-field">
+        <mat-label>{{ "LANGUAGES" | translate }}</mat-label>
+        <mat-select [(ngModel)]="node.languages" name="selectLanguages" multiple>
+          <mat-select-trigger>
+            {{ getSelectedLanguagesDisplay() }}
+          </mat-select-trigger>
+          <mat-option *ngFor="let lang of languages" [value]="lang.code">
+            {{ lang.name || lang.code }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>translate</mat-icon>
+      </mat-form-field>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ACTIONS COMPACTES ===== -->
+<div mat-dialog-actions class="dialog-actions compact">
+  <button
+    mat-button
+    class="cancel-btn compact"
+    (click)="cancel()"
+  >
+    <mat-icon>close</mat-icon>
+    {{ "CANCEL" | translate }}
+  </button>
+
+  <button
+    mat-flat-button
+    class="save-btn compact"
+    color="primary"
+    [disabled]="!isFormValid()"
+    (click)="validate()"
+  >
+    <mat-icon>save</mat-icon>
+    {{ "SAVE" | translate }}
+  </button>
 </div>

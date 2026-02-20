@@ -442,8 +442,18 @@ public class ContentNodeHandler {
                                 })
                                 .switchIfEmpty(Mono.just(contentNode).map(newContentNode -> {
 
-                                    Node parent = this.nodeRepository.findByCodeAndStatus(newContentNode.getParentCode(), StatusEnum.SNAPSHOT.name()).block();
-                                    if(ObjectUtils.isEmpty(parent)) {
+
+                                    Node parent = Mono.justOrEmpty(
+                                                    this.nodeRepository
+                                                            .findByCodeAndStatus(
+                                                                    newContentNode.getParentCode(),
+                                                                    StatusEnum.SNAPSHOT.name()
+                                                            )
+                                            )
+                                            .flatMap(m -> m)
+                                            .block();
+
+                                    if (ObjectUtils.isEmpty(parent)) {
                                         newContentNode.setParentCodeOrigin(environmentCode);
                                         newContentNode.setParentCode(environmentCode);
                                     }

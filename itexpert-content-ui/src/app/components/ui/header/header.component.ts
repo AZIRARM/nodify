@@ -37,6 +37,9 @@ export class HeaderComponent {
     {code: 'ar', label: 'عربي'},
   ];
 
+  isAdmin(): boolean {
+    return this.userAccessService.isAdmin();
+  }
 
   isDarkMode: boolean = true;
 
@@ -116,5 +119,12 @@ export class HeaderComponent {
   toggleTheme() {
     this.isDarkMode = !this.isDarkMode;
     this.themeService.toggleTheme(this.isDarkMode ? 'dark' : 'light');
+  }
+
+
+  activeLink = 'workspace';
+
+  setActiveLink(link: string) {
+    this.activeLink = link;
   }
 }

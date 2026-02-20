@@ -1,79 +1,375 @@
-.full-text {
-  min-width: 60%;
-  max-width: 100%;
-  min-height: 200px;
-  max-height: 300px;
+/* ===== STYLES DE BASE ===== */
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== EN-TÊTE - Utilise la classe globale .dialog-header ===== */
+
+/* ===== CONTENU PRINCIPAL ===== */
+.dialog-content {
+  height: calc(90vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 4px 20px 0;
+  margin: 0 10px;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+/* ===== BARRE D'OUTILS ===== */
+.content-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0 20px 16px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .type-select {
+    width: 200px;
+
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 44px !important;
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      padding: 8px 0 !important;
+      min-height: 36px !important;
+    }
+  }
+
+  .add-btn {
+    height: 44px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--table-primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &:hover {
+      background: var(--table-primary-light);
+    }
+  }
+}
+
+/* ===== BOUTONS D'ACTION ===== */
+.action-btn {
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &.warn-btn {
+    background-color: #ffebee;
+    color: var(--table-danger);
+    &:hover {
+      background-color: #ffcdd2;
+    }
+  }
+
+  &.primary-btn {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    &:hover {
+      background-color: #bbdefb;
+    }
+  }
+}
+
+/* ===== TABLEAU ===== */
+.table-wrapper {
+  margin: 0 20px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.content-table {
   width: 100%;
-  height: 60%;
+
+  .mat-mdc-header-row {
+    height: var(--table-header-height);
+    background: var(--table-primary);
+  }
+
+  .mat-mdc-header-cell {
+    color: white;
+    font-size: var(--table-font-size-header);
+    font-weight: 600;
+    padding: 0 8px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.9);
+    }
+  }
+
+  .mat-mdc-row {
+    height: var(--table-row-height);
+
+    &:hover {
+      background-color: var(--table-bg-row-hover);
+    }
+
+    &.granted-row {
+      background-color: #fff9e6;
+      &:hover {
+        background-color: #fff3d4;
+      }
+    }
+  }
+
+  .mat-mdc-cell {
+    padding: 0 8px;
+    font-size: var(--table-font-size-cell);
+    color: var(--table-text-primary);
+    border-bottom-color: var(--table-border-light);
+    vertical-align: middle;
+  }
 }
 
-table {
-  overflow: auto;
-  max-height: 60%;
-  min-width: 95%;
-  display: block;
-  position: absolute;
+/* ===== BADGES ET ÉLÉMENTS SPÉCIFIQUES ===== */
+.type-badge {
+  background: var(--table-primary-light);
+  color: var(--table-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-block;
 }
 
-td {
+.type-description {
+  font-size: 0.65rem;
+  color: #888;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.version-badge {
+  background: var(--table-primary-light);
+  color: var(--table-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.content-thumbnail {
+  max-width: 30px;
+  max-height: 30px;
+  margin-left: 4px;
+  vertical-align: middle;
+  border-radius: 3px;
+}
+
+.date-cell, .user-cell {
+  font-size: 0.7rem;
+}
+
+.user-cell {
+  background: var(--table-bg-row-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--table-text-secondary);
+  display: inline-block;
+}
+
+.lock-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.6rem;
+  color: var(--table-danger);
+  background: #ffebee;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-top: 2px;
+
+  .lock-icon {
+    font-size: 10px;
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* ===== BOUTONS D'ACTION ===== */
+.action-icon-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
-}
-span>div { display: none; }
-span:hover>div {
-  display: block;
-  position: absolute;
-  width: 20%;
-  height: auto;
-  top: 10%;
-  left: 40%;
+  border-radius: 3px;
+
+  .mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  &:hover {
+    background-color: var(--table-bg-row-hover);
+  }
 }
 
-.description {
-  color: var(--secondary);
-  max-width: 120px;
-  font-size: smaller;
-}
-.dialog-title .mat-toolbar {
+.actions-cell {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 8px; /* Optionnel : Ajoute un peu de marge */
+  gap: 1px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
-.dialog-title .spacer {
-  flex: 1;
+.text-primary { color: var(--table-primary); }
+.text-info { color: var(--table-info); }
+.text-success { color: var(--table-success); }
+.text-warning { color: var(--table-warning); }
+.text-danger { color: var(--table-danger); }
+.text-accent { color: #ff4081; }
+.text-disabled { color: #ccc; }
+
+/* ===== STATUS ICONS ===== */
+.status-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &.green {
+    color: var(--table-success);
+  }
+  &.yellow {
+    color: var(--table-warning);
+  }
+  &.red {
+    color: var(--table-danger);
+  }
 }
 
+/* Pour le bouton status */
+.status-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 
-.title-left {
-  text-align: left;
-}
-
-mat-form-field {
-  padding-left: 20px;
-  padding-top: 20px;
-  width: 30%  ;
-  color: var(--secondary);
-}
-mat-form-field mat-label {
-  color: var(--secondary);
-}
-mat-form-field input {
-  border-style: solid;
-  border-width: 1px;
-  height: 50px;
-  border-color: var(--primary);
-  color: var(--secondary);
-}
-
-.code-validation{
-  color: var(--secondary);
-  border-style: solid;
-  border-width: 1px;
-  height: 50px;
-  margin: 10px;
-}
-h2{
-  color: var(--secondary);
+  .mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
 }
 
+/* ===== MENUS ===== */
+.modern-menu {
+  .menu-header {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #666;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .mat-mdc-menu-item {
+    height: 32px;
+    font-size: 0.7rem;
+
+    .mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      margin-right: 6px;
+    }
+  }
+}

@@ -14,7 +14,6 @@ import {
   NodeRulesConditionsDialogComponent
 } from "../../commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component";
 import {ValuesDialogComponent} from "../../commons/values-dialog/values-dialog.component";
-import {NodeAccessRolesDialogComponent} from "../../node/node-access-roles-dialg/node-access-roles-dialog.component";
 import {StatusEnum} from "../../../modeles/StatusEnum";
 import {
   PublishedContentsNodesDialogComponent
@@ -59,7 +58,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   dialogRefValues: MatDialogRef<ValuesDialogComponent>;
   dialogRefRules: MatDialogRef<NodeRulesConditionsDialogComponent>;
-  dialogRefAccessRoles: MatDialogRef<NodeAccessRolesDialogComponent>;
   dialogRefDeleteds: MatDialogRef<DeletedContentsNodesDialogComponent>;
   dialogRefPublished: MatDialogRef<PublishedContentsNodesDialogComponent>;
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
@@ -309,19 +307,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       });
   }
 
-  roles(content: ContentNode) {
-    this.dialogRefAccessRoles = this.dialog.open(NodeAccessRolesDialogComponent, {
-      data: content,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    });
-    this.dialogRefAccessRoles.afterClosed()
-      .subscribe(result => {
-        this.save(result.data);
-      });
-  }
-
   private save(content: ContentNode) {
 
     content.modifiedBy = this.user!.id;
@@ -349,11 +334,11 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   getPublishedIcon(element: any) {
     if (element.publicationStatus === 'PUBLISHED')
-      return "primary";
+      return "green";
     else if (element.publicationStatus === 'SNAPSHOT')
-      return "warn";
+      return "yellow";
     else
-      return "danger";
+      return "red";
   }
 
 

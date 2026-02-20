@@ -22,7 +22,7 @@ const routes: Routes =
   [
     {
       path: '',
-      component: AppComponent,
+      component: NodesComponent,
       canActivate: [AuthGuard]
     },
     {

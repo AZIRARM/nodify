@@ -1,47 +1,113 @@
-<mat-toolbar>
-  <button mat-icon-button (click)="toggleSidenav()" matTooltip="Menu">
-    <mat-icon>menu</mat-icon>
-  </button>
-  <span>{{'APP_NAME' | translate}}</span>
-  <span class="toolbar-item-spacer"></span>
+<mat-toolbar color="primary" class="main-toolbar">
+  <div class="logo-container">
+    <img src="assets/pictures/logos/nodify_transparent.png" alt="Nodify" class="logo-img">
+    <span class="app-name">{{'APP_NAME' | translate}}</span>
+  </div>
 
+  <!-- Menu de navigation simple avec boutons -->
+  <div class="nav-buttons">
+    <!-- Menu Workspace -->
+    <button mat-button [matMenuTriggerFor]="workspaceMenu" class="nav-button">
+      <mat-icon>workspaces</mat-icon>
+      <span>{{ 'WORKSPACE' | translate }}</span>
+      <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
+    </button>
 
-  <button mat-icon-button (click)="toggleTheme()">
-    <mat-icon>{{ isDarkMode ? 'wb_sunny' : 'nights_stay' }}</mat-icon>
-  </button>
+    <mat-menu #workspaceMenu="matMenu" class="nav-menu">
+      <a mat-menu-item routerLink="nodes" [queryParams]="{parentNode: ''}">
+        <mat-icon>folder</mat-icon>
+        <span>{{ 'PROJECTS' | translate }}</span>
+      </a>
+      <a mat-menu-item routerLink="plugins">
+        <mat-icon>extension</mat-icon>
+        <span>{{ 'PLUGINS' | translate }}</span>
+      </a>
+      <a mat-menu-item routerLink="release-locks" *ngIf="isAdmin()">
+        <mat-icon>lock_open</mat-icon>
+        <span>{{ 'REALEASE_LOCKS' | translate }}</span>
+      </a>
+      <a mat-menu-item routerLink="languages">
+        <mat-icon>language</mat-icon>
+        <span>{{ 'LANGUAGES' | translate }}</span>
+      </a>
+      <a mat-menu-item routerLink="charts">
+        <mat-icon>bar_chart</mat-icon>
+        <span>{{ 'CHARTS' | translate }}</span>
+      </a>
+    </mat-menu>
 
-  <span class="form-inline" id="language">
-    <select class="form-control" #selectedLang (change)="changeSiteLanguage(selectedLang.value)">
-      <option *ngFor="let language of languageList" [value]="language.code"
-              [selected]="language.code === selectedLanguage">
-        {{ language.label }}
-      </option>
-    </select>
-  </span>
+    <!-- Menu Users pour admin -->
+    @if(isAdmin()) {
+    <button mat-button [matMenuTriggerFor]="usersMenu" class="nav-button">
+      <mat-icon>group</mat-icon>
+      <span>{{ 'USERS' | translate }}</span>
+      <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
+    </button>
 
-  <button mat-icon-button routerLink="/notifications" matTooltip="{{'NOTIFICATIONS'| translate}}">
-    <mat-icon
-      matBadge="{{ (nbNotifications < 99) ? nbNotifications : '99+' }}"
-      aria-hidden="false">
-      notifications
-    </mat-icon>
-  </button>
-  <button mat-icon-button matTooltip="{{'MY_ACCOUNT'| translate}}" [matMenuTriggerFor]="userAccountMenu">
-    <mat-icon>account_circle</mat-icon>
-  </button>
-  <mat-menu #userAccountMenu [overlapTrigger]="false" yPosition="below">
-    <button mat-menu-item routerLink="/userInfos">
-      <mat-icon>person</mat-icon><span>{{"MY_ACCOUNT" | translate}}</span>
+    <mat-menu #usersMenu="matMenu" class="nav-menu">
+      <a mat-menu-item routerLink="users">
+        <mat-icon>people</mat-icon>
+        <span>{{ 'USERS' | translate }}</span>
+      </a>
+    </mat-menu>
+    }
+  </div>
+
+  <span class="toolbar-spacer"></span>
+
+  <!-- Actions utilisateur -->
+  <div class="user-actions">
+    <!-- Bouton thème -->
+    <button mat-icon-button (click)="toggleTheme()" [matTooltip]="'TOGGLE_THEME' | translate">
+      <mat-icon>{{ isDarkMode ? 'wb_sunny' : 'nights_stay' }}</mat-icon>
     </button>
-    <button mat-menu-item routerLink="/helps">
-      <mat-icon>help</mat-icon><span>{{"HELP" | translate}}</span>
+
+    <!-- Sélecteur de langue -->
+    <button mat-icon-button [matMenuTriggerFor]="languageMenu" [matTooltip]="'LANGUAGE' | translate">
+      <mat-icon>translate</mat-icon>
     </button>
-    <button mat-menu-item routerLink="/parameters">
-      <mat-icon>help</mat-icon><span>{{"USER_PARAMETERS" | translate}}</span>
+    <mat-menu #languageMenu="matMenu" class="nav-menu">
+      <button *ngFor="let language of languageList"
+              mat-menu-item
+              (click)="changeSiteLanguage(language.code)">
+        <span [class.active-language]="language.code === selectedLanguage">
+          {{ language.label }}
+        </span>
+      </button>
+    </mat-menu>
+
+    <!-- Notifications -->
+    <button mat-icon-button routerLink="/notifications"
+            [matTooltip]="'NOTIFICATIONS' | translate"
+            [matBadge]="(nbNotifications < 99) ? nbNotifications : '99+'"
+            matBadgeColor="warn"
+            matBadgeSize="small">
+      <mat-icon>notifications</mat-icon>
     </button>
-    <mat-divider></mat-divider>
-    <button mat-menu-item (click)="logout()">
-      <mat-icon>exit_to_app</mat-icon>{{"LOGOUT" | translate}}
+
+    <!-- Menu compte utilisateur -->
+    <button mat-icon-button [matMenuTriggerFor]="userAccountMenu"
+            [matTooltip]="'MY_ACCOUNT' | translate">
+      <mat-icon>account_circle</mat-icon>
     </button>
-  </mat-menu>
+    <mat-menu #userAccountMenu="matMenu" xPosition="before" class="nav-menu">
+      <button mat-menu-item routerLink="/userInfos">
+        <mat-icon>person</mat-icon>
+        <span>{{ 'MY_ACCOUNT' | translate }}</span>
+      </button>
+      <button mat-menu-item routerLink="/helps">
+        <mat-icon>help</mat-icon>
+        <span>{{ 'HELP' | translate }}</span>
+      </button>
+      <button mat-menu-item routerLink="/parameters">
+        <mat-icon>settings</mat-icon>
+        <span>{{ 'USER_PARAMETERS' | translate }}</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>exit_to_app</mat-icon>
+        <span>{{ 'LOGOUT' | translate }}</span>
+      </button>
+    </mat-menu>
+  </div>
 </mat-toolbar>
