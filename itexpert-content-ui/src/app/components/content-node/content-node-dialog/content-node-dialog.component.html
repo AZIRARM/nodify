@@ -266,7 +266,7 @@
                 <mat-icon class="text-warning">share</mat-icon>
               </button>
               <mat-menu #deployNodeMenu class="modern-menu" xPosition="before">
-                <div class="menu-header">{{ 'SELECT_ENVIRONMENT' | translate }}</div>
+                <div class="menu-header">{{ 'DEPLOY_ENVIRONMENT' | translate }}</div>
                 <button mat-menu-item *ngFor="let env of getEnvironments()" (click)="deploy(element, env.code)">
                   <mat-icon>cloud_queue</mat-icon>
                   <span>{{ env.name }}</span>

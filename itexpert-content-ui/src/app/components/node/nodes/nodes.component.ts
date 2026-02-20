@@ -18,14 +18,14 @@ import {ContentNodeDialogComponent} from "../../content-node/content-node-dialog
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {StatusEnum} from "../../../modeles/StatusEnum";
-import {PublishedNodesDialogComponent} from "../published-nodes-dialog/published-nodes-dialog.component";
+import {PublishedItemsDialogComponent} from "../../commons/published-items-dialog/published-items-dialog.component";
 import {TranslationsDialogComponent} from "../../commons/translations-dialog/translations-dialog.component";
 import {UserService} from "../../../services/UserService";
 import {UserAccessService} from "../../../services/UserAccessService";
 import {AuthenticationService} from "../../../services/AuthenticationService";
 import {ToastrService} from "ngx-toastr";
 import {Env} from "../../../../assets/configurations/environment";
-import {DeletedNodesDialogComponent} from "../deleted-nodes-dialog/deleted-nodes-dialog.component";
+import {DeletedItemsDialogComponent} from "../../commons/deleted-items-dialog/deleted-items-dialog.component";
 import {NodesViewDialogComponent} from "../nodes-view-dialog/nodes-view-dialog.component";
 import { interval, Subscription } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
@@ -58,8 +58,8 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   dialogRefValues: MatDialogRef<ValuesDialogComponent>;
   dialogRefRules: MatDialogRef<NodeRulesConditionsDialogComponent>;
   dialogRefContents: MatDialogRef<ContentNodeDialogComponent>;
-  dialogRefDeleteds: MatDialogRef<DeletedNodesDialogComponent>;
-  dialogRefPublished: MatDialogRef<PublishedNodesDialogComponent>;
+  dialogRefDeleteds: MatDialogRef<DeletedItemsDialogComponent>;
+  dialogRefPublished: MatDialogRef<PublishedItemsDialogComponent>;
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
   dialogRefTreeNode: MatDialogRef<NodesViewDialogComponent>;
 
@@ -340,11 +340,17 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   deleteds() {
-    this.dialogRefDeleteds = this.dialog.open(DeletedNodesDialogComponent, {
+    this.dialogRefDeleteds = this.dialog.open(DeletedItemsDialogComponent, {
         height: '80vh',
         width: '80vw',
         disableClose: true,
-        data: this.parentNode
+        data: {
+          parentNode: this.parentNode,
+          titleKey: 'DELETED_NODES',
+          icon: 'delete_sweep',
+          displayTypeColumn: true,
+          deleteService: this.nodeService // Passer le service directement
+        }
       }
     );
     this.dialogRefDeleteds.afterClosed()
@@ -449,17 +455,22 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   gotoPublished(node: Node) {
-    this.dialogRefPublished = this.dialog.open(PublishedNodesDialogComponent, {
-      data: node,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    });
-    this.dialogRefPublished.afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.init();
+    this.dialogRefPublished = this.dialog.open(PublishedItemsDialogComponent, {
+        height: '80vh',
+        width: '80vw',
+        disableClose: true,
+        data: {
+          itemName: node.name,
+          itemCode: node.code,
+          itemIcon: 'folder', // Icône pour les nœuds
+          titleKey: 'NODE_PUBLICATION_HISTORY',
+          displayTypeColumn: true,
+          publicationService: this.nodeService // Passage du service dans data
         }
+      });
+
+      this.dialogRefPublished.afterClosed().subscribe(() => {
+        this.init();
       });
   }
 

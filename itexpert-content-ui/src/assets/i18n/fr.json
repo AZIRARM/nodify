@@ -122,7 +122,7 @@
   "VERSION": "Version",
   "REVERT": "Revenir à cette version",
   "DEPLOY_VERSION": "Déployer cette version",
-  "DEPLOY_ENVIRONMENT": "Déployer vers un environnement",
+  "DEPLOY_ENVIRONMENT": "Déployer vers un environnement, Dossier, Projet..",
   "DEPLOY_SUCCESS": "Déploiement réussi",
   "DEPLOY": "Déployer",
   "DEPLOY_VERSION_TITLE": "Souhaitez vous déployer cette version",
@@ -295,5 +295,17 @@
 
   "BASIC_INFORMATION": "Informations basiques",
   "TECHNICAL_CONFIGURATION": "Configuration technique",
-  "LANGUAGE_CONFIGURATION": "Configuration des langues"
+  "LANGUAGE_CONFIGURATION": "Configuration des langues",
+
+  "CONTENT_TYPE": "Type de contenus",
+  "ADD_TRANSLATION": "Ajouter une traduction",
+  "TRANSLATIONS_LIST": "Liste des traductions",
+
+  "ADD_RULE": "Ajouter une règle",
+  "RULES_LIST": "Liste des règles",
+
+  "ADD_VALUE": "Ajouter une valeur",
+  "VALUES_LIST": "Liste des valeurs",
+
+  "NO_DELETED_ITEMS": "Pas d'éléments en cours de suppression"
 }

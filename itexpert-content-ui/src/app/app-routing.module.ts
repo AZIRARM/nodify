@@ -8,10 +8,6 @@ import {LoginComponent} from "./components/user/login/login.component";
 import {UserInfosComponent} from "./components/user/user-infos/user-infos.component";
 import {HelpsComponent} from "./components/ui/helps/helps.component";
 import {UserParametersComponent} from "./components/user/user-parameters/user-parameters.component";
-import {DeletedNodesDialogComponent} from "./components/node/deleted-nodes-dialog/deleted-nodes-dialog.component";
-import {
-  DeletedContentsNodesDialogComponent
-} from "./components/content-node/deleted-contents-nodes-dialog/deleted-contents-nodes-dialog.component";
 import {NotificationsComponent} from "./components/notification/notifications/notifications.component";
 import {ContentChartsComponent} from "./components/analytics/content-charts/content-charts.component";
 import {AuthGuard} from "./services/AuthGuard";
@@ -57,16 +53,6 @@ const routes: Routes =
     {
       path: 'parameters',
       component: UserParametersComponent,
-      canActivate: [AuthGuard]
-    },
-    {
-      path: 'deleteNodes',
-      component: DeletedNodesDialogComponent,
-      canActivate: [AuthGuard]
-    },
-    {
-      path: 'deleteContents',
-      component: DeletedContentsNodesDialogComponent,
       canActivate: [AuthGuard]
     },
     {

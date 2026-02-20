@@ -68,15 +68,11 @@ import {
   NodeRulesConditionsDialogComponent
 } from './components/commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component';
 import {MatDatepickerModule} from "@angular/material/datepicker";
-import {PublishedNodesDialogComponent} from "./components/node/published-nodes-dialog/published-nodes-dialog.component";
 import {
-  PublishedContentsNodesDialogComponent
-} from './components/content-node/published-contents-nodes-dialog/published-contents-nodes-dialog.component';
+  PublishedItemsDialogComponent
+} from './components/commons/published-items-dialog/published-items-dialog.component';
 import {TranslationsDialogComponent} from './components/commons/translations-dialog/translations-dialog.component';
-import {DeletedNodesDialogComponent} from './components/node/deleted-nodes-dialog/deleted-nodes-dialog.component';
-import {
-  DeletedContentsNodesDialogComponent
-} from './components/content-node/deleted-contents-nodes-dialog/deleted-contents-nodes-dialog.component';
+import {DeletedItemsDialogComponent} from './components/commons/deleted-items-dialog/deleted-items-dialog.component';
 import {UserNamePipe} from './pipes/user-name.pipe';
 import {MatBadgeModule} from "@angular/material/badge";
 import {FeedbackService} from "./services/FeedbackService";
@@ -183,11 +179,9 @@ export function defaultLanguage() {
     ContentNodeDialogComponent,
     ValuesDialogComponent,
     NodeRulesConditionsDialogComponent,
-    PublishedNodesDialogComponent,
-    PublishedContentsNodesDialogComponent,
+    PublishedItemsDialogComponent,
     TranslationsDialogComponent,
-    DeletedNodesDialogComponent,
-    DeletedContentsNodesDialogComponent,
+    DeletedItemsDialogComponent,
     UserNamePipe,
     ContentChartsComponent,
     TypeofPipe,

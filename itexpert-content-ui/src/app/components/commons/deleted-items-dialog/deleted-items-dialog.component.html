@@ -1,0 +1,139 @@
+<div class="deleted-items-dialog">
+
+  <!-- En-tête dynamique -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>{{ icon }}</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ titleKey | translate }}</span>
+      </div>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Contenu -->
+  <div mat-dialog-content class="dialog-content">
+
+    <!-- Tableau des éléments supprimés -->
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="dataSource" class="deleted-table">
+
+        <!-- Colonne Nom -->
+        <ng-container matColumnDef="Name">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">label</mat-icon>
+              <span>{{ "NAME" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="name-cell">
+            <span class="item-name" [title]="element.code">{{ element.name }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Version -->
+        <ng-container matColumnDef="Version">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">tag</mat-icon>
+              <span>{{ "VERSION" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span class="version-badge">{{ element.version }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Type (optionnelle) -->
+        <ng-container matColumnDef="Type" *ngIf="displayTypeColumn">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">category</mat-icon>
+              <span>{{ "TYPE" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span class="type-badge">{{ element.type }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Dernière modification -->
+        <ng-container matColumnDef="Last Modification">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">update</mat-icon>
+              <span>{{ "MODIFICATION_DATE" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span class="date-cell">{{ element.modificationDate | date :'dd/MM/YYYY HH:mm' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Modifié par -->
+        <ng-container matColumnDef="Modified by">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">person</mat-icon>
+              <span>{{ "MODIFIED_BY" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span class="user-cell">{{ element.modifiedBy }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Actions -->
+        <ng-container matColumnDef="Actions">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">settings</mat-icon>
+              <span>{{ "ACTIONS" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="actions-cell">
+
+              <!-- Restaurer -->
+              <button mat-icon-button class="action-icon-btn"
+                      (click)="activate(element)"
+                      [matTooltip]="'ACTIVATE' | translate">
+                <mat-icon class="text-primary">restore_from_trash</mat-icon>
+              </button>
+
+              <!-- Supprimer définitivement -->
+              <button mat-icon-button class="action-icon-btn"
+                      (click)="delete(element)"
+                      [matTooltip]="'DELETE' | translate">
+                <mat-icon class="text-danger">delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [class.granted-row]="row.IsGranted"
+            class="deleted-row"></tr>
+      </table>
+
+      <!-- Message si aucune donnée -->
+      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+        <mat-icon>inbox</mat-icon>
+        <p>{{ 'NO_DELETED_ITEMS' | translate }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button class="cancel-btn" (click)="close()">
+      <mat-icon>close</mat-icon>
+      {{ "CLOSE" | translate }}
+    </button>
+  </div>
+</div>

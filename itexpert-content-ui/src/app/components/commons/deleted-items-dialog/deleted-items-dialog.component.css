@@ -1,0 +1,258 @@
+/* ===== STYLES DE BASE ===== */
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== EN-TÊTE - Utilise la classe globale .dialog-header ===== */
+
+/* ===== CONTENU PRINCIPAL ===== */
+.dialog-content {
+  height: calc(90vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 4px 20px 0;
+  margin: 0 10px;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+/* ===== TABLEAU ===== */
+.table-wrapper {
+  margin: 0 20px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.deleted-table {
+  width: 100%;
+
+  .mat-mdc-header-row {
+    height: var(--table-header-height);
+    background: var(--table-primary);
+  }
+
+  .mat-mdc-header-cell {
+    color: white;
+    font-size: var(--table-font-size-header);
+    font-weight: 600;
+    padding: 0 8px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.9);
+    }
+  }
+
+  .mat-mdc-row {
+    height: var(--table-row-height);
+
+    &:hover {
+      background-color: var(--table-bg-row-hover);
+    }
+
+    &.granted-row {
+      background-color: #fff9e6;
+      &:hover {
+        background-color: #fff3d4;
+      }
+    }
+  }
+
+  .mat-mdc-cell {
+    padding: 0 8px;
+    font-size: var(--table-font-size-cell);
+    color: var(--table-text-primary);
+    border-bottom-color: var(--table-border-light);
+    vertical-align: middle;
+  }
+}
+
+/* ===== BADGES ET ÉLÉMENTS SPÉCIFIQUES ===== */
+.name-cell {
+  .item-name {
+    font-weight: 500;
+    color: var(--table-text-primary);
+    font-size: 0.8rem;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
+}
+
+.version-badge {
+  background: var(--table-primary-light);
+  color: var(--table-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.type-badge {
+  background: var(--table-primary-light);
+  color: var(--table-primary);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.date-cell, .user-cell {
+  font-size: 0.7rem;
+}
+
+.user-cell {
+  background: var(--table-bg-row-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--table-text-secondary);
+  display: inline-block;
+}
+
+/* ===== BOUTONS D'ACTION ===== */
+.action-icon-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 3px;
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  &:hover {
+    background-color: var(--table-bg-row-hover);
+  }
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+/* Couleurs des icônes */
+.text-primary { color: var(--table-primary); }
+.text-danger { color: var(--table-danger); }
+
+/* ===== ÉTAT VIDE ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #bdbdbd;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #999;
+    margin: 0;
+  }
+}
+
+/* ===== ACTIONS ===== */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: white;
+  border-top: 2px solid var(--table-border);
+  height: 80px;
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  flex-shrink: 0;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .cancel-btn {
+    color: #666;
+    border: 1px solid #ccc;
+    background: white;
+    height: 40px;
+    padding: 0 24px;
+    font-size: 0.9rem;
+
+    .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      color: #666;
+    }
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+}
