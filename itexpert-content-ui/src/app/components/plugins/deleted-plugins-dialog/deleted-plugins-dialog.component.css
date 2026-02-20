@@ -1,0 +1,362 @@
+/* ===== STYLES DE BASE ===== */
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== EN-TÊTE ===== */
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #3f51b5 0%, #7c4dff 100%);
+  color: white;
+  border-radius: 8px 8px 0 0;
+  margin: -24px -24px 0 -24px;
+  height: 80px;
+  min-height: 80px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  position: relative;
+  z-index: 10;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .header-icon mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      color: white;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .title-main {
+        font-size: 1.3rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        color: white;
+      }
+    }
+  }
+
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+
+    .mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+    }
+
+    &:hover {
+      background: rgba(255,255,255,0.3);
+    }
+  }
+}
+
+/* ===== CONTENU PRINCIPAL ===== */
+.dialog-content {
+  height: calc(90vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 4px 0 0;
+  margin: 0 10px;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+/* ===== TABLEAU ===== */
+.table-wrapper {
+  background: white;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.deleted-plugins-table {
+  width: 100%;
+
+  .mat-mdc-header-row {
+    height: var(--table-header-height);
+    background: var(--table-primary);
+  }
+
+  .mat-mdc-header-cell {
+    color: white;
+    font-size: var(--table-font-size-header);
+    font-weight: 600;
+    padding: 0 12px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.9);
+    }
+  }
+
+  .mat-mdc-row {
+    height: var(--table-row-height);
+
+    &:hover {
+      background-color: var(--table-bg-row-hover);
+    }
+
+    &.granted-row {
+      background-color: #fff9e6;
+      &:hover {
+        background-color: #fff3d4;
+      }
+    }
+  }
+
+  .mat-mdc-cell {
+    padding: 0 12px;
+    font-size: var(--table-font-size-cell);
+    color: var(--table-text-primary);
+    border-bottom-color: var(--table-border-light);
+    vertical-align: middle;
+  }
+}
+
+/* ===== CELLULES SPÉCIFIQUES ===== */
+.name-cell {
+  .plugin-name {
+    font-weight: 500;
+    color: var(--table-text-primary);
+  }
+}
+
+.date-cell {
+  font-size: 0.8rem;
+  color: var(--table-text-secondary);
+  white-space: nowrap;
+}
+
+.user-badge {
+  background: var(--table-bg-row-hover);
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: var(--table-text-secondary);
+  display: inline-block;
+  font-size: 0.8rem;
+}
+
+/* ===== BOUTONS D'ACTION ===== */
+.action-icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+
+  .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &:hover {
+    background-color: var(--table-bg-row-hover);
+  }
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+/* Couleurs des icônes */
+.text-primary { color: var(--table-primary); }
+.text-danger { color: var(--table-danger); }
+
+/* ===== ÉTAT VIDE ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: white;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #bdbdbd;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #999;
+    margin: 0;
+  }
+}
+
+/* ===== ACTIONS ===== */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: white;
+  border-top: 2px solid var(--table-border);
+  height: 80px;
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  flex-shrink: 0;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 40px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .cancel-btn {
+    color: #666;
+    border: 1px solid #ccc;
+    background: white;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #666;
+    }
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+/* ===== THÈME SOMBRE ===== */
+:host-context(.dark-theme) {
+  .dialog-header {
+    background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+  }
+
+  .table-wrapper {
+    background: #2d2d2d;
+    border-color: #404040;
+  }
+
+  .deleted-plugins-table {
+    .mat-mdc-header-row {
+      background: var(--table-primary-dark);
+    }
+
+    .mat-mdc-row {
+      &:hover {
+        background-color: #3d3d3d;
+      }
+
+      .mat-mdc-cell {
+        color: #e0e0e0;
+        border-bottom-color: #404040;
+      }
+    }
+  }
+
+  .user-badge {
+    background: #404040;
+    color: #aaa;
+  }
+
+  .date-cell {
+    color: #aaa;
+  }
+
+  .empty-state {
+    background: #2d2d2d;
+
+    mat-icon {
+      color: #555;
+    }
+
+    p {
+      color: #777;
+    }
+  }
+
+  .dialog-actions {
+    background: #2d2d2d;
+    border-top-color: #404040;
+
+    .cancel-btn {
+      border-color: #404040;
+      color: #aaa;
+      background: transparent;
+
+      mat-icon {
+        color: #aaa;
+      }
+
+      &:hover {
+        background-color: #404040;
+      }
+    }
+  }
+}

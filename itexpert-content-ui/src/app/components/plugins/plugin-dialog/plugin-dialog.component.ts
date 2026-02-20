@@ -3,7 +3,6 @@ import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
 import {Plugin} from "../../../modeles/Plugin";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import { TranslateService } from '@ngx-translate/core';
-import { ToastrService } from 'ngx-toastr';
 import { LoggerService } from 'src/app/services/LoggerService';
 
 @Component({
@@ -13,6 +12,7 @@ import { LoggerService } from 'src/app/services/LoggerService';
 })
 export class PluginDialogComponent implements AfterViewInit {
   plugin: Plugin;
+  isFullscreen: boolean = false;
 
   @ViewChild(CodemirrorComponent) codeMirrorComponent!: CodemirrorComponent;
 
@@ -24,28 +24,28 @@ export class PluginDialogComponent implements AfterViewInit {
   ) {
     if (data && data.plugin) {
       this.plugin = data.plugin;
+    } else {
+      this.plugin = new Plugin();
+      this.plugin.editable = true;
     }
   }
 
   ngAfterViewInit(): void {
-    if (!this.plugin ) {
-      this.plugin = new Plugin();
-      this.plugin.editable = true;
-    }
-    if(!this.plugin.code){
-      this.plugin.code = "(function () { \n" +
-        "function modifyContent(body, regex, replacement) {\n" +
-        "        alert('Hello world');\n" +
-        "}\n\n" +
-        "     const body = document.body;\n" +
-        "     const regexStr = body.getAttribute(\"data-regex\");\n" +
-        "     const replacement = body.getAttribute(\"data-replacement\");\n" +
-        "\n" +
-        "if (regexStr && replacement) {\n" +
-        "     const regex = new RegExp(regexStr, \"g\");\n" +
-        "     modifyContent(body, regex, replacement);\n" +
-        "   }\n" +
-        "})();";
+    if (!this.plugin.code) {
+      this.plugin.code = `(function () {
+  function modifyContent(body, regex, replacement) {
+    alert('Hello world');
+  }
+
+  const body = document.body;
+  const regexStr = body.getAttribute("data-regex");
+  const replacement = body.getAttribute("data-replacement");
+
+  if (regexStr && replacement) {
+    const regex = new RegExp(regexStr, "g");
+    modifyContent(body, regex, replacement);
+  }
+})();`;
     }
 
     setTimeout(() => {
@@ -55,17 +55,26 @@ export class PluginDialogComponent implements AfterViewInit {
     }, 300);
   }
 
+  toggleFullscreen(): void {
+    this.isFullscreen = !this.isFullscreen;
+
+    setTimeout(() => {
+      if (this.codeMirrorComponent?.codeMirror) {
+        this.codeMirrorComponent.codeMirror.refresh();
+      }
+    }, 100);
+  }
 
   close(): void {
     this.dialogRef.close({validate: false});
   }
 
   validate() {
-    if(!this.plugin.name || this.plugin.name.trim().length <= 0) {
+    if (!this.plugin.name || this.plugin.name.trim().length === 0) {
       this.translate.get("NEED_PLUGIN_NAME").subscribe(trad => {
-                this.loggerService.error(trad);
-              })
-    } else{
+        this.loggerService.error(trad);
+      });
+    } else {
       this.dialogRef.close({validate: true, plugin: this.plugin});
     }
   }

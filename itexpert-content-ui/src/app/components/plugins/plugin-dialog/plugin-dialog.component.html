@@ -1,27 +1,84 @@
-<div name="pluginScript" *ngIf="plugin && plugin.code">
-<app-content-code-title
-  [title]="'PLUGIN'">
-</app-content-code-title>
-  <div fxLayout="row" class="infos-container">
-    <input type="text" class="input-field" matInput [(ngModel)]="plugin.name"  placeholder="{{ 'NAME' | translate }}">
-    <input type="text" class="input-field" matInput [(ngModel)]="plugin.description" placeholder="{{ 'DESCRIPTION' | translate }}">
+<div class="plugin-dialog" *ngIf="plugin">
+
+  <!-- En-tête IDENTIQUE aux autres pages -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>extension</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "PLUGIN" | translate }}</span>
+        <span class="title-code" *ngIf="plugin.name">({{ plugin.name }})</span>
+      </div>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <ngx-codemirror
-  class="viewCode"
-  [(ngModel)]="plugin.code"
-  [options]="{
-        lineNumbers: true,
-        theme: 'material',
-        mode: 'javascript'
-      }"
-></ngx-codemirror>
-<div class="code-editor-actions">
-  <button class="code-editor-action-button" (click)="close()">
-    {{ "CLOSE" | translate }}
-  </button>
-  <button class="code-editor-action-button" (click)="validate()">
-    {{ "SAVE" | translate }}
-  </button>
-</div>
+  <!-- Contenu -->
+  <div class="dialog-content" [class.fullscreen]="isFullscreen">
+
+    <!-- Section informations (cachée en mode plein écran) -->
+    <div class="info-section" *ngIf="!isFullscreen">
+      <div class="form-row">
+        <div class="form-field">
+          <label>{{ "NAME" | translate }} *</label>
+          <input
+            [(ngModel)]="plugin.name"
+            placeholder="{{ 'NAME' | translate }}"
+            required>
+        </div>
+
+        <div class="form-field">
+          <label>{{ "DESCRIPTION" | translate }}</label>
+          <input
+            [(ngModel)]="plugin.description"
+            placeholder="{{ 'DESCRIPTION' | translate }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- Section code -->
+    <div class="code-section">
+      <!-- Barre d'outils au-dessus du code -->
+      <div class="code-toolbar">
+        <!-- Bouton Enregistrer à gauche (icône seulement) -->
+        <button
+          class="toolbar-btn save-icon-btn"
+          (click)="validate()"
+          [disabled]="!plugin.name || plugin.name.trim().length === 0"
+          [matTooltip]="'SAVE' | translate">
+          <mat-icon>save</mat-icon>
+        </button>
+
+        <!-- Bouton Agrandir à droite -->
+        <button
+          class="toolbar-btn fullscreen-btn"
+          (click)="toggleFullscreen()"
+          [matTooltip]="(isFullscreen ? 'EXIT_FULLSCREEN' : 'ENTER_FULLSCREEN') | translate">
+          <mat-icon>{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+        </button>
+      </div>
+
+      <!-- Éditeur de code -->
+      <div class="code-editor-container">
+        <ngx-codemirror
+          #codeMirror
+          class="code-editor"
+          [(ngModel)]="plugin.code"
+          [options]="{
+            lineNumbers: true,
+            mode: 'javascript',
+            theme: 'material-darker',
+            autoRefresh: true,
+            lineWrapping: true,
+            tabSize: 2,
+            indentUnit: 2
+          }">
+        </ngx-codemirror>
+      </div>
+    </div>
+
+  </div>
 </div>

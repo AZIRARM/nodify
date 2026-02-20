@@ -338,6 +338,25 @@
   "LOAD_ERROR": "Erreur lors du chargement des langues",
 
   "LANGUAGE_CODE_HINT": "Code ISO de la langue (ex: fr, en, es)",
-  "ICON_PREVIEW": "Aperçu"
+  "ICON_PREVIEW": "Aperçu",
+
+  "DELETED_PLUGINS": "Plugins supprimés",
+  "CREATE_PLUGIN": "Créer un plugin",
+  "NO_PLUGINS": "Aucun plugin trouvé",
+  "ASSETS": "Ressources",
+  "ENABLE": "Activer",
+  "DISABLE": "Désactiver",
+
+  "UPLOAD_FILE": "Uploader une ressource",
+  "ADD_ASSET": "Ajouter une resource",
+  "ASSETS_LIST": "Liste des resources",
+  "NO_ASSETS": "Pas de ressources",
+  "BROWSE": "Chercher une ressource",
+
+  "PLUGIN_INFORMATION": "Informations du plugin",
+  "PLUGIN_CODE": "Code du plugin",
+  "NEED_PLUGIN_NAME": "Le nom du plugin est requis",
+
+  "NO_DELETED_PLUGINS": "Aucun plugin supprimé"
 
 }
