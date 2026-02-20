@@ -16,39 +16,43 @@ import {UserAccessService} from "../../../services/UserAccessService";
   styleUrls: ['./languages.component.css']
 })
 export class LanguagesComponent implements OnInit {
-  displayedColumns: string[] = ['Code', 'Name', 'UrlIcon', 'Description', "Actions"];
-  dataSource: MatTableDataSource<Language>;
+  displayedColumns: string[] = ['Code', 'Name', 'UrlIcon', 'Description', 'Actions'];
+  dataSource: MatTableDataSource<Language> = new MatTableDataSource<Language>([]);
 
   dialogRef: MatDialogRef<LanguageDialogComponent>;
-
+  dialogValidationRef: MatDialogRef<ValidationDialogComponent>;
   user: any;
 
-  dialogValidationRef: MatDialogRef<ValidationDialogComponent>;
-
-  constructor(private translate: TranslateService,
-              private toast: ToastrService,
-              private languageService: LanguageService,
-              public userAccessService: UserAccessService,
-              private loggerService: LoggerService,
-              private dialog: MatDialog) {
-  }
-
+  constructor(
+    private translate: TranslateService,
+    private toast: ToastrService,
+    private languageService: LanguageService,
+    public userAccessService: UserAccessService,
+    private loggerService: LoggerService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
-   this.init();
+    this.user = this.userAccessService.getCurrentUser();
+    this.init();
   }
 
   init() {
     this.languageService.getAll().subscribe(
-      (response: any) => {                           //next() callback
-        response=response.sort((a:any, b:any) => a.code.localeCompare(b.code));
-        this.dataSource = new MatTableDataSource(response);
+      (response: any) => {
+        if (response && Array.isArray(response)) {
+          response = response.sort((a: any, b: any) => a.code.localeCompare(b.code));
+          this.dataSource.data = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          response.data.sort((a: any, b: any) => a.code.localeCompare(b.code));
+          this.dataSource.data = response.data;
+        }
       },
-      (error) => {                              //error() callback
-        this.toast.error('Request failed with error');
-      });
-
+      (error) => {
+        console.error('Erreur chargement langues', error);
+        this.toast.error(this.translate.instant('LOAD_ERROR'));
+      }
+    );
   }
 
   create() {
@@ -57,27 +61,27 @@ export class LanguagesComponent implements OnInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRef.afterClosed()
-      .subscribe(result => {
+    this.dialogRef.afterClosed().subscribe(result => {
+      if (result && result.data) {
         let language: Language = result.data;
         this.save(language);
-      });
+      }
+    });
   }
 
   update(language: Language) {
-    this.dialogRef = this.dialog.open(LanguageDialogComponent,
-      {
-        data: language,
-        height: '80vh',
-        width: '80vw',
-        disableClose: true
-      });
-    this.dialogRef.afterClosed()
-      .subscribe(result => {
+    this.dialogRef = this.dialog.open(LanguageDialogComponent, {
+      data: language,
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    });
+    this.dialogRef.afterClosed().subscribe(result => {
+      if (result && result.data) {
         language = result.data;
         this.save(language);
-      });
-
+      }
+    });
   }
 
   save(language: Language) {
@@ -85,18 +89,15 @@ export class LanguagesComponent implements OnInit {
       response => {
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
-          this.dialogRef.close();
           this.init();
-        })
-
+        });
       },
       error => {
-        this.translate.get("SAVE_ERROR").subscribe(trad1 => {
-          this.translate.get("CHANGE_PROJECT_CODE_MESSAGE").subscribe(trad2 => {
-            this.loggerService.error(trad1 + ",  " + trad2);
-          })
+        this.translate.get("SAVE_ERROR").subscribe(trad => {
+          this.loggerService.error(trad);
         });
-      });
+      }
+    );
   }
 
   delete(language: Language) {
@@ -109,24 +110,22 @@ export class LanguagesComponent implements OnInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogValidationRef.afterClosed()
-      .subscribe((result: any) => {
-        if (result && result.data && result.data === "validated") {
-
-          this.languageService.delete(language.id).subscribe(
-            response => {
-              this.translate.get("DELETE_SUCCESS").subscribe(trad => {
-                this.loggerService.success(trad);
-                this.init();
-              });
-            },
-            error => {
-              this.translate.get("DELETE_ERROR").subscribe(trad => {
-                this.loggerService.error(trad);
-              })
+    this.dialogValidationRef.afterClosed().subscribe((result: any) => {
+      if (result && result.data && result.data === "validated") {
+        this.languageService.delete(language.id).subscribe(
+          response => {
+            this.translate.get("DELETE_SUCCESS").subscribe(trad => {
+              this.loggerService.success(trad);
+              this.init();
             });
-
-        }
-      });
+          },
+          error => {
+            this.translate.get("DELETE_ERROR").subscribe(trad => {
+              this.loggerService.error(trad);
+            });
+          }
+        );
+      }
+    });
   }
 }

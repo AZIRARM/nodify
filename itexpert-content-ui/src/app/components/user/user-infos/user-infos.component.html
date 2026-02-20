@@ -1,23 +1,93 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "USER_INFOS" | translate }}</span>
-  </mat-toolbar>
-</p>
-@if (user) {
-  <div>
-    <p>
-      {{ "USER_FIRSTNAME" | translate }} : {{ user!.firstname }}
-    </p>
-    <p>
-      {{ "USER_LASTNAME" | translate }} : {{ user!.lastname }}
-    </p>
-    <p>
-      {{ "USER_EMAIL" | translate }} : {{ user!.email }}
-    </p>
+<div class="user-infos-dialog">
 
-    <p>
-      {{ "ROLES" | translate }} : {{ user!.roles }}
-    </p>
-    <button mat-button (click)="changePassword()">{{ "CHANGE_PASSWORD" | translate }}</button>
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "USER_INFOS" | translate }}</span>
+      </div>
+    </div>
   </div>
-}
+
+  <!-- Contenu -->
+  <div class="dialog-content">
+
+    <!-- Carte d'informations utilisateur -->
+    <div class="user-info-card" *ngIf="user">
+
+      <!-- Avatar / Icône -->
+      <div class="user-avatar">
+        <mat-icon>person</mat-icon>
+      </div>
+
+      <!-- Informations -->
+      <div class="user-details">
+
+        <!-- Prénom -->
+        <div class="info-row">
+          <div class="info-label">
+            <mat-icon>badge</mat-icon>
+            <span>{{ "USER_FIRSTNAME" | translate }}</span>
+          </div>
+          <div class="info-value">{{ user.firstname }}</div>
+        </div>
+
+        <!-- Nom -->
+        <div class="info-row">
+          <div class="info-label">
+            <mat-icon>badge</mat-icon>
+            <span>{{ "USER_LASTNAME" | translate }}</span>
+          </div>
+          <div class="info-value">{{ user.lastname }}</div>
+        </div>
+
+        <!-- Email -->
+        <div class="info-row">
+          <div class="info-label">
+            <mat-icon>email</mat-icon>
+            <span>{{ "USER_EMAIL" | translate }}</span>
+          </div>
+          <div class="info-value">{{ user.email }}</div>
+        </div>
+
+        <!-- Rôles -->
+        <div class="info-row">
+          <div class="info-label">
+            <mat-icon>security</mat-icon>
+            <span>{{ "ROLES" | translate }}</span>
+          </div>
+          <div class="info-value">
+            <div class="roles-container">
+              <span class="role-badge" *ngFor="let role of user.roles">
+                {{ role | translate }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Actions -->
+      <div class="user-actions">
+        <button
+          mat-flat-button
+          class="change-password-btn"
+          (click)="changePassword()">
+          <mat-icon>lock</mat-icon>
+          {{ "CHANGE_PASSWORD" | translate }}
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Message si utilisateur non trouvé -->
+    <div class="empty-state" *ngIf="!user">
+      <mat-icon>person_off</mat-icon>
+      <p>{{ "USER_NOT_FOUND" | translate }}</p>
+    </div>
+
+  </div>
+</div>

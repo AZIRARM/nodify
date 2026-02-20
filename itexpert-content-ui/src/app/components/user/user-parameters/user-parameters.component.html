@@ -1,12 +1,84 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "PARAMETERS" | translate}}</span>
-  </mat-toolbar>
-</p>
-<div>
-<p>
-  <!-- mat-slide-toggle *ngIf="parameters" [(ngModel)]="parameters.acceptNotifications" (change)="save()" >{{ "ACCEPT_NOTIFICATION" | translate}}</mat-slide-toggle -->
-  <mat-slide-toggle *ngIf="parameters" [(ngModel)]="darkMode" (change)="changeTheme()" >{{ "DARK_MODE" | translate}}</mat-slide-toggle><br/>
+<div class="user-parameters-dialog">
 
-</p>
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>settings</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "PARAMETERS" | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu -->
+  <div class="dialog-content">
+
+    <!-- Carte des paramètres -->
+    <div class="parameters-card" *ngIf="parameters">
+
+      <div class="parameters-header">
+        <mat-icon>tune</mat-icon>
+        <h3>{{ "USER_PREFERENCES" | translate }}</h3>
+      </div>
+
+      <!-- Liste des paramètres -->
+      <div class="parameters-list">
+
+        <!-- Mode sombre -->
+        <div class="parameter-item">
+          <div class="parameter-info">
+            <mat-icon class="parameter-icon">dark_mode</mat-icon>
+            <div class="parameter-text">
+              <span class="parameter-name">{{ "DARK_MODE" | translate }}</span>
+              <span class="parameter-description">{{ "DARK_MODE_DESCRIPTION" | translate }}</span>
+            </div>
+          </div>
+          <div class="parameter-control">
+            <mat-slide-toggle
+              [(ngModel)]="darkMode"
+              (change)="changeTheme()"
+              color="primary">
+            </mat-slide-toggle>
+          </div>
+        </div>
+
+        <!-- Option pour les notifications (commentée mais prête à être activée) -->
+        <!--
+        <div class="parameter-item">
+          <div class="parameter-info">
+            <mat-icon class="parameter-icon">notifications</mat-icon>
+            <div class="parameter-text">
+              <span class="parameter-name">{{ "ACCEPT_NOTIFICATION" | translate }}</span>
+              <span class="parameter-description">{{ "NOTIFICATION_DESCRIPTION" | translate }}</span>
+            </div>
+          </div>
+          <div class="parameter-control">
+            <mat-slide-toggle
+              [(ngModel)]="parameters.acceptNotifications"
+              (change)="save()"
+              color="primary">
+            </mat-slide-toggle>
+          </div>
+        </div>
+        -->
+
+      </div>
+
+      <!-- Message d'information -->
+      <div class="parameters-footer">
+        <mat-icon>info</mat-icon>
+        <span>{{ "PARAMETERS_SAVE_AUTO" | translate }}</span>
+      </div>
+
+    </div>
+
+    <!-- Message si paramètres non trouvés -->
+    <div class="empty-state" *ngIf="!parameters">
+      <mat-icon>settings_applications</mat-icon>
+      <p>{{ "PARAMETERS_NOT_FOUND" | translate }}</p>
+    </div>
+
+  </div>
 </div>

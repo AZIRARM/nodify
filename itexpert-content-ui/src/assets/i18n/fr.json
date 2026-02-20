@@ -307,5 +307,37 @@
   "ADD_VALUE": "Ajouter une valeur",
   "VALUES_LIST": "Liste des valeurs",
 
-  "NO_DELETED_ITEMS": "Pas d'éléments en cours de suppression"
+  "NO_DELETED_ITEMS": "Pas d'éléments en cours de suppression",
+
+  "ADMIN_USER_INFO": "Les informations d'un administrateur ne peuvent pas être modifiées",
+
+  "USER_NOT_FOUND": "Utilisateur non trouvé",
+
+  "USER_PREFERENCES": "Préférences utilisateur",
+  "DARK_MODE_DESCRIPTION": "Activer le thème sombre pour l'interface",
+  "ACCEPT_NOTIFICATION": "Notifications",
+  "NOTIFICATION_DESCRIPTION": "Recevoir des notifications",
+  "PARAMETERS_SAVE_AUTO": "Les modifications sont automatiquement sauvegardées",
+  "PARAMETERS_NOT_FOUND": "Aucun paramètre trouvé",
+
+  "CONTENT_TREE": "Arbre des statistiques sur les contenu",
+  "FEEDBACK": "Retour",
+  "CLICKED": "Clics",
+  "DISPLAYED": "Affichages",
+  "NO_CHART_DATA": "Aucune donnée à afficher",
+
+  "UNLOCKED": "Déverrouillé",
+  "NO_LOCKS": "Aucun verrou trouvé",
+  "LOCKS_LOAD_FAIL": "Échec du chargement des verrous",
+  "LOCK_RELEASED_SUCCESS": "Verrou libéré avec succès",
+  "LOCK_RELEASED_FAIL": "Échec de la libération du verrou",
+
+  "CREATE_LANGUAGE": "Créer une langue",
+  "URL_ICON": "Icône URL",
+  "NO_LANGUAGES": "Aucune langue trouvée",
+  "LOAD_ERROR": "Erreur lors du chargement des langues",
+
+  "LANGUAGE_CODE_HINT": "Code ISO de la langue (ex: fr, en, es)",
+  "ICON_PREVIEW": "Aperçu"
+
 }

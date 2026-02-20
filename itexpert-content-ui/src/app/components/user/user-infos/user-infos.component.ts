@@ -13,14 +13,13 @@ export class UserInfosComponent implements OnInit {
   user: User;
   dialogRef: MatDialogRef<PasswordDialogComponent>;
 
-  constructor(private dialog: MatDialog,
-              private userAccessService: UserAccessService
-  ) {
-
-  }
+  constructor(
+    private dialog: MatDialog,
+    private userAccessService: UserAccessService
+  ) {}
 
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
+    this.user = this.userAccessService.getCurrentUser();
   }
 
   changePassword() {
@@ -29,9 +28,8 @@ export class UserInfosComponent implements OnInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRef.afterClosed()
-      .subscribe(result => {
-
-      });
+    this.dialogRef.afterClosed().subscribe(result => {
+      // Optionnel : traiter le résultat
+    });
   }
 }

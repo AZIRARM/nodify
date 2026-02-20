@@ -1,39 +1,141 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "LANGUAGES" | translate}}</span>
-  </mat-toolbar>
-</p>
-<button mat-fab  aria-label="create new language" *ngIf="userAccessService.isAdmin()" (click)="create()">
-  <mat-icon>add</mat-icon>
-</button>
-<table mat-table [dataSource]="dataSource">
+<div class="languages-dialog">
 
-  <ng-container matColumnDef="Code">
-    <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate}} </th>
-    <td mat-cell *matCellDef="let element"> {{element.code}} </td>
-  </ng-container>
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>language</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "LANGUAGES" | translate }}</span>
+      </div>
+    </div>
+  </div>
 
-  <ng-container matColumnDef="Name">
-    <th mat-header-cell *matHeaderCellDef> {{ "NAME" | translate}} </th>
-    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-  </ng-container>
+  <!-- Contenu -->
+  <div class="dialog-content">
 
-  <ng-container matColumnDef="UrlIcon">
-    <th mat-header-cell *matHeaderCellDef> {{ "UrlIcon" | translate}} </th>
-    <td mat-cell *matCellDef="let element"> {{element.urlIcon}} </td>
-  </ng-container>
-  <ng-container matColumnDef="Description">
-    <th mat-header-cell *matHeaderCellDef> {{ "DESCRIPTION" | translate}} </th>
-    <td mat-cell *matCellDef="let element"> {{element.description}} </td>
-  </ng-container>
-  <ng-container matColumnDef="Actions">
-    <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
-    <td mat-cell *matCellDef="let element">
-      <mat-icon class="icon-display scale2" *ngIf="userAccessService.isAdmin()" (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
-      <mat-icon class="icon-display scale2 danger" *ngIf="userAccessService.isAdmin()" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
-    </td>
-  </ng-container>
-  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" class="mat-header"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }" class="mat-row"></tr>
-</table>
+    <!-- Barre d'outils -->
+    <div class="languages-toolbar">
+      <div class="toolbar-actions">
+        @if(userAccessService.isAdmin()) {
+        <button
+          mat-fab
+          class="add-language-fab"
+          (click)="create()"
+          matTooltip="{{ 'CREATE_LANGUAGE' | translate }}">
+          <mat-icon>add</mat-icon>
+        </button>
+        }
+      </div>
+    </div>
 
+    <!-- Tableau des langues -->
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="dataSource" class="languages-table">
+
+        <!-- Colonne Code -->
+        <ng-container matColumnDef="Code">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">code</mat-icon>
+              <span>{{ "CODE" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="code-cell">
+            <span class="code-badge">{{ element.code }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Nom -->
+        <ng-container matColumnDef="Name">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">label</mat-icon>
+              <span>{{ "NAME" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="name-cell">
+            <div class="language-name">
+              @if(element.urlIcon) {
+              <img [src]="element.urlIcon" class="language-flag" alt="{{ element.code }}">
+              } @else {
+              <mat-icon class="flag-placeholder">flag</mat-icon>
+              }
+              <span>{{ element.name }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne UrlIcon -->
+        <ng-container matColumnDef="UrlIcon">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">image</mat-icon>
+              <span>{{ "URL_ICON" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="url-cell">
+            <span class="url-text" [title]="element.urlIcon">{{ element.urlIcon || '-' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Description -->
+        <ng-container matColumnDef="Description">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">description</mat-icon>
+              <span>{{ "DESCRIPTION" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="description-cell">
+            <span class="description-text" [title]="element.description">{{ element.description || '-' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Actions -->
+        <ng-container matColumnDef="Actions">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">settings</mat-icon>
+              <span>{{ "ACTIONS" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="actions-cell">
+              @if(userAccessService.isAdmin()) {
+              <button
+                mat-icon-button
+                class="action-icon-btn"
+                (click)="update(element)"
+                matTooltip="{{ 'EDIT' | translate }}">
+                <mat-icon class="text-primary">edit</mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                class="action-icon-btn"
+                (click)="delete(element)"
+                matTooltip="{{ 'DELETE' | translate }}">
+                <mat-icon class="text-danger">delete</mat-icon>
+              </button>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [class.granted-row]="row.IsGranted"
+            class="language-row"></tr>
+      </table>
+
+      <!-- Message si aucune langue -->
+      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+        <mat-icon>translate</mat-icon>
+        <p>{{ "NO_LANGUAGES" | translate }}</p>
+      </div>
+    </div>
+
+  </div>
+</div>

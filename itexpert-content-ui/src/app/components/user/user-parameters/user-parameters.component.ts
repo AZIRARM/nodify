@@ -23,46 +23,48 @@ export class UserParametersComponent implements OnInit {
     private parametersService: ParametersService,
     private userAccessService: UserAccessService,
     private loggerService: LoggerService
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
+    this.user = this.userAccessService.getCurrentUser();
+    this.loadParameters();
+  }
 
-    this.parametersService.getByUserId(this.user!.id).subscribe(
-      (data: any) => {
+  loadParameters() {
+    this.parametersService.getByUserId(this.user!.id).subscribe({
+      next: (data: any) => {
         if (data) {
           this.parameters = data;
-          this.darkMode = this.parameters.theme === "dark"
+          this.darkMode = this.parameters.theme === "dark";
         }
       },
-      error => {
-        console.error(error);
+      error: (error) => {
+        console.error('Erreur chargement paramètres', error);
       }
-    );
+    });
   }
 
   save() {
-    this.parametersService.save(this.parameters).subscribe(
-      (data: any) => {
+    this.parametersService.save(this.parameters).subscribe({
+      next: (data: any) => {
         this.themeService.toggleTheme(this.parameters.theme);
         if (data) {
           this.translate.get("SAVE_SUCCESS").subscribe(trad => {
             this.loggerService.success(trad);
-          })
+          });
         }
       },
-      error => {
+      error: (error) => {
         this.translate.get("SAVE_ERROR").subscribe(trad => {
-          this.loggerService.success(trad);
-        })
+          this.loggerService.error(trad);
+        });
       }
-    );
+    });
   }
 
   changeTheme() {
     this.darkMode = !this.darkMode;
-    this.parameters.theme = !this.darkMode ? 'dark' : 'light';
+    this.parameters.theme = this.darkMode ? 'dark' : 'light';
     this.save();
   }
 }

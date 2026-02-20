@@ -1,29 +1,78 @@
-<div class="login-container">
-  <mat-card appearance="outlined">
-    <img mat-card-image src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'LOGIN' | translate }}"/>
-    <mat-card-content>
-      <div>
-        <p>
-          <mat-form-field appearance="outline">
-            <mat-label>{{ "EMAIL" | translate }}</mat-label>
-            <input matInput type="email" [(ngModel)]="userLogin.email"
-                   placeholder="{{ 'EMAIL' | translate }}" required
-                   (keydown.enter)="login()">
-          </mat-form-field>
-        </p>
-        <p>
-          <mat-form-field appearance="outline">
-            <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
-            <input matInput type="password" [(ngModel)]="userLogin.password"
-                   placeholder="{{ 'USER_PASSWORD' | translate }}" required
-                   (keydown.enter)="login()">
-          </mat-form-field>
-        </p>
+<div class="login-page">
+
+  <!-- En-tête (sans marge négative) -->
+  <div class="login-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>login</mat-icon>
       </div>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-      <button mat-button (click)="login()">{{ "LOGIN" | translate }}</button>
-    </mat-card-actions>
-  </mat-card>
+      <div class="header-title">
+        <span class="title-main">{{ "LOGIN" | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu principal (avec espace pour le footer) -->
+  <div class="login-content">
+
+    <!-- Carte de connexion -->
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'LOGIN' | translate }}">
+      </div>
+
+      <!-- Formulaire -->
+      <div class="form-container">
+
+        <!-- Champ Email -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ "EMAIL" | translate }}</mat-label>
+          <input
+            matInput
+            type="email"
+            [(ngModel)]="userLogin.email"
+            placeholder="{{ 'EMAIL' | translate }}"
+            required
+            (keydown.enter)="login()">
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+
+        <!-- Champ Mot de passe -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
+          <input
+            matInput
+            type="password"
+            [(ngModel)]="userLogin.password"
+            placeholder="{{ 'USER_PASSWORD' | translate }}"
+            required
+            (keydown.enter)="login()">
+          <mat-icon matSuffix>lock</mat-icon>
+        </mat-form-field>
+
+      </div>
+
+      <!-- Actions -->
+      <div class="login-actions">
+        <button
+          mat-stroked-button
+          class="cancel-btn"
+          (click)="cancel()">
+          <mat-icon>close</mat-icon>
+          {{ "CANCEL" | translate }}
+        </button>
+        <button
+          mat-flat-button
+          class="login-btn"
+          (click)="login()"
+          [disabled]="!userLogin.email || !userLogin.password">
+          <mat-icon>login</mat-icon>
+          {{ "LOGIN" | translate }}
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>

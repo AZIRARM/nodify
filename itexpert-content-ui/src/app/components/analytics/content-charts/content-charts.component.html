@@ -1,7 +1,62 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "ANALYTICS" | translate }}</span>
-  </mat-toolbar>
-</p>
+<div class="analytics-dialog">
 
-<div class="echarts-container" echarts [options]="chartOptions"></div>
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>analytics</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "ANALYTICS" | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu -->
+  <div class="dialog-content">
+
+    <!-- Carte du graphique -->
+    <div class="chart-card">
+
+      <div class="chart-header">
+        <mat-icon>share</mat-icon>
+        <h3>{{ "CONTENT_TREE" | translate }}</h3>
+      </div>
+
+      <!-- Conteneur ECharts -->
+      <div class="chart-container">
+        <div
+          echarts
+          [options]="chartOptions"
+          class="echarts-instance"
+          [style.width]="'100%'"
+          [style.height]="'100%'">
+        </div>
+      </div>
+
+      <!-- Légende -->
+      <div class="chart-legend">
+        <div class="legend-item">
+          <span class="legend-color feedback"></span>
+          <span class="legend-label">{{ "FEEDBACK" | translate }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color clicked"></span>
+          <span class="legend-label">{{ "CLICKED" | translate }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color displayed"></span>
+          <span class="legend-label">{{ "DISPLAYED" | translate }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Message si aucune donnée -->
+    <div class="empty-state" *ngIf="!chartOptions || !chartOptions.series">
+      <mat-icon>insert_chart_outlined</mat-icon>
+      <p>{{ "NO_CHART_DATA" | translate }}</p>
+    </div>
+
+  </div>
+</div>
