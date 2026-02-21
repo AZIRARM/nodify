@@ -7,6 +7,7 @@ import com.itexpert.content.core.mappers.NodeMapper;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.lib.entities.ContentNode;
+import com.itexpert.content.lib.entities.Node;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.Notification;
 import org.apache.commons.lang3.ObjectUtils;
@@ -140,6 +141,9 @@ public class ContentNodeHandlerDeployTest {
         when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
                 .thenReturn(Mono.empty());
 
+        when(nodeRepository.findByCodeAndStatus("PARENT-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(new Node()));
+
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
@@ -250,13 +254,16 @@ public class ContentNodeHandlerDeployTest {
     }
 
     @Test
-    void deployContentWithSlug_withNoExistingContent_shouldDeployAndAddNewSlug() {
+    void deployContentWithSlug_withNoExistingContent_shouldDeployOnEnvironnementTargetAndAddNewSlug() {
         when(contentNodeRepository.findByCodeAndStatus("NODE-DEV", StatusEnum.SNAPSHOT.name()))
                 .thenReturn(Mono.just(snapshotEntity));
 
 
         when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
                 .thenReturn(Mono.empty());
+
+        when(nodeRepository.findByCodeAndStatus("PARENT-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(new Node()));
 
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
@@ -297,6 +304,10 @@ public class ContentNodeHandlerDeployTest {
 
         when(contentNodeRepository.findByCodeAndStatus("NODE-PROD", StatusEnum.SNAPSHOT.name()))
                 .thenReturn(Mono.empty());
+
+
+        when(nodeRepository.findByCodeAndStatus("PARENT-PROD", StatusEnum.SNAPSHOT.name()))
+                .thenReturn(Mono.just(new Node()));
 
         when(contentNodeRepository.save(any(ContentNode.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(0)));

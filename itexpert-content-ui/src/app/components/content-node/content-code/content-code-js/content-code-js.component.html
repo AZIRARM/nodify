@@ -1,14 +1,50 @@
-<div name="contentCreationScript" *ngIf="contentNode.type ==='SCRIPT'" >
-  <app-content-code-title
-    [title]="'SCRIPT'"></app-content-code-title>
-  <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
-  <ngx-codemirror
-    class="viewCode"
-    [(ngModel)]="contentNode.content"
-    [options]="{
+<div class="content-code-js" *ngIf="contentNode?.type ==='SCRIPT'">
+
+  <!-- Titre seul sur sa ligne -->
+  <div class="title-row">
+    <app-content-code-title [title]="'SCRIPT'" [dialogRef]="dialogRef"></app-content-code-title>
+  </div>
+
+  <!-- Informations -->
+  <div class="infos-section">
+    <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
+  </div>
+
+  <!-- Barre d'outils au-dessus du code avec bouton à droite -->
+  <div class="code-toolbar">
+    <div class="spacer"></div>
+    <button
+      class="fullscreen-btn"
+      (click)="toggleFullscreen()"
+      [matTooltip]="(isFullscreen ? 'QUITTER' : 'PLEIN ÉCRAN') | translate">
+      <mat-icon>{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+    </button>
+  </div>
+
+  <!-- Éditeur de code -->
+  <div class="code-editor-wrapper" [class.fullscreen]="isFullscreen">
+
+    <!-- Bouton de fermeture en mode plein écran -->
+    <button
+      class="fullscreen-close-btn"
+      *ngIf="isFullscreen"
+      (click)="toggleFullscreen()"
+      [matTooltip]="'QUITTER' | translate">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <ngx-codemirror
+      #codeMirror
+      class="code-editor"
+      [(ngModel)]="contentNode.content"
+      [options]="{
         lineNumbers: true,
         theme: 'material',
-        mode: 'javascript'
-      }"
-  ></ngx-codemirror>
+        mode: 'javascript',
+        autoRefresh: true,
+        lineWrapping: true
+      }">
+    </ngx-codemirror>
+  </div>
+
 </div>

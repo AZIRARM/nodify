@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,10 +30,15 @@ public class NotificationSocketHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
+        String token = WebSocketAuthUtil.extractToken(session.getHandshakeInfo().getUri());
+        if (token == null || !WebSocketAuthUtil.authenticate(session, token)) {
+            log.warn("WebSocket connection rejected - authentication failed");
+            return session.close(CloseStatus.POLICY_VIOLATION);
+        }
+
         URI uri = session.getHandshakeInfo().getUri();
         MultiValueMap<String, String> queryParams = UriComponentsBuilder.fromUri(uri).build().getQueryParams();
 
-        String token = queryParams.getFirst("token");
         String userId = jwtUtil.getUsernameFromToken(token);
 
         int page = queryParams.getFirst("page") != null ? Integer.parseInt(queryParams.getFirst("page")) : 0;

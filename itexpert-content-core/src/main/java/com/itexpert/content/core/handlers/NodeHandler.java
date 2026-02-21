@@ -805,39 +805,51 @@ public class NodeHandler {
                 )
                 .defaultIfEmpty(false);
     }
-
     public Mono<Boolean> propagateMaxHistoryToKeep(String nodeCode) {
-        return this.findByCodeAndStatus(nodeCode, StatusEnum.SNAPSHOT.name())
-                .flatMap(parentNode ->
-                        propagateOnSubtree(parentNode, parentNode.getMaxVersionsToKeep())
-                )
-                .thenReturn(Boolean.TRUE);
+        return Mono.fromCallable(() -> {
+            // Récupération du nœud parent de manière synchrone
+            Node parentNode = this.findByCodeAndStatus(nodeCode, StatusEnum.SNAPSHOT.name())
+                    .block(); // Attention: block() est déconseillé en réactif
+
+            if (parentNode != null) {
+                // Appel synchrone de la méthode de propagation
+                propagateOnSubtreeSync(parentNode, parentNode.getMaxVersionsToKeep());
+            }
+
+            return Boolean.TRUE;
+        }).subscribeOn(Schedulers.boundedElastic()); // ← AJOUT IMPORTANT : exécute le bloc sur un thread dédié
     }
 
-    private Mono<Void> propagateOnSubtree(Node parent, Integer maxVersionsToKeep) {
-
-        return this.nodeRepository
+    private void propagateOnSubtreeSync(Node parent, Integer maxVersionsToKeep) {
+        // Récupération synchrone des enfants
+        List<com.itexpert.content.lib.entities.Node> childrenEntities = this.nodeRepository
                 .findChildrenByCodeAndStatus(parent.getCode(), StatusEnum.SNAPSHOT.name())
-                .flatMap(childNode -> {
+                .collectList()
+                .block(); // OK car maintenant exécuté sur Schedulers.boundedElastic()
 
-                    // 1️⃣ appliquer la valeur
-                    childNode.setMaxVersionsToKeep(maxVersionsToKeep);
+        if (childrenEntities != null) {
+            for (com.itexpert.content.lib.entities.Node childEntity : childrenEntities) {
+                Node childNode = nodeMapper.fromEntity(childEntity);
 
-                    // 2️⃣ sauvegarder
-                    return nodeRepository.save(childNode)
-                            // 3️⃣ propager aux contents
-                            .flatMap(savedNode ->
-                                    contentNodeHandler
-                                            .setMaxHostoryToKeep(savedNode.getCode(), maxVersionsToKeep)
-                                            // 4️⃣ récursion sur les enfants
-                                            .then(
-                                                    propagateOnSubtree(nodeMapper.fromEntity(savedNode), maxVersionsToKeep)
-                                            )
-                            );
-                })
-                .then();
+                // 1️⃣ appliquer la valeur
+                childNode.setMaxVersionsToKeep(maxVersionsToKeep);
+
+                // 2️⃣ sauvegarder
+                com.itexpert.content.lib.entities.Node savedEntity = this.nodeRepository.save(nodeMapper.fromModel(childNode)).block();
+
+                if (savedEntity != null) {
+                    Node savedNode = nodeMapper.fromEntity(savedEntity);
+
+                    // 3️⃣ propager aux contents
+                    contentNodeHandler.setMaxHostoryToKeep(savedNode.getCode(), maxVersionsToKeep)
+                            .block(); // OK car sur le même thread
+
+                    // 4️⃣ récursion sur les enfants
+                    propagateOnSubtreeSync(savedNode, maxVersionsToKeep);
+                }
+            }
+        }
     }
-
 
 }
 

@@ -74,6 +74,7 @@ import {
 import {TranslationsDialogComponent} from './components/commons/translations-dialog/translations-dialog.component';
 import {DeletedItemsDialogComponent} from './components/commons/deleted-items-dialog/deleted-items-dialog.component';
 import {UserNamePipe} from './pipes/user-name.pipe';
+import {FileSizePipe} from './pipes/FileSizePipe';
 import {MatBadgeModule} from "@angular/material/badge";
 import {FeedbackService} from "./services/FeedbackService";
 import {ContentClickService} from "./services/ContentClickService";
@@ -142,6 +143,7 @@ import {LoaderService} from "./services/Loader.service";
 import {LoaderComponent} from "./components/ui/loader/loader.component";
 import { LockService } from './services/LockService';
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
+import { MarkdownModule } from 'ngx-markdown';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -183,6 +185,7 @@ export function defaultLanguage() {
     TranslationsDialogComponent,
     DeletedItemsDialogComponent,
     UserNamePipe,
+    FileSizePipe,
     ContentChartsComponent,
     TypeofPipe,
     ContentDatasComponent,
@@ -225,6 +228,9 @@ export function defaultLanguage() {
         useFactory: HttpLoaderFactory,
         deps: [HttpClient],
       },
+    }),
+    MarkdownModule.forRoot({
+      loader: HttpClient,
     }),
 
     NgxEchartsModule.forRoot({ echarts }),

@@ -65,9 +65,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--table-text-header, #ffffff);
+      color: black;
     }
-
+    .mat-icon:hover {
+      font-size: 25px;
+      color: orange;
+    }
     &:hover {
       background: rgba(255, 255, 255, 0.25);
     }

@@ -1,5 +1,6 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import {Service} from "./Service";
+import { AuthenticationService } from './AuthenticationService';
 import { interval, fromEvent, merge, Subscription, timer, forkJoin, Observable, of } from 'rxjs';
 import {HttpClient} from "@angular/common/http";
 import {Data} from "../modeles/Data";
@@ -7,7 +8,9 @@ import {Env} from "../../assets/configurations/environment";
 
 @Injectable()
 export class DataService extends Service {
-  constructor(httpClient: HttpClient) {
+
+  constructor(httpClient: HttpClient,
+    private authenticationService: AuthenticationService) {
     super("datas", httpClient);
   }
 
@@ -32,7 +35,9 @@ getByContentCode(code: string, page:number, limit:number) {
   }
 
   countDatasByContentNodeCodeWebSocket(code: string): Observable<any> {
-    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/datas/contentCode/?code=${code}`;
+    const token = this.authenticationService.getAccessToken();
+
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/datas/contentCode/?code=${code}&authorization=Bearer ${token}`;
 
     return new Observable(observer => {
 

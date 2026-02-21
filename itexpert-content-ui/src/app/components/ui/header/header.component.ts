@@ -127,4 +127,10 @@ export class HeaderComponent {
   setActiveLink(link: string) {
     this.activeLink = link;
   }
+
+  getCurrentLanguageLabel(): string {
+    const currentLang = this.languageList.find((lang: any) => lang.code === this.selectedLanguage);
+    return currentLang ? currentLang.label : this.selectedLanguage;
+  }
+
 }

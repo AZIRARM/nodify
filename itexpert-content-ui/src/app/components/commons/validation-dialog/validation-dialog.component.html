@@ -22,9 +22,11 @@
         <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ title | translate }}">
       </div>
       <div class="message-container">
-        <p>{{ message | translate }}</p>
+        <div *ngIf="isHtml; else textMessage" [innerHTML]="message | translate"></div>
+        <ng-template #textMessage>
+          <p [translate]="message"></p>
+        </ng-template>
       </div>
-    </div>
   </div>
 
   <!-- Actions avec boutons visibles -->

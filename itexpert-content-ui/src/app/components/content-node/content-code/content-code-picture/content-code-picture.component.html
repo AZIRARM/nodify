@@ -1,13 +1,50 @@
-<div name="contentCreationPicture" *ngIf="contentNode.type ==='PICTURE'"  >
-  <app-content-code-title
-    [title]="'PICTURE'"></app-content-code-title>
-  <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
-  @if(contentNode && contentNode.file){
-    <img src="{{contentNode.file.data}}" width="20%" height="auto"/>
-  }
+<div class="content-code-picture" *ngIf="contentNode?.type ==='PICTURE'">
 
-  <input type="file" (change)="onFileChangeFactory($event)" accept="image/*">
-  @if(contentNode && contentNode.file){
-    <p>{{ contentNode.file.name }}</p>
-  }
+  <!-- Titre seul sur sa ligne -->
+  <div class="title-row">
+    <app-content-code-title [title]="'PICTURE'" [dialogRef]="dialogRef"></app-content-code-title>
+  </div>
+
+  <!-- Informations -->
+  <div class="infos-section">
+    <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
+  </div>
+
+  <!-- Zone d'upload d'image -->
+  <div class="picture-upload-container">
+
+    <!-- Input file caché -->
+    <input
+      #fileInput
+      type="file"
+      (change)="onFileChangeFactory($event)"
+      accept="image/*"
+      class="hidden-input">
+
+    <!-- Bouton de sélection d'image -->
+    <button
+      class="picture-select-btn"
+      (click)="fileInput.click()">
+      <mat-icon>add_photo_alternate</mat-icon>
+      <span>{{ "CHOOSE_IMAGE" | translate }}</span>
+    </button>
+
+
+    <!-- Prévisualisation de l'image -->
+    <div class="picture-preview" *ngIf="contentNode?.file?.data">
+      <div class="preview-header">
+        <mat-icon>image</mat-icon>
+        <span class="file-name">{{ contentNode.file.name }}</span>
+        <span class="file-size" *ngIf="contentNode.file.size">({{ contentNode.file.size | fileSize }})</span>
+      </div>
+      <div class="image-container">
+        <img
+          [src]="contentNode.file.data"
+          alt="{{ contentNode.file.name }}"
+          class="preview-image">
+      </div>
+    </div>
+
+  </div>
+
 </div>

@@ -1,1 +1,242 @@
+.content-code-urls {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
+/* Titre seul - marges réduites */
+.title-row {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Section des informations - marges réduites */
+.infos-section {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Barre d'outils */
+.urls-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+.add-url-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  height: 32px;
+  background: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: #5c6bc0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(63, 81, 181, 0.3);
+  }
+}
+
+/* Liste des URLs */
+.urls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.url-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f0f2f5;
+    border-color: #ccc;
+  }
+}
+
+/* Champs de formulaire ultra compacts */
+.url-field {
+  flex: 2;
+  min-width: 180px;
+
+  ::ng-deep .mat-mdc-form-field-flex {
+    height: 40px !important;
+  }
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    padding: 6px 0 !important;
+    min-height: 32px !important;
+  }
+}
+
+.type-field {
+  flex: 1;
+  min-width: 100px;
+
+  ::ng-deep .mat-mdc-form-field-flex {
+    height: 40px !important;
+  }
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    padding: 6px 0 !important;
+    min-height: 32px !important;
+  }
+}
+
+.desc-field {
+  flex: 2;
+  min-width: 160px;
+
+  ::ng-deep .mat-mdc-form-field-flex {
+    min-height: 40px !important;
+  }
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    padding: 6px 0 !important;
+    min-height: 32px !important;
+  }
+
+  ::ng-deep textarea.mat-mdc-input-element {
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1.4;
+    resize: none;
+  }
+}
+
+/* Style commun pour tous les champs */
+::ng-deep .mat-mdc-form-field {
+  font-size: 0.8rem !important;
+}
+
+::ng-deep .mat-mdc-form-field-label {
+  font-size: 0.7rem !important;
+}
+
+::ng-deep input.mat-mdc-input-element,
+::ng-deep textarea.mat-mdc-input-element {
+  font-size: 0.8rem !important;
+}
+
+::ng-deep .mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+}
+
+::ng-deep .mat-mdc-select-trigger {
+  font-size: 0.8rem !important;
+  height: 28px !important;
+}
+
+::ng-deep .mat-mdc-select-value {
+  font-size: 0.8rem !important;
+}
+
+::ng-deep .mat-mdc-select-arrow {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Bouton suppression */
+.delete-url-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #f44336;
+  margin-top: 4px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: #ffebee;
+  }
+}
+
+/* État vide */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border: 1px dashed #e0e0e0;
+  border-radius: 6px;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #bdbdbd;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #999;
+    margin: 0;
+  }
+}
+
+/* Thème sombre */
+:host-context(.dark-theme) {
+  .url-item {
+    background: #2d2d2d;
+    border-color: #404040;
+
+    &:hover {
+      background: #363636;
+    }
+  }
+
+  .empty-state {
+    background: #2d2d2d;
+    border-color: #404040;
+
+    mat-icon {
+      color: #555;
+    }
+
+    p {
+      color: #777;
+    }
+  }
+}

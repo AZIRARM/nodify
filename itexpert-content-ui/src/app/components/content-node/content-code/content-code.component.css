@@ -1,1 +1,50 @@
+.content-code-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden; /* Supprime tous les scrolls */
+}
 
+.code-components {
+  flex: 1;
+  overflow-y: auto; /* Scroll uniquement dans cette zone si nécessaire */
+  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+/* Les composants enfants ne doivent pas avoir de marges */
+::ng-deep app-content-code-html,
+::ng-deep app-content-code-js,
+::ng-deep app-content-code-css,
+::ng-deep app-content-code-picture,
+::ng-deep app-content-code-file,
+::ng-deep app-content-code-json,
+::ng-deep app-content-code-xml,
+::ng-deep app-content-code-urls {
+  display: block;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Éliminer les marges entre les composants */
+::ng-deep app-content-code-html + app-content-code-js,
+::ng-deep app-content-code-js + app-content-code-css,
+::ng-deep app-content-code-css + app-content-code-picture,
+::ng-deep app-content-code-picture + app-content-code-file,
+::ng-deep app-content-code-file + app-content-code-json,
+::ng-deep app-content-code-json + app-content-code-xml,
+::ng-deep app-content-code-xml + app-content-code-urls {
+  margin-top: 0 !important;
+}
+
+/* Actions collées en bas */
+app-content-code-actions {
+  flex-shrink: 0;
+  display: block;
+  margin: 0;
+  padding: 0;
+}

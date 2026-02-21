@@ -1,4 +1,5 @@
 import {AfterViewInit, Component, Input, Output, ViewChild} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 import {ContentNode} from "../../../../modeles/ContentNode";
 import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
 
@@ -13,7 +14,11 @@ export class ContentCodeJsComponent implements AfterViewInit{
   @Input()
   contentNode: ContentNode;
 
+  @Input() dialogRef: MatDialogRef<any>;
+
   @ViewChild(CodemirrorComponent) codeMirrorComponent!: CodemirrorComponent;
+
+  isFullscreen: boolean = false;
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -23,4 +28,13 @@ export class ContentCodeJsComponent implements AfterViewInit{
     }, 300);
   }
 
+  toggleFullscreen() {
+    this.isFullscreen = !this.isFullscreen;
+
+    setTimeout(() => {
+      if (this.codeMirrorComponent?.codeMirror) {
+        this.codeMirrorComponent.codeMirror.refresh();
+      }
+    }, 50);
+  }
 }

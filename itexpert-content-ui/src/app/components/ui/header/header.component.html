@@ -58,21 +58,23 @@
   <!-- Actions utilisateur -->
   <div class="user-actions">
     <!-- Bouton thème -->
-    <button mat-icon-button (click)="toggleTheme()" [matTooltip]="'TOGGLE_THEME' | translate">
-      <mat-icon>{{ isDarkMode ? 'wb_sunny' : 'nights_stay' }}</mat-icon>
-    </button>
 
     <!-- Sélecteur de langue -->
-    <button mat-icon-button [matMenuTriggerFor]="languageMenu" [matTooltip]="'LANGUAGE' | translate">
-      <mat-icon>translate</mat-icon>
-    </button>
+    <!-- Sélecteur de langue -->
+    <div class="language-wrapper">
+      <button mat-button [matMenuTriggerFor]="languageMenu" [matTooltip]="'LANGUAGE' | translate" class="language-button">
+        <mat-icon>translate</mat-icon>
+        <span class="selected-language-text">{{ getCurrentLanguageLabel() }}</span>
+        <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
+      </button>
+    </div>
     <mat-menu #languageMenu="matMenu" class="nav-menu">
       <button *ngFor="let language of languageList"
               mat-menu-item
               (click)="changeSiteLanguage(language.code)">
-        <span [class.active-language]="language.code === selectedLanguage">
-          {{ language.label }}
-        </span>
+    <span [class.active-language]="language.code === selectedLanguage">
+      {{ language.label }}
+    </span>
       </button>
     </mat-menu>
 
@@ -98,10 +100,6 @@
       <button mat-menu-item routerLink="/helps">
         <mat-icon>help</mat-icon>
         <span>{{ 'HELP' | translate }}</span>
-      </button>
-      <button mat-menu-item routerLink="/parameters">
-        <mat-icon>settings</mat-icon>
-        <span>{{ 'USER_PARAMETERS' | translate }}</span>
       </button>
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="logout()">

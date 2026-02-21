@@ -1,27 +1,84 @@
-<div name="contentCreationHtml" *ngIf="contentNode.type ==='HTML'" >
-  <app-content-code-title
-    [title]="'HTML'"></app-content-code-title>
+<div class="content-code-html" *ngIf="contentNode?.type ==='HTML'">
 
-  <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
+  <!-- Titre seul sur sa ligne -->
+  <div class="title-row">
+    <app-content-code-title [title]="'HTML'" [dialogRef]="dialogRef"></app-content-code-title>
+  </div>
 
-  <button mat-icon-button matTooltip="{{ 'CODE' | translate }}"  (click)="setCodeEdition(false)"  *ngIf="code">
-    <mat-icon>code</mat-icon>
-  </button>
-  <button mat-icon-button matTooltip="{{ 'HTML' | translate }}" (click)="setCodeEdition(true)" *ngIf="!code">
-    <mat-icon>html</mat-icon>
-  </button>
+  <!-- Informations -->
+  <div class="infos-section">
+    <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
+  </div>
 
-  <ngx-codemirror *ngIf="code"
-                  class="viewCode"
-    [(ngModel)]="contentNode.content"
-    [options]="{
+  <!-- Barre d'outils au-dessus du code avec boutons à droite -->
+  <div class="code-toolbar">
+    <!-- Boutons de bascule Code/HTML -->
+    <div class="toggle-buttons">
+      <button
+        mat-icon-button
+        class="toggle-btn"
+        [class.active]="code"
+        (click)="setCodeEdition(false)"
+        *ngIf="code"
+        matTooltip="{{ 'CODE' | translate }}">
+        <mat-icon>code</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        class="toggle-btn"
+        [class.active]="!code"
+        (click)="setCodeEdition(true)"
+        *ngIf="!code"
+        matTooltip="{{ 'HTML' | translate }}">
+        <mat-icon>html</mat-icon>
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- Bouton plein écran -->
+    <button
+      class="fullscreen-btn"
+      (click)="toggleFullscreen()"
+      [matTooltip]="(isFullscreen ? 'QUITTER' : 'PLEIN ÉCRAN') | translate">
+      <mat-icon>{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+    </button>
+  </div>
+
+  <!-- Éditeur de code / Visualiseur HTML -->
+  <div class="code-editor-wrapper" [class.fullscreen]="isFullscreen">
+
+    <!-- Bouton de fermeture en mode plein écran -->
+    <button
+      class="fullscreen-close-btn"
+      *ngIf="isFullscreen"
+      (click)="toggleFullscreen()"
+      [matTooltip]="'QUITTER' | translate">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <!-- Mode Code -->
+    <ngx-codemirror
+      *ngIf="code"
+      #codeMirror
+      class="code-editor"
+      [(ngModel)]="contentNode.content"
+      [options]="{
         lineNumbers: true,
         theme: 'material',
         mode: 'htmlmixed',
-        scrollbarStyle:'native'
-      }"
-  ></ngx-codemirror>
-  <div [innerHTML]="contentFilled" *ngIf="!code && contentFilled"
-           class="htmlViewer"></div>
+        autoRefresh: true,
+        lineWrapping: true,
+        scrollbarStyle: 'native'
+      }">
+    </ngx-codemirror>
+
+    <!-- Mode Visualisation HTML -->
+    <div
+      *ngIf="!code && contentFilled"
+      class="html-viewer"
+      [innerHTML]="contentFilled"></div>
+
+  </div>
 
 </div>

@@ -1,12 +1,12 @@
-import {AfterViewInit, Component, EventEmitter, Input, Output} from '@angular/core';
-import {TranslateService} from "@ngx-translate/core";
-import {ContentNode} from "../../../../modeles/ContentNode";
-import {StatusEnum} from "../../../../modeles/StatusEnum";
-import {LoggerService} from "../../../../services/LoggerService";
-import {ContentNodeService} from "../../../../services/ContentNodeService";
+import { AfterViewInit, Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslateService } from "@ngx-translate/core";
+import { ContentNode } from "../../../../modeles/ContentNode";
+import { StatusEnum } from "../../../../modeles/StatusEnum";
+import { LoggerService } from "../../../../services/LoggerService";
+import { ContentNodeService } from "../../../../services/ContentNodeService";
 import { SlugService } from 'src/app/services/SlugService';
-import { toArray, map, switchMap,tap} from 'rxjs/operators';
-import { Observable, EMPTY } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { EMPTY } from 'rxjs';
 
 @Component({
   selector: 'app-content-code-actions',
@@ -14,53 +14,46 @@ import { Observable, EMPTY } from 'rxjs';
   styleUrl: './content-code-actions.component.css'
 })
 export class ContentCodeActionsComponent implements AfterViewInit {
-  @Output()
-  @Input()
-  contentNode: ContentNode;
+
+  @Input() contentNode: ContentNode;
+  @Output() close = new EventEmitter<void>();
+  @Output() validate = new EventEmitter<void>();
 
   contentModels: any;
+  canSave: boolean = true;
 
   constructor(
     private translate: TranslateService,
     private logger: LoggerService,
     private contentNodeService: ContentNodeService,
-    private slugService: SlugService) {
-  }
+    private slugService: SlugService) {}
 
   ngAfterViewInit(): void {
     this.initContentNodeModels();
   }
 
-  @Output() close = new EventEmitter<void>();
-  @Output() validate = new EventEmitter<void>();
-
   closeFactory(): void {
-    this.close.next();
+    this.close.emit();
   }
 
   validateFactory(): void {
     this.slugService.exists(this.contentNode.slug)
-    .subscribe((codes:any) => {  // cast explicite
-      const filtered = codes.filter((c:string) => c != null);
-      
-        const available = filtered.length === 0 ||
+    .subscribe((codes: any) => {
+      const filtered = codes.filter((c: string) => c != null);
+
+      const available = filtered.length === 0 ||
         (filtered.length === 1 && filtered[0] === this.contentNode.code);
 
-         if (available) {
-          this.validate.next();
-          return EMPTY;
-        } else {
-          return this.translate.get('SLUG_ALREADY_USED').pipe(
-            tap(translation => this.logger.error(translation))
-          );
+      if (available) {
+        this.validate.emit();
+        return EMPTY;
+      } else {
+        return this.translate.get('SLUG_ALREADY_USED').pipe(
+          tap(translation => this.logger.error(translation))
+        );
       }
-
-    }
-    );
-
-}
-
-
+    });
+  }
 
   initContentNodeModels() {
     this.contentNodeService.getAllByParentCodeAndStatus(this.contentNode.parentCode, StatusEnum.SNAPSHOT).subscribe(
@@ -68,7 +61,7 @@ export class ContentCodeActionsComponent implements AfterViewInit {
         this.contentModels = response.filter((content: ContentNode) =>
           this.contentNode.code !== content.code && content.type === this.contentNode.type);
       },
-      (error) => {                              //error() callback
+      (error) => {
         this.logger.error('Request failed with error');
       });
   }

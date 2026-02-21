@@ -21,20 +21,21 @@ import {UserAccessService} from "../../../services/UserAccessService";
 export class NodesViewDialogComponent implements OnInit {
 
   options: Observable<EChartsCoreOption>;
-
   user: User;
+  node: Node;
 
   constructor(
     private nodeService: NodeService,
     private contentNodeService: ContentNodeService,
     private userAccessService: UserAccessService,
-    @Inject(MAT_DIALOG_DATA) private node: Node,
+    @Inject(MAT_DIALOG_DATA) private data: Node,
     private dialog: MatDialog) {
+
+    this.node = data;
   }
 
-
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
+    this.user = this.userAccessService.getCurrentUser();
 
     this.options = this.nodeService.getNodeView(this.node.code).pipe(
       map(treeNode => this.buildChartOptions(treeNode))
@@ -42,7 +43,6 @@ export class NodesViewDialogComponent implements OnInit {
   }
 
   buildChartOptions(tree: any): EChartsCoreOption {
-
     tree = this.sortTreeByCode([tree]);
     const enrichedTree = this.addIconsToTree(tree);
 
@@ -55,9 +55,9 @@ export class NodesViewDialogComponent implements OnInit {
         {
           type: 'tree',
           data: [enrichedTree],
-          top: '1%',
-          left: '10%',
-          bottom: '1%',
+          top: '5%',
+          left: '7%',
+          bottom: '5%',
           right: '20%',
           symbolSize: 20,
           label: {
@@ -80,7 +80,6 @@ export class NodesViewDialogComponent implements OnInit {
       ]
     };
   }
-
 
   private sortTreeByCode(nodes: any[]): any[] {
     if (!Array.isArray(nodes) || nodes.length === 0) return nodes;
@@ -110,7 +109,6 @@ export class NodesViewDialogComponent implements OnInit {
     return node;
   }
 
-
   getIconForType(node: any): string {
     if (!node.leaf && node.type && !node.type.includes('NODIFY')) return 'image://assets/icons/node.svg';
     switch (node.type) {
@@ -132,12 +130,10 @@ export class NodesViewDialogComponent implements OnInit {
         return 'image://assets/icons/url.svg';
       case 'NODIFY':
         return 'image://assets/icons/nodify_ai.png';
-
       default:
-        return 'image://assets/icons/node.svg'; // Par défaut
+        return 'image://assets/icons/node.svg';
     }
   }
-
 
   chartInstance: any;
   dialogRefCode: MatDialogRef<ContentCodeComponent>;
@@ -159,7 +155,6 @@ export class NodesViewDialogComponent implements OnInit {
   }
 
   gotoElement(content: ContentNode, node: Node) {
-
     this.dialogRefCode = this.dialog.open(ContentCodeComponent, {
       data: {
         node: node,
@@ -178,5 +173,4 @@ export class NodesViewDialogComponent implements OnInit {
         }
       });
   }
-
 }

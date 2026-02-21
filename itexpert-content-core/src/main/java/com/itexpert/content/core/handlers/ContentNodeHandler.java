@@ -410,67 +410,90 @@ public class ContentNodeHandler {
     }
 
     public Mono<ContentNode> deployContent(String contentNodeCode, String environmentCode) {
-        return this.findByCodeAndStatus(contentNodeCode, StatusEnum.SNAPSHOT.name())
-                .map(model -> {
-                    model.setCode(model.getCode().replace(model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
-                    model.setParentCode(model.getParentCode().replace(model.getParentCode().split("-")[1], environmentCode.split("-")[0]));
-                    model.setParentCodeOrigin(null);
-                    return model;
+        return Mono.fromCallable(() -> {
+                    // Tout votre code synchrone avec block() ici
+                    return deployContentSync(contentNodeCode, environmentCode);
                 })
-                .flatMap(contentNode ->
-                        this.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
-                                .flatMap(existingContentNode -> {
-
-                                    contentNode.setId(UUID.randomUUID());
-                                    contentNode.setParentCode(existingContentNode.getParentCode());
-                                    contentNode.setVersion(String.valueOf(Integer.parseInt(existingContentNode.getVersion()) + 1));
-                                    contentNode.setStatus(StatusEnum.SNAPSHOT);
-                                    contentNode.setCreationDate(existingContentNode.getCreationDate());
-                                    contentNode.setModificationDate(Instant.now().toEpochMilli());
-
-                                    if (ObjectUtils.isNotEmpty(existingContentNode.getSlug())) {
-                                        contentNode.setSlug(existingContentNode.getSlug());
-                                    }
-
-                                    existingContentNode.setStatus(StatusEnum.ARCHIVE);
-                                    existingContentNode.setModificationDate(Instant.now().toEpochMilli());
-
-                                    // Sauvegarder l'ancien contenu en ARCHIVE et retourner le nouveau SNAPSHOT
-                                    return this.contentNodeRepository.save(contentNodeMapper.fromModel(existingContentNode))
-                                            .thenReturn(contentNode);
-
-                                })
-                                .switchIfEmpty(Mono.just(contentNode).map(newContentNode -> {
-
-
-                                    Node parent = Mono.justOrEmpty(
-                                                    this.nodeRepository
-                                                            .findByCodeAndStatus(
-                                                                    newContentNode.getParentCode(),
-                                                                    StatusEnum.SNAPSHOT.name()
-                                                            )
-                                            )
-                                            .flatMap(m -> m)
-                                            .block();
-
-                                    if (ObjectUtils.isEmpty(parent)) {
-                                        newContentNode.setParentCodeOrigin(environmentCode);
-                                        newContentNode.setParentCode(environmentCode);
-                                    }
-                                    newContentNode.setId(UUID.randomUUID());
-                                    newContentNode.setVersion("0");
-                                    newContentNode.setStatus(StatusEnum.SNAPSHOT);
-                                    newContentNode.setCreationDate(Instant.now().toEpochMilli());
-                                    newContentNode.setModificationDate(newContentNode.getCreationDate());
-                                    return newContentNode;
-                                }))
-                )
-                // 🔹 Mise à jour du slug avec ContentNodeSlugHelper
-                .flatMap(contentNodeSlugHelper::update)
-                .flatMap(updatedContentNode -> this.contentNodeRepository.save(this.contentNodeMapper.fromModel(updatedContentNode)))
-                .map(this.contentNodeMapper::fromEntity)
-                .flatMap(model -> this.notify(model, NotificationEnum.DEPLOYMENT));
+                .subscribeOn(Schedulers.boundedElastic()) // Exécute sur un thread dédié pour les opérations bloquantes
+                .flatMap(result -> result); // Aplatir le Mono<Mono<ContentNode>> en Mono<ContentNode>
     }
+
+    private Mono<ContentNode> deployContentSync(String contentNodeCode, String environmentCode) {
+        try {
+            // Récupérer le modèle source
+            ContentNode model = this.findByCodeAndStatus(contentNodeCode, StatusEnum.SNAPSHOT.name()).block();
+
+            if (ObjectUtils.isEmpty(model)) {
+                return Mono.error(new RuntimeException("Content node not found with code: " + contentNodeCode));
+            }
+
+            // Modifier les codes
+            model.setCode(model.getCode().replace(
+                    model.getParentCode().split("-")[1],
+                    environmentCode.split("-")[0]
+            ));
+            model.setParentCode(model.getParentCode().replace(
+                    model.getParentCode().split("-")[1],
+                    environmentCode.split("-")[0]
+            ));
+            model.setParentCodeOrigin(null);
+
+            // Vérifier si un content node existe déjà
+            com.itexpert.content.lib.entities.ContentNode existingContentNode =
+                    this.contentNodeRepository.findByCodeAndStatus(model.getCode(), StatusEnum.SNAPSHOT.name()).block();
+
+            if (ObjectUtils.isNotEmpty(existingContentNode)) {
+                // Cas existant
+                model.setId(UUID.randomUUID());
+                model.setParentCode(existingContentNode.getParentCode());
+                model.setVersion(String.valueOf(Integer.parseInt(existingContentNode.getVersion()) + 1));
+                model.setStatus(StatusEnum.SNAPSHOT);
+                model.setCreationDate(existingContentNode.getCreationDate());
+                model.setModificationDate(Instant.now().toEpochMilli());
+
+                if (ObjectUtils.isNotEmpty(existingContentNode.getSlug())) {
+                    model.setSlug(existingContentNode.getSlug());
+                }
+
+                // Archiver l'ancien
+                existingContentNode.setStatus(StatusEnum.ARCHIVE);
+                existingContentNode.setModificationDate(Instant.now().toEpochMilli());
+                this.contentNodeRepository.save(existingContentNode).block();
+
+            } else {
+                // Nouveau déploiement
+                Node parent = this.nodeRepository
+                        .findByCodeAndStatus(model.getParentCode(), StatusEnum.SNAPSHOT.name())
+                        .block();
+
+                if (ObjectUtils.isEmpty(parent)) {
+                    model.setParentCodeOrigin(environmentCode);
+                    model.setParentCode(environmentCode);
+                }
+
+                model.setId(UUID.randomUUID());
+                model.setVersion("0");
+                model.setStatus(StatusEnum.SNAPSHOT);
+                model.setCreationDate(Instant.now().toEpochMilli());
+                model.setModificationDate(model.getCreationDate());
+            }
+
+            // Mise à jour du slug
+            ContentNode updatedModel = this.contentNodeSlugHelper.update(model).block();
+
+            // Sauvegarde
+            com.itexpert.content.lib.entities.ContentNode entity = this.contentNodeMapper.fromModel(updatedModel);
+            com.itexpert.content.lib.entities.ContentNode savedEntity = this.contentNodeRepository.save(entity).block();
+            ContentNode finalModel = this.contentNodeMapper.fromEntity(savedEntity);
+
+            // Notification
+            return this.notify(finalModel, NotificationEnum.DEPLOYMENT);
+
+        } catch (Exception e) {
+            return Mono.error(e);
+        }
+    }
+
 
     public Mono<ContentNode> fillContent(
             String code, StatusEnum status,

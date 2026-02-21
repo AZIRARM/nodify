@@ -1,14 +1,30 @@
-<div mat-dialog-title class="dialog-title">
-  <mat-toolbar>
-    <span>{{ "NODES_VIEW" | translate }}</span>
-    <span class="spacer" style="flex: 1 1 auto;"></span>
+<div class="nodes-view-dialog">
 
-    <button mat-icon-button aria-label="close dialog" mat-dialog-close class="close-button">
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>account_tree</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "NODES_VIEW" | translate }}</span>
+        <span class="title-code" *ngIf="node?.name">({{ node.name }})</span>
+      </div>
+    </div>
+    <button mat-icon-button class="close-btn" mat-dialog-close>
       <mat-icon>close</mat-icon>
     </button>
-  </mat-toolbar>
-</div>
+  </div>
 
-<echarts [options]="options | async"
-         class="echart-container"
-         (chartInit)="onChartInit($event)"></echarts>
+  <!-- Contenu -->
+  <div mat-dialog-content class="dialog-content">
+
+    <!-- Graphique -->
+    <echarts
+      [options]="options | async"
+      class="echart-container"
+      (chartInit)="onChartInit($event)">
+    </echarts>
+
+  </div>
+</div>

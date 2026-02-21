@@ -5,14 +5,15 @@ import {TranslateService} from "@ngx-translate/core";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {LoggerService} from "../../../services/LoggerService";
 import {UserAccessService} from "../../../services/UserAccessService";
+import {StatusEnum} from "../../../modeles/StatusEnum";
 import {Observable} from "rxjs";
 
 // Interface pour les services de publication
 export interface PublicationService {
   getPublicationHistory(itemCode: string): Observable<any>;
-  revert(version: string): Observable<any>;
-  deploy(version: string): Observable<any>;
-  deleteVersion(version: string): Observable<any>;
+  revertToVersion(version: string): Observable<any>;
+  deployToVersion(version: string): Observable<any>;
+  deleteVersionDefinitively(version: string): Observable<any>;
 }
 
 // Interface pour les éléments publiés
@@ -85,7 +86,10 @@ export class PublishedItemsDialogComponent implements OnInit {
     this.publicationService.getPublicationHistory(this.itemCode).subscribe(
       (response: any) => {
         if (response) {
-          this.dataSource.data = response;
+          let filtred: any[] = response.filter((element: any) => (element.status === StatusEnum.ARCHIVE || element.status === StatusEnum.PUBLISHED))
+                     .sort((a: any, b: any) => Number(b.version) - Number(a.version));
+
+          this.dataSource.data = filtred;
         }
       },
       (error: any) => {
@@ -119,7 +123,7 @@ export class PublishedItemsDialogComponent implements OnInit {
 
     this.dialogValidationRef.afterClosed().subscribe((result: any) => {
       if (result && result.data && result.data === "validated") {
-        this.publicationService.revert(element.version).subscribe(
+        this.publicationService.revertToVersion(element.version).subscribe(
           () => {
             this.translate.get("REVERT_SUCCESS").subscribe((trad: string) => {
               this.loggerService.success(trad);
@@ -149,7 +153,7 @@ export class PublishedItemsDialogComponent implements OnInit {
 
     this.dialogValidationRef.afterClosed().subscribe((result: any) => {
       if (result && result.data && result.data === "validated") {
-        this.publicationService.deploy(element.version).subscribe(
+        this.publicationService.deployToVersion(element.version).subscribe(
           () => {
             this.translate.get("DEPLOY_SUCCESS").subscribe((trad: string) => {
               this.loggerService.success(trad);
@@ -178,7 +182,7 @@ export class PublishedItemsDialogComponent implements OnInit {
 
     this.dialogValidationRef.afterClosed().subscribe((result: any) => {
       if (result && result.data && result.data === "validated") {
-        this.publicationService.deleteVersion(element.version).subscribe(
+        this.publicationService.deleteVersionDefinitively(element.version).subscribe(
           () => {
             this.translate.get("DELETE_SUCCESS").subscribe((trad: string) => {
               this.loggerService.success(trad);

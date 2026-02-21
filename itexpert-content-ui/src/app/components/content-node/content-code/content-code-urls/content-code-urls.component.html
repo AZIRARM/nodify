@@ -1,31 +1,85 @@
-<div name="contentCreationUrls" *ngIf="contentNode.type ==='URLS'" >
-  <app-content-code-title
-    [title]="'URLS'"></app-content-code-title>
-  <button mat-button class="code-validation" (click)="addUrl()" style="margin-bottom: 20px">{{ "ADD" | translate }}</button>
+<div class="content-code-urls" *ngIf="contentNode?.type ==='URLS'">
 
-  <p *ngFor="let url of contentNode.urls">
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "URL" | translate }}</mat-label>
-      <input type="text" matInput [(ngModel)]="url.url" placeholder="{{ 'URL' | translate }}">
-    </mat-form-field>
+  <!-- Titre seul sur sa ligne -->
+  <div class="title-row">
+    <app-content-code-title [title]="'URLS'" [dialogRef]="dialogRef"></app-content-code-title>
+  </div>
 
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "TYPE" | translate }}</mat-label>
-      <mat-select [(ngModel)]="url.type" name="selectUrlType">
-        <mat-option value="API"> {{ "API"| translate }}</mat-option>
-        <mat-option value="PAGE"> {{ "PAGE"| translate }}</mat-option>
-        <mat-option value="SCRIPT"> {{ "SCRIPT"| translate }}</mat-option>
-        <mat-option value="STYLE"> {{ "STYLE"| translate }}</mat-option>
-        <mat-option value="MEDIA"> {{ "MEDIA"| translate }}</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <!-- Informations -->
+  <div class="infos-section">
+    <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
+  </div>
 
-    <mat-form-field>
-      <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
-      <textarea [(ngModel)]="url.description" style="with:120px" matInput rows="1"
-                placeholder="{{'DESCRIPTION' | translate }}"></textarea>
-    </mat-form-field>
-    <button (click)="deleteUrl(url)" mat-icon-button>
-      <mat-icon>delete</mat-icon>
+  <!-- Barre d'outils avec bouton d'ajout -->
+  <div class="urls-toolbar">
+    <button
+      class="add-url-btn"
+      (click)="addUrl()">
+      <mat-icon>add_link</mat-icon>
+      <span>{{ "ADD_URL" | translate }}</span>
     </button>
+  </div>
+
+  <!-- Liste des URLs -->
+  <div class="urls-list">
+
+    <div class="url-item" *ngFor="let url of contentNode.urls; let i = index">
+
+      <!-- URL -->
+      <mat-form-field appearance="outline" class="url-field">
+        <mat-label>{{ "URL" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="url.url"
+          placeholder="{{ 'URL' | translate }}"
+          [attr.id]="'url-' + i">
+        <mat-icon matSuffix>link</mat-icon>
+      </mat-form-field>
+
+      <!-- Type -->
+      <mat-form-field appearance="outline" class="type-field">
+        <mat-label>{{ "TYPE" | translate }}</mat-label>
+        <mat-select [(ngModel)]="url.type" [name]="'selectUrlType-' + i">
+          <mat-option value="API">{{ "API" | translate }}</mat-option>
+          <mat-option value="PAGE">{{ "PAGE" | translate }}</mat-option>
+          <mat-option value="SCRIPT">{{ "SCRIPT" | translate }}</mat-option>
+          <mat-option value="STYLE">{{ "STYLE" | translate }}</mat-option>
+          <mat-option value="MEDIA">{{ "MEDIA" | translate }}</mat-option>
+        </mat-select>
+        <mat-icon matSuffix>category</mat-icon>
+      </mat-form-field>
+
+      <!-- Description -->
+      <mat-form-field appearance="outline" class="desc-field">
+        <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
+        <textarea
+          matInput
+          [(ngModel)]="url.description"
+          placeholder="{{ 'DESCRIPTION' | translate }}"
+          rows="1"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="1"
+          cdkAutosizeMaxRows="3">
+        </textarea>
+        <mat-icon matSuffix>notes</mat-icon>
+      </mat-form-field>
+
+      <!-- Bouton suppression -->
+      <button
+        class="delete-url-btn"
+        (click)="deleteUrl(url)"
+        matTooltip="{{ 'DELETE' | translate }}">
+        <mat-icon>delete</mat-icon>
+      </button>
+
+    </div>
+
+    <!-- Message si aucune URL -->
+    <div class="empty-state" *ngIf="!contentNode.urls || contentNode.urls.length === 0">
+      <mat-icon>link_off</mat-icon>
+      <p>{{ "NO_URLS" | translate }}</p>
+    </div>
+
+  </div>
+
 </div>
