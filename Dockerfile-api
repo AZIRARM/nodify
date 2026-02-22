@@ -34,7 +34,7 @@ COPY --from=build /app/itexpert-content-api/target/*.jar ${APP_HOME}/bin/app.jar
 COPY itexpert-content-api/entrypoint.sh ${APP_HOME}
 RUN chmod +x ${APP_HOME}/entrypoint.sh
 
-EXPOSE 9080
+EXPOSE 1080
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-HEALTHCHECK CMD curl --fail http://localhost:9080/health || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:1080/health || exit 1
