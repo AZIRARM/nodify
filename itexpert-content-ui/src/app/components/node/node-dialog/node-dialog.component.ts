@@ -216,4 +216,31 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
           });
     }
 
+  // Dans votre composant, ajoutez ces méthodes
+
+  // Vérification de la validité du formulaire
+  isFormValid(): boolean {
+    return !!(this.node.defaultLanguage
+      && this.node.code
+      && this.slugAvailable === true
+      && this.node.name
+      && this.node.name.trim().length >= 4);
+  }
+
+  // Affichage des langues sélectionnées
+  getSelectedLanguagesDisplay(): string {
+    if (!this.node.languages || this.node.languages.length === 0) {
+      return '';
+    }
+
+    if (this.node.languages.length === 1) {
+      return this.node.languages[0];
+    }
+
+    const firstLang = this.languages.find(l => l.code === this.node.languages[0]);
+    const count = this.node.languages.length - 1;
+
+    return `${firstLang?.name || firstLang?.code || this.node.languages[0]} +${count}`;
+  }
+
 }

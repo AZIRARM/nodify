@@ -1,0 +1,511 @@
+/* ===== STYLES DE BASE ===== */
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== EN-TÊTE - Utilise la classe globale .dialog-header ===== */
+
+/* ===== CONTENU PRINCIPAL ===== */
+.dialog-content {
+  height: calc(90vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 4px 0 0;
+  margin: 0 10px;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+/* ===== SECTIONS ===== */
+.form-section {
+  background: #ffffff;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 0 20px 20px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 20px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--table-text-primary);
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--table-primary);
+
+    mat-icon {
+      color: var(--table-primary);
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+/* ===== FORMULAIRE ===== */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  ::ng-deep .mat-mdc-form-field-flex {
+    height: 52px !important;
+  }
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    padding: 12px 0 !important;
+    min-height: 44px !important;
+  }
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    padding: 0 12px !important;
+  }
+
+  ::ng-deep input.mat-mdc-input-element {
+    font-size: 0.9rem;
+  }
+
+  &.flex-2 {
+    flex: 2;
+    min-width: 200px;
+  }
+
+  &.flex-3 {
+    flex: 3;
+    min-width: 250px;
+  }
+}
+
+/* ===== ZONE D'UPLOAD ===== */
+.file-upload-area {
+  background: #f8f9fa;
+  border: 2px dashed var(--table-border);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+
+  .file-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: var(--table-text-secondary);
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    span {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  .file-input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .browse-btn {
+      height: 44px;
+      padding: 0 20px;
+      border-color: var(--table-border);
+      color: var(--table-text-secondary);
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 4px;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: var(--table-bg-row-hover);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .file-name {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      background: var(--table-primary-light);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: var(--table-primary);
+
+      .locked-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+/* ===== BOUTON D'ACTION ===== */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  height: 44px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--table-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--table-primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(63, 81, 181, 0.3);
+  }
+
+  &:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+  }
+}
+
+/* ===== TABLEAU ===== */
+.table-wrapper {
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  overflow: auto;
+  background: white;
+  max-height: 300px;
+}
+
+.assets-table {
+  width: 100%;
+
+  .mat-mdc-header-row {
+    height: var(--table-header-height);
+    background: var(--table-primary);
+  }
+
+  .mat-mdc-header-cell {
+    color: white;
+    font-size: var(--table-font-size-header);
+    font-weight: 600;
+    padding: 0 12px;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,0.9);
+      }
+    }
+  }
+
+  .mat-mdc-row {
+    height: var(--table-row-height);
+
+    &:hover {
+      background-color: var(--table-bg-row-hover);
+    }
+
+    &.granted-row {
+      background-color: #fff9e6;
+      &:hover {
+        background-color: #fff3d4;
+      }
+    }
+
+    .mat-mdc-cell {
+      padding: 0 12px;
+      font-size: var(--table-font-size-cell);
+      color: var(--table-text-primary);
+      border-bottom-color: var(--table-border-light);
+      vertical-align: middle;
+    }
+  }
+}
+
+/* ===== CELLULES SPÉCIFIQUES ===== */
+.plugin-cell {
+  .plugin-badge {
+    background: var(--table-primary-light);
+    color: var(--table-primary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-block;
+  }
+}
+
+.filename-cell {
+  max-width: 150px;
+
+  .filename-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+}
+
+.description-cell {
+  max-width: 200px;
+
+  .description-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== BOUTONS D'ACTION ===== */
+.action-icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+
+  .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &:hover {
+    background-color: var(--table-bg-row-hover);
+  }
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Couleurs des icônes */
+.text-primary { color: var(--table-primary); }
+.text-danger { color: var(--table-danger); }
+
+/* ===== ÉTAT VIDE ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #bdbdbd;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: #999;
+    margin: 0;
+  }
+}
+
+/* ===== ACTIONS ===== */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: white;
+  border-top: 2px solid var(--table-border);
+  height: 80px;
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  flex-shrink: 0;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 40px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .cancel-btn {
+    color: #666;
+    border: 1px solid #ccc;
+    background: white;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #666;
+    }
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+/* ===== THÈME SOMBRE ===== */
+:host-context(.dark-theme) {
+  .form-section {
+    background: #2d2d2d;
+    border-color: #404040;
+  }
+
+  .file-upload-area {
+    background: #363636;
+    border-color: #404040;
+
+    .file-upload-label {
+      color: #aaa;
+    }
+
+    .file-name {
+      background: #1e3a5f;
+      color: #90caf9;
+    }
+  }
+
+  .table-wrapper {
+    background: #2d2d2d;
+    border-color: #404040;
+  }
+
+  .assets-table {
+    .mat-mdc-header-row {
+      background: var(--table-primary-dark);
+    }
+
+    .mat-mdc-row {
+      &:hover {
+        background-color: #3d3d3d;
+      }
+
+      .mat-mdc-cell {
+        color: #e0e0e0;
+        border-bottom-color: #404040;
+      }
+    }
+  }
+
+  .plugin-badge {
+    background: #1e3a5f;
+    color: #90caf9;
+  }
+
+  .empty-state {
+    background: #363636;
+
+    mat-icon {
+      color: #555;
+    }
+
+    p {
+      color: #777;
+    }
+  }
+
+  .dialog-actions {
+    background: #2d2d2d;
+    border-top-color: #404040;
+
+    .cancel-btn {
+      border-color: #404040;
+      color: #aaa;
+      background: transparent;
+
+      mat-icon {
+        color: #aaa;
+      }
+
+      &:hover {
+        background-color: #404040;
+      }
+    }
+  }
+}

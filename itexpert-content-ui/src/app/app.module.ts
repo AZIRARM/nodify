@@ -26,6 +26,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatSortModule} from '@angular/material/sort';
 import {MatDialogModule} from '@angular/material/dialog';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {ToastrModule} from 'ngx-toastr';
 import {NodesComponent} from './components/node/nodes/nodes.component';
@@ -64,22 +65,16 @@ import {ContentNodeDialogComponent} from './components/content-node/content-node
 import {AccessRoleService} from "./services/AccessRoleService";
 import {ValuesDialogComponent} from './components/commons/values-dialog/values-dialog.component';
 import {
-  NodeAccessRolesDialogComponent
-} from './components/node/node-access-roles-dialg/node-access-roles-dialog.component';
-import {
   NodeRulesConditionsDialogComponent
 } from './components/commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component';
 import {MatDatepickerModule} from "@angular/material/datepicker";
-import {PublishedNodesDialogComponent} from "./components/node/published-nodes-dialog/published-nodes-dialog.component";
 import {
-  PublishedContentsNodesDialogComponent
-} from './components/content-node/published-contents-nodes-dialog/published-contents-nodes-dialog.component';
+  PublishedItemsDialogComponent
+} from './components/commons/published-items-dialog/published-items-dialog.component';
 import {TranslationsDialogComponent} from './components/commons/translations-dialog/translations-dialog.component';
-import {DeletedNodesDialogComponent} from './components/node/deleted-nodes-dialog/deleted-nodes-dialog.component';
-import {
-  DeletedContentsNodesDialogComponent
-} from './components/content-node/deleted-contents-nodes-dialog/deleted-contents-nodes-dialog.component';
+import {DeletedItemsDialogComponent} from './components/commons/deleted-items-dialog/deleted-items-dialog.component';
 import {UserNamePipe} from './pipes/user-name.pipe';
+import {FileSizePipe} from './pipes/FileSizePipe';
 import {MatBadgeModule} from "@angular/material/badge";
 import {FeedbackService} from "./services/FeedbackService";
 import {ContentClickService} from "./services/ContentClickService";
@@ -148,7 +143,7 @@ import {LoaderService} from "./services/Loader.service";
 import {LoaderComponent} from "./components/ui/loader/loader.component";
 import { LockService } from './services/LockService';
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
-
+import { MarkdownModule } from 'ngx-markdown';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -185,14 +180,12 @@ export function defaultLanguage() {
     UserParametersComponent,
     ContentNodeDialogComponent,
     ValuesDialogComponent,
-    NodeAccessRolesDialogComponent,
     NodeRulesConditionsDialogComponent,
-    PublishedNodesDialogComponent,
-    PublishedContentsNodesDialogComponent,
+    PublishedItemsDialogComponent,
     TranslationsDialogComponent,
-    DeletedNodesDialogComponent,
-    DeletedContentsNodesDialogComponent,
+    DeletedItemsDialogComponent,
     UserNamePipe,
+    FileSizePipe,
     ContentChartsComponent,
     TypeofPipe,
     ContentDatasComponent,
@@ -236,6 +229,9 @@ export function defaultLanguage() {
         deps: [HttpClient],
       },
     }),
+    MarkdownModule.forRoot({
+      loader: HttpClient,
+    }),
 
     NgxEchartsModule.forRoot({ echarts }),
 
@@ -257,6 +253,7 @@ export function defaultLanguage() {
     MatPaginatorModule,
     MatSortModule,
     MatDialogModule,
+    MatCheckboxModule,
     MatSlideToggleModule,
     MatDatepickerModule,
     MatBadgeModule,

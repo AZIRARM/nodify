@@ -37,6 +37,9 @@ export class HeaderComponent {
     {code: 'ar', label: 'عربي'},
   ];
 
+  isAdmin(): boolean {
+    return this.userAccessService.isAdmin();
+  }
 
   isDarkMode: boolean = true;
 
@@ -117,4 +120,17 @@ export class HeaderComponent {
     this.isDarkMode = !this.isDarkMode;
     this.themeService.toggleTheme(this.isDarkMode ? 'dark' : 'light');
   }
+
+
+  activeLink = 'workspace';
+
+  setActiveLink(link: string) {
+    this.activeLink = link;
+  }
+
+  getCurrentLanguageLabel(): string {
+    const currentLang = this.languageList.find((lang: any) => lang.code === this.selectedLanguage);
+    return currentLang ? currentLang.label : this.selectedLanguage;
+  }
+
 }

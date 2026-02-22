@@ -1,5 +1,6 @@
 .title {
-  text-align: left; /* Aligne le texte à gauche */
-  margin: 0; /* Enlève les marges par défaut */
-  padding: 0.5rem; /* Ajoute un peu d'espace autour du titre si nécessaire */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: block;
 }

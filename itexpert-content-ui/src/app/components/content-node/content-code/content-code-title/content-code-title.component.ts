@@ -1,4 +1,5 @@
 import {Component, Input} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-content-code-title',
@@ -9,7 +10,15 @@ export class ContentCodeTitleComponent {
   @Input()
   title: string;
 
+  @Input()
+  dialogRef: MatDialogRef<any>;
+
   constructor() {
   }
 
+  closeDialog(): void {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
+  }
 }

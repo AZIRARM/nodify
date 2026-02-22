@@ -1,46 +1,140 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "USERS" | translate}}</span>
-  </mat-toolbar>
-</p>
-@if(userAccessService.isAdmin()){
-  <button mat-fab  aria-label="create new user" (click)="create()">
-    <mat-icon>add</mat-icon>
-  </button>
-}
-<table mat-table [dataSource]="dataSource">
-  <ng-container matColumnDef="Firstname">
-    <th mat-header-cell *matHeaderCellDef> {{ "USER_FIRSTNAME" | translate}} </th>
-    <td mat-cell *matCellDef="let element" > {{element.firstname}} </td>
-  </ng-container>
+<div class="users-dialog">
 
-  <ng-container matColumnDef="Lastname">
-    <th mat-header-cell *matHeaderCellDef> {{ "USER_LASTNAME" | translate}} </th>
-    <td mat-cell *matCellDef="let element"> {{element.lastname}} </td>
-  </ng-container>
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "USERS" | translate }}</span>
+      </div>
+    </div>
+  </div>
 
-  <ng-container matColumnDef="Email">
-    <th mat-header-cell *matHeaderCellDef> {{ "EMAIL" | translate}} </th>
-    <td mat-cell *matCellDef="let element"> {{element.email}} </td>
-  </ng-container>
-  <ng-container matColumnDef="Role">
-    <th mat-header-cell *matHeaderCellDef> {{ "ROLE" | translate}} </th>
-    <td mat-cell *matCellDef="let element"> {{element.roles[0] | translate}} </td>
-  </ng-container>
+  <!-- Contenu -->
+  <div class="dialog-content">
 
+    <!-- Barre d'outils -->
+    <div class="users-toolbar">
+      <div class="toolbar-actions">
+        @if(userAccessService.isAdmin()) {
+        <button
+          mat-fab
+          class="add-user-fab"
+          (click)="create()"
+          matTooltip="{{ 'CREATE_USER' | translate }}">
+          <mat-icon>add</mat-icon>
+        </button>
+        }
+      </div>
+    </div>
 
-  <ng-container matColumnDef="Actions">
-    <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate}} </th>
-    <td mat-cell *matCellDef="let element">
-      @if(userAccessService.isAdmin()){
-        <mat-icon class="icon-display scale2"  (click)="update(element)" inline matTooltip="{{ 'EDIT' | translate}}">edit</mat-icon>
-      }
-      @if(userAccessService.isAdmin() && !element.roles.includes('ADMIN') ){
-        <mat-icon class="icon-display scale2 danger" (click)="delete(element)" inline matTooltip="{{ 'DELETE' | translate}}">delete</mat-icon>
-      }
-    </td>
-  </ng-container>
+    <!-- Tableau des utilisateurs -->
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="dataSource" class="users-table">
 
-  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }" class="mat-row"></tr>
-</table>
+        <!-- Colonne Prénom -->
+        <ng-container matColumnDef="Firstname">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">badge</mat-icon>
+              <span>{{ "USER_FIRSTNAME" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="name-cell">
+            <span class="user-name">{{ element.firstname }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Nom -->
+        <ng-container matColumnDef="Lastname">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">badge</mat-icon>
+              <span>{{ "USER_LASTNAME" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="name-cell">
+            <span class="user-name">{{ element.lastname }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Email -->
+        <ng-container matColumnDef="Email">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">email</mat-icon>
+              <span>{{ "EMAIL" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="email-cell">
+            <span class="email-text" [title]="element.email">{{ element.email }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Rôle -->
+        <ng-container matColumnDef="Role">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">security</mat-icon>
+              <span>{{ "ROLE" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span class="role-badge" [class.admin-role]="element.roles?.includes('ADMIN')">
+              {{ element.roles[0] | translate }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Actions -->
+        <ng-container matColumnDef="Actions">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">settings</mat-icon>
+              <span>{{ "ACTIONS" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="actions-cell">
+
+              <!-- Édition -->
+              @if(userAccessService.isAdmin()) {
+              <button
+                mat-icon-button
+                class="action-icon-btn"
+                (click)="update(element)"
+                matTooltip="{{ 'EDIT' | translate }}">
+                <mat-icon class="text-primary">edit</mat-icon>
+              </button>
+              }
+
+              <!-- Suppression (sauf admin) -->
+              @if(userAccessService.isAdmin() && !element.roles?.includes('ADMIN')) {
+              <button
+                mat-icon-button
+                class="action-icon-btn"
+                (click)="delete(element)"
+                matTooltip="{{ 'DELETE' | translate }}">
+                <mat-icon class="text-danger">delete</mat-icon>
+              </button>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [class.granted-row]="row.IsGranted"
+            class="user-row"></tr>
+      </table>
+
+      <!-- Message si aucun utilisateur -->
+      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+        <mat-icon>people_outline</mat-icon>
+        <p>{{ 'NO_USERS' | translate }}</p>
+      </div>
+    </div>
+  </div>
+</div>

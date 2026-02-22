@@ -1,63 +1,203 @@
-<div mat-dialog-title class="dialog-title">
-  <mat-toolbar>
-    <span>{{ "PLUGIN_ASSETS" | translate }}</span>
-    <span class="spacer"></span>
-  </mat-toolbar>
-</div>
+<div class="plugin-assets-dialog">
 
-<div mat-dialog-content>
-  <div fxLayout="row" class="infos-container">
-    <input type="text" class="input-field" matInput [(ngModel)]="currentPluginFile.fileName" disabled
-           placeholder="{{ 'NAME' | translate }}">
-    <input type="text" class="input-field" matInput [(ngModel)]="currentPluginFile.description"
-           placeholder="{{ 'DESCRIPTION' | translate }}">
-
-
-    <input type="file" (change)="onFileChange($event)" accept="*/*">
-
-    <button *ngIf="currentPluginFile && !currentPluginFile.id && currentPluginFile.data" mat-button class="code-validation" (click)="save()" style="margin-bottom: 20px">{{ "ADD" | translate }}</button>
-  </div>
-
-  <table mat-table [dataSource]="dataSource"  *ngIf="userAccessService.getCurrentUser()">
-
-    <ng-container matColumnDef="PluginName">
-      <th mat-header-cell *matHeaderCellDef> {{ "PLUGIN" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        {{ plugin.name | slice:0:30 }}
-    </ng-container>
-    <ng-container matColumnDef="FileName">
-      <th mat-header-cell *matHeaderCellDef> {{ "FILE_NAME" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.fileName }}
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="Description">
-      <th mat-header-cell *matHeaderCellDef> {{ "DESCRIPTION" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.description }}
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="Actions">
-      <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        <mat-icon class="icon-display warn" *ngIf="userAccessService.canEdit()" (click)="edit(element)" inline
-                  matTooltip="{{ 'EDIT' | translate}}">edit
-        </mat-icon>
-        <mat-icon class="icon-display danger" *ngIf="userAccessService.canEdit()" (click)="delete(element)" inline
-                  matTooltip="{{ 'DELETE' | translate}}">delete
-        </mat-icon>
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header-cell"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"
-        class="mat-row"></tr>
-  </table>
-  <div class="code-editor-actions">
-    <button class="code-editor-action-button" (click)="close()">
-      {{ "CLOSE" | translate }}
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>folder</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "PLUGIN_ASSETS" | translate }}</span>
+        <span class="title-code" *ngIf="plugin?.name">({{ plugin.name }})</span>
+      </div>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="close()">
+      <mat-icon>close</mat-icon>
     </button>
   </div>
 
+  <!-- Contenu -->
+  <div mat-dialog-content class="dialog-content">
+
+    <!-- Formulaire d'ajout/modification -->
+    <div class="form-section" *ngIf="userAccessService.canEdit()">
+      <h3 class="section-title">
+        <mat-icon>{{ currentPluginFile.id ? 'edit' : 'add_circle' }}</mat-icon>
+        {{ (currentPluginFile.id ? 'EDIT_ASSET' : 'ADD_ASSET') | translate }}
+      </h3>
+
+      <div class="form-row">
+        <!-- Nom du fichier -->
+        <mat-form-field appearance="outline" class="form-field flex-2">
+          <mat-label>{{ "FILE_NAME" | translate }}</mat-label>
+          <input
+            matInput
+            [(ngModel)]="currentPluginFile.fileName"
+            placeholder="{{ 'FILE_NAME' | translate }}"
+            required
+            [readonly]="currentPluginFile.id ? true : false">
+          <mat-icon matSuffix>description</mat-icon>
+        </mat-form-field>
+
+        <!-- Description -->
+        <mat-form-field appearance="outline" class="form-field flex-3">
+          <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
+          <input
+            matInput
+            [(ngModel)]="currentPluginFile.description"
+            placeholder="{{ 'DESCRIPTION' | translate }}">
+          <mat-icon matSuffix>notes</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Upload de fichier -->
+      <div class="file-upload-area">
+        <div class="file-upload-label">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>{{ "UPLOAD_FILE" | translate }}</span>
+        </div>
+
+        <div class="file-input-wrapper">
+          <input
+            type="file"
+            (change)="onFileChange($event)"
+            accept="*/*"
+            #fileInput
+            [disabled]="currentPluginFile.id ? true : false">
+          <button
+            mat-stroked-button
+            class="browse-btn"
+            (click)="fileInput.click()"
+            [disabled]="currentPluginFile.id ? true : false">
+            <mat-icon>folder_open</mat-icon>
+            {{ "BROWSE" | translate }}
+          </button>
+          <span class="file-name" *ngIf="currentPluginFile.fileName && !currentPluginFile.id">
+            {{ currentPluginFile.fileName }}
+          </span>
+          <span class="file-name" *ngIf="currentPluginFile.id">
+            <mat-icon class="locked-icon">lock</mat-icon>
+            {{ "FILE_LOCKED" | translate }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Bouton d'action -->
+      <div class="form-actions">
+        <button
+          mat-flat-button
+          class="action-btn"
+          [disabled]="!canSaveAsset()"
+          (click)="save()">
+          <mat-icon>{{ currentPluginFile.id ? 'update' : 'add' }}</mat-icon>
+          <span>{{ (currentPluginFile.id ? 'UPDATE' : 'ADD') | translate }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tableau des assets -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>list</mat-icon>
+        {{ "ASSETS_LIST" | translate }}
+      </h3>
+
+      <div class="table-wrapper" *ngIf="userAccessService.getCurrentUser()">
+        <table mat-table [dataSource]="dataSource" class="assets-table">
+
+          <!-- Colonne Nom du plugin -->
+          <ng-container matColumnDef="PluginName">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-content">
+                <mat-icon class="header-icon">extension</mat-icon>
+                <span>{{ "PLUGIN" | translate }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element" class="plugin-cell">
+              <span class="plugin-badge">{{ plugin.name | slice:0:30 }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Nom du fichier -->
+          <ng-container matColumnDef="FileName">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-content">
+                <mat-icon class="header-icon">description</mat-icon>
+                <span>{{ "FILE_NAME" | translate }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element" class="filename-cell">
+              <span class="filename-text" [title]="element.fileName">{{ element.fileName }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Description -->
+          <ng-container matColumnDef="Description">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-content">
+                <mat-icon class="header-icon">notes</mat-icon>
+                <span>{{ "DESCRIPTION" | translate }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element" class="description-cell">
+              <span class="description-text" [title]="element.description">{{ element.description || '-' }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Actions -->
+          <ng-container matColumnDef="Actions">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-content">
+                <mat-icon class="header-icon">settings</mat-icon>
+                <span>{{ "ACTIONS" | translate }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <div class="actions-cell">
+
+                <!-- Édition -->
+                @if(userAccessService.canEdit()) {
+                <button mat-icon-button class="action-icon-btn"
+                        (click)="edit(element)"
+                        matTooltip="{{ 'EDIT' | translate }}">
+                  <mat-icon class="text-primary">edit</mat-icon>
+                </button>
+                }
+
+                <!-- Suppression -->
+                @if(userAccessService.canEdit()) {
+                <button mat-icon-button class="action-icon-btn"
+                        (click)="delete(element)"
+                        matTooltip="{{ 'DELETE' | translate }}">
+                  <mat-icon class="text-danger">delete</mat-icon>
+                </button>
+                }
+
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              [class.granted-row]="row.IsGranted"
+              class="asset-row"></tr>
+        </table>
+
+        <!-- Message si aucun asset -->
+        <div class="empty-state" *ngIf="dataSource.data.length === 0">
+          <mat-icon>folder_open</mat-icon>
+          <p>{{ "NO_ASSETS" | translate }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button class="cancel-btn" (click)="close()">
+      <mat-icon>close</mat-icon>
+      {{ "CLOSE" | translate }}
+    </button>
+  </div>
 </div>

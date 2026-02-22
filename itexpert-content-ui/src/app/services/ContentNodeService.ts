@@ -46,11 +46,11 @@ export class ContentNodeService extends Service {
     return super.post("code/" + code + "/publish/" + status, null);
   }
 
-  getAllByCode(code: string) {
+  getPublicationHistory(code: string) {
     return super.get("code/" + code);
   }
 
-  deployVersion(code: string, version: string) {
+  deployToVersion(code: string, version: string) {
     return super.post("code/" + code + "/version/" + version + "/deploy", null);
   }
 

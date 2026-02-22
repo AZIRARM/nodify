@@ -1,10 +1,20 @@
-<div class="code-editor-actions">
-  <button class="code-editor-action-button" (click)="closeFactory()">
-    {{ "CLOSE" | translate }}
+<div class="content-code-actions">
+
+  <!-- Bouton Fermer avec texte -->
+  <button
+    class="action-btn close-btn"
+    (click)="closeFactory()">
+    <mat-icon>close</mat-icon>
+    <span>{{ "CLOSE" | translate }}</span>
   </button>
-  <button 
-      class="code-editor-action-button" 
-      (click)="validateFactory()">
-    {{ "SAVE" | translate }}
+
+  <!-- Bouton Sauvegarder avec texte -->
+  <button
+    class="action-btn save-btn"
+    (click)="validateFactory()"
+    [disabled]="!canSave">
+    <mat-icon>save</mat-icon>
+    <span>{{ "SAVE" | translate }}</span>
   </button>
+
 </div>

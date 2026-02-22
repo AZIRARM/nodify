@@ -1,3 +1,122 @@
-.toolbar-item-spacer {
-  flex: 1 1 auto;
+
+.main-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 64px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    margin-right: 24px;
+
+    .logo-img {
+      height: 32px;
+      width: auto;
+      margin-right: 8px;
+    }
+
+    .app-name {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+  }
+
+  .main-nav {
+    display: flex;
+    align-items: center;
+    height: 100%;
+
+    ::ng-deep .mat-mdc-tab-link {
+      height: 64px;
+      min-width: 120px;
+      opacity: 1;
+
+      .mat-icon {
+        margin-right: 4px;
+      }
+
+      .arrow-icon {
+        margin-left: 2px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+
+  .user-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    button {
+      mat-icon {
+        font-size: 24px;
+      }
+    }
+
+    .language-selector {
+      .active-language {
+        font-weight: 500;
+        color: var(--primary-color);
+      }
+    }
+  }
+}
+
+::ng-deep .mat-mdc-menu-panel {
+  min-width: 200px !important;
+
+  .mat-icon {
+    margin-right: 12px;
+  }
+}
+
+.language-wrapper {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.language-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: white; /* ou votre couleur de texte */
+}
+
+.selected-language-text {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 2px;
+}
+
+.language-button .mat-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+.language-button .arrow-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.active-language {
+  font-weight: 600;
+  color: #3f51b5;
 }

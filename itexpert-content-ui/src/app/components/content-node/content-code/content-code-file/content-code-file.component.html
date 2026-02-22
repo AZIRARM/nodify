@@ -1,9 +1,41 @@
-<div name="contentCreationFile" *ngIf="contentNode.type ==='FILE'" >
-  <app-content-code-title
-    [title]="'FILE'"></app-content-code-title>
-  <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
-  <input type="file" (change)="onFileChangeFactory($event)" accept="*/*">
-  @if(contentNode && contentNode.file){
-    <p>{{ contentNode.file.name }}</p>
-  }
+<div class="content-code-file" *ngIf="contentNode?.type ==='FILE'">
+
+  <!-- Titre seul sur sa ligne -->
+  <div class="title-row">
+    <app-content-code-title [title]="'FILE'" [dialogRef]="dialogRef"></app-content-code-title>
+  </div>
+
+  <!-- Informations -->
+  <div class="infos-section">
+    <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
+  </div>
+
+  <!-- Zone d'upload de fichier -->
+  <div class="file-upload-container">
+
+    <!-- Input file caché -->
+    <input
+      #fileInput
+      type="file"
+      (change)="onFileChangeFactory($event)"
+      accept="*/*"
+      class="hidden-input">
+
+    <!-- Bouton de sélection de fichier -->
+    <button
+      class="file-select-btn"
+      (click)="fileInput.click()">
+      <mat-icon>cloud_upload</mat-icon>
+      <span>{{ "CHOOSE_FILE" | translate }}</span>
+    </button>
+
+    <!-- Affichage du fichier sélectionné -->
+    <div class="file-info" *ngIf="contentNode?.file">
+      <mat-icon>insert_drive_file</mat-icon>
+      <span class="file-name">{{ contentNode.file.name }}</span>
+      <span class="file-size" *ngIf="contentNode.file.size">({{ contentNode.file.size | fileSize }})</span>
+    </div>
+
+  </div>
+
 </div>

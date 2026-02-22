@@ -1,49 +1,165 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "RULES" | translate }}</span>
-  </mat-toolbar>
-</p>
-<div class="container">
+<div class="rules-dialog">
 
-  <label for="ruleType">{{ 'TYPE'| translate }}</label>
-  <select id="ruleType" name="ruleType" [(ngModel)]="ruleType" required class="rulesTypes"  *ngIf="userAccessService.canEdit()">
-    <option value="BOOL" selected>BOOL</option>
-    <option value="DATE">DATE</option>
-  </select>
-
-  <button [disabled]="!ruleType" (click)="create()"  *ngIf="userAccessService.canEdit()">{{ 'ADD' | translate }}</button>
-
-  <div *ngIf="rulesConditions && rulesConditions.length > 0">
-    <div *ngFor="let selected of rulesConditions" class="rule-row">
-      <input type="text" placeholder="Rule Name" [(ngModel)]="selected.name"
-             [disabled]="!selected.editable">
-      <select [(ngModel)]="selected.operator" name="selectOperator" *ngIf="selected.type !== 'BOOL'"  [disabled]="!userAccessService.canEdit()">
-        <option value="EQ">=</option>
-        <option value="SUP">&gt;</option>
-        <option value="LOW">&lt;</option>
-        <option value="SUP_EQ">≥</option>
-        <option value="LOW_EQ">≤</option>
-        <option value="DIF">≠</option>
-      </select>
-      <input *ngIf="selected.type === 'DATE'" type="datetime-local" [(ngModel)]="selected.value"  [disabled]="!userAccessService.canEdit()"
-             (ngModelChange)="updateBehavior(selected)" placeholder="Value">
-      <select [(ngModel)]="selected.behavior" name="selectBehavior"  [disabled]="!userAccessService.canEdit()">
-        <option *ngIf="node.hasOwnProperty('contents')" [value]="true">Enable Node</option>
-        <option *ngIf="node.hasOwnProperty('contents')" [value]="false">Disable Node</option>
-        <option *ngIf="!node.hasOwnProperty('contents')" [value]="true">Enable Content</option>
-        <option *ngIf="!node.hasOwnProperty('contents')" [value]="false">Disable Content</option>
-      </select>
-      <div class="checkbox-container">
-        <input *ngIf="(selected.type=='BOOL')
-        || ( selected.operator && selected.value && selected.type=='DATE')" type="checkbox"
-               [(ngModel)]="selected.enable" [disabled]="!userAccessService.canEdit()"> Activate Rule
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>rule</mat-icon>
       </div>
-      <button *ngIf="selected.erasable" (click)="remove(selected)">X</button>
+      <div class="header-title">
+        <span class="title-main">{{ "RULES" | translate }}</span>
+      </div>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Contenu -->
+  <div mat-dialog-content class="dialog-content">
+
+    <!-- Formulaire d'ajout de règle -->
+    <div class="form-section" *ngIf="userAccessService.canEdit()">
+      <h3 class="section-title">
+        <mat-icon>add_circle</mat-icon>
+        {{ 'ADD_RULE' | translate }}
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field type-field">
+          <mat-label>{{ 'TYPE' | translate }}</mat-label>
+          <mat-select [(ngModel)]="ruleType" required>
+            <mat-option value="BOOL">BOOL</mat-option>
+            <mat-option value="DATE">DATE</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>category</mat-icon>
+        </mat-form-field>
+
+        <button
+          mat-flat-button
+          class="action-btn"
+          [disabled]="!ruleType"
+          (click)="create()">
+          <mat-icon>add</mat-icon>
+          <span>{{ 'ADD' | translate }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Liste des règles -->
+    <div class="form-section" *ngIf="rulesConditions && rulesConditions.length > 0">
+      <h3 class="section-title">
+        <mat-icon>list</mat-icon>
+        {{ 'RULES_LIST' | translate }}
+      </h3>
+
+      <div class="rules-list">
+        <div *ngFor="let selected of rulesConditions" class="rule-item">
+
+          <!-- Ligne de règle -->
+          <div class="rule-row">
+            <!-- Nom de la règle -->
+            <mat-form-field appearance="outline" class="rule-field name-field">
+              <mat-label>{{ 'RULE_NAME' | translate }}</mat-label>
+              <input
+                matInput
+                [(ngModel)]="selected.name"
+                placeholder="{{ 'RULE_NAME' | translate }}"
+                [disabled]="!selected.editable"
+              >
+            </mat-form-field>
+
+            <!-- Opérateur (pour les types non-BOOL) -->
+            <mat-form-field appearance="outline" class="rule-field operator-field" *ngIf="selected.type !== 'BOOL'">
+              <mat-label>{{ 'OPERATOR' | translate }}</mat-label>
+              <mat-select [(ngModel)]="selected.operator" [disabled]="!userAccessService.canEdit()">
+                <mat-option value="EQ">=</mat-option>
+                <mat-option value="SUP">&gt;</mat-option>
+                <mat-option value="LOW">&lt;</mat-option>
+                <mat-option value="SUP_EQ">≥</mat-option>
+                <mat-option value="LOW_EQ">≤</mat-option>
+                <mat-option value="DIF">≠</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Valeur (pour les dates) -->
+            <mat-form-field appearance="outline" class="rule-field value-field" *ngIf="selected.type === 'DATE'">
+              <mat-label>{{ 'VALUE' | translate }}</mat-label>
+              <input
+                matInput
+                type="datetime-local"
+                [(ngModel)]="selected.value"
+                (ngModelChange)="updateBehavior(selected)"
+                [disabled]="!userAccessService.canEdit()"
+              >
+            </mat-form-field>
+
+            <!-- Comportement -->
+            <mat-form-field appearance="outline" class="rule-field behavior-field">
+              <mat-label>{{ 'BEHAVIOR' | translate }}</mat-label>
+              <mat-select [(ngModel)]="selected.behavior" [disabled]="!userAccessService.canEdit()">
+                <mat-option *ngIf="node?.hasOwnProperty('contents')" [value]="true">
+                  {{ 'ENABLE_NODE' | translate }}
+                </mat-option>
+                <mat-option *ngIf="node?.hasOwnProperty('contents')" [value]="false">
+                  {{ 'DISABLE_NODE' | translate }}
+                </mat-option>
+                <mat-option *ngIf="!node?.hasOwnProperty('contents')" [value]="true">
+                  {{ 'ENABLE_CONTENT' | translate }}
+                </mat-option>
+                <mat-option *ngIf="!node?.hasOwnProperty('contents')" [value]="false">
+                  {{ 'DISABLE_CONTENT' | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Checkbox d'activation -->
+            <div class="checkbox-cell"
+                 *ngIf="(selected.type=='BOOL') || (selected.operator && selected.value && selected.type=='DATE')">
+              <mat-checkbox
+                class="rule-activate-checkbox"
+                color="primary"
+                [(ngModel)]="selected.enable"
+                [disabled]="!userAccessService.canEdit()">
+                {{ 'ACTIVATE_RULE' | translate }}
+              </mat-checkbox>
+            </div>
+
+            <!-- Bouton supprimer -->
+            <button
+              mat-icon-button
+              class="delete-rule-btn"
+              *ngIf="selected.erasable"
+              (click)="remove(selected)"
+              matTooltip="{{ 'DELETE_RULE' | translate }}">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message si aucune règle -->
+    <div class="empty-state" *ngIf="!rulesConditions || rulesConditions.length === 0">
+      <mat-icon>rule_folder</mat-icon>
+      <p>{{ 'NO_RULES' | translate }}</p>
     </div>
   </div>
-</div>
 
-<div>
-  <button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-  <button *ngIf="canSave() && userAccessService.canEdit()" (click)="validate()">{{ "SAVE" | translate }}</button>
+  <!-- Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button class="cancel-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+      {{ "CANCEL" | translate }}
+    </button>
+    <button
+      mat-flat-button
+      class="save-btn"
+      (click)="validate()"
+      *ngIf="canSave() && userAccessService.canEdit()"
+    >
+      <mat-icon>save</mat-icon>
+      {{ "SAVE" | translate }}
+    </button>
+  </div>
 </div>

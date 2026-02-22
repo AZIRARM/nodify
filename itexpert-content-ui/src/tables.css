@@ -1,0 +1,314 @@
+/* ===== VARIABLES CSS POUR LES TABLES ===== */
+:root {
+  --table-primary: #3f51b5;
+  --table-primary-light: #e8eaf6;
+  --table-primary-dark: #1e3a5f;
+
+  /* Couleurs de texte */
+  --table-text-header: #ffffff;
+  --table-text-primary: #333333;
+  --table-text-secondary: #666666;
+
+  /* Couleurs d'arrière-plan */
+  --table-bg: #ffffff;
+  --table-bg-header: #3f51b5;
+  --table-bg-row-hover: rgba(63, 81, 181, 0.08);
+  --table-bg-paginator: #f8f9fa;
+
+  /* Couleurs de bordure */
+  --table-border: #e0e0e0;
+  --table-border-light: #f0f0f0;
+
+  /* Couleurs d'accentuation */
+  --table-success: #4caf50;
+  --table-warning: #ff9800;
+  --table-danger: #f44336;
+  --table-info: #2196f3;
+
+  /* Tailles de police - ULTRA RÉDUITES */
+  --table-font-size-base: 0.7rem;      /* 11.2px */
+  --table-font-size-header: 0.7rem;
+  --table-font-size-cell: 0.7rem;
+  --table-font-size-paginator: 0.7rem;
+  --table-font-size-small: 0.6rem;     /* 9.6px */
+
+  /* Hauteurs - ULTRA RÉDUITES */
+  --table-header-height: 36px;          /* Réduit de 40 à 36 */
+  --table-row-height: 30px;             /* Réduit de 34 à 30 */
+  --table-paginator-height: 40px;        /* Réduit de 44 à 40 */
+}
+
+/* ===== THÈME SOMBRE ===== */
+.dark-theme {
+  --table-primary: #1e3a5f;
+  --table-primary-light: #2c4a7a;
+
+  --table-text-header: #ffffff;
+  --table-text-primary: #e0e0e0;
+  --table-text-secondary: #aaaaaa;
+
+  --table-bg: #2d2d2d;
+  --table-bg-header: #1e3a5f;
+  --table-bg-row-hover: #3d3d3d;
+  --table-bg-paginator: #2d2d2d;
+
+  --table-border: #404040;
+  --table-border-light: #404040;
+}
+
+/* ===== CONTENEUR UNIVERSEL POUR LES TABLEAUX ===== */
+.table-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--table-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* Zone de défilement de la table */
+.table-scroll {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* ===== STYLES DES TABLES MATERIAL ===== */
+.mat-mdc-table {
+  width: 100% !important;
+  background: var(--table-bg);
+}
+
+/* EN-TÊTES - Avec alignement corrigé */
+.mat-mdc-header-row {
+  height: var(--table-header-height) !important;
+  background-color: var(--table-bg-header) !important;
+}
+
+.mat-mdc-header-cell {
+  color: var(--table-text-header) !important;
+  font-size: var(--table-font-size-header) !important;
+  font-weight: 600 !important;
+  padding: 0 6px !important; /* Réduit de 8px à 6px */
+  border-bottom: none !important;
+  background-color: var(--table-bg-header) !important;
+  line-height: var(--table-header-height) !important;
+}
+
+/* Contenu de l'en-tête - Aligné verticalement */
+.mat-mdc-header-cell .header-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  line-height: normal;
+}
+
+.mat-mdc-header-cell .header-content mat-icon {
+  font-size: 14px; /* Réduit */
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mat-mdc-header-cell .header-content span {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* LIGNES DE DONNÉES */
+.mat-mdc-row {
+  height: var(--table-row-height) !important;
+}
+
+.mat-mdc-row:hover {
+  background-color: var(--table-bg-row-hover) !important;
+}
+
+.mat-mdc-cell {
+  font-size: var(--table-font-size-cell) !important;
+  padding: 0 4px !important;
+  border-bottom: 1px solid var(--table-border) !important;
+  color: var(--table-text-primary) !important;
+  line-height: var(--table-row-height) !important;
+  vertical-align: middle !important;
+}
+
+/* Dernière ligne sans bordure */
+.mat-mdc-row:last-child .mat-mdc-cell {
+  border-bottom: none !important;
+}
+
+/* ===== PAGINATION ===== */
+.mat-mdc-paginator {
+  flex-shrink: 0;
+  min-height: var(--table-paginator-height) !important;
+  background-color: var(--table-bg-paginator) !important;
+  border-top: 1px solid var(--table-border) !important;
+  font-size: var(--table-font-size-paginator) !important;
+}
+
+.mat-mdc-paginator-container {
+  min-height: var(--table-paginator-height) !important;
+  padding: 0 6px !important; /* Réduit de 8px à 6px */
+  gap: 6px !important; /* Réduit de 8px à 6px */
+}
+
+.mat-mdc-paginator-range-label,
+.mat-mdc-paginator-page-size-label {
+  color: var(--table-text-secondary) !important;
+  font-size: var(--table-font-size-small) !important;
+}
+
+.mat-mdc-select-value {
+  color: var(--table-text-primary) !important;
+  font-size: var(--table-font-size-small) !important;
+}
+
+/* ===== BOUTONS D'ACTION DANS LES TABLES ===== */
+.table-action-btn {
+  width: 20px;  /* Réduit de 22px à 20px */
+  height: 20px; /* Réduit de 22px à 20px */
+  line-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-action-btn .mat-icon {
+  font-size: 11px;  /* Réduit de 12px à 11px */
+  width: 11px;
+  height: 11px;
+  line-height: 11px;
+}
+
+.table-action-btn:hover {
+  background-color: var(--table-bg-row-hover);
+  border-radius: 3px;
+}
+
+/* Conteneur des actions pour que toutes les icônes tiennent sur une ligne */
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  height: var(--table-row-height);
+}
+
+/* Couleurs des icônes d'action */
+.text-primary { color: var(--table-primary); }
+.text-info { color: var(--table-info); }
+.text-success { color: var(--table-success); }
+.text-warning { color: var(--table-warning); }
+.text-danger { color: var(--table-danger); }
+.text-disabled { color: var(--table-text-disabled, #ccc); }
+
+/* ===== BADGES ===== */
+.table-badge {
+  background: var(--table-primary-light);
+  color: var(--table-primary);
+  padding: 1px 2px;
+  border-radius: 2px;
+  font-size: var(--table-font-size-small);
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* ===== STATUS ICONS ===== */
+.status-icon-green { color: var(--table-success); }
+.status-icon-yellow { color: var(--table-warning); }
+.status-icon-red { color: var(--table-danger); }
+
+.status-icon {
+  font-size: 12px; /* Réduit */
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== CELLULES SPÉCIALES ===== */
+.table-cell-code {
+  font-size: var(--table-font-size-small);
+  color: var(--table-text-secondary);
+  background: var(--table-bg-row-hover);
+  padding: 1px 2px;
+  border-radius: 2px;
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1;
+}
+
+.table-cell-user {
+  background: var(--table-bg-row-hover);
+  padding: 1px 3px;
+  border-radius: 2px;
+  color: var(--table-text-secondary);
+  display: inline-block;
+  font-size: var(--table-font-size-small);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Pour les cellules avec du texte long */
+.mat-mdc-cell .text-truncate {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* ===== ALIGNEMENT DANS LES CELLULES ===== */
+.mat-mdc-cell > * {
+  vertical-align: middle;
+}
+
+.mat-mdc-cell button,
+.mat-mdc-cell span,
+.mat-mdc-cell div {
+  vertical-align: middle;
+}
+
+/* ===== THÈME SOMBRE - VARIABLES SEULEMENT ===== */
+.dark-theme .mat-mdc-table {
+  background: var(--table-bg);
+}
+
+.dark-theme .mat-mdc-header-row {
+  background-color: var(--table-bg-header) !important;
+}
+
+.dark-theme .mat-mdc-header-cell {
+  background-color: var(--table-bg-header) !important;
+}
+
+.dark-theme .mat-mdc-row {
+  background-color: var(--table-bg);
+}
+
+.dark-theme .mat-mdc-cell {
+  color: var(--table-text-primary) !important;
+  border-bottom-color: var(--table-border) !important;
+}
+
+.dark-theme .mat-mdc-paginator {
+  background-color: var(--table-bg-paginator) !important;
+  border-top-color: var(--table-border) !important;
+  color: var(--table-text-primary) !important;
+}

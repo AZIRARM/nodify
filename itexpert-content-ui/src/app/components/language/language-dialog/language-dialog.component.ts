@@ -16,8 +16,13 @@ export class LanguageDialogComponent {
     @Inject(MAT_DIALOG_DATA) public content: Language
   ) {
     if (content) {
-      this.language = content;
+      // Créer une copie pour ne pas modifier l'original directement
+      this.language = {...content};
     }
+  }
+
+  isFormValid(): boolean {
+    return !!(this.language.code && this.language.name);
   }
 
   cancel() {
@@ -25,7 +30,8 @@ export class LanguageDialogComponent {
   }
 
   validate() {
-    this.dialogRef.close({data: this.language});
+    if (this.isFormValid()) {
+      this.dialogRef.close({data: this.language});
+    }
   }
-
 }

@@ -1,0 +1,133 @@
+.content-code-json {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Titre seul - marges réduites */
+.title-row {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Section des informations - marges réduites */
+.infos-section {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Barre d'outils au-dessus du code */
+.code-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.fullscreen-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #666;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+
+/* Wrapper de l'éditeur */
+.code-editor-wrapper {
+  height: 40%;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1e1e1e;
+  position: relative;
+
+  &.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    border-radius: 0;
+    border: none;
+  }
+}
+
+/* Bouton de fermeture en mode plein écran */
+.fullscreen-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  z-index: 10000;
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
+}
+
+.code-editor {
+  height: 100%;
+  width: 100%;
+}
+
+/* Style CodeMirror */
+::ng-deep .CodeMirror {
+  height: 100% !important;
+  width: 100% !important;
+  font-family: 'Consolas', monospace !important;
+  font-size: 12px !important;
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+}
+
+::ng-deep .CodeMirror-gutters {
+  background: #252526 !important;
+  border-right: 1px solid #333 !important;
+}
+
+::ng-deep .CodeMirror-linenumber {
+  color: #858585 !important;
+}

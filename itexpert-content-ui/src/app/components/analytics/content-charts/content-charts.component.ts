@@ -16,15 +16,17 @@ export class ContentChartsComponent implements OnInit {
 
   constructor(
     private chartService: ChartService,
-    private translateService: TranslateService) {
-  }
+    private translateService: TranslateService) {}
 
   ngOnInit(): void {
-    this.chartService.getCharts().subscribe((treeData: any) => {
+    this.loadChartData();
+  }
 
+  loadChartData() {
+    this.chartService.getCharts().subscribe((treeData: any) => {
       treeData = this.sortTreeByCode([treeData]);
 
-      this.cleanTreeData(treeData).subscribe((cleaned:any) => {
+      this.cleanTreeData(treeData).subscribe((cleaned: any) => {
         this.chartOptions = {
           tooltip: {
             trigger: 'item',
@@ -38,7 +40,7 @@ export class ContentChartsComponent implements OnInit {
               left: '7%',
               bottom: '1%',
               right: '20%',
-              symbolSize: 20, // Taille suffisante pour voir les icônes
+              symbolSize: 20,
               label: {
                 position: 'left',
                 verticalAlign: 'middle',
@@ -144,7 +146,7 @@ export class ContentChartsComponent implements OnInit {
 
     if (needsTranslation) {
       return this.translateService.get(node.name).pipe(
-        switchMap((trad:any) => cleanedChildren$.pipe(
+        switchMap((trad: any) => cleanedChildren$.pipe(
           map(children => ({
             ...node,
             name: trad,
@@ -165,7 +167,9 @@ export class ContentChartsComponent implements OnInit {
   }
 
   private getIconForType(node: any): string {
-    if (!node.leaf && !node.type.includes('FEEDBACK') && !node.type.includes('NODIFY')) return 'image://assets/icons/node.svg';
+    if (!node.leaf && !node.type?.includes('FEEDBACK') && !node.type?.includes('NODIFY')) {
+      return 'image://assets/icons/node.svg';
+    }
 
     switch (node.type) {
       case 'XML':

@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild, AfterViewInit} from '@angular/core';
 import {TranslateService} from "@ngx-translate/core";
 import {Router} from '@angular/router';
 
@@ -11,7 +11,6 @@ import {LoggerService} from "../../../services/LoggerService";
 import {LockService} from "../../../services/LockService";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 import {ValuesDialogComponent} from "../../commons/values-dialog/values-dialog.component";
-import {NodeAccessRolesDialogComponent} from "../node-access-roles-dialg/node-access-roles-dialog.component";
 import {
   NodeRulesConditionsDialogComponent
 } from "../../commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component";
@@ -19,45 +18,53 @@ import {ContentNodeDialogComponent} from "../../content-node/content-node-dialog
 import {ContentNodeService} from "../../../services/ContentNodeService";
 import {ContentNode} from "../../../modeles/ContentNode";
 import {StatusEnum} from "../../../modeles/StatusEnum";
-import {PublishedNodesDialogComponent} from "../published-nodes-dialog/published-nodes-dialog.component";
+import {PublishedItemsDialogComponent} from "../../commons/published-items-dialog/published-items-dialog.component";
 import {TranslationsDialogComponent} from "../../commons/translations-dialog/translations-dialog.component";
 import {UserService} from "../../../services/UserService";
 import {UserAccessService} from "../../../services/UserAccessService";
 import {AuthenticationService} from "../../../services/AuthenticationService";
 import {ToastrService} from "ngx-toastr";
 import {Env} from "../../../../assets/configurations/environment";
-import {DeletedNodesDialogComponent} from "../deleted-nodes-dialog/deleted-nodes-dialog.component";
+import {DeletedItemsDialogComponent} from "../../commons/deleted-items-dialog/deleted-items-dialog.component";
 import {NodesViewDialogComponent} from "../nodes-view-dialog/nodes-view-dialog.component";
 import { interval, Subscription } from 'rxjs';
+import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-nodes',
   templateUrl: './nodes.component.html',
   styleUrls: ['./nodes.component.css']
 })
-export class NodesComponent implements OnInit, OnDestroy {
+export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   displayedColumns: string[] = ['Status', 'Name', 'Version', 'Last Modification', 'Modified by', 'Translations', 'Rules', 'Values', 'Subnodes', 'Contents', 'Publication', 'Actions'];
 
-  dataSource: MatTableDataSource<Node>;
+  dataSource: MatTableDataSource<Node> = new MatTableDataSource<Node>([]);
 
-  parentNode: Node;
+  // Propriétés pour la pagination
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  totalElements: number = 0;
+  pageSize: number = 10;
+  pageIndex: number = 0;
+  pageSizeOptions: number[] = [10, 25, 50, 100];
+
+  parentNode: Node | null = null;
 
   user: any;
 
-  environments: Node[];
+  environments: Node[] = [];
 
   dialogRef: MatDialogRef<NodeDialogComponent>;
   validationModal: MatDialogRef<ValidationDialogComponent>;
   dialogRefValues: MatDialogRef<ValuesDialogComponent>;
   dialogRefRules: MatDialogRef<NodeRulesConditionsDialogComponent>;
-  dialogRefAccessRoles: MatDialogRef<NodeAccessRolesDialogComponent>;
   dialogRefContents: MatDialogRef<ContentNodeDialogComponent>;
-  dialogRefDeleteds: MatDialogRef<DeletedNodesDialogComponent>;
-  dialogRefPublished: MatDialogRef<PublishedNodesDialogComponent>;
+  dialogRefDeleteds: MatDialogRef<DeletedItemsDialogComponent>;
+  dialogRefPublished: MatDialogRef<PublishedItemsDialogComponent>;
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
   dialogRefTreeNode: MatDialogRef<NodesViewDialogComponent>;
 
   private lockRefreshSub?: Subscription;
+  private allNodes: Node[] = []; // Pour stocker tous les nodes avant filtrage
 
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
@@ -72,41 +79,47 @@ export class NodesComponent implements OnInit, OnDestroy {
               private dialog: MatDialog) {
   }
 
-
   ngOnInit() {
     this.user = this.userAccessService.getCurrentUser();
     this.init();
   }
+
+  ngAfterViewInit() {
+    // Connecter la pagination après l'initialisation de la vue
+    setTimeout(() => {
+      if (this.paginator) {
+        this.dataSource.paginator = this.paginator;
+
+        // S'abonner aux changements de page
+        this.paginator.page.subscribe(() => {
+          this.pageIndex = this.paginator.pageIndex;
+          this.pageSize = this.paginator.pageSize;
+          this.updateDataSource();
+        });
+      }
+    });
+  }
+
   ngOnDestroy(): void {
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
   }
+
   private initLocks(nodes: Node[]) {
-   nodes.forEach((node: Node) => {
-     this.lockService.getLockInfoSocket(node.code, this.authService.getAccessToken()).subscribe((lockInfo: any) => {
-       node.lockInfo = lockInfo;
-     });
-   });
- }
+    nodes.forEach((node: Node) => {
+      this.lockService.getLockInfoSocket(node.code, this.authService.getAccessToken()).subscribe((lockInfo: any) => {
+        node.lockInfo = lockInfo;
+      });
+    });
+  }
 
-
-
-init() {
+  init() {
     if (this.parentNode) {
       this.nodeService.getAllByParentCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
           this.initLocks(response);
-
-          response.map((node: any) => this.haveContents(node));
-          response.map((node: any) => this.haveChilds(node));
-          response = response.sort((a: any, b: any) => {
-            if (a.favorite && !b.favorite) return -1;
-            if (!a.favorite && b.favorite) return 1;
-            return a.code.localeCompare(b.code);
-          });
-          this.dataSource = new MatTableDataSource(response);
-          this.initEnvironments();
+          this.processNodes(response);
         },
         (error) => {
           console.error('Request failed with error');
@@ -124,18 +137,57 @@ init() {
           }
 
           this.initLocks(response);
-
-          response.map((node: any) => this.haveContents(node));
-          response.map((node: any) => this.haveChilds(node));
-          this.dataSource = new MatTableDataSource(response);
-
-          this.initEnvironments();
+          this.processNodes(response);
         },
         (error) => {
           console.error('Request failed with error');
           this.router.navigateByUrl("login");
         });
     }
+  }
+
+  private processNodes(nodes: Node[]) {
+    // Ajouter les propriétés haveContents et haveChilds
+    nodes.forEach((node: any) => {
+      this.haveContents(node);
+      this.haveChilds(node);
+    });
+
+    // Trier les nodes
+    nodes = nodes.sort((a: any, b: any) => {
+      if (a.favorite && !b.favorite) return -1;
+      if (!a.favorite && b.favorite) return 1;
+      return a.code.localeCompare(b.code);
+    });
+
+    // Stocker tous les nodes
+    this.allNodes = nodes;
+    this.totalElements = nodes.length;
+
+    // Mettre à jour la source de données
+    this.updateDataSource();
+    this.initEnvironments();
+  }
+
+  private updateDataSource() {
+    if (this.paginator) {
+      // Calculer l'index de début et de fin pour la pagination
+      const startIndex = this.pageIndex * this.pageSize;
+      const endIndex = startIndex + this.pageSize;
+
+      // Extraire les nodes pour la page courante
+      const pagedNodes = this.allNodes.slice(startIndex, endIndex);
+      this.dataSource.data = pagedNodes;
+    } else {
+      this.dataSource.data = this.allNodes;
+    }
+  }
+
+  // Méthode pour gérer le changement de page
+  onPageChange(event: any) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updateDataSource();
   }
 
   update(node: Node) {
@@ -150,9 +202,7 @@ init() {
       .subscribe(result => {
         this.save(result.data);
       });
-
   }
-
 
   save(node: Node) {
     node.modifiedBy = this.user.id;
@@ -206,15 +256,12 @@ init() {
     this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          let isSnapshot: boolean = true;
-
           this.nodeService.publish(node.code).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
                 this.init();
               })
-
             },
             error => {
               this.translate.get("SAVE_ERROR").subscribe(trad1 => {
@@ -246,7 +293,6 @@ init() {
                 this.loggerService.success(trad);
                 this.init();
               })
-
             },
             error => {
               this.translate.get("DELETE_ERROR").subscribe(trad => {
@@ -258,7 +304,6 @@ init() {
   }
 
   contents(node: Node) {
-
     this.dialogRefContents = this.dialog.open(ContentNodeDialogComponent, {
         data: node,
         height: "calc(100%)",
@@ -279,7 +324,6 @@ init() {
                   this.loggerService.success(trad);
                   this.init();
                 })
-
               },
               error => {
                 this.translate.get("SAVE_ERROR").subscribe(trad1 => {
@@ -295,13 +339,18 @@ init() {
       });
   }
 
-
   deleteds() {
-    this.dialogRefDeleteds = this.dialog.open(DeletedNodesDialogComponent, {
+    this.dialogRefDeleteds = this.dialog.open(DeletedItemsDialogComponent, {
         height: '80vh',
         width: '80vw',
         disableClose: true,
-        data: this.parentNode
+        data: {
+          parentNode: this.parentNode,
+          titleKey: 'DELETED_NODES',
+          icon: 'delete_sweep',
+          displayTypeColumn: true,
+          deleteService: this.nodeService // Passer le service directement
+        }
       }
     );
     this.dialogRefDeleteds.afterClosed()
@@ -309,7 +358,6 @@ init() {
         this.init();
       });
   }
-
 
   subnodes(node: Node) {
     this.parentNode = node;
@@ -325,14 +373,10 @@ init() {
             this.nodeService.getNodeByCodeAndStatus(response.parentCode, StatusEnum.SNAPSHOT).subscribe(
               (response2: any) => {
                 if (response2) {
-
                   this.parentNode = response2;
-
                   this.init();
                 } else {
-
-                  this.parentNode = null!;
-
+                  this.parentNode = null;
                   this.init();
                 }
               },
@@ -340,23 +384,20 @@ init() {
                 console.error('Request failed with error');
               });
           } else {
-            this.parentNode = null!;
+            this.parentNode = null;
             this.init();
           }
-
         },
         (error) => {
           console.error('Request failed with error');
         });
     } else if (this.parentNode) {
-      this.parentNode = null as any;
+      this.parentNode = null;
       this.init();
     }
-
   }
 
   rules(node: Node) {
-
     this.dialogRefRules = this.dialog.open(NodeRulesConditionsDialogComponent, {
       data: node,
       height: '80vh',
@@ -386,31 +427,15 @@ init() {
       });
   }
 
-  roles(node: Node) {
-    this.dialogRefAccessRoles = this.dialog.open(NodeAccessRolesDialogComponent, {
-      data: node,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    });
-    this.dialogRefAccessRoles.afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.save(node);
-        }
-      });
-  }
-
 
   getPublishedIcon(element: any) {
     if (element.publicationStatus === 'PUBLISHED')
-      return "primary";
+      return "green";
     else if (element.publicationStatus === 'SNAPSHOT')
-      return "warn";
+      return "yellow";
     else
-      return "danger";
+      return "red";
   }
-
 
   private initEnvironments() {
     this.nodeService.getAllParentOrigin().subscribe(
@@ -419,8 +444,9 @@ init() {
           (env: Node) => this.user!.roles.includes("ADMIN")
             || this.user!.projects.includes(env.code))
           .filter((env: Node) =>
-            env.code !== this.parentNode?.code &&
-            env.code !== this.parentNode?.parentCodeOrigin
+            !this.parentNode ||
+            (env.code !== this.parentNode.code &&
+             env.code !== this.parentNode.parentCodeOrigin)
           );
       },
       (error) => {
@@ -428,19 +454,23 @@ init() {
       });
   }
 
-
   gotoPublished(node: Node) {
-    this.dialogRefPublished = this.dialog.open(PublishedNodesDialogComponent, {
-      data: node,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    });
-    this.dialogRefPublished.afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.init();
+    this.dialogRefPublished = this.dialog.open(PublishedItemsDialogComponent, {
+        height: '80vh',
+        width: '80vw',
+        disableClose: true,
+        data: {
+          itemName: node.name,
+          itemCode: node.code,
+          itemIcon: 'folder', // Icône pour les nœuds
+          titleKey: 'NODE_PUBLICATION_HISTORY',
+          displayTypeColumn: true,
+          publicationService: this.nodeService // Passage du service dans data
         }
+      });
+
+      this.dialogRefPublished.afterClosed().subscribe(() => {
+        this.init();
       });
   }
 
@@ -461,12 +491,8 @@ init() {
 
   export(element: Node, environmentCode: string) {
     this.nodeService.export(element.code, environmentCode).subscribe((data: any) => {
-
-      // Convertir explicitement en JSON string
-      const jsonString = JSON.stringify(data, null, 2); // null,2 pour indentation lisible
-
+      const jsonString = JSON.stringify(data, null, 2);
       const blob: Blob = new Blob([jsonString], {type: 'application/json'});
-
       const a = document.createElement('a');
       const objectUrl = URL.createObjectURL(blob);
       a.href = objectUrl;
@@ -475,7 +501,6 @@ init() {
       URL.revokeObjectURL(objectUrl);
     });
   }
-
 
   import(fileList: any) {
     if (fileList.files.length < 1) {
@@ -493,11 +518,9 @@ init() {
           this.toast.success(translation);
           this.init();
         });
-
       })
     }).bind(this);
   }
-
 
   haveChilds(element: any) {
     if (!element.hasOwnProperty("haveContent")) {
@@ -514,7 +537,6 @@ init() {
       });
     }
   }
-
 
   view(element: Node) {
     window.open(Env.EXPERT_CONTENT_API_URL + "/nodes/code/"
@@ -533,7 +555,7 @@ init() {
     if (!this.parentNode) {
       return [];
     }
-    return this.environments.filter((env: Node) => env.code !== this.parentNode.code);
+    return this.environments.filter((env: Node) => env.code !== this.parentNode!.code);
   }
 
   favorite(element: Node) {

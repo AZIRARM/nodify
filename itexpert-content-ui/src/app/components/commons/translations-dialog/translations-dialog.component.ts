@@ -144,4 +144,8 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   update(element: any) {
     this.current = element;
   }
+
+  isFormValid(): boolean {
+    return !!(this.current.language && this.current.key && this.current.value);
+  }
 }

@@ -1,6 +1,7 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, Inject, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Service } from "./Service";
+import { AuthenticationService } from './AuthenticationService';
 import { interval, fromEvent, merge, Subscription, timer, forkJoin, Observable, of } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import {Env} from "../../assets/configurations/environment";
@@ -14,12 +15,14 @@ export class LockService extends Service {
 
   private currentCode?: string;
 
+  private authenticationService: AuthenticationService = Inject(AuthenticationService);
+
   constructor(httpClient: HttpClient, private ngZone: NgZone) {
     super("locks", httpClient);
   }
 
   getLockInfoSocket(code: string, token: string): Observable<LockInfo> {
-    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/owner/?code=${code}&token=${token}`;
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/owner/?code=${code}&authorization=Bearer ${token}`;
 
     return new Observable<LockInfo>(observer => {
 
@@ -127,7 +130,9 @@ getAll(): Observable<any[]>{
   }
 
 handleAllLocks(): Observable<any> {
-    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/lock-contents`;
+    const token = this.authenticationService.getAccessToken();
+
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/lock-contents&authorization=Bearer ${token}`;
 
     return new Observable(observer => {
 

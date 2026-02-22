@@ -1,0 +1,233 @@
+/* ===== STYLES DE BASE ===== */
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== EN-TÊTE - Utilise la classe globale .dialog-header ===== */
+
+/* ===== CONTENU PRINCIPAL ===== */
+.dialog-content {
+  height: calc(90vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 4px 0 0;
+  margin: 0 10px;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+/* ===== FORMULAIRE ===== */
+.language-form {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  margin: 0 20px 16px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 20px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 56px !important;
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      padding: 12px 0 !important;
+    }
+
+    mat-icon {
+      color: #666;
+    }
+
+    mat-hint {
+      font-size: 0.75rem;
+      color: var(--table-text-secondary);
+    }
+  }
+}
+
+/* ===== PRÉVISUALISATION ICÔNE ===== */
+.icon-preview {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .preview-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--table-text-secondary);
+  }
+
+  .preview-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: contain;
+    border: 1px solid var(--table-border);
+    background: white;
+    padding: 2px;
+  }
+}
+
+/* ===== ACTIONS ===== */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: white;
+  border-top: 2px solid var(--table-border);
+  height: 80px;
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  flex-shrink: 0;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 40px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .cancel-btn {
+    color: #666;
+    border: 1px solid #ccc;
+    background: white;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #666;
+    }
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+
+  .save-btn {
+    background: var(--table-primary);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 4px rgba(63, 81, 181, 0.3);
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: white;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--table-primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(63, 81, 181, 0.4);
+    }
+
+    &:disabled {
+      background: #ccc;
+      color: #666;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* ===== THÈME SOMBRE ===== */
+:host-context(.dark-theme) {
+  .language-form {
+    background: #2d2d2d;
+    border-color: #404040;
+
+    .full-width {
+      ::ng-deep .mat-mdc-form-field-label {
+        color: #aaa;
+      }
+
+      mat-icon {
+        color: #aaa;
+      }
+
+      mat-hint {
+        color: #888;
+      }
+    }
+  }
+
+  .icon-preview {
+    background: #363636;
+    border-color: #404040;
+
+    .preview-label {
+      color: #aaa;
+    }
+
+    .preview-image {
+      background: #2d2d2d;
+      border-color: #404040;
+    }
+  }
+
+  .dialog-actions {
+    background: #2d2d2d;
+    border-top-color: #404040;
+
+    .cancel-btn {
+      border-color: #404040;
+      color: #aaa;
+      background: transparent;
+
+      mat-icon {
+        color: #aaa;
+      }
+
+      &:hover {
+        background-color: #404040;
+      }
+    }
+
+    .save-btn {
+      background: var(--table-primary-dark);
+
+      &:hover:not(:disabled) {
+        background: var(--table-accent-dark);
+      }
+    }
+  }
+}

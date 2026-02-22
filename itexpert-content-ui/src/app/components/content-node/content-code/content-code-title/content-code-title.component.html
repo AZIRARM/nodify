@@ -1,1 +1,16 @@
-<h2 class="title">{{ title | translate }}</h2>
+<!-- ===== EN-TÊTE AVEC FIL D'ARIANE ===== -->
+<div class="dialog-header">
+  <div class="header-content">
+    <div class="header-icon">
+      <mat-icon></mat-icon>
+    </div>
+    <div class="header-title">
+      <span class="title-main">
+        <ng-container>{{ title }}</ng-container>
+  </span>
+    </div>
+  </div>
+  <button mat-icon-button class="close-btn" (click)="closeDialog()" matTooltip="{{ 'CLOSE' | translate }}">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>

@@ -10,36 +10,30 @@ import {LoggerService} from "../../../services/LoggerService";
 import {UserAccessService} from "../../../services/UserAccessService";
 import {PluginFile} from "../../../modeles/PluginFile";
 import {PluginFileService} from "../../../services/PluginFileService";
-import {ContentFile} from "../../../modeles/ContentFile";
 
 @Component({
   selector: 'app-plugin-files-dialog',
   templateUrl: './plugin-files-dialog.component.html',
   styleUrl: './plugin-files-dialog.component.css'
 })
-export class PluginFilesDialogComponent implements  OnInit{
+export class PluginFilesDialogComponent implements OnInit {
   user: User;
-
   plugin: Plugin;
-
   displayedColumns: string[] = ['PluginName', 'FileName', 'Description', 'Actions'];
-
-  dataSource: MatTableDataSource<Plugin>;
-
+  dataSource: MatTableDataSource<PluginFile> = new MatTableDataSource<PluginFile>([]);
   dialogRefValidation: MatDialogRef<ValidationDialogComponent>;
-
   currentPluginFile: PluginFile;
+  selectedFileName: string = '';
 
   constructor(
-
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<PluginFilesDialogComponent>,
     private translate: TranslateService,
-              private toast: ToastrService,
-              private loggerService: LoggerService,
-              public userAccessService: UserAccessService,
-              public pluginFileService: PluginFileService,
-              private dialog: MatDialog
+    private toast: ToastrService,
+    private loggerService: LoggerService,
+    public userAccessService: UserAccessService,
+    public pluginFileService: PluginFileService,
+    private dialog: MatDialog
   ) {
     if (data) {
       this.plugin = data;
@@ -47,29 +41,41 @@ export class PluginFilesDialogComponent implements  OnInit{
   }
 
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
-
-    this.currentPluginFile = new PluginFile();
-    this.currentPluginFile.pluginId = this.plugin.id;
-    this.currentPluginFile.isEditable = true;
+    this.user = this.userAccessService.getCurrentUser();
+    this.resetCurrentPluginFile();
     this.init();
   }
 
+  resetCurrentPluginFile() {
+    this.currentPluginFile = new PluginFile();
+    this.currentPluginFile.pluginId = this.plugin?.id;
+    this.currentPluginFile.isEditable = true;
+    this.selectedFileName = '';
+  }
 
   init() {
+    if (!this.plugin?.id) return;
+
     this.pluginFileService.getPluginAssets(this.plugin.id).subscribe(
       (response: any) => {
-        //next() callback
-        this.dataSource = new MatTableDataSource(response);
+        this.dataSource.data = response || [];
       },
-      (error) => {                              //error() callback
+      (error) => {
+        console.error('Erreur chargement assets', error);
         this.toast.error('Request failed with error');
       });
   }
 
+  canSaveAsset(): boolean {
+    if (this.currentPluginFile?.id) {
+      // En mode édition, seul la description peut être modifiée
+      return true;
+    }
+    // En mode création, il faut un nom de fichier et des données
+    return !!(this.currentPluginFile?.fileName && this.currentPluginFile?.data);
+  }
 
   delete(pluginFile: PluginFile) {
-
     this.dialogRefValidation = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_PlUGIN_FILE_TITLE",
@@ -82,41 +88,37 @@ export class PluginFilesDialogComponent implements  OnInit{
     this.dialogRefValidation.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-
           this.pluginFileService.delete(pluginFile.id).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
                 this.init();
-              })
-
+              });
             },
             error => {
               this.translate.get("DELETE_ERROR").subscribe(trad => {
                 this.loggerService.error(trad);
-              })
+              });
             });
         }
       });
   }
 
-   save() {
+  save() {
     this.pluginFileService.save(this.currentPluginFile).subscribe(
       (response: any) => {
-
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
+          this.resetCurrentPluginFile();
           this.init();
-        })
-
+        });
       },
       error => {
         this.translate.get("SAVE_ERROR").subscribe(trad => {
           this.loggerService.error(trad);
-        })
+        });
       });
   }
-
 
   close(): void {
     this.dialogRef.close({validate: false});
@@ -127,21 +129,25 @@ export class PluginFilesDialogComponent implements  OnInit{
   }
 
   onFileChange(event: any) {
-    let file = event.target.files[0];
-    let reader = new FileReader();
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
 
     reader.onload = () => {
-      let base64Content: string = reader.result as string;
+      const base64Content: string = reader.result as string;
       this.currentPluginFile.fileName = file.name;
       this.currentPluginFile.data = base64Content;
-    }
+      this.selectedFileName = file.name;
+    };
 
-    if (file) {
-      reader.readAsDataURL(file);
-    }
+    reader.readAsDataURL(file);
   }
 
-  edit(element:PluginFile) {
-    this.currentPluginFile = element;
+  edit(element: PluginFile) {
+    // Créer une copie pour l'édition
+    this.currentPluginFile = {...element};
+    this.currentPluginFile.isEditable = true;
+    this.selectedFileName = element.fileName;
   }
 }

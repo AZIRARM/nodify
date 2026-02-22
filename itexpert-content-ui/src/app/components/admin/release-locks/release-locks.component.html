@@ -1,56 +1,119 @@
-<div mat-dialog-title class="dialog-title">
-  <mat-toolbar>
-    <span>{{ "LOCKED_RESOURCES" | translate }}</span>
-    <span class="spacer"></span>
-  </mat-toolbar>
-</div>
+<div class="release-locks-dialog">
 
-<div mat-dialog-content>
-  <p>
-    {{ "ADMIN_LOCK_MANAGEMENT" | translate }}
-  </p>
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>lock_open</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "LOCKED_RESOURCES" | translate }}</span>
+      </div>
+    </div>
+  </div>
 
-  @if(userAccessService.getCurrentUser()){
-    <table mat-table [dataSource]="dataSource">
+  <!-- Contenu -->
+  <div class="dialog-content">
 
-      <!-- Code -->
-      <ng-container matColumnDef="Code">
-        <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate }}</th>
-        <td mat-cell *matCellDef="let element">{{ element.resourceCode }}</td>
-      </ng-container>
+    <!-- Message d'information -->
+    <div class="info-banner">
+      <mat-icon>info</mat-icon>
+      <span>{{ "ADMIN_LOCK_MANAGEMENT" | translate }}</span>
+    </div>
 
-      <!-- Owner -->
-      <ng-container matColumnDef="Owner">
-        <th mat-header-cell *matHeaderCellDef> {{ "LOCK_OWNER" | translate }}</th>
-        <td mat-cell *matCellDef="let element">
-          {{ element.owner || ("NONE" | translate) }}
-        </td>
-      </ng-container>
+    <!-- Tableau des verrous -->
+    <div class="table-wrapper" *ngIf="userAccessService.getCurrentUser()">
+      <table mat-table [dataSource]="dataSource" class="locks-table">
 
-      <!-- Locked -->
-      <ng-container matColumnDef="Locked">
-        <th mat-header-cell *matHeaderCellDef> {{ "LOCKED" | translate }}</th>
-        <td mat-cell *matCellDef="let element">
-          <mat-icon *ngIf="element.locked" class="danger">lock</mat-icon>
-          <mat-icon *ngIf="!element.locked" class="primary">lock_open</mat-icon>
-        </td>
-      </ng-container>
+        <!-- Colonne Code -->
+        <ng-container matColumnDef="Code">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">code</mat-icon>
+              <span>{{ "CODE" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="code-cell">
+            <span class="code-text">{{ element.resourceCode }}</span>
+          </td>
+        </ng-container>
 
-      <!-- Actions -->
-      <ng-container matColumnDef="Actions">
-        <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
-        <td mat-cell *matCellDef="let element">
-          @if(userAccessService.isAdmin() && element.locked){
-            <mat-icon class="icon-display warn" (click)="unlock(element)" inline
-                      matTooltip="{{ 'UNLOCK' | translate }}">lock_open
-            </mat-icon>
-          }
-        </td>
-      </ng-container>
+        <!-- Colonne Owner -->
+        <ng-container matColumnDef="Owner">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">person</mat-icon>
+              <span>{{ "LOCK_OWNER" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="owner-cell">
+            <span class="owner-badge" [class.no-owner]="!element.owner">
+              {{ element.owner || ("NONE" | translate) }}
+            </span>
+          </td>
+        </ng-container>
 
-      <!-- Header & Rows -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-  }
+        <!-- Colonne Locked -->
+        <ng-container matColumnDef="Locked">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">lock</mat-icon>
+              <span>{{ "LOCKED" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="status-cell">
+            <div class="status-indicator">
+              <mat-icon
+                *ngIf="element.locked"
+                class="status-icon locked"
+                matTooltip="{{ 'LOCKED' | translate }}">
+                lock
+              </mat-icon>
+              <mat-icon
+                *ngIf="!element.locked"
+                class="status-icon unlocked"
+                matTooltip="{{ 'UNLOCKED' | translate }}">
+                lock_open
+              </mat-icon>
+              <span class="status-text" *ngIf="element.locked">{{ "LOCKED" | translate }}</span>
+              <span class="status-text" *ngIf="!element.locked">{{ "UNLOCKED" | translate }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Actions -->
+        <ng-container matColumnDef="Actions">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-content">
+              <mat-icon class="header-icon">settings</mat-icon>
+              <span>{{ "ACTIONS" | translate }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="actions-cell">
+              @if(userAccessService.isAdmin() && element.locked) {
+              <button
+                mat-icon-button
+                class="action-icon-btn unlock-btn"
+                (click)="unlock(element)"
+                matTooltip="{{ 'UNLOCK' | translate }}">
+                <mat-icon class="text-warning">lock_open</mat-icon>
+              </button>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="lock-row"></tr>
+      </table>
+
+      <!-- Message si aucune donnée -->
+      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+        <mat-icon>lock_open</mat-icon>
+        <p>{{ "NO_LOCKS" | translate }}</p>
+      </div>
+    </div>
+
+  </div>
 </div>

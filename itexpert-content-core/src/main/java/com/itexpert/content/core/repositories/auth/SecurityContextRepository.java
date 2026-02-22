@@ -12,7 +12,6 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoSink;
 
 @Slf4j
 @AllArgsConstructor
@@ -28,34 +27,45 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
     @Override
     public Mono<SecurityContext> load(ServerWebExchange swe) {
-        String authHeader = swe.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        String token = extractToken(swe);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.debug("Pas de token Bearer trouvé dans la requête");
+        if (token == null) {
+            log.debug("No Bearer token found in request");
             return Mono.empty();
         }
 
-        String authToken = authHeader.substring(7);
-        log.debug("Token extrait: {}", authToken.substring(0, Math.min(authToken.length(), 20)) + "...");
+        log.debug("Token extracted: {}...", token.substring(0, Math.min(token.length(), 20)));
 
-        Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
+        Authentication auth = new UsernamePasswordAuthenticationToken(token, token);
 
         return this.authenticationManager.authenticate(auth)
-                .doOnNext(authentication -> {
-                    log.info("Authentification réussie pour: {}", authentication.getPrincipal());
-                    log.debug("Autorités: {}", authentication.getAuthorities());
+                .<SecurityContext>map(authentication -> {
+                    log.info("Authentication successful for: {}", authentication.getPrincipal());
+                    return new SecurityContextImpl(authentication);
                 })
-                .map(authentication -> {
-                    SecurityContext context = new SecurityContextImpl(authentication);
-                    log.debug("SecurityContext créé avec succès");
-                    return context;
-                })
-                .doOnError(error -> {
-                    log.error("Erreur lors de l'authentification: {}", error.getMessage());
-                })
+                .doOnError(error ->
+                        log.error("Authentication error: {}", error.getMessage())
+                )
                 .switchIfEmpty(Mono.defer(() -> {
-                    log.warn("Authentification échouée - aucun utilisateur authentifié");
+                    log.warn("Authentication failed - no authenticated user");
                     return Mono.empty();
                 }));
+    }
+
+    private String extractToken(ServerWebExchange swe) {
+        String authHeader = swe.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        String urlToken = swe.getRequest().getQueryParams().getFirst("authorization");
+        if (urlToken != null) {
+            if (urlToken.startsWith("Bearer ")) {
+                return urlToken.substring(7);
+            }
+            return urlToken;
+        }
+
+        return null;
     }
 }

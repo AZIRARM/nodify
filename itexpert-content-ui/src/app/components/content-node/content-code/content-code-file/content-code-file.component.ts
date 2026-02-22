@@ -1,5 +1,6 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ContentNode} from "../../../../modeles/ContentNode";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
+import { ContentNode } from '../../../../modeles/ContentNode';
 
 @Component({
   selector: 'app-content-code-file',
@@ -8,14 +9,14 @@ import {ContentNode} from "../../../../modeles/ContentNode";
 })
 export class ContentCodeFileComponent {
 
-  @Output()
-  @Input()
-  contentNode: ContentNode;
+  @Input() contentNode: ContentNode;
 
+  @Input() dialogRef: MatDialogRef<any>;
 
-  @Output() onFileChange = new EventEmitter<void>();
+  @Output() onFileChange = new EventEmitter<any>();
 
   onFileChangeFactory($event: any): void {
-    this.onFileChange.next($event);
+    this.onFileChange.emit($event);
   }
+
 }

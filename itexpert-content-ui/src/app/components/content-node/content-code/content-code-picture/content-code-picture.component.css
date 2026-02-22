@@ -1,0 +1,145 @@
+.content-code-picture {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Titre seul - marges réduites */
+.title-row {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Section des informations - marges réduites */
+.infos-section {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Conteneur d'upload d'image */
+.picture-upload-container {
+  background: #f8f9fa;
+  border: 2px dashed #ddd;
+  border-radius: 6px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-height: 200px;
+}
+
+.hidden-input {
+  display: none;
+}
+
+/* Bouton de sélection */
+.picture-select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: #5c6bc0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(63, 81, 181, 0.3);
+  }
+}
+
+/* Prévisualisation */
+.picture-preview {
+  width: 100%;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 400px;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+
+  mat-icon {
+    color: #3f51b5;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .file-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+}
+
+.image-container {
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  background: #fafafa;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Thème sombre (optionnel) */
+:host-context(.dark-theme) {
+  .picture-upload-container {
+    background: #2d2d2d;
+    border-color: #404040;
+  }
+
+  .picture-preview {
+    background: #363636;
+    border-color: #404040;
+  }
+
+  .preview-header {
+    background: #2d2d2d;
+    border-bottom-color: #404040;
+
+    .file-name {
+      color: #e0e0e0;
+    }
+  }
+
+  .image-container {
+    background: #2d2d2d;
+  }
+}

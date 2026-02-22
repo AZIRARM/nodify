@@ -7,6 +7,7 @@ import com.itexpert.content.core.models.LockInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
@@ -25,12 +26,17 @@ public class LockContentsSocketHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
-        log.info("WebSocket connection established for lock contents");
+        String token = WebSocketAuthUtil.extractToken(session.getHandshakeInfo().getUri());
+        if (token == null || !WebSocketAuthUtil.authenticate(session, token)) {
+            log.warn("WebSocket connection rejected - authentication failed");
+            return session.close(CloseStatus.POLICY_VIOLATION);
+        }
 
-        // Accumuler tous les locks dans une liste
+        log.info("WebSocket connection established for lock contents - session: {}", session.getId());
+
         Flux<List<LockInfo>> locksListFlux = Flux.interval(Duration.ofSeconds(2))
                 .flatMap(tick -> redisHandler.getAllLocks()
-                        .collectList())  // Collecter en liste
+                        .collectList())
                 .doOnError(error -> log.error("Error retrieving locks from Redis", error))
                 .retry(3)
                 .onErrorResume(error -> Flux.empty());
@@ -38,11 +44,10 @@ public class LockContentsSocketHandler implements WebSocketHandler {
         Flux<String> jsonFlux = locksListFlux
                 .map(locksList -> {
                     try {
-                        // Sérialiser la LISTE complète
                         return objectMapper.writeValueAsString(locksList);
                     } catch (JsonProcessingException e) {
                         log.error("Error serializing locks list to JSON", e);
-                        return "[]"; // Retourner un tableau vide
+                        return "[]";
                     }
                 });
 

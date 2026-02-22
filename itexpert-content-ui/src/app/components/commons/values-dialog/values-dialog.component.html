@@ -1,59 +1,152 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "VALUES" | translate }}</span>
-  </mat-toolbar>
-</p>
-<div fxLayout="row" *ngIf="userAccessService.canEdit()">
-  <div style="width: 20%; margin-right: 5px">
-    <label for="keyInput">{{ "KEY" | translate }}</label>
-    <input id="keyInput" type="text" placeholder="{{ 'KEY' | translate}}" [(ngModel)]="key" required>
+<div class="values-dialog">
+
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>attach_money</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "VALUES" | translate }}</span>
+      </div>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <div style="width: 40%; margin-right: 5px">
-    <label for="valueInput">{{ "VALUE" | translate }}</label>
-    <input id="valueInput" type="text" placeholder="{{ 'VALUE' | translate}}" [(ngModel)]="value" required>
+  <!-- Contenu -->
+  <div mat-dialog-content class="dialog-content">
+
+    <!-- Formulaire d'ajout -->
+    <div class="form-section" *ngIf="userAccessService.canEdit()">
+      <h3 class="section-title">
+        <mat-icon>add_circle</mat-icon>
+        {{ 'ADD_VALUE' | translate }}
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field key-field">
+          <mat-label>{{ "KEY" | translate }}</mat-label>
+          <input
+            matInput
+            [(ngModel)]="key"
+            placeholder="{{ 'KEY' | translate }}"
+            required
+          >
+          <mat-icon matSuffix>vpn_key</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field value-field">
+          <mat-label>{{ "VALUE" | translate }}</mat-label>
+          <input
+            matInput
+            [(ngModel)]="value"
+            placeholder="{{ 'VALUE' | translate }}"
+            required
+          >
+          <mat-icon matSuffix>text_fields</mat-icon>
+        </mat-form-field>
+
+        <button
+          mat-flat-button
+          class="action-btn"
+          [disabled]="!key || !value"
+          (click)="add()">
+          <mat-icon>add</mat-icon>
+          <span>{{ 'ADD' | translate }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tableau des valeurs -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>list</mat-icon>
+        {{ 'VALUES_LIST' | translate }}
+      </h3>
+
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" class="values-table">
+
+          <ng-container matColumnDef="Key">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-content">
+                <mat-icon>vpn_key</mat-icon>
+                <span>{{ "KEY" | translate }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element" class="key-cell">
+              <span class="key-text" [title]="element.key">{{ element.key }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="Value">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-content">
+                <mat-icon>text_fields</mat-icon>
+                <span>{{ "VALUE" | translate }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element" class="value-cell">
+              <span class="value-text" [title]="element.value">{{ element.value }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="Actions">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-content">
+                <mat-icon>settings</mat-icon>
+                <span>{{ "ACTIONS" | translate }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <div class="actions-cell">
+                <button
+                  mat-icon-button
+                  class="edit-btn"
+                  (click)="edit(element)"
+                  matTooltip="{{ 'EDIT' | translate }}"
+                  *ngIf="userAccessService.canEdit()"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  class="delete-btn"
+                  (click)="remove(element.key)"
+                  matTooltip="{{ 'DELETE' | translate }}"
+                  *ngIf="userAccessService.canEdit()"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              [class.granted-row]="row.IsGranted"
+              class="table-row"></tr>
+        </table>
+      </div>
+    </div>
   </div>
 
-  <button *ngIf="key && value" (click)="add()">{{'UPDATE_VALUE' | translate}}</button>
-
+  <!-- Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button class="cancel-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+      {{ "CANCEL" | translate }}
+    </button>
+    <button
+      mat-flat-button
+      class="save-btn"
+      (click)="validate()"
+      *ngIf="userAccessService.canEdit()"
+    >
+      <mat-icon>{{ editingItem ? 'update' : 'add' }}</mat-icon>
+      <span>{{ (editingItem ? 'UPDATE' : 'ADD') | translate }}</span>
+    </button>
+  </div>
 </div>
-
-<table mat-table [dataSource]="dataSource" style="margin-bottom: 50px">
-
-
-  <ng-container matColumnDef="Key">
-    <th mat-header-cell *matHeaderCellDef> {{ "CODE" | translate }}</th>
-    <td mat-cell *matCellDef="let element">
-      <span title='{{element.key | translate}}'>{{ element.key }} </span>
-    </td>
-  </ng-container>
-
-  <ng-container matColumnDef="Value">
-    <th mat-header-cell *matHeaderCellDef> {{ "VERSION" | translate }}</th>
-    <td mat-cell *matCellDef="let element">
-      <span title='{{element.value | translate}}'>{{ element.value }} </span>
-    </td>
-  </ng-container>
-
-  <ng-container matColumnDef="Actions">
-    <th mat-header-cell *matHeaderCellDef> {{ "ACTIONS" | translate }}</th>
-    <td mat-cell *matCellDef="let element">
-      <mat-icon class="icon-display" *ngIf="userAccessService.canEdit()" inline matTooltip="{{ 'DELETE' | translate}}" (click)="edit(element)">
-        edit
-      </mat-icon>
-      <mat-icon class="icon-display danger" *ngIf="userAccessService.canEdit()" inline matTooltip="{{ 'DELETE' | translate}}" (click)="remove(element.key)">
-        delete_forever
-      </mat-icon>
-    </td>
-  </ng-container>
-
-  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true;" class="mat-header"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'make-gold': row.IsGranted }"
-      class="mat-row"></tr>
-</table>
-
-<div>
-  <button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-  <button (click)="validate()"  *ngIf="userAccessService.canEdit()">{{ "SAVE" | translate }}</button>
-</div>
-

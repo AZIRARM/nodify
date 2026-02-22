@@ -1,17 +1,74 @@
-.footer {
-  position: fixed;
-  display: block;
-  height: 80px;
-  width: 100%;
-  background-color: black;
-  color: var(--primary);
-  text-align: center;
-}
-.footer table{
-  margin-left: auto;
-  margin-right: auto;
+.app-footer {
+  background-color: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+  padding: 16px 24px;
+  font-size: 0.85rem;
+  color: #666;
 }
 
-.footer img {
-  max-width: 60px;
+.app-footer .footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.app-footer .footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-footer .footer-logo-img {
+  height: 32px;
+  width: auto;
+  opacity: 0.8;
+}
+
+.app-footer .footer-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.app-footer .footer-title {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.app-footer .footer-subtitle {
+  font-size: 0.8rem;
+  color: #777;
+  max-width: 350px;
+}
+
+.app-footer .footer-copyright {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Style pour le thème sombre */
+.dark-theme .app-footer {
+  background-color: #2d2d2d;
+  border-top-color: #404040;
+  color: #aaa;
+}
+
+.dark-theme .app-footer .footer-logo-img {
+  filter: brightness(0.8) invert(0.2);
+}
+
+.dark-theme .app-footer .footer-title {
+  color: #ddd;
+}
+
+.dark-theme .app-footer .footer-subtitle {
+  color: #999;
+}
+
+.dark-theme .app-footer .footer-copyright {
+  color: #888;
 }

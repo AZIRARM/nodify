@@ -3,6 +3,7 @@ import {ContentNode} from "../../../../modeles/ContentNode";
 import {ContentNodeService} from "../../../../services/ContentNodeService";
 import {StatusEnum} from "../../../../modeles/StatusEnum";
 import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
+import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-content-code-html',
@@ -14,9 +15,15 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
   @Output()
   @Input()
   contentNode!: ContentNode;
+
+  @Input()
+  @Output()
+  dialogRef: MatDialogRef<any>;
+
   contentFilled!: string;
 
   code: boolean = true;
+  isFullscreen: boolean = false;
 
   constructor(private contentService: ContentNodeService) {
 
@@ -52,5 +59,15 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
           console.error('Request failed with error');
         });
     }
+  }
+
+  toggleFullscreen() {
+    this.isFullscreen = !this.isFullscreen;
+
+    setTimeout(() => {
+      if (this.codeMirrorComponent?.codeMirror) {
+        this.codeMirrorComponent.codeMirror.refresh();
+      }
+    }, 50);
   }
 }

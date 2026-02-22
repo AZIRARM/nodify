@@ -9,6 +9,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 export class ValidationDialogComponent {
   message: string;
   title: string;
+  isHtml: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<ValidationDialogComponent>,
@@ -16,6 +17,7 @@ export class ValidationDialogComponent {
   ) {
     this.message = content.message;
     this.title = content.title;
+    this.isHtml = content.title ? content.title  : false ;
     console.log(this.message);
   }
 

@@ -14,18 +14,17 @@ import {
   NodeRulesConditionsDialogComponent
 } from "../../commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component";
 import {ValuesDialogComponent} from "../../commons/values-dialog/values-dialog.component";
-import {NodeAccessRolesDialogComponent} from "../../node/node-access-roles-dialg/node-access-roles-dialog.component";
 import {StatusEnum} from "../../../modeles/StatusEnum";
 import {
-  PublishedContentsNodesDialogComponent
-} from "../published-contents-nodes-dialog/published-contents-nodes-dialog.component";
+  PublishedItemsDialogComponent
+} from "../../commons/published-items-dialog/published-items-dialog.component";
 import {TranslationsDialogComponent} from "../../commons/translations-dialog/translations-dialog.component";
 import {UserService} from "../../../services/UserService";
 import {UserAccessService} from "../../../services/UserAccessService";
 import {Env} from "../../../../assets/configurations/environment";
 import {
-  DeletedContentsNodesDialogComponent
-} from "../deleted-contents-nodes-dialog/deleted-contents-nodes-dialog.component";
+  DeletedItemsDialogComponent
+} from "../../commons/deleted-items-dialog/deleted-items-dialog.component";
 import {NodeService} from "../../../services/NodeService";
 import {ContentDatasComponent} from "../content-datas/content-datas.component";
 import {DataService} from "../../../services/DataService";
@@ -59,9 +58,8 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   dialogRefValues: MatDialogRef<ValuesDialogComponent>;
   dialogRefRules: MatDialogRef<NodeRulesConditionsDialogComponent>;
-  dialogRefAccessRoles: MatDialogRef<NodeAccessRolesDialogComponent>;
-  dialogRefDeleteds: MatDialogRef<DeletedContentsNodesDialogComponent>;
-  dialogRefPublished: MatDialogRef<PublishedContentsNodesDialogComponent>;
+  dialogRefDeleteds: MatDialogRef<DeletedItemsDialogComponent>;
+  dialogRefPublished: MatDialogRef<PublishedItemsDialogComponent>;
   dialogRefTranslations: MatDialogRef<TranslationsDialogComponent>;
   dialogRefDelete: MatDialogRef<ValidationDialogComponent>;
   dialogRefDatas: MatDialogRef<ContentDatasComponent>;
@@ -309,19 +307,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       });
   }
 
-  roles(content: ContentNode) {
-    this.dialogRefAccessRoles = this.dialog.open(NodeAccessRolesDialogComponent, {
-      data: content,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    });
-    this.dialogRefAccessRoles.afterClosed()
-      .subscribe(result => {
-        this.save(result.data);
-      });
-  }
-
   private save(content: ContentNode) {
 
     content.modifiedBy = this.user!.id;
@@ -349,26 +334,31 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   getPublishedIcon(element: any) {
     if (element.publicationStatus === 'PUBLISHED')
-      return "primary";
+      return "green";
     else if (element.publicationStatus === 'SNAPSHOT')
-      return "warn";
+      return "yellow";
     else
-      return "danger";
+      return "red";
   }
 
 
   gotoPublished(content: ContentNode) {
-    this.dialogRefPublished = this.dialog.open(PublishedContentsNodesDialogComponent, {
-      data: content,
+    this.dialogRefPublished = this.dialog.open(PublishedItemsDialogComponent, {
       height: '80vh',
       width: '80vw',
-      disableClose: true
-    });
-    this.dialogRefPublished.afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.init();
-        }
+      disableClose: true,
+      data: {
+          itemName: content.type,
+          itemCode: content.code,
+          itemIcon: 'perm_media', // Icône pour les contenus
+          titleKey: 'CONTENT_PUBLICATION_HISTORY',
+          displayTypeColumn: false,
+          publicationService: this.contentNodeService // Passage du service dans data
+       }
+      });
+
+      this.dialogRefPublished.afterClosed().subscribe(() => {
+        this.init();
       });
   }
 
@@ -441,11 +431,17 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
 
   deleteds() {
-    this.dialogRefDeleteds = this.dialog.open(DeletedContentsNodesDialogComponent, {
+    this.dialogRefDeleteds = this.dialog.open(DeletedItemsDialogComponent, {
         height: '80vh',
         width: '80vw',
         disableClose: true,
-        data: this.node
+       data: {
+         parentNode: this.node, // ou this.contentNode
+         titleKey: 'DELETED_CONTENTS',
+         icon: 'delete',
+         displayTypeColumn: false,
+         deleteService: this.contentNodeService // Passer le service
+       }
       }
     );
     this.dialogRefDeleteds.afterClosed()

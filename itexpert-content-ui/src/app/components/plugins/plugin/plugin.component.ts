@@ -37,25 +37,24 @@ export class PluginComponent implements OnInit {
               public pluginService: PluginService,
               private dialog: MatDialog
   ) {
+    this.dataSource = new MatTableDataSource<Plugin>([]);
   }
 
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
+    this.user = this.userAccessService.getCurrentUser();
     this.init();
   }
-
 
   init() {
     this.pluginService.getNotDeleted().subscribe(
       (response: any) => {
         //next() callback
-        this.dataSource = new MatTableDataSource(response);
+        this.dataSource.data = response || [];
       },
       (error) => {                              //error() callback
         this.toast.error('Request failed with error');
       });
   }
-
 
   status(plugin: Plugin) {
     if (!plugin.enabled) {
@@ -80,6 +79,10 @@ export class PluginComponent implements OnInit {
     this.save(plugin);
   }
 
+  // ✅ Méthode ajoutée pour le tooltip
+  getStatusTooltip(element: Plugin): string {
+    return element.enabled ? "DISABLE" : "ENABLE";
+  }
 
   create() {
     this.update(new Plugin());
@@ -98,15 +101,13 @@ export class PluginComponent implements OnInit {
     });
     this.dialogRefPlugin.afterClosed()
       .subscribe((data: any) => {
-        if (data.validate) {
+        if (data && data.validate) {
           this.save(data.plugin);
         }
       });
   }
 
-
   delete(plugin: Plugin) {
-
     this.dialogRefValidation = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_PlUGIN_TITLE",
@@ -119,19 +120,17 @@ export class PluginComponent implements OnInit {
     this.dialogRefValidation.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-
           this.pluginService.delete(plugin.id).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
                 this.init();
-              })
-
+              });
             },
             error => {
               this.translate.get("DELETE_ERROR").subscribe(trad => {
                 this.loggerService.error(trad);
-              })
+              });
             });
         }
       });
@@ -140,20 +139,17 @@ export class PluginComponent implements OnInit {
   private save(plugin: Plugin) {
     this.pluginService.save(plugin).subscribe(
       (response: any) => {
-
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
           this.init();
-        })
-
+        });
       },
       error => {
         this.translate.get("SAVE_ERROR").subscribe(trad => {
           this.loggerService.error(trad);
-        })
+        });
       });
   }
-
 
   getPublishedIcon(element: Plugin) {
     if (element.enabled)
@@ -161,7 +157,6 @@ export class PluginComponent implements OnInit {
     else
       return "danger";
   }
-
 
   deleteds() {
     this.dialogRefDeleted = this.dialog.open(DeletedPluginsDialogComponent, {
@@ -192,7 +187,7 @@ export class PluginComponent implements OnInit {
 
   export(element: Plugin) {
     this.pluginService.export(element.id).subscribe((data: any) => {
-      const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2); // Beautifié avec indentation
+      const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
       const blob: Blob = new Blob([jsonString], { type: 'application/json' });
       const a = document.createElement('a');
       const objectUrl = URL.createObjectURL(blob);
@@ -202,8 +197,6 @@ export class PluginComponent implements OnInit {
       URL.revokeObjectURL(objectUrl);
     });
   }
-
-
 
   import(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -226,12 +219,10 @@ export class PluginComponent implements OnInit {
               console.error('Import failed:', err);
             }
           });
-
         } catch (error) {
           console.error('Invalid JSON file:', error);
         }
       };
-
       reader.readAsText(file);
     } else {
       console.warn('No file selected or input is invalid.');

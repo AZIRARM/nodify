@@ -1,55 +1,134 @@
-<p>
-  <mat-toolbar>
-    <span> {{ "USER" | translate }}</span>
-  </mat-toolbar>
-</p>
-<div mat-dialog-content *ngIf="user">
+<div class="user-dialog">
 
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "USER_FIRSTNAME" | translate }}</mat-label>
-      <input matInput [(ngModel)]="user!.firstname" placeholder="{{ 'USER_FIRSTNAME' | translate }}" required>
-    </mat-form-field>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "USER_LASTNAME" | translate }}</mat-label>
-      <input matInput [(ngModel)]="user!.lastname"placeholder="{{ 'USER_LASTNAME' | translate }}"  required>
-    </mat-form-field>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "USER_EMAIL" | translate }}</mat-label>
-      <input matInput [(ngModel)]="user!.email" placeholder="{{ 'USER_EMAIL' | translate }}" [disabled]="!userAccessService.isAdmin()" required>
-    </mat-form-field>
-  </p>
-  <p>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
-      <input matInput type="password" [(ngModel)]="user!.password" placeholder="{{ 'USER_PASSWORD' | translate }}" required>
-    </mat-form-field>
-  </p>
+  <!-- En-tête -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>person</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ "USER" | translate }}</span>
+      </div>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-  <p>
-    <mat-form-field>
-      <mat-label>{{ "USER_ROLES" | translate }}</mat-label>
-      <mat-select [(ngModel)]="selectedRole" name="selectRoles"  [disabled]="connectedUserIsAdmin() && userIsAdmin()" required>
-        <mat-option *ngFor="let role of roles" [value]="role.code">{{ role.code }}</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </p>
+  <!-- Contenu -->
+  <div mat-dialog-content class="dialog-content" *ngIf="user">
 
-  <p>
-    <mat-form-field>
-      <mat-label>{{ "PROJECTS" | translate }}</mat-label>
-      <mat-select [(ngModel)]="user.projects" name="selectProjects"  [disabled]="connectedUserIsAdmin() && userIsAdmin()" required multiple>
-        <mat-option *ngFor="let project of projects" [value]="project.code">{{project.name}}</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </p>
-</div>
+    <div class="user-form">
 
-<div mat-dialog-actions>
-  <button mat-button (click)="cancel()">{{ "CANCEL" | translate }}</button>
-  <button mat-button [disabled]="!user || !user.email  || !user.roles|| user.roles.length <=0 " (click)="validate()">{{ "SAVE" | translate }}</button>
+      <!-- Prénom -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ "USER_FIRSTNAME" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="user.firstname"
+          placeholder="{{ 'USER_FIRSTNAME' | translate }}"
+          required>
+        <mat-icon matSuffix>badge</mat-icon>
+      </mat-form-field>
+
+      <!-- Nom -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ "USER_LASTNAME" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="user.lastname"
+          placeholder="{{ 'USER_LASTNAME' | translate }}"
+          required>
+        <mat-icon matSuffix>badge</mat-icon>
+      </mat-form-field>
+
+      <!-- Email -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ "USER_EMAIL" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="user.email"
+          placeholder="{{ 'USER_EMAIL' | translate }}"
+          [disabled]="!userAccessService.isAdmin()"
+          required>
+        <mat-icon matSuffix>email</mat-icon>
+      </mat-form-field>
+
+      <!-- Mot de passe (uniquement pour création) -->
+      <mat-form-field appearance="outline" class="full-width" *ngIf="!user.id">
+        <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
+        <input
+          matInput
+          type="password"
+          [(ngModel)]="user.password"
+          placeholder="{{ 'USER_PASSWORD' | translate }}"
+          required>
+        <mat-icon matSuffix>lock</mat-icon>
+      </mat-form-field>
+
+      <!-- Rôles -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ "USER_ROLES" | translate }}</mat-label>
+        <mat-select
+          [(ngModel)]="selectedRole"
+          name="selectRoles"
+          [disabled]="connectedUserIsAdmin() && userIsAdmin()"
+          required>
+          <mat-option *ngFor="let role of roles" [value]="role.code">
+            <div class="option-content">
+              <span class="role-badge">{{ role.code }}</span>
+            </div>
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>security</mat-icon>
+      </mat-form-field>
+
+      <!-- Projets -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ "PROJECTS" | translate }}</mat-label>
+        <mat-select
+          [(ngModel)]="user.projects"
+          name="selectProjects"
+          [disabled]="connectedUserIsAdmin() && userIsAdmin()"
+          multiple>
+          <mat-select-trigger>
+            {{ getSelectedProjectsDisplay() }}
+          </mat-select-trigger>
+          <mat-option *ngFor="let project of projects" [value]="project.code">
+            <div class="option-content">
+              <span class="project-name">{{ project.name }}</span>
+              <span class="project-code">({{ project.code }})</span>
+            </div>
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>folder</mat-icon>
+      </mat-form-field>
+
+      <!-- Message d'information pour les admins -->
+      <div class="info-message" *ngIf="connectedUserIsAdmin() && userIsAdmin()">
+        <mat-icon>info</mat-icon>
+        <span>{{ "ADMIN_USER_INFO" | translate }}</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button
+      mat-stroked-button
+      class="cancel-btn"
+      (click)="cancel()">
+      <mat-icon>close</mat-icon>
+      {{ "CANCEL" | translate }}
+    </button>
+    <button
+      mat-flat-button
+      class="save-btn"
+      (click)="validate()"
+      [disabled]="!isFormValid()">
+      <mat-icon>save</mat-icon>
+      {{ "SAVE" | translate }}
+    </button>
+  </div>
 </div>

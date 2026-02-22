@@ -8,7 +8,6 @@ import { LoggerService } from 'src/app/services/LoggerService';
 import { UserAccessService } from 'src/app/services/UserAccessService';
 import { NodeService } from 'src/app/services/NodeService';
 import { ContentNodeService } from 'src/app/services/ContentNodeService';
-import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-release-locks',
@@ -36,29 +35,29 @@ export class ReleaseLocksComponent implements OnInit {
     this.loadLocks();
   }
 
-loadLocks(): void {
-  console.log("loadLocks appelé");
+  loadLocks(): void {
+    console.log("loadLocks appelé");
 
-  this.lockService.handleAllLocks().subscribe({
-    next: (locks: any) => {
-      console.log("Données reçues:", locks);
+    this.lockService.handleAllLocks().subscribe({
+      next: (locks: any) => {
+        console.log("Données reçues:", locks);
 
-      if (Array.isArray(locks)) {
-        // SOLUTION : Créer une NOUVELLE instance du MatTableDataSource
-        this.dataSource = new MatTableDataSource<any>(locks);
-
-        // Forcer la détection de changements
-        this.cdRef.detectChanges();
-
-        console.log("dataSource mis à jour:", this.dataSource.data);
+        if (Array.isArray(locks)) {
+          this.dataSource.data = locks;
+          this.cdRef.detectChanges();
+          console.log("dataSource mis à jour:", this.dataSource.data);
+        } else if (locks && Array.isArray(locks.data)) {
+          // Si la réponse est un objet avec une propriété 'data'
+          this.dataSource.data = locks.data;
+          this.cdRef.detectChanges();
+        }
+      },
+      error: (err: any) => {
+        console.error("Erreur WebSocket:", err);
+        this.toast.error(this.translate.instant("LOCKS_LOAD_FAIL"));
       }
-    },
-    error: (err: any) => {
-      console.error("Erreur WebSocket:", err);
-      this.toast.error(this.translate.instant("LOCKS_LOAD_FAIL"));
-    }
-  });
-}
+    });
+  }
 
   unlock(element: any) {
     this.lockService.adminRelease(element.resourceCode).subscribe({
@@ -71,7 +70,8 @@ loadLocks(): void {
           this.toast.error(this.translate.instant("LOCK_RELEASED_FAIL"));
         }
       },
-      error: (err:any) => {
+      error: (err: any) => {
+        console.error("Erreur unlock:", err);
         this.toast.error(this.translate.instant("LOCK_RELEASED_FAIL"));
       }
     });
