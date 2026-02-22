@@ -36,7 +36,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 128px); // 64px header + 64px footer
+  min-height: calc(100vh - 128px);
 
   .content-wrapper {
     flex: 1;
@@ -45,7 +45,6 @@ body {
   }
 }
 
-// Variables de thème (à adapter selon votre configuration)
 :root {
   --primary-color: #3f51b5;
   --background-color: #f5f5f5;
