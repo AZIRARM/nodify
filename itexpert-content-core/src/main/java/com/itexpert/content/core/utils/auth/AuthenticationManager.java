@@ -25,65 +25,32 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     @Override
     @SuppressWarnings("unchecked")
     public Mono<Authentication> authenticate(Authentication authentication) {
-
-        // Étape 1: Récupérer le token
         String authToken = authentication.getCredentials().toString();
-        log.info("Tentative d'authentification avec le token");
 
-        // Étape 2: Valider le token
-        boolean isValid = jwtUtil.validateToken(authToken);
-
-        if (!isValid) {
-            log.warn("Token invalide");
+        if (!jwtUtil.validateToken(authToken)) {
+            log.debug("Invalid token");
             return Mono.empty();
         }
 
-        // Étape 3: Extraire les informations du token
         Claims claims = jwtUtil.getAllClaimsFromToken(authToken);
         String username = jwtUtil.getUsernameFromToken(authToken);
-
-        // Étape 4: Récupérer la liste des rôles depuis le token
         List<String> rolesFromToken = claims.get("role", List.class);
-        log.info("Rôles récupérés du token pour {}: {}", username, rolesFromToken);
 
-        // Étape 5: Créer la liste des autorités (rôles)
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-        // Parcourir chaque rôle et l'ajouter aux autorités
         for (String role : rolesFromToken) {
-
-            // Vérifier quel est le rôle et l'ajouter en conséquence
-            if ("ADMIN".equals(role)) {
-                log.debug("Ajout du rôle ADMIN pour {}", username);
-                authorities.add(new SimpleGrantedAuthority("ADMIN"));
-            } else if ("EDITOR".equals(role)) {
-                log.debug("Ajout du rôle EDITOR pour {}", username);
-                authorities.add(new SimpleGrantedAuthority("EDITOR"));
-            } else if ("READER".equals(role)) {
-                log.debug("Ajout du rôle READER pour {}", username);
-                authorities.add(new SimpleGrantedAuthority("READER"));
-            } else {
-                log.warn("Rôle inconnu ignoré: {} pour {}", role, username);
+            if ("ADMIN".equals(role) || "EDITOR".equals(role) || "READER".equals(role)) {
+                authorities.add(new SimpleGrantedAuthority(role));
             }
         }
 
-        // Étape 6: Vérifier qu'au moins un rôle a été ajouté
         if (authorities.isEmpty()) {
-            log.error("Aucun rôle valide trouvé pour {}", username);
+            log.debug("No valid roles found for {}", username);
             return Mono.empty();
         }
 
-        // Étape 7: Afficher les rôles finaux
-        log.info("Authentification réussie pour {} avec les rôles: {}",
-                username, authorities);
+        log.debug("Authentication successful for {} with roles: {}", username, authorities);
 
-        // Étape 8: Créer et retourner l'objet Authentication
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                username,
-                null,
-                authorities
-        );
-
-        return Mono.just(auth);
+        return Mono.just(new UsernamePasswordAuthenticationToken(username, null, authorities));
     }
 }

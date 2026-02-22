@@ -1,58 +1,52 @@
 package com.itexpert.content.core.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.stereotype.Component;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebExceptionHandler;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
-
-@Component
-@Order(-2)
+@ControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler implements WebExceptionHandler {
+public class GlobalExceptionHandler {
 
-    @Override
-    public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        ServerHttpRequest request = exchange.getRequest();
+    @ExceptionHandler(ResponseStatusException.class)
+    public Mono<ResponseEntity<String>> handleResponseStatusException(
+            ResponseStatusException ex, ServerWebExchange exchange) {
 
-        // Log essential info to identify the culprit
-        log.error("❌ Error on {} {} - {}: {}",
-                request.getMethod(),
-                request.getURI(),
-                ex.getClass().getSimpleName(),
-                ex.getMessage() != null ? ex.getMessage() : "No message"
+        HttpStatus status = (HttpStatus) ex.getStatusCode();
+
+        if (status == HttpStatus.NOT_FOUND) {
+            log.warn("🔍 404 - Resource not found: {}", exchange.getRequest().getURI());
+            return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Resource not found"));
+        }
+
+        log.error("❌ Error on {} {} - Status: {} - {}",
+                exchange.getRequest().getMethod(),
+                exchange.getRequest().getURI(),
+                status.value(),
+                ex.getMessage()
         );
 
-        // For 404 errors, lighter log
-        if (ex instanceof ResponseStatusException &&
-                ((ResponseStatusException) ex).getStatusCode().value() == 404) {
-            log.warn("🔍 404 - Resource not found: {}", request.getURI());
-        }
+        return Mono.just(ResponseEntity.status(status)
+                .body(status.getReasonPhrase()));
+    }
 
-        // Log the cause if it exists (often the real culprit)
-        if (ex.getCause() != null) {
-            log.error("Caused by: {} - {}",
-                    ex.getCause().getClass().getSimpleName(),
-                    ex.getCause().getMessage()
-            );
-        }
+    @ExceptionHandler(Exception.class)
+    public Mono<ResponseEntity<String>> handleGenericException(
+            Exception ex, ServerWebExchange exchange) {
 
-        // Simple response
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+        log.error("❌ Unexpected error on {} {}",
+                exchange.getRequest().getMethod(),
+                exchange.getRequest().getURI(),
+                ex
+        );
 
-        DataBufferFactory bufferFactory = response.bufferFactory();
-        DataBuffer dataBuffer = bufferFactory.wrap("Internal Server Error".getBytes(StandardCharsets.UTF_8));
-
-        return response.writeWith(Mono.just(dataBuffer));
+        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Internal Server Error"));
     }
 }

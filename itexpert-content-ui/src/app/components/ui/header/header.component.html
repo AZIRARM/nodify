@@ -64,7 +64,7 @@
     <div class="language-wrapper">
       <button mat-button [matMenuTriggerFor]="languageMenu" [matTooltip]="'LANGUAGE' | translate" class="language-button">
         <mat-icon>translate</mat-icon>
-        <span class="selected-language-text">{{ getCurrentLanguageLabel() }}</span>
+        <span class="selected-language-text">{{ getCurrentLanguageLabel() | translate }}</span>
         <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
       </button>
     </div>
@@ -73,7 +73,7 @@
               mat-menu-item
               (click)="changeSiteLanguage(language.code)">
     <span [class.active-language]="language.code === selectedLanguage">
-      {{ language.label }}
+      {{ language.label | translate }}
     </span>
       </button>
     </mat-menu>

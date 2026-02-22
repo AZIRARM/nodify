@@ -1,16 +1,13 @@
 package com.itexpert.content.core.handlers.websockets;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.socket.WebSocketSession;
-import org.springframework.web.reactive.socket.CloseStatus;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 public class WebSocketAuthUtil {
 
-    private static final Logger log = LoggerFactory.getLogger(WebSocketAuthUtil.class);
     public static final String AUTH_ATTR = "authenticated";
     public static final String TOKEN_ATTR = "token";
 
@@ -48,7 +45,6 @@ public class WebSocketAuthUtil {
 
     public static boolean authenticate(WebSocketSession session, String token) {
         if (token == null || token.isEmpty()) {
-            log.warn("Token vide pour session {}", session.getId());
             return false;
         }
 
@@ -57,7 +53,6 @@ public class WebSocketAuthUtil {
         if (isValid) {
             session.getAttributes().put(AUTH_ATTR, true);
             session.getAttributes().put(TOKEN_ATTR, token);
-            log.info("Session authentifiée: {}", session.getId());
         }
 
         return isValid;
@@ -70,7 +65,6 @@ public class WebSocketAuthUtil {
 
     public static boolean closeIfNotAuthenticated(WebSocketSession session) throws Exception {
         if (!isAuthenticated(session)) {
-            log.warn("Fermeture session non authentifiée: {}", session.getId());
             return true;
         }
         return false;
