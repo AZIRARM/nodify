@@ -371,30 +371,8 @@ public class ContentNodeEndPoint {
                 });
     }
 
-    @GetMapping(value = "/code/{code}/slug/{slug}/exists")
-    public Mono<Boolean> slugExists(@PathVariable String code, @PathVariable String slug) {
-        return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
-                .flatMap(hasRole -> {
-                    if (!hasRole) {
-                        return Mono.just(false);
-                    }
-                    return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
-                            .flatMap(isEditor -> {
-                                if (isEditor && !hasProjectAccess(code)) {
-                                    return Mono.just(false);
-                                }
-                                return contentNodeHandler.slugAlreadyExists(code, slug);
-                            });
-                });
-    }
-
     private boolean hasProjectAccess(String code) {
         // Implémentez votre logique de vérification d'accès aux projets ici
         return true;
-    }
-
-    private String extratUser(UserPost user) {
-        return ObjectUtils.isEmpty(user) ? "" :
-                (user.getFirstname() + " " + user.getLastname());
     }
 }

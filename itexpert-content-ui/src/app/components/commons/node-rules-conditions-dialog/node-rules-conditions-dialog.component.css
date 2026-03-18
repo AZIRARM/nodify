@@ -1,146 +1,15 @@
-/* ===== STYLES DE BASE ===== */
-:host {
-  display: block;
-  height: 100%;
-  overflow: hidden;
-}
-
-/* ===== EN-TÊTE (utilise la classe globale .dialog-header) ===== */
-
-/* ===== CONTENU PRINCIPAL ===== */
-.dialog-content {
-  height: calc(90vh - 180px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 20px 4px 20px 0;
-  margin: 0 10px;
-  flex: 1;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-    &:hover {
-      background: #a8a8a8;
-    }
-  }
-}
-
-/* ===== SECTIONS ===== */
-.form-section {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 0 20px 16px 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-
-  .section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 16px 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #2c3e50;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #3f51b5;
-
-    mat-icon {
-      color: #3f51b5;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-  }
-}
-
-/* ===== LIGNES DE FORMULAIRE ===== */
-.form-row {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  flex-wrap: wrap;
-}
+@import '../commons.css';
 
 .type-field {
   flex: 1;
   min-width: 200px;
-
-  ::ng-deep .mat-mdc-form-field-flex {
-    height: 52px !important;
-  }
-
-  ::ng-deep .mat-mdc-form-field-infix {
-    padding: 12px 0 !important;
-    min-height: 44px !important;
-  }
-
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    padding: 0 12px !important;
-  }
-
-  ::ng-deep .mat-mdc-select-trigger {
-    font-size: 0.9rem;
-    height: 36px;
-  }
 }
 
-/* ===== BOUTON AJOUTER ===== */
-.action-btn {
-  height: 52px;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #3f51b5;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  min-width: 120px;
-  color: white;
-  border: none;
-  cursor: pointer;
-  box-sizing: border-box;
-  margin: -20px 0px 0px 0px;
-  align-self: center;
-
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-  }
-
-  span {
-    display: inline-block;
-    line-height: 1;
-  }
-
-  &:hover {
-    background: #5c6bc0;
-  }
-
-  &:disabled {
-    background: #cccccc;
-    cursor: not-allowed;
-  }
-}
-
-/* ===== LISTE DES RÈGLES ===== */
 .rules-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin: 0 20px;
 }
 
 .rule-item {
@@ -158,27 +27,7 @@
 }
 
 .rule-field {
-  ::ng-deep .mat-mdc-form-field-flex {
-    height: 48px !important;
-  }
-
-  ::ng-deep .mat-mdc-form-field-infix {
-    padding: 8px 0 !important;
-    min-height: 40px !important;
-  }
-
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    padding: 0 8px !important;
-  }
-
-  ::ng-deep input.mat-mdc-input-element {
-    font-size: 0.85rem;
-  }
-
-  ::ng-deep .mat-mdc-select-trigger {
-    font-size: 0.85rem;
-    height: 32px;
-  }
+  /* SUPPRIMÉ : toutes les redéfinitions de ::ng-deep (déjà dans commons) */
 
   &.name-field { flex: 2; min-width: 180px; }
   &.operator-field { flex: 1; min-width: 100px; }
@@ -197,7 +46,6 @@
   }
 }
 
-/* ===== CHECKBOX ===== */
 .checkbox-cell {
   display: flex;
   align-items: center;
@@ -220,9 +68,10 @@
   }
 }
 
+/* Style spécifique pour le bouton de suppression dans les règles */
 .delete-rule-btn {
-  width: 36px;
-  height: 36px;
+  width: 28px; /* Réduit pour correspondre aux autres boutons */
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,11 +80,12 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  padding: 0;
 
   mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
+    font-size: 18px; /* Réduit pour correspondre */
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,105 +93,5 @@
 
   &:hover {
     background: #ffebee;
-  }
-}
-
-/* ===== ÉTAT VIDE ===== */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  background: #ffffff;
-  border: 1px dashed #e0e0e0;
-  border-radius: 8px;
-  margin: 0 20px;
-
-  mat-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-    color: #bdbdbd;
-    margin-bottom: 16px;
-  }
-
-  p {
-    font-size: 1rem;
-    color: #999;
-    margin: 0;
-  }
-}
-
-/* ===== ACTIONS EN BAS ===== */
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 24px;
-  background: white;
-  border-top: 2px solid #e0e0e0;
-  height: 80px;
-  min-height: 80px;
-  width: 100%;
-  box-sizing: border-box;
-  position: sticky;
-  bottom: 0;
-  z-index: 20;
-  flex-shrink: 0;
-
-  button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .cancel-btn {
-    color: #666;
-    border: 1px solid #ccc;
-    background: white;
-    height: 40px;
-    padding: 0 24px;
-    font-size: 0.9rem;
-
-    .mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      line-height: 18px;
-      color: #666;
-    }
-
-    &:hover {
-      background-color: #f5f5f5;
-    }
-  }
-
-  .save-btn {
-    background: #3f51b5;
-    color: white;
-    box-shadow: 0 2px 4px rgba(63, 81, 181, 0.3);
-    height: 40px;
-    padding: 0 24px;
-    font-size: 0.9rem;
-    border: none;
-
-    .mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      line-height: 18px;
-      color: white;
-    }
-
-    &:hover {
-      background: #5c6bc0;
-      box-shadow: 0 3px 8px rgba(63, 81, 181, 0.4);
-    }
   }
 }

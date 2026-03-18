@@ -1,11 +1,8 @@
 <div class="validation-dialog">
 
-  <!-- En-tête identique aux traductions -->
+  <!-- En-tête simplifié sans icône dans le header -->
   <div class="dialog-header">
     <div class="header-content">
-      <div class="header-icon">
-        <mat-icon>warning</mat-icon>
-      </div>
       <div class="header-title">
         <span class="title-main">{{ title | translate }}</span>
       </div>
@@ -15,21 +12,27 @@
     </button>
   </div>
 
-  <!-- Contenu -->
+  <!-- Contenu centré avec logo et message -->
   <div mat-dialog-content class="dialog-content">
     <div class="validation-content">
+
+      <!-- Logo Nodify -->
       <div class="logo-container">
         <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ title | translate }}">
       </div>
+
+      <!-- Message -->
       <div class="message-container">
         <div *ngIf="isHtml; else textMessage" [innerHTML]="message | translate"></div>
         <ng-template #textMessage>
           <p [translate]="message"></p>
         </ng-template>
       </div>
+
+    </div>
   </div>
 
-  <!-- Actions avec boutons visibles -->
+  <!-- Actions avec boutons stylisés -->
   <div mat-dialog-actions class="dialog-actions">
     <button mat-stroked-button class="cancel-btn" (click)="cancel()">
       <mat-icon>close</mat-icon>

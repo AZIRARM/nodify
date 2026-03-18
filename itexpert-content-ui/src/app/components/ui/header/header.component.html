@@ -1,13 +1,14 @@
-<mat-toolbar color="primary" class="main-toolbar">
+<mat-toolbar color="primary" class="main-toolbar"
+             [class.visible]="isToolbarVisible"
+             (mouseenter)="showToolbar()"
+             (mouseleave)="startHideTimer()">
   <div class="logo-container">
     <img src="assets/pictures/logos/nodify_transparent.png" alt="Nodify" class="logo-img">
     <span class="app-name">{{'APP_NAME' | translate}}</span>
   </div>
 
-  <!-- Menu de navigation simple avec boutons -->
   <div class="nav-buttons">
-    <!-- Menu Workspace -->
-    <button mat-button [matMenuTriggerFor]="workspaceMenu" class="nav-button">
+    <button mat-button [matMenuTriggerFor]="workspaceMenu" class="nav-button" (mouseenter)="cancelHideTimer()">
       <mat-icon>workspaces</mat-icon>
       <span>{{ 'WORKSPACE' | translate }}</span>
       <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
@@ -22,32 +23,31 @@
         <mat-icon>extension</mat-icon>
         <span>{{ 'PLUGINS' | translate }}</span>
       </a>
-      <a mat-menu-item routerLink="release-locks" *ngIf="isAdmin()">
-        <mat-icon>lock_open</mat-icon>
-        <span>{{ 'REALEASE_LOCKS' | translate }}</span>
-      </a>
-      <a mat-menu-item routerLink="languages">
-        <mat-icon>language</mat-icon>
-        <span>{{ 'LANGUAGES' | translate }}</span>
-      </a>
       <a mat-menu-item routerLink="charts">
         <mat-icon>bar_chart</mat-icon>
         <span>{{ 'CHARTS' | translate }}</span>
       </a>
     </mat-menu>
 
-    <!-- Menu Users pour admin -->
     @if(isAdmin()) {
-    <button mat-button [matMenuTriggerFor]="usersMenu" class="nav-button">
-      <mat-icon>group</mat-icon>
-      <span>{{ 'USERS' | translate }}</span>
+    <button mat-button [matMenuTriggerFor]="adminMenu" class="nav-button" (mouseenter)="cancelHideTimer()">
+      <mat-icon>admin_panel_settings</mat-icon>
+      <span>{{ 'ADMINISTRATION' | translate }}</span>
       <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
     </button>
 
-    <mat-menu #usersMenu="matMenu" class="nav-menu">
-      <a mat-menu-item routerLink="users">
+    <mat-menu #adminMenu="matMenu" class="nav-menu">
+      <a mat-menu-item routerLink="admin/unlock-resources">
+        <mat-icon>lock_open</mat-icon>
+        <span>{{ 'UNLOCK_RESOURCES' | translate }}</span>
+      </a>
+      <a mat-menu-item routerLink="admin/users">
         <mat-icon>people</mat-icon>
         <span>{{ 'USERS' | translate }}</span>
+      </a>
+      <a mat-menu-item routerLink="admin/languages">
+        <mat-icon>language</mat-icon>
+        <span>{{ 'LANGUAGES' | translate }}</span>
       </a>
     </mat-menu>
     }
@@ -55,14 +55,10 @@
 
   <span class="toolbar-spacer"></span>
 
-  <!-- Actions utilisateur -->
   <div class="user-actions">
-    <!-- Bouton thème -->
-
-    <!-- Sélecteur de langue -->
-    <!-- Sélecteur de langue -->
     <div class="language-wrapper">
-      <button mat-button [matMenuTriggerFor]="languageMenu" [matTooltip]="'LANGUAGE' | translate" class="language-button">
+      <button mat-button [matMenuTriggerFor]="languageMenu" [matTooltip]="'LANGUAGE' | translate"
+              class="language-button" (mouseenter)="cancelHideTimer()">
         <mat-icon>translate</mat-icon>
         <span class="selected-language-text">{{ getCurrentLanguageLabel() | translate }}</span>
         <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
@@ -78,18 +74,16 @@
       </button>
     </mat-menu>
 
-    <!-- Notifications -->
     <button mat-icon-button routerLink="/notifications"
             [matTooltip]="'NOTIFICATIONS' | translate"
             [matBadge]="(nbNotifications < 99) ? nbNotifications : '99+'"
             matBadgeColor="warn"
-            matBadgeSize="small">
+            matBadgeSize="small" (mouseenter)="cancelHideTimer()">
       <mat-icon>notifications</mat-icon>
     </button>
 
-    <!-- Menu compte utilisateur -->
     <button mat-icon-button [matMenuTriggerFor]="userAccountMenu"
-            [matTooltip]="'MY_ACCOUNT' | translate">
+            [matTooltip]="'MY_ACCOUNT' | translate" (mouseenter)="cancelHideTimer()">
       <mat-icon>account_circle</mat-icon>
     </button>
     <mat-menu #userAccountMenu="matMenu" xPosition="before" class="nav-menu">

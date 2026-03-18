@@ -30,6 +30,8 @@ export class PluginComponent implements OnInit {
 
   dataSource: MatTableDataSource<Plugin>;
 
+  totalDeleteds: number = 0;
+
   constructor(private translate: TranslateService,
               private toast: ToastrService,
               private loggerService: LoggerService,
@@ -48,12 +50,22 @@ export class PluginComponent implements OnInit {
   init() {
     this.pluginService.getNotDeleted().subscribe(
       (response: any) => {
-        //next() callback
         this.dataSource.data = response || [];
       },
       (error) => {                              //error() callback
         this.toast.error('Request failed with error');
       });
+
+      this.pluginService.getDeleted().subscribe(
+          (response: any) => {
+            if (response) {
+              this.totalDeleteds = response.length;
+            }
+          },
+          error => {
+            console.error(error);
+          }
+        );
   }
 
   status(plugin: Plugin) {

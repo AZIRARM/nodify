@@ -30,7 +30,7 @@ public class DatasSocketHandler implements WebSocketHandler {
     @Override
     public Mono<Void> handle(WebSocketSession session) {
         String token = WebSocketAuthUtil.extractToken(session.getHandshakeInfo().getUri());
-        if (token == null || !WebSocketAuthUtil.authenticate(session, token)) {
+        if (!WebSocketAuthUtil.authenticate(session, token)) {
             log.warn("WebSocket connection rejected - authentication failed");
             return session.close(CloseStatus.POLICY_VIOLATION);
         }

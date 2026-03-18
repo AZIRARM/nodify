@@ -1,10 +1,10 @@
-import {Component, OnDestroy, OnInit, ViewChild, AfterViewInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef} from '@angular/core';
 import {TranslateService} from "@ngx-translate/core";
 import {Router} from '@angular/router';
 
 import {Node} from "../../../modeles/Node";
 import {NodeService} from "../../../services/NodeService";
-import {MatTableDataSource} from "@angular/material/table";
+import {MatTableDataSource, MatTable} from "@angular/material/table";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NodeDialogComponent} from "../node-dialog/node-dialog.component";
 import {LoggerService} from "../../../services/LoggerService";
@@ -47,6 +47,8 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 25, 50, 100];
 
+  @ViewChild(MatTable) table!: MatTable<Node>;
+
   parentNode: Node | null = null;
 
   user: any;
@@ -66,6 +68,8 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   private lockRefreshSub?: Subscription;
   private allNodes: Node[] = []; // Pour stocker tous les nodes avant filtrage
 
+  totalDeleteds: number = 33;
+
   constructor(private translate: TranslateService,
               private loggerService: LoggerService,
               public userAccessService: UserAccessService,
@@ -76,7 +80,8 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
               private contentNodeService: ContentNodeService,
               private userService: UserService,
               private lockService: LockService,
-              private dialog: MatDialog) {
+              private dialog: MatDialog,
+              private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit() {
@@ -85,19 +90,22 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Connecter la pagination après l'initialisation de la vue
-    setTimeout(() => {
-      if (this.paginator) {
-        this.dataSource.paginator = this.paginator;
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
 
-        // S'abonner aux changements de page
-        this.paginator.page.subscribe(() => {
-          this.pageIndex = this.paginator.pageIndex;
-          this.pageSize = this.paginator.pageSize;
-          this.updateDataSource();
-        });
-      }
-    });
+      // Forcer la détection des changements
+      this.cdr.detectChanges();
+
+      this.paginator.page.subscribe(() => {
+        this.pageIndex = this.paginator.pageIndex;
+        this.pageSize = this.paginator.pageSize;
+        this.updateDataSource();
+
+        // Forcer la mise à jour après changement de page
+        this.cdr.detectChanges();
+      });
+    }
+
   }
 
   ngOnDestroy(): void {
@@ -144,6 +152,15 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
           this.router.navigateByUrl("login");
         });
     }
+
+    this.nodeService.getDeleted(this.parentNode?.code ?? '').subscribe(
+        (response: any) => {
+          this.totalDeleteds = response.length;
+        },
+        (error: any) => {
+          console.error(error);
+        }
+      );
   }
 
   private processNodes(nodes: Node[]) {

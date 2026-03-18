@@ -30,7 +30,9 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         String token = extractToken(swe);
 
         if (token == null) {
-            log.debug("No Bearer token found in request");
+            log.debug("No Bearer token found in request {} {}",
+                    swe.getRequest().getMethod(),
+                    swe.getRequest().getURI());
             return Mono.empty();
         }
 

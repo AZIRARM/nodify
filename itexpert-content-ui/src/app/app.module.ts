@@ -34,7 +34,6 @@ import {UsersComponent} from './components/user/users/users.component';
 import {NotificationsComponent} from './components/notification/notifications/notifications.component';
 import {HeaderComponent} from './components/ui/header/header.component';
 import {FooterComponent} from './components/ui/footer/footer.component';
-import {SidenavComponent} from './components/ui/sidenav/sidenav.component';
 
 import {SidenavService} from "./services/SidenavService";
 import {NodeService} from "./services/NodeService";
@@ -168,7 +167,6 @@ export function defaultLanguage() {
     NotificationsComponent,
     HeaderComponent,
     FooterComponent,
-    SidenavComponent,
     ValidationDialogComponent,
     LanguagesComponent,
     LanguageDialogComponent,
@@ -217,10 +215,16 @@ export function defaultLanguage() {
     HttpClientModule,
     ToastrModule.forRoot({
       timeOut: 3000,
-      positionClass: 'toast-top-full-width',
+      positionClass: 'toast-bottom-right',
       preventDuplicates: true,
+      progressBar: true,
+      closeButton: true,
+      maxOpened: 5,
+      autoDismiss: true,
+      newestOnTop: true,
+      tapToDismiss: true,
+      progressAnimation: 'decreasing',
     }),
-
     TranslateModule.forRoot({
       defaultLanguage: defaultLanguage(),
       loader: {

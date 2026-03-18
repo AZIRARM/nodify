@@ -413,3 +413,52 @@
     }
   }
 }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: white;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #bdbdbd;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #999;
+    margin: 0;
+  }
+}
+
+
+.deleted-badge-over {
+  position: absolute;
+  top: -8px !important;
+  left: 90% !important;
+  transform: translateX(-50%) !important;
+  background-color: #f44336;
+  color: white;
+  border-radius: 20px;
+  min-width: 24px;
+  height: 24px;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  z-index: 9999 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 2px solid white;
+  pointer-events: none;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+

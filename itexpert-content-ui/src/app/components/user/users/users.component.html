@@ -10,25 +10,21 @@
         <span class="title-main">{{ "USERS" | translate }}</span>
       </div>
     </div>
+
+    <!-- Actions dans l'en-tête -->
+    <div class="header-actions" *ngIf="userAccessService.isAdmin()">
+      <button
+        mat-fab
+        class="create-fab"
+        (click)="create()"
+        matTooltip="{{ 'CREATE_USER' | translate }}">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
   </div>
 
   <!-- Contenu -->
   <div class="dialog-content">
-
-    <!-- Barre d'outils -->
-    <div class="users-toolbar">
-      <div class="toolbar-actions">
-        @if(userAccessService.isAdmin()) {
-        <button
-          mat-fab
-          class="add-user-fab"
-          (click)="create()"
-          matTooltip="{{ 'CREATE_USER' | translate }}">
-          <mat-icon>add</mat-icon>
-        </button>
-        }
-      </div>
-    </div>
 
     <!-- Tableau des utilisateurs -->
     <div class="table-wrapper">

@@ -1,4 +1,8 @@
-<footer class="app-footer">
+<!-- footer.component.html -->
+<footer class="app-footer"
+        [class.visible]="isFooterVisible"
+        (mouseenter)="onMouseEnter()"
+        (mouseleave)="onMouseLeave()">
   <div class="footer-content">
     <div class="footer-logo">
       <img src="assets/pictures/logos/nodify_transparent.png" alt="Nodify" class="footer-logo-img">

@@ -187,94 +187,52 @@ public class NodeHandler {
                 );
     }
 
-    /**
-     * Logique de publication récursive pour un noeud donné.
-     * Cette méthode applique la logique complète (archivage si nécessaire, publication,
-     * création d'un snapshot, publication des enfants) pour un seul noeud.
-     *
-     * @param nodeToProcess Le noeud à traiter.
-     * @param modifiedBy    L'utilisateur.
-     * @return Un Mono contenant le noeud traité après sa publication.
-     */
-    private Mono<Node> publishRecursive(Node nodeToProcess, String modifiedBy) {
-        log.info("Publish Node Parent {}, version {}", nodeToProcess.getCode(), nodeToProcess.getVersion());
 
-        return Mono.fromCallable(() ->
-                        publishParentNodeSync(nodeToProcess, modifiedBy)
-                )
-                .subscribeOn(Schedulers.boundedElastic())
+    private Mono<Node> publishRecursive(Node nodeToProcess, String modifiedBy) {
+        return Mono.just(nodeToProcess)
+                .doOnNext(node -> log.info("Publish Node Parent {}, version {}",
+                        node.getCode(), node.getVersion()))
+                .flatMap(node -> publishParentNode(node, modifiedBy))
                 .flatMap(publishedParentNode ->
-                        this.findAllChildren(publishedParentNode.getCode())
-                                .doOnNext(child -> log.info(
-                                        "Publish Node Child {}, version {}",
-                                        child.getCode(),
-                                        child.getVersion()
-                                ))
-                                .flatMap(childNode ->
-                                        Mono.fromCallable(() ->
-                                                publishParentNodeSync(childNode, modifiedBy)
-                                        ).subscribeOn(Schedulers.boundedElastic())
+                        findAllChildren(publishedParentNode.getCode())
+                                .concatMap(childNode ->
+                                        Mono.just(childNode)
+                                                .doOnNext(child -> log.info("Publish Node Child {}, version {}",
+                                                        child.getCode(), child.getVersion()))
+                                                .flatMap(child -> publishParentNode(child, modifiedBy))
                                 )
                                 .collectList()
                                 .thenReturn(publishedParentNode)
                 );
     }
 
-    @Transactional
-    public synchronized Node publishParentNodeSync(Node nodeToProcess, String modifiedBy) {
-
-        // Étape 1 : chercher un node publié existant
-        Node existingPublishedNode =
-                this.nodeRepository
-                        .findByCodeAndStatus(
-                                nodeToProcess.getCode(),
-                                StatusEnum.PUBLISHED.name()
-                        )
-                        .map(this.nodeMapper::fromEntity)
-                        .block();
-
-        if (existingPublishedNode != null) {
-            this.archiveNode(existingPublishedNode, modifiedBy).block();
-        }
-
-        // Étape 2 : publier le nœud courant
-        Node publishedParentNode =
-                this.publishNode(nodeToProcess, modifiedBy).block();
-
-        if (publishedParentNode == null) {
-            throw new IllegalStateException("publishNode a retourné null");
-        }
-
-        // Étape 3 : publier les contenus associés
-        this.contentNodeHandler
-                .findAllByNodeCodeAndStatus(
-                        publishedParentNode.getCode(),
-                        StatusEnum.SNAPSHOT.name()
+    private Mono<Node> publishParentNode(Node nodeToProcess, String modifiedBy) {
+        return nodeRepository.findByCodeAndStatus(nodeToProcess.getCode(), StatusEnum.PUBLISHED.name())
+                .flatMap(existingPublishedEntity -> {
+                    Node existingPublishedNode = nodeMapper.fromEntity(existingPublishedEntity);
+                    return archiveNode(existingPublishedNode, modifiedBy)
+                            .thenReturn(existingPublishedNode);
+                })
+                .then(Mono.defer(() -> publishNode(nodeToProcess, modifiedBy)))
+                .flatMap(publishedParentNode ->
+                        contentNodeHandler.findAllByNodeCodeAndStatus(
+                                        publishedParentNode.getCode(),
+                                        StatusEnum.SNAPSHOT.name()
+                                )
+                                .concatMap(contentNode ->
+                                        contentNodeHandler.publish(contentNode.getCode(), true, modifiedBy)
+                                )
+                                .collectList()
+                                .thenReturn(publishedParentNode)
                 )
-                .flatMap(contentNode ->
-                        this.contentNodeHandler.publish(
-                                contentNode.getCode(),
-                                true,
-                                modifiedBy
-                        )
-                )
-                .collectList()
-                .block();
-
-        // Étape 4 : créer la version snapshot
-        Node snapshotNode =
-                this.createSnapshot(publishedParentNode, modifiedBy).block();
-
-        if (snapshotNode == null) {
-            throw new IllegalStateException("createSnapshot n’a pas créé de snapshot");
-        }
-
-        // Étape 5 : notification
-        this.notify(snapshotNode, NotificationEnum.DEPLOYMENT).block();
-
-        return snapshotNode;
+                .flatMap(publishedParentNode ->
+                        createSnapshot(publishedParentNode, modifiedBy)
+                                .flatMap(snapshotNode ->
+                                        notify(snapshotNode, NotificationEnum.DEPLOYMENT)
+                                                .thenReturn(snapshotNode)
+                                )
+                );
     }
-
 
     Mono<Node> createSnapshot(Node node, String modifiedBy) {
         try {
@@ -502,163 +460,124 @@ public class NodeHandler {
                 .map(this.nodeMapper::fromEntity)
                 .flatMap(node -> this.notify(node, NotificationEnum.IMPORT));
     }
-
     public Flux<Node> importNodes(List<Node> nodes,
-                                      String nodeParentCode,
-                                      Boolean fromFile) {
+                                  String nodeParentCode,
+                                  Boolean fromFile) {
 
-        return Mono.fromCallable(() ->
-                        importNodesBlocking(nodes, nodeParentCode, fromFile)
+        return Mono.justOrEmpty(nodeParentCode)
+                .flatMap(parentCode ->
+                        nodeRepository.findByCodeAndStatus(parentCode, StatusEnum.SNAPSHOT.name())
+                                .switchIfEmpty(Mono.error(new RuntimeException("Parent node not found: " + parentCode)))
                 )
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMapMany(Flux::fromIterable);
+                .flatMap(nodeParent -> {
+                    String parentCodeOrigin = ObjectUtils.isEmpty(nodeParent.getParentCodeOrigin())
+                            ? nodeParent.getCode()
+                            : nodeParent.getParentCodeOrigin();
+
+                    return renameNodeCodesHelper.changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
+                            .collectList()
+                            .map(nodesToImport -> Tuples.of(nodeParent, nodesToImport));
+                })
+                .flatMapMany(tuple -> {
+                    com.itexpert.content.lib.entities.Node nodeParent = tuple.getT1();
+                    List<Node> nodesToImport = tuple.getT2();
+
+                    if (ObjectUtils.isEmpty(nodesToImport)) {
+                        return Flux.empty();
+                    }
+
+                    return Flux.fromIterable(nodesToImport)
+                            .concatMap(node -> {
+                                node.setParentCodeOrigin(nodeParent.getCode());
+                                if (ObjectUtils.isEmpty(node.getParentCode())) {
+                                    return nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                                            .map(entity -> {
+                                                node.setParentCode(entity.getParentCode());
+                                                return node;
+                                            })
+                                            .defaultIfEmpty(node)
+                                            .doOnNext(n -> {
+                                                if (ObjectUtils.isEmpty(n.getParentCode())) {
+                                                    n.setParentCode(nodeParent.getCode());
+                                                }
+                                            });
+                                }
+                                return Mono.just(node);
+                            })
+                            .collectList()
+                            .flatMapMany(updatedNodes ->
+                                    Flux.fromIterable(updatedNodes)
+                                            .concatMap(node ->
+                                                    nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                                                            .flatMap(existingNode -> {
+                                                                existingNode.setStatus(StatusEnum.ARCHIVE);
+                                                                existingNode.setModificationDate(Instant.now().toEpochMilli());
+                                                                return nodeRepository.save(existingNode)
+                                                                        .thenReturn(node)
+                                                                        .doOnNext(n -> {
+                                                                            n.setVersion(Integer.toString(Integer.parseInt(existingNode.getVersion()) + 1));
+                                                                            n.setCreationDate(existingNode.getCreationDate());
+                                                                            if (ObjectUtils.isNotEmpty(existingNode.getSlug())) {
+                                                                                n.setSlug(existingNode.getSlug());
+                                                                            }
+                                                                            n.setFavorite(existingNode.isFavorite());
+                                                                        });
+                                                            })
+                                                            .switchIfEmpty(Mono.defer(() -> {
+                                                                node.setCreationDate(Instant.now().toEpochMilli());
+                                                                node.setVersion("0");
+                                                                return Mono.just(node);
+                                                            }))
+                                                            .doOnNext(n -> {
+                                                                n.setModificationDate(Instant.now().toEpochMilli());
+                                                                n.setStatus(StatusEnum.SNAPSHOT);
+                                                            })
+                                            )
+                                            .collectList()
+                                            .flatMapMany(nodesWithStatus ->
+                                                    Flux.fromIterable(nodesWithStatus)
+                                                            .concatMap(node ->
+                                                                    nodeSlugHelper.update(node)
+                                                                            .defaultIfEmpty(node)
+                                                            )
+                                                            .collectList()
+                                                            .flatMapMany(nodesWithSlug ->
+                                                                    Flux.fromIterable(nodesWithSlug)
+                                                                            .concatMap(node -> {
+                                                                                com.itexpert.content.lib.entities.Node entity = nodeMapper.fromModel(node);
+                                                                                return nodeRepository.save(entity)
+                                                                                        .flatMap(savedEntity -> {
+                                                                                            Node savedNode = nodeMapper.fromEntity(savedEntity);
+                                                                                            if (ObjectUtils.isNotEmpty(node.getContents())) {
+                                                                                                return importContent(node)
+                                                                                                        .thenReturn(savedNode);
+                                                                                            }
+                                                                                            return Mono.just(savedNode);
+                                                                                        });
+                                                                            })
+                                                                            .collectList()
+                                                                            .flatMapMany(savedNodes ->
+                                                                                    Flux.fromIterable(savedNodes)
+                                                                                            .concatMap(node ->
+                                                                                                    notify(node, NotificationEnum.IMPORT)
+                                                                                                            .thenReturn(node)
+                                                                                            )
+                                                                            )
+                                                            )
+                                            )
+                            );
+                });
     }
 
-    public List<Node> importNodesBlocking(List<Node> nodes,
-                                          String nodeParentCode,
-                                          Boolean fromFile) {
-
-        log.debug("[IMPORT] Start importNodes, parentCode={}, nodesCount={}",
-                nodeParentCode, nodes.size());
-
-        com.itexpert.content.lib.entities.Node nodeParent = this.nodeRepository
-                .findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
-                .blockOptional()
-                .orElseThrow(() ->
-                        new RuntimeException("Parent node not found: " + nodeParentCode));
-
-        String parentCodeOrigin = ObjectUtils.isEmpty(nodeParent.getParentCodeOrigin())
-                ? nodeParent.getCode()
-                : nodeParent.getParentCodeOrigin();
-
-        List<Node> nodesToImport = this.renameNodeCodesHelper
-                .changeNodesCodesAndReturnFlux(nodes, parentCodeOrigin, fromFile)
-                .collectList()
-                .block();
-
-        if (ObjectUtils.isEmpty(nodesToImport)) {
-            return Collections.emptyList();
+    private Mono<Node> importContent(Node node) {
+        if (ObjectUtils.isEmpty(node) || ObjectUtils.isEmpty(node.getContents())) {
+            return Mono.just(node);
         }
 
-        List<Node> processedNodes = new ArrayList<>();
-
-        for (Node node : nodesToImport) {
-            node.setParentCodeOrigin(nodeParent.getCode());
-            if (ObjectUtils.isEmpty(node.getParentCode())) {
-                com.itexpert.content.lib.entities.Node entity = this.nodeRepository.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name()).block();
-                if(ObjectUtils.isEmpty(entity)) {
-                    node.setParentCode(nodeParent.getCode());
-                } else {
-                    node.setParentCode(entity.getParentCode());
-                }
-            }
-        }
-
-        for (Node node : nodesToImport) {
-
-            com.itexpert.content.lib.entities.Node existingNode =
-                    this.nodeRepository
-                            .findByCodeAndStatus(node.getCode(),
-                                    StatusEnum.SNAPSHOT.name())
-                            .blockOptional()
-                            .orElse(null);
-
-            if (existingNode != null) {
-
-                existingNode.setStatus(StatusEnum.ARCHIVE);
-                existingNode.setModificationDate(
-                        Instant.now().toEpochMilli());
-
-                this.nodeRepository.save(existingNode).block();
-
-                node.setVersion(Integer.toString(
-                        Integer.parseInt(existingNode.getVersion()) + 1));
-
-                node.setCreationDate(existingNode.getCreationDate());
-
-                if (ObjectUtils.isNotEmpty(existingNode.getSlug())) {
-                    node.setSlug(existingNode.getSlug());
-                }
-
-                node.setFavorite(existingNode.isFavorite());
-
-            } else {
-
-                node.setCreationDate(
-                        Instant.now().toEpochMilli());
-
-                node.setVersion("0");
-            }
-
-            node.setModificationDate(
-                    Instant.now().toEpochMilli());
-
-            node.setStatus(StatusEnum.SNAPSHOT);
-        }
-
-        for (Node node : nodesToImport) {
-
-            Node updatedNode =
-                    this.nodeSlugHelper.update(node).block();
-
-            if (updatedNode != null) {
-                node = updatedNode;
-            }
-        }
-
-        for (Node node : nodesToImport) {
-
-            com.itexpert.content.lib.entities.Node entity =
-                    this.nodeMapper.fromModel(node);
-
-            com.itexpert.content.lib.entities.Node savedEntity =
-                    this.nodeRepository.save(entity).block();
-
-            Node savedNode =
-                    this.nodeMapper.fromEntity(savedEntity);
-
-            if (ObjectUtils.isNotEmpty(node.getContents())) {
-                savedNode = importContentBlocking(node);
-            }
-
-            processedNodes.add(savedNode);
-        }
-
-        for (Node node : processedNodes) {
-            this.notify(node, NotificationEnum.IMPORT)
-                    .subscribe();
-        }
-
-        log.debug("[IMPORT] importNodes finished, parentCode={}, importedCount={}",
-                nodeParentCode, processedNodes.size());
-
-        return processedNodes;
-    }
-
-    private Node importContentBlocking(Node node) {
-
-        log.debug("[IMPORT] Start importContent, node {}",
-                node.getCode());
-
-        if (ObjectUtils.isEmpty(node)
-                || ObjectUtils.isEmpty(node.getContents())) {
-            return node;
-        }
-
-        for (ContentNode content : node.getContents()) {
-
-            content = this.contentNodeHandler
-                    .importContentNode(content)
-                    .block();
-
-            log.debug("[IMPORT] importContent finished, content {}",
-                    content.getCode());
-        }
-
-        log.debug("[IMPORT] importContent finished, node {}",
-                node.getCode());
-
-        return node;
+        return Flux.fromIterable(node.getContents())
+                .concatMap(contentNodeHandler::importContentNode)
+                .then()
+                .thenReturn(node);
     }
 
 
@@ -805,51 +724,31 @@ public class NodeHandler {
                 )
                 .defaultIfEmpty(false);
     }
+
     public Mono<Boolean> propagateMaxHistoryToKeep(String nodeCode) {
-        return Mono.fromCallable(() -> {
-            // Récupération du nœud parent de manière synchrone
-            Node parentNode = this.findByCodeAndStatus(nodeCode, StatusEnum.SNAPSHOT.name())
-                    .block(); // Attention: block() est déconseillé en réactif
-
-            if (parentNode != null) {
-                // Appel synchrone de la méthode de propagation
-                propagateOnSubtreeSync(parentNode, parentNode.getMaxVersionsToKeep());
-            }
-
-            return Boolean.TRUE;
-        }).subscribeOn(Schedulers.boundedElastic()); // ← AJOUT IMPORTANT : exécute le bloc sur un thread dédié
+        return findByCodeAndStatus(nodeCode, StatusEnum.SNAPSHOT.name())
+                .switchIfEmpty(Mono.just(new Node()))
+                .flatMap(parentNode ->
+                        propagateOnSubtree(parentNode, parentNode.getMaxVersionsToKeep())
+                                .thenReturn(Boolean.TRUE)
+                );
     }
 
-    private void propagateOnSubtreeSync(Node parent, Integer maxVersionsToKeep) {
-        // Récupération synchrone des enfants
-        List<com.itexpert.content.lib.entities.Node> childrenEntities = this.nodeRepository
-                .findChildrenByCodeAndStatus(parent.getCode(), StatusEnum.SNAPSHOT.name())
-                .collectList()
-                .block(); // OK car maintenant exécuté sur Schedulers.boundedElastic()
+    private Mono<Void> propagateOnSubtree(Node parent, Integer maxVersionsToKeep) {
+        return nodeRepository.findChildrenByCodeAndStatus(parent.getCode(), StatusEnum.SNAPSHOT.name())
+                .concatMap(childEntity -> {
+                    Node childNode = nodeMapper.fromEntity(childEntity);
+                    childNode.setMaxVersionsToKeep(maxVersionsToKeep);
 
-        if (childrenEntities != null) {
-            for (com.itexpert.content.lib.entities.Node childEntity : childrenEntities) {
-                Node childNode = nodeMapper.fromEntity(childEntity);
-
-                // 1️⃣ appliquer la valeur
-                childNode.setMaxVersionsToKeep(maxVersionsToKeep);
-
-                // 2️⃣ sauvegarder
-                com.itexpert.content.lib.entities.Node savedEntity = this.nodeRepository.save(nodeMapper.fromModel(childNode)).block();
-
-                if (savedEntity != null) {
-                    Node savedNode = nodeMapper.fromEntity(savedEntity);
-
-                    // 3️⃣ propager aux contents
-                    contentNodeHandler.setMaxHostoryToKeep(savedNode.getCode(), maxVersionsToKeep)
-                            .block(); // OK car sur le même thread
-
-                    // 4️⃣ récursion sur les enfants
-                    propagateOnSubtreeSync(savedNode, maxVersionsToKeep);
-                }
-            }
-        }
+                    return nodeRepository.save(nodeMapper.fromModel(childNode))
+                            .flatMap(savedEntity -> {
+                                Node savedNode = nodeMapper.fromEntity(savedEntity);
+                                return contentNodeHandler.setMaxHostoryToKeep(savedNode.getCode(), maxVersionsToKeep)
+                                        .thenMany(propagateOnSubtree(savedNode, maxVersionsToKeep))
+                                        .then();
+                            });
+                })
+                .then();
     }
-
 }
 

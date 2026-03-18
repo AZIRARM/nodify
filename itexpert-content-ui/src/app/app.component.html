@@ -1,8 +1,10 @@
-<app-header></app-header>
-<div class="main-container">
+<app-header [class.hidden]="headerHidden"></app-header>
+<div class="main-container"
+     [class.header-hidden]="headerHidden"
+     [class.footer-hidden]="footerHidden">
   <div class="content-wrapper">
     <router-outlet></router-outlet>
   </div>
 </div>
-<app-footer id="nodify-footer-id"></app-footer>
+<app-footer id="nodify-footer-id" [class.hidden]="footerHidden"></app-footer>
 <app-loader-component></app-loader-component>

@@ -431,5 +431,14 @@
   "BASIC_INFORMATION": "Informations basiques",
   "TECHNICAL_CONFIGURATION": "Configuration technique",
   "LOAD_ERROR": "Erreur lors du chargement",
-  "PARENT_NOT_IN_SUBNODES": "Le noeud parent ne peut pas être dans les sous noeuds"
+  "PARENT_NOT_IN_SUBNODES": "Le noeud parent ne peut pas être dans les sous noeuds",
+
+
+  "ADMINISTRATION": "Administration",
+  "MANAGE_USERS": "Gérer les utilisateurs",
+  "MANAGE_LANGUAGES": "Gérer les langues",
+  "UNLOCK_RESOURCES": "Débloquer les ressources",
+  "MANAGE_RESOURCE_LOCKS": "Gérer les verrous de ressources",
+  "SYSTEM_SETTINGS": "Paramètres système"
+
 }

@@ -7,7 +7,7 @@ import {UserAccessService} from "../../../services/UserAccessService";
 import { LoggerService } from 'src/app/services/LoggerService';
 import { LockService } from 'src/app/services/LockService';
 import { TranslateService } from '@ngx-translate/core';
-import { interval, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
@@ -17,16 +17,17 @@ import {AuthenticationService} from "../../../services/AuthenticationService";
 })
 export class ValuesDialogComponent implements OnInit, OnDestroy {
 
-  node: Node;
-  key: string;
-  value: string;
+  workingValues: Value[] = [];
+  key: string = '';
+  value: string = '';
 
   displayedColumns: string[] = ['Key', 'Value', 'Actions'];
   dataSource: MatTableDataSource<Value>;
 
   private lockCheckSub: Subscription;
 
-  editingItem: any = null;
+  editingItem: Value | null = null;
+  originalItemBackup: any = null;
 
   constructor(
     public dialogRef: MatDialogRef<ValuesDialogComponent>,
@@ -35,33 +36,28 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
     private lockService: LockService,
     private translateService: TranslateService,
     private authenticationService: AuthenticationService,
-    @Inject(MAT_DIALOG_DATA) public content: any
+    @Inject(MAT_DIALOG_DATA) public node: Node
   ) {
-    if (content) {
-      this.node = content;
-      if (!this.node.values) {
-        this.node.values = [];
+    if (node) {
+      if (!node.values) {
+        node.values = [];
       }
+      this.workingValues = node.values.map(v => ({...v}));
     }
   }
-
 
   ngOnInit() {
     this.init();
 
-    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.node.code).subscribe(acquired => {
       if (!acquired) {
-
          this.translateService.get("RESOURCE_LOCKED")
             .subscribe(translation => {
               this.loggerService.warn(translation);
             });
         this.dialogRef.close();
       } else {
-        // Si acquis → démarre la surveillance d’inactivité à 30 min
         this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-
          this.translateService.get("RESOURCE_RELEASED")
             .subscribe(translation => {
               this.loggerService.warn(translation);
@@ -69,8 +65,6 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
           this.dialogRef.close();
         });
 
-
-        // 🔄 Connexion WebSocket pour ce node
        this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
          if (lockInfo.locked) {
            this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
@@ -82,7 +76,6 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
       }
     });
   }
-
 
   ngOnDestroy(): void {
     if (this.lockCheckSub) {
@@ -96,43 +89,111 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
   }
 
   validate() {
+    this.node.values = this.workingValues;
     this.dialogRef.close({data: this.node});
   }
 
   remove(key: string) {
-    console.log('<--------------' + this.node.values);
-    this.node.values = this.node.values.filter(v => v.key !== key);
-    console.log('------------------->' + this.node.values);
+    this.workingValues = this.workingValues.filter(v => v.key !== key);
     this.init();
   }
 
   add() {
-    let values: any = this.node.values?.filter(val => val.key !== this.key);
+    if (!this.key || !this.value) return;
 
     let val = new Value();
     val.key = this.key;
     val.value = this.value;
 
-    values.push(val);
-
-    this.node.values = values;
+    this.workingValues.push(val);
     this.init();
     this.resetForm();
   }
 
-  edit(element: any) {
+  startEdit(element: Value) {
+    if (this.editingItem) {
+      this.cancelEdit();
+    }
+    this.originalItemBackup = {
+      key: element.key,
+      value: element.value
+    };
     this.editingItem = element;
-    this.key = element.key;
-    this.value = element.value;
+  }
+
+  saveEdit(element: Value) {
+    if (!element.key || !element.value) {
+      this.translateService.get("FIELDS_REQUIRED").subscribe(translation => {
+        this.loggerService.warn(translation);
+      });
+      return;
+    }
+
+    const keyExists = this.workingValues.some(v =>
+      v !== element && v.key === element.key
+    );
+
+    if (keyExists) {
+      this.translateService.get("KEY_ALREADY_EXISTS").subscribe(translation => {
+        this.loggerService.warn(translation);
+      });
+      return;
+    }
+
+    const index = this.workingValues.findIndex(v => v === element);
+    if (index !== -1) {
+      this.workingValues[index] = element;
+      this.init();
+    }
+
+    this.editingItem = null;
+    this.originalItemBackup = null;
+  }
+
+  cancelEdit() {
+    if (this.editingItem && this.originalItemBackup) {
+      this.editingItem.key = this.originalItemBackup.key;
+      this.editingItem.value = this.originalItemBackup.value;
+    }
+    this.editingItem = null;
+    this.originalItemBackup = null;
+  }
+
+  addNewRow() {
+    const newValue = new Value();
+    newValue.key = '';
+    newValue.value = '';
+    this.workingValues.push(newValue);
+    this.init();
+    this.startEdit(newValue);
+  }
+
+  hasChanges(): boolean {
+    if (this.editingItem !== null) return true;
+
+    const originalValues = this.node.values || [];
+    const currentValues = this.workingValues || [];
+
+    if (originalValues.length !== currentValues.length) return true;
+
+    for (let i = 0; i < currentValues.length; i++) {
+      const original = originalValues[i];
+      const current = currentValues[i];
+      if (!original || !current) return true;
+      if (current.key !== original.key || current.value !== original.value) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private init() {
-    this.dataSource = new MatTableDataSource(this.node.values);
+    this.dataSource = new MatTableDataSource(this.workingValues);
   }
 
   resetForm() {
     this.key = '';
     this.value = '';
-    this.editingItem = null;
   }
 }
