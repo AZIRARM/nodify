@@ -15,7 +15,7 @@
               class="action-btn secondary-btn"
               *ngIf="parentNode"
               (click)="back()"
-              matTooltip="{{ 'BACK' | translate }}">
+              matTooltip="{{ 'BACK_TO_PARENT_NODE' | translate }}">
         <mat-icon>arrow_back</mat-icon>
       </button>
 
@@ -45,7 +45,7 @@
               class="create-fab"
               *ngIf="(parentNode && userAccessService.canEdit()) || (!parentNode && userAccessService.isAdmin())"
               (click)="create()"
-              matTooltip="{{ 'CREATE_NEW' | translate }}">
+              matTooltip="{{ 'NODE_CREATE' | translate }}">
         <mat-icon>add</mat-icon>
       </button>
     </div>

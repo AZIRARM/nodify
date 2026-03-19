@@ -38,10 +38,11 @@
 
       <div class="toolbar-actions">
         <mat-slide-toggle
+          #markReadToggle
           class="mark-read-toggle"
           color="primary"
           [checked]="false"
-          (change)="markAllAsReaded()"
+          (change)="markAllAsReaded($event)"
           [disabled]="dataSource.data.length === 0">
           <span class="toggle-label">{{ "MARK_ALL_AS_READ" | translate }}</span>
         </mat-slide-toggle>

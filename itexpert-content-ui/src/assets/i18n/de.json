@@ -40,6 +40,8 @@
   "ACTIVATE_DELETE_NODE_MESSAGE": "Möchten Sie diesen Knoten reaktivieren?",
   "NODE_ALREADY_AFFECTED_TO_ANOTHER_ENVIRONMENT": "Der Projekt-/Knotencode ist bereits einer anderen Umgebung zugewiesen.",
   "NODE_PUBLICATION_HISTORY": "Knotenverlauf",
+  "NO_NODES": "Keine Knoten",
+  "BACK_TO_PARENT_NODE": "Zurück zum übergeordneten Knoten",
 
   "_CONTENT": "=== INHALT ===",
   "CONTENTS": "Inhalte",
@@ -61,6 +63,7 @@
   "ACTIVATE_DELETE_CONTENT_NODE_MESSAGE": "Möchten Sie diesen Inhalt reaktivieren?",
   "GENERATE_AI_CONTENT": "Inhalt mit KI generieren",
   "CONTENT_PUBLICATION_HISTORY": "Inhaltsverlauf",
+  "NO_CONTENTS": "Keine Inhalte",
 
   "_ACTIONS": "=== AKTIONEN ===",
   "ACTIONS": "Aktionen",

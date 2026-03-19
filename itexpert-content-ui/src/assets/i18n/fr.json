@@ -40,6 +40,8 @@
   "ACTIVATE_DELETE_NODE_MESSAGE": "Voulez vous ré-activer ce noeud ?",
   "NODE_ALREADY_AFFECTED_TO_ANOTHER_ENVIRONMENT": "Le code projet/noeud est déjà affecté à un autre environnement.",
   "NODE_PUBLICATION_HISTORY": "Historique des noeuds",
+  "NO_NODES": "Pas de noeuds",
+  "BACK_TO_PARENT_NODE": "Retour au noeud parent",
 
   "_CONTENT": "=== CONTENU ===",
   "CONTENTS": "Contenus",
@@ -61,6 +63,7 @@
   "ACTIVATE_DELETE_CONTENT_NODE_MESSAGE": "Voulez vous ré-activer ce contenu ?",
   "GENERATE_AI_CONTENT": "Générer le contenu avec l'IA",
   "CONTENT_PUBLICATION_HISTORY": "Historique des contenus",
+  "NO_CONTENTS": "Pas de contenus",
 
   "_ACTIONS": "=== ACTIONS ===",
   "ACTIONS": "Actions",
@@ -336,7 +339,6 @@
   "_PARAMETERS": "=== PARAMÈTRES ===",
   "PARAMETERS": "Paramètres",
   "SETTINGS": "Paramètres",
-  "USER_PARAMETERS": "Paramètres utilisateur",
   "PARAMETERS_NOT_FOUND": "Aucun paramètre trouvé",
   "PARAMETERS_SAVE_AUTO": "Les modifications sont automatiquement sauvegardées",
   "DARK_MODE": "Mode sombre",
