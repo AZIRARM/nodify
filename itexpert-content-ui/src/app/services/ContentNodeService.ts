@@ -74,11 +74,6 @@ export class ContentNodeService extends Service {
     return super.post("code/" + param.code + "/status/" + param.status + "/fill", param);
   }
 
-  slugExists(code: string, slug: string) {
-    const safeSlug = slug?.trim() || "null";
-    return super.get(`code/${encodeURIComponent(code)}/slug/${encodeURIComponent(safeSlug)}/exists`);
-  }
-
   getByCodeAndStatus(code: string, status: string) {
     return super.get("code/" + code + "/status/" + status);
   }

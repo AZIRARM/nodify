@@ -40,6 +40,8 @@
   "ACTIVATE_DELETE_NODE_MESSAGE": "Do you want to reactivate this node?",
   "NODE_ALREADY_AFFECTED_TO_ANOTHER_ENVIRONMENT": "The project/node code is already assigned to another environment.",
   "NODE_PUBLICATION_HISTORY": "Node History",
+  "NO_NODES": "No nodes",
+  "BACK_TO_PARENT_NODE": "Back to parent node",
 
   "_CONTENT": "=== CONTENT ===",
   "CONTENTS": "Contents",
@@ -61,6 +63,7 @@
   "ACTIVATE_DELETE_CONTENT_NODE_MESSAGE": "Do you want to reactivate this content?",
   "GENERATE_AI_CONTENT": "Generate Content with AI",
   "CONTENT_PUBLICATION_HISTORY": "Content History",
+  "NO_CONTENTS": "No contents",
 
   "_ACTIONS": "=== ACTIONS ===",
   "ACTIONS": "Actions",

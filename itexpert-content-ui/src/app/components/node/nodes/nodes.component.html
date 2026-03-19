@@ -1,47 +1,37 @@
 <!-- Page container -->
 <div class="page-container">
 
-  <!-- Header avec boutons d'action (décalé pour ne pas être caché) -->
-  <div class="page-header">
-    <!-- Fil d'Ariane -->
-    <div class="breadcrumb">
-      <mat-icon class="breadcrumb-icon" *ngIf="parentNode">folder_open</mat-icon>
-      <mat-icon class="breadcrumb-icon" *ngIf="!parentNode">folder</mat-icon>
-
-      <span class="breadcrumb-text" *ngIf="!parentNode">
-        {{ 'PROJECTS' | translate }}
-      </span>
-
-      <ng-container *ngIf="parentNode">
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-text">
-          <span class="breadcrumb-label">{{ (parentNode.parentCode ? 'NODE' : 'PROJECT') | translate }}:</span>
-          <span class="breadcrumb-value">{{ parentNode.name }}</span>
-        </span>
-      </ng-container>
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>folder</mat-icon>
+      </div>
+      <div class="header-title">
+        <span class="title-main">{{ (parentNode ? 'NODE' : 'PROJECTS') | translate }}</span>
+      </div>
     </div>
-
-    <!-- Actions groupées (visibles et bien positionnées) -->
     <div class="header-actions">
-      <!-- Bouton retour (précédent) -->
       <button mat-mini-fab
               class="action-btn secondary-btn"
               *ngIf="parentNode"
               (click)="back()"
-              matTooltip="{{ 'BACK' | translate }}">
+              matTooltip="{{ 'BACK_TO_PARENT_NODE' | translate }}">
         <mat-icon>arrow_back</mat-icon>
       </button>
 
-      <!-- Bouton noeuds supprimés (corbeille) -->
-      <button mat-mini-fab
-              class="action-btn warn-btn"
-              *ngIf="userAccessService.canEdit()"
-              (click)="deleteds()"
-              matTooltip="{{ 'DELETED_NODES' | translate }}">
-        <mat-icon>delete_sweep</mat-icon>
-      </button>
+      <div style="position: relative; display: inline-block;">
+        <button mat-mini-fab class="action-btn warn-btn"
+                (click)="deleteds()"
+                matTooltip="{{ 'DELETED_PLUGINS' | translate }}"
+                style="position: relative; overflow: visible !important;">
+          <mat-icon>delete_sweep</mat-icon>
+        </button>
 
-      <!-- Bouton import -->
+        @if(totalDeleteds > 0) {
+        <span class="deleted-badge-over">{{ totalDeleteds }}</span>
+        }
+      </div>
+
       <button mat-mini-fab
               class="action-btn primary-btn"
               *ngIf="parentNode && userAccessService.canEdit()"
@@ -51,12 +41,11 @@
       </button>
       <input hidden #fileInput type="file" id="file" (change)="import($event.target)">
 
-      <!-- Bouton création -->
       <button mat-fab
               class="create-fab"
               *ngIf="(parentNode && userAccessService.canEdit()) || (!parentNode && userAccessService.isAdmin())"
               (click)="create()"
-              matTooltip="{{ 'CREATE_NEW' | translate }}">
+              matTooltip="{{ 'NODE_CREATE' | translate }}">
         <mat-icon>add</mat-icon>
       </button>
     </div>
@@ -337,6 +326,12 @@
           [class.granted-row]="row.IsGranted"
           class="modern-row"></tr>
     </table>
+
+
+    <div class="empty-state" *ngIf="dataSource.data.length === 0">
+      <mat-icon>extension</mat-icon>
+      <p>{{ "NO_NODES" | translate }}</p>
+    </div>
 
     <!-- Pagination -->
     <mat-paginator

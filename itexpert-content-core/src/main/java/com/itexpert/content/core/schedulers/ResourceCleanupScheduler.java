@@ -21,7 +21,7 @@ public class ResourceCleanupScheduler {
     /**
      * Scheduler exécuté toutes les heures pour nettoyer les Nodes archivés.
      */
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void cleanNodes() {
         log.info("Scheduler: démarrage du nettoyage des noeuds archivés...");
 
@@ -45,7 +45,7 @@ public class ResourceCleanupScheduler {
     /**
      * Scheduler exécuté toutes les heures pour nettoyer les ContentNodes archivés.
      */
-    @Scheduled(cron = "0 * * * * *") // toutes les minutes
+    @Scheduled(cron = "0 0 * * * *")
     public void cleanContentNodes() {
         log.info("Scheduler: démarrage du nettoyage des contenus archivés...");
 

@@ -40,6 +40,8 @@
   "ACTIVATE_DELETE_NODE_MESSAGE": "هل تريد إعادة تفعيل هذه العقدة؟",
   "NODE_ALREADY_AFFECTED_TO_ANOTHER_ENVIRONMENT": "رمز المشروع/العقدة مُخصص بالفعل لبيئة أخرى.",
   "NODE_PUBLICATION_HISTORY": "سجل العقد",
+  "NO_NODES": "لا توجد عقد",
+  "BACK_TO_PARENT_NODE": "العودة إلى العقدة الأصلية",
 
   "_CONTENT": "=== المحتوى ===",
   "CONTENTS": "المحتويات",
@@ -61,6 +63,7 @@
   "ACTIVATE_DELETE_CONTENT_NODE_MESSAGE": "هل تريد إعادة تفعيل هذا المحتوى؟",
   "GENERATE_AI_CONTENT": "توليد المحتوى بالذكاء الاصطناعي",
   "CONTENT_PUBLICATION_HISTORY": "سجل المحتويات",
+  "NO_CONTENTS": "لا توجد محتويات",
 
   "_ACTIONS": "=== الإجراءات ===",
   "ACTIONS": "الإجراءات",

@@ -15,9 +15,11 @@ export class LockService extends Service {
 
   private currentCode?: string;
 
-  private authenticationService: AuthenticationService = Inject(AuthenticationService);
 
-  constructor(httpClient: HttpClient, private ngZone: NgZone) {
+  constructor(
+    private httpClient: HttpClient,
+    private ngZone: NgZone,
+    private authenticationService: AuthenticationService) {
     super("locks", httpClient);
   }
 
@@ -132,7 +134,7 @@ getAll(): Observable<any[]>{
 handleAllLocks(): Observable<any> {
     const token = this.authenticationService.getAccessToken();
 
-    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/lock-contents&authorization=Bearer ${token}`;
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/lock-contents?authorization=Bearer ${token}`;
 
     return new Observable(observer => {
 

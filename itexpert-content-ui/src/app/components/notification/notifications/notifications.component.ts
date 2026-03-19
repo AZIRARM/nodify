@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild } from '@angular
 import { MatTableDataSource } from "@angular/material/table";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatPaginator } from "@angular/material/paginator";
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
 import { NotificationService } from "../../../services/NotificationService";
 import { Notification } from "../../../modeles/Notification";
@@ -45,6 +46,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   // WebSocket
   private wsSubscription: Subscription | null = null;
+
+  @ViewChild('markReadToggle') markReadToggle: MatSlideToggle;
 
   constructor(
     private notificationService: NotificationService,
@@ -157,7 +160,9 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   /**
    * Marque toutes les notifications comme lues
    */
-  markAllAsReaded() {
+  markAllAsReaded(event: any) {
+    event.source.checked = false;
+
     if (this.dataSource.data.length === 0) {
       return;
     }
@@ -176,16 +181,25 @@ export class NotificationsComponent implements OnInit, OnDestroy {
           if (result?.data === 'validated') {
             this.notificationService.markAllReaded().subscribe({
               next: () => {
-                console.log('Toutes les notifications marquées comme lues');
                 this.dataSource.data = [];
                 this.unreadCount = 0;
                 this.loadNotifications();
                 this.showSuccessMessage('ALL_MARKED_READ_SUCCESS');
+                setTimeout(() => {
+                  event.source.checked = true;
+                });
               },
               error: (error: any) => {
                 console.error('Erreur marquage tout lu:', error);
                 this.showErrorMessage('ERROR_MARK_ALL_READ');
+                setTimeout(() => {
+                  event.source.checked = false;
+                });
               }
+            });
+          } else {
+            setTimeout(() => {
+              event.source.checked = false;
             });
           }
         });

@@ -2,10 +2,15 @@ import {Injectable} from '@angular/core';
 import {Service} from "./Service";
 import {HttpClient} from "@angular/common/http";
 import {Node} from "../modeles/Node";
+import { AuthenticationService } from './AuthenticationService';
+import { interval, fromEvent, merge, Subscription, timer, forkJoin, Observable, of } from 'rxjs';
+import {Env} from "../../assets/configurations/environment";
 
 @Injectable()
 export class NodeService extends Service {
-  constructor(httpClient: HttpClient) {
+  constructor(
+    private httpClient: HttpClient,
+    private authenticationService: AuthenticationService) {
     super("nodes", httpClient);
   }
 
@@ -110,4 +115,32 @@ export class NodeService extends Service {
   propagateMaxHistoryToKeep(nodeCodePatent: string) {
     return super.post("propagateMaxHistoryToKeep/" + nodeCodePatent, null);
   }
+
+
+handle(): Observable<Node> {
+    const token = this.authenticationService.getAccessToken();
+
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/nodes?authorization=Bearer ${token}`;
+
+    return new Observable(observer => {
+
+      const socket = new WebSocket(url);
+
+      socket.onmessage = (event) => {
+        observer.next(JSON.parse(event.data));
+      };
+
+      socket.onerror = (event) => {
+        observer.error(event);
+      };
+
+      socket.onclose = () => {
+        observer.complete();
+      };
+
+      return () => socket.close();
+    });
+
+  }
+
 }

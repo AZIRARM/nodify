@@ -8,7 +8,7 @@ import {UserAccessService} from "../../../services/UserAccessService";
 import { LockService } from 'src/app/services/LockService';
 import { LoggerService } from 'src/app/services/LoggerService';
 import { TranslateService } from '@ngx-translate/core';
-import { interval, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
@@ -18,16 +18,14 @@ import {AuthenticationService} from "../../../services/AuthenticationService";
 })
 export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   data: any;
-
+  workingTranslations: Translation[] = [];
   current: any;
-
   languages: Language[] = [];
-
   displayedColumns: string[] = ['Language', 'Key', 'Value', 'Actions'];
-
   dataSource: MatTableDataSource<Translation>;
-
   private lockCheckSub: Subscription;
+  editingItem: Translation | null = null;
+  originalItemBackup: any = null;
 
   constructor(
     public dialogRef: MatDialogRef<TranslationsDialogComponent>,
@@ -44,14 +42,13 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
       if (!this.data.translations) {
         this.data.translations = [];
       }
+      this.workingTranslations = this.data.translations.map((t: Translation) => ({...t}));
     }
   }
-
 
   ngOnInit() {
     this.init();
 
-    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
     this.lockService.acquire(this.data.code).subscribe(acquired => {
       if (!acquired) {
          this.translateService.get("RESOURCE_LOCKED")
@@ -60,7 +57,6 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
             });
         this.dialogRef.close();
       } else {
-        // Si acquis → démarre la surveillance d’inactivité à 30 min
         this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
          this.translateService.get("RESOURCE_RELEASED")
             .subscribe(translation => {
@@ -69,8 +65,6 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
           this.dialogRef.close();
         });
 
-
-        // 🔄 Connexion WebSocket pour ce node
        this.lockService.getLockInfoSocket(this.data.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
          if (lockInfo.locked) {
            this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
@@ -81,7 +75,6 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
 
       }
     });
-
   }
 
   ngOnDestroy(): void {
@@ -96,17 +89,17 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   }
 
   validate() {
+    this.data.translations = this.workingTranslations;
     this.dialogRef.close({data: this.data});
   }
-
 
   init() {
     this.languageService.getAll().subscribe(
       (response: any) => {
         if (response) {
           this.languages = response;
-          this.data.translations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
-          this.dataSource = new MatTableDataSource(this.data.translations);
+          this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+          this.dataSource = new MatTableDataSource(this.workingTranslations);
           this.current = new Translation();
         }
       },
@@ -116,33 +109,113 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
     );
   }
 
-
   delete(translation: Translation) {
     if (translation) {
-      this.data.translations = this.data.translations
+      this.workingTranslations = this.workingTranslations
         .filter((v: Translation) => !(v.key == translation.key && v.language == translation.language));
-      this.dataSource = new MatTableDataSource(this.data.translations);
+      this.dataSource = new MatTableDataSource(this.workingTranslations);
       this.current = new Translation();
     }
   }
 
   create() {
     if (this.current?.language && this.current?.key && this.current?.value) {
-      this.data.translations = this.data.translations?.filter(
+      this.workingTranslations = this.workingTranslations?.filter(
         (trans: Translation) =>
           !(trans.language === this.current.language && trans.key === this.current.key)
       ) || [];
 
-      this.data.translations.push(this.current);
-      this.data.translations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+      this.workingTranslations.push(this.current);
+      this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
 
-      this.init();
+      this.dataSource = new MatTableDataSource(this.workingTranslations);
+      this.current = new Translation();
     }
-
   }
 
-  update(element: any) {
-    this.current = element;
+  startEdit(element: Translation) {
+    if (this.editingItem) {
+      this.cancelEdit();
+    }
+    this.originalItemBackup = {
+      language: element.language,
+      key: element.key,
+      value: element.value
+    };
+    this.editingItem = element;
+  }
+
+  saveEdit(element: Translation) {
+    if (!element.language || !element.key || !element.value) {
+      this.translateService.get("FIELDS_REQUIRED").subscribe(translation => {
+        this.loggerService.warn(translation);
+      });
+      return;
+    }
+
+    const exists = this.workingTranslations.some(t =>
+      t !== element && t.language === element.language && t.key === element.key
+    );
+
+    if (exists) {
+      this.translateService.get("TRANSLATION_ALREADY_EXISTS").subscribe(translation => {
+        this.loggerService.warn(translation);
+      });
+      return;
+    }
+
+    const index = this.workingTranslations.findIndex(t => t === element);
+    if (index !== -1) {
+      this.workingTranslations[index] = element;
+      this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+      this.dataSource = new MatTableDataSource(this.workingTranslations);
+    }
+
+    this.editingItem = null;
+    this.originalItemBackup = null;
+  }
+
+  cancelEdit() {
+    if (this.editingItem && this.originalItemBackup) {
+      this.editingItem.language = this.originalItemBackup.language;
+      this.editingItem.key = this.originalItemBackup.key;
+      this.editingItem.value = this.originalItemBackup.value;
+    }
+    this.editingItem = null;
+    this.originalItemBackup = null;
+  }
+
+  addNewRow() {
+    const newTranslation = new Translation();
+    newTranslation.language = '';
+    newTranslation.key = '';
+    newTranslation.value = '';
+    this.workingTranslations.push(newTranslation);
+    this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+    this.dataSource = new MatTableDataSource(this.workingTranslations);
+    this.startEdit(newTranslation);
+  }
+
+  hasChanges(): boolean {
+    if (this.editingItem !== null) return true;
+
+    const originalTranslations = this.data.translations || [];
+    const currentTranslations = this.workingTranslations || [];
+
+    if (originalTranslations.length !== currentTranslations.length) return true;
+
+    for (let i = 0; i < currentTranslations.length; i++) {
+      const original = originalTranslations[i];
+      const current = currentTranslations[i];
+      if (!original || !current) return true;
+      if (current.language !== original.language ||
+          current.key !== original.key ||
+          current.value !== original.value) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   isFormValid(): boolean {

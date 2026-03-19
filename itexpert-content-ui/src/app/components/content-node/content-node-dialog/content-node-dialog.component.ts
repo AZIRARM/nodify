@@ -67,6 +67,8 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   private lockRefreshSub?: Subscription;
 
+  totalDeleteds: number = 0;
+
   constructor(private translate: TranslateService,
               private toast: ToastrService,
               private loggerService: LoggerService,
@@ -128,6 +130,16 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       (error) => {                              //error() callback
         this.toast.error('Request failed with error');
       });
+
+
+    this.contentNodeService.getDeleted(this.node?.code ?? '').subscribe(
+        (response: any) => {
+          this.totalDeleteds = response.length;
+        },
+        (error: any) => {
+          console.error(error);
+        }
+      );
   }
 
   private initEnvironments() {

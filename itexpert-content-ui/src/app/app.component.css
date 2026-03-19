@@ -1,23 +1,37 @@
-
 app-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 60px; /* hauteur du header */
-  z-index: 1000; /* pour qu'il soit au-dessus des autres éléments */
-  background-color: var(--primary, #c866b6); /* exemple de couleur, ajustable */
+  height: 60px;
+  z-index: 1000;
+  background: linear-gradient(135deg, var(--table-primary) 0%, #764ba2 100%);
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+app-header.hidden {
+  transform: translateY(-100%);
 }
 
 app-sidenav {
   position: fixed;
-  top: 60px; /* en dessous du header */
+  top: 60px;
   left: 0;
-  bottom: 60px; /* au-dessus du footer */
-  width: 100%; /* largeur du menu latéral */
-  overflow-y: auto; /* défilement interne si besoin */
+  bottom: 60px;
+  width: 100%;
+  overflow-y: auto;
   background-color: var(--secondary, #e199cb);
   z-index: 900;
+  transition: top 0.3s ease, bottom 0.3s ease;
+}
+
+app-sidenav.header-hidden {
+  top: 0;
+}
+
+app-sidenav.footer-hidden {
+  bottom: 0;
 }
 
 app-footer {
@@ -25,8 +39,38 @@ app-footer {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 60px; /* hauteur du footer */
+  height: 60px;
   z-index: 1000;
-  background-color: var(--primary, #c866b6);
+  background-color: #f5f5f5;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
 }
 
+app-footer.hidden {
+  transform: translateY(100%);
+}
+
+.main-container {
+  margin-top: 60px;
+  margin-bottom: 60px;
+  min-height: calc(100vh - 120px);
+  transition: margin 0.3s ease;
+}
+
+.main-container.header-hidden {
+  margin-top: 0;
+}
+
+.main-container.footer-hidden {
+  margin-bottom: 0;
+}
+
+.main-container.header-hidden.footer-hidden {
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  padding: 20px;
+  background-color: white;
+  min-height: 100%;
+}

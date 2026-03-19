@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateService} from "@ngx-translate/core";
 import {SidenavService} from "../../../services/SidenavService";
@@ -15,7 +15,7 @@ import { CookiesService } from 'src/app/services/CookiesService';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   user: any;
 
   theme: string = 'dark';
@@ -43,6 +43,10 @@ export class HeaderComponent {
 
   isDarkMode: boolean = true;
 
+  isToolbarVisible = false;
+
+  private hideTimer: any;
+
   constructor(
     private translate: TranslateService,
     private notificationService: NotificationService,
@@ -58,6 +62,14 @@ export class HeaderComponent {
     this.isDarkMode = this.themeService.isDarkModeEnabled();
     this.themeService.setTheme();
     this.initCountUreadedNotifications();
+  }
+
+ ngOnInit() {
+    document.addEventListener('mousemove', (e) => {
+      if (e.clientY < 20) {
+        this.showToolbar();
+      }
+    });
   }
 
 
@@ -131,6 +143,24 @@ export class HeaderComponent {
   getCurrentLanguageLabel(): string {
     const currentLang = this.languageList.find((lang: any) => lang.code === this.selectedLanguage);
     return currentLang ? currentLang.label : this.selectedLanguage;
+  }
+
+  showToolbar() {
+    this.cancelHideTimer();
+    this.isToolbarVisible = true;
+  }
+
+  startHideTimer() {
+    this.hideTimer = setTimeout(() => {
+      this.isToolbarVisible = false;
+    }, 2000);
+  }
+
+  cancelHideTimer() {
+    if (this.hideTimer) {
+      clearTimeout(this.hideTimer);
+      this.hideTimer = null;
+    }
   }
 
 }

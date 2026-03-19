@@ -41,7 +41,7 @@ export class DeletedItemsDialogComponent implements OnInit {
 
   user: any;
   parentNode: any;
-  deleteService: DeleteService; // Service reçu depuis les données
+  deleteService: DeleteService;
   displayedColumns: string[] = ['Name', 'Version', 'Last Modification', 'Modified by'];
   dataSource: MatTableDataSource<DeletableItem> = new MatTableDataSource<DeletableItem>([]);
   dialogValidationRef: MatDialogRef<ValidationDialogComponent>;

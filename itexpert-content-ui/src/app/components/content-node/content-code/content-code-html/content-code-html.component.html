@@ -1,18 +1,14 @@
 <div class="content-code-html" *ngIf="contentNode?.type ==='HTML'">
 
-  <!-- Titre seul sur sa ligne -->
   <div class="title-row">
     <app-content-code-title [title]="'HTML'" [dialogRef]="dialogRef"></app-content-code-title>
   </div>
 
-  <!-- Informations -->
   <div class="infos-section">
     <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
   </div>
 
-  <!-- Barre d'outils au-dessus du code avec boutons à droite -->
   <div class="code-toolbar">
-    <!-- Boutons de bascule Code/HTML -->
     <div class="toggle-buttons">
       <button
         mat-icon-button
@@ -36,7 +32,6 @@
 
     <div class="spacer"></div>
 
-    <!-- Bouton plein écran -->
     <button
       class="fullscreen-btn"
       (click)="toggleFullscreen()"
@@ -45,10 +40,8 @@
     </button>
   </div>
 
-  <!-- Éditeur de code / Visualiseur HTML -->
   <div class="code-editor-wrapper" [class.fullscreen]="isFullscreen">
 
-    <!-- Bouton de fermeture en mode plein écran -->
     <button
       class="fullscreen-close-btn"
       *ngIf="isFullscreen"
@@ -57,7 +50,6 @@
       <mat-icon>close</mat-icon>
     </button>
 
-    <!-- Mode Code -->
     <ngx-codemirror
       *ngIf="code"
       #codeMirror
@@ -73,11 +65,11 @@
       }">
     </ngx-codemirror>
 
-    <!-- Mode Visualisation HTML -->
     <div
       *ngIf="!code && contentFilled"
       class="html-viewer"
-      [innerHTML]="contentFilled"></div>
+      [innerHTML]="contentFilled">
+    </div>
 
   </div>
 

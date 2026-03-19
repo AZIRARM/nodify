@@ -25,14 +25,11 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
   code: boolean = true;
   isFullscreen: boolean = false;
 
-  constructor(private contentService: ContentNodeService) {
-
-  }
+  constructor(private contentService: ContentNodeService) {}
 
   @ViewChild(CodemirrorComponent) codeMirrorComponent!: CodemirrorComponent;
 
   ngAfterViewInit(): void {
-    this.toHtml(this.contentNode.content);
     setTimeout(() => {
       if (this.codeMirrorComponent?.codeMirror) {
         this.codeMirrorComponent.codeMirror.refresh();
@@ -42,6 +39,9 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
 
   setCodeEdition(codeEdition: boolean) {
     this.code = codeEdition;
+    if (!codeEdition && this.contentNode?.content) {
+      this.toHtml(this.contentNode.content);
+    }
   }
 
   toHtml(content: string) {
@@ -55,7 +55,7 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
         (response: any) => {
           this.contentFilled = response.content;
         },
-        (error) => {                              //error() callback
+        (error) => {
           console.error('Request failed with error');
         });
     }

@@ -2,8 +2,9 @@ package com.itexpert.content.core.handlers.websockets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itexpert.content.core.handlers.RedisHandler;
+import com.itexpert.content.core.handlers.ContentNodeHandler;
 import com.itexpert.content.core.utils.auth.JWTUtil;
+import com.itexpert.content.lib.enums.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,9 +23,9 @@ import java.time.Duration;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RedisSocketHandler implements WebSocketHandler {
+public class ContentNodeSocketHandler implements WebSocketHandler {
 
-    private final RedisHandler redisHandler;
+    private final ContentNodeHandler contentNodeHandler;
     private final JWTUtil jwtUtil;
 
     @Override
@@ -39,29 +40,23 @@ public class RedisSocketHandler implements WebSocketHandler {
         MultiValueMap<String, String> queryParams =
                 UriComponentsBuilder.fromUri(uri).build().getQueryParams();
 
-        String resourceCode = queryParams.getFirst("code");
+        // 1️⃣ Paramètres
+        String nodeCode = queryParams.getFirst("code");
 
-        if (resourceCode == null) {
-            return session.close();
-        }
-
-        String authentication = jwtUtil.getUsernameFromToken(token);
-
-        Flux<String> lockInfoFlux =
-                Flux.interval(Duration.ofSeconds(2))
-                        .flatMap(tick ->
-                                redisHandler.getLockInfo(resourceCode, authentication)
-                        )
-                        .map(lockInfo -> {
-                            try {
-                                return new ObjectMapper().writeValueAsString(lockInfo);
-                            } catch (JsonProcessingException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+        Flux<String> contentNodesJson = Flux.interval(Duration.ofSeconds(2))
+                .flatMap(tick ->
+                        contentNodeHandler.findByNodeCodeAndStatus(nodeCode, StatusEnum.SNAPSHOT.name())
+                )
+                .map(contentNode -> {
+                    try {
+                        return new ObjectMapper().writeValueAsString(contentNode);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 
         return session.send(
-                lockInfoFlux.map(session::textMessage)
+                contentNodesJson.map(session::textMessage) // Conversion String → WebSocketMessage
         );
     }
 

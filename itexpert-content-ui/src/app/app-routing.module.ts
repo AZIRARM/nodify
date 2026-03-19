@@ -27,16 +27,6 @@ const routes: Routes =
       canActivate: [AuthGuard]
     },
     {
-      path: 'languages',
-      component: LanguagesComponent,
-      canActivate: [AuthGuard]
-    },
-    {
-      path: 'users',
-      component: UsersComponent,
-      canActivate: [AuthGuard]
-    },
-    {
       path: 'login',
       component: LoginComponent
     },
@@ -71,12 +61,15 @@ const routes: Routes =
       component: PluginComponent,
       canActivate: [AuthGuard]
     },
-
     {
-      path: 'release-locks',
-      component: ReleaseLocksComponent,
-      canActivate: [AuthGuard]
-    },
+        path: 'admin',
+        canActivate: [AuthGuard],
+        children: [
+          { path: 'users', component: UsersComponent },
+          { path: 'languages', component: LanguagesComponent },
+          { path: 'unlock-resources', component: ReleaseLocksComponent }
+        ]
+      }
 
   ];
 
