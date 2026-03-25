@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
-    - name: Setup Node.js (pour Angular)
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
@@ -37,35 +37,20 @@ jobs:
         key: ${{ runner.os }}-sonar
         restore-keys: ${{ runner.os }}-sonar
     
-    # Étape 1: Build du module parent
     - name: 📦 Build itexpert-content-parent
       run: mvn -B clean install -pl itexpert-content-parent -am
     
-    # Étape 2: Build du module lib
     - name: 📚 Build itexpert-content-lib
       run: mvn -B install -pl itexpert-content-lib -am
     
-    # Étape 3: Build du module core
     - name: ⚙️ Build itexpert-content-core
       run: mvn -B install -pl itexpert-content-core -am
     
-    # Étape 4: Build du module api
     - name: 🔌 Build itexpert-content-api
       run: mvn -B install -pl itexpert-content-api -am
     
-    # Étape 5: Build du module ui (Angular via Maven)
-    - name: 🎨 Build itexpert-content-ui (Angular)
+    - name: 🎨 Build itexpert-content-ui
       run: mvn -B install -pl itexpert-content-ui -am
     
-    # Étape 6: Analyse SonarQube (excluant UI si pas de classes Java)
     - name: 🔍 SonarQube Scan
-      run: |
-        mvn sonar:sonar \
-          -Dsonar.host.url=https://sonar.azirar.ovh \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.projectKey=${{ github.repository }} \
-          -Dsonar.projectName=${{ github.repository }} \
-          -Dsonar.java.binaries=itexpert-content-parent/target/classes,itexpert-content-lib/target/classes,itexpert-content-core/target/classes,itexpert-content-api/target/classes \
-          -Dsonar.exclusions=itexpert-content-ui/** \
-          -Dsonar.sourceEncoding=UTF-8 \
-          -Dsonar.ws.ignoreCertificates=true
+      run: mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
