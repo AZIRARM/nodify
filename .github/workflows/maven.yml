@@ -58,8 +58,6 @@ jobs:
           -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
           -Dsonar.projectKey=com.itexpert.content:itexpert-content \
           -Dsonar.projectName=ITExpert-Content \
-          -Dsonar.projectVersion=0.0.1-SNAPSHOT \
           -Dsonar.java.binaries=**/target/classes \
           -Dsonar.sourceEncoding=UTF-8 \
-          -Dsonar.ws.ignoreCertificates=true \
-          -Dsonar.verbose=true
+          -Dsonar.ws.ignoreCertificates=true
