@@ -15,9 +15,14 @@
   <description>ITExpert Content UI</description>
   <packaging>pom</packaging>
 
+  <properties>
+    <!-- Skip Java analysis for UI module -->
+    <sonar.skip>false</sonar.skip>
+    <sonar.javascript.skip>false</sonar.javascript.skip>
+  </properties>
+
   <build>
     <plugins>
-
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -37,6 +42,23 @@
             </configuration>
           </execution>
           <execution>
+            <id>npm test</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <executable>npm</executable>
+              <arguments>
+                <argument>run</argument>
+                <argument>test</argument>
+                <argument>--</argument>
+                <argument>--watch=false</argument>
+                <argument>--code-coverage</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
             <id>npm build</id>
             <goals>
               <goal>exec</goal>
@@ -52,8 +74,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
-
 </project>
