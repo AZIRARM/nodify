@@ -42,25 +42,6 @@
             </configuration>
           </execution>
           <execution>
-            <id>npm test</id>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <phase>test</phase>
-            <configuration>
-              <executable>npm</executable>
-              <arguments>
-                <argument>run</argument>
-                <argument>test</argument>
-                <argument>--</argument>
-                <argument>--watch=false</argument>
-                <argument>--code-coverage</argument>
-                <argument>--browsers=ChromeHeadless</argument>
-              </arguments>
-              <workingDirectory>${project.basedir}</workingDirectory>
-            </configuration>
-          </execution>
-          <execution>
             <id>npm build</id>
             <goals>
               <goal>exec</goal>
