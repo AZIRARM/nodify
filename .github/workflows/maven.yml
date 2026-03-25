@@ -51,13 +51,15 @@ jobs:
       run: mvn -B install -pl itexpert-content-ui -am
     
     # Étape 6: Analyse SonarQube
-    - name: 🔍 SonarQube Scan
+    - name: 🔍 SonarQube Scan 
       run: |
         mvn sonar:sonar \
           -Dsonar.host.url=https://sonar.azirar.ovh \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.projectKey=${{ github.repository }} \
-          -Dsonar.projectName=${{ github.repository }} \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.projectKey=com.itexpert.content:itexpert-content \
+          -Dsonar.projectName=ITExpert-Content \
+          -Dsonar.projectVersion=0.0.1-SNAPSHOT \
           -Dsonar.java.binaries=**/target/classes \
-          -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
-          -Dsonar.junit.reportPaths=**/target/surefire-reports
+          -Dsonar.sourceEncoding=UTF-8 \
+          -Dsonar.ws.ignoreCertificates=true \
+          -Dsonar.verbose=true
