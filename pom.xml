@@ -44,7 +44,7 @@
       itexpert-content-api/target/test-classes
     </sonar.java.test.binaries>
     
-    <!-- Sources to analyze -->
+    <!-- Sources to analyze (exclude test sources) -->
     <sonar.sources>
       itexpert-content-parent/src/main,
       itexpert-content-lib/src/main,
@@ -53,13 +53,12 @@
       itexpert-content-ui/src
     </sonar.sources>
     
-    <!-- Test sources -->
+    <!-- Test sources (exclude main sources) -->
     <sonar.tests>
       itexpert-content-parent/src/test,
       itexpert-content-lib/src/test,
       itexpert-content-core/src/test,
-      itexpert-content-api/src/test,
-      itexpert-content-ui/src
+      itexpert-content-api/src/test
     </sonar.tests>
     
     <!-- Exclusions -->
@@ -68,8 +67,7 @@
       **/dist/**,
       **/*.spec.ts,
       **/*.test.ts,
-      **/coverage/**,
-      **/*.min.js
+      **/coverage/**
     </sonar.exclusions>
     
     <!-- Angular/TypeScript coverage -->
@@ -91,7 +89,7 @@
       itexpert-content-core/target/surefire-reports,
       itexpert-content-api/target/surefire-reports
     </sonar.junit.reportPaths>
-  </properties>
+ </properties>
 
   <build>
     <pluginManagement>
