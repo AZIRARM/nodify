@@ -17,7 +17,6 @@
 
   <properties>
     <!-- Skip Java analysis for UI module -->
-    <sonar.skip>false</sonar.skip>
     <sonar.javascript.skip>false</sonar.javascript.skip>
   </properties>
 
@@ -33,12 +32,13 @@
             <goals>
               <goal>exec</goal>
             </goals>
-            <phase>install</phase>
+            <phase>initialize</phase>
             <configuration>
               <executable>npm</executable>
               <arguments>
                 <argument>install</argument>
               </arguments>
+              <workingDirectory>${project.basedir}</workingDirectory>
             </configuration>
           </execution>
           <execution>
@@ -55,7 +55,9 @@
                 <argument>--</argument>
                 <argument>--watch=false</argument>
                 <argument>--code-coverage</argument>
+                <argument>--browsers=ChromeHeadless</argument>
               </arguments>
+              <workingDirectory>${project.basedir}</workingDirectory>
             </configuration>
           </execution>
           <execution>
@@ -63,13 +65,14 @@
             <goals>
               <goal>exec</goal>
             </goals>
-            <phase>install</phase>
+            <phase>compile</phase>
             <configuration>
               <executable>npm</executable>
               <arguments>
                 <argument>run</argument>
                 <argument>build</argument>
               </arguments>
+              <workingDirectory>${project.basedir}</workingDirectory>
             </configuration>
           </execution>
         </executions>
