@@ -19,7 +19,40 @@
   </modules>
 
   <properties>
-    <sonar.java.binaries>**/target/classes</sonar.java.binaries>
+    <!-- SonarQube Configuration -->
+    <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
+    <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+    <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
+    
+    <!-- Java modules binaries -->
+    <sonar.java.binaries>
+      itexpert-content-parent/target/classes,
+      itexpert-content-lib/target/classes,
+      itexpert-content-core/target/classes,
+      itexpert-content-api/target/classes
+    </sonar.java.binaries>
+    
+    <!-- Sources to analyze -->
+    <sonar.sources>
+      itexpert-content-parent/src,
+      itexpert-content-lib/src,
+      itexpert-content-core/src,
+      itexpert-content-api/src,
+      itexpert-content-ui/src
+    </sonar.sources>
+    
+    <!-- Exclusions -->
+    <sonar.exclusions>
+      **/node_modules/**,
+      **/dist/**,
+      **/*.spec.ts,
+      **/*.test.ts,
+      **/coverage/**
+    </sonar.exclusions>
+    
+    <!-- Angular/TypeScript coverage -->
+    <sonar.typescript.lcov.reportPaths>itexpert-content-ui/coverage/lcov.info</sonar.typescript.lcov.reportPaths>
+    <sonar.javascript.lcov.reportPaths>itexpert-content-ui/coverage/lcov.info</sonar.javascript.lcov.reportPaths>
   </properties>
 
   <build>
