@@ -17,11 +17,24 @@
 
   <properties>
     <!-- Skip Java analysis for UI module -->
-    <sonar.javascript.skip>false</sonar.javascript.skip>
+    <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
+    <sonar.token>${env.SONAR_TOKEN}</sonar.token>
+    <sonar.projectKey>com.nodify:studio</sonar.projectKey>
+    <sonar.projectName>Nodify - Studio</sonar.projectName>
+    <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+    <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
+    <sonar.sources>src</sonar.sources>
+    <sonar.exclusions>**/node_modules/**,**/dist/**,**/*.spec.ts</sonar.exclusions>
+    <sonar.typescript.lcov.reportPaths>coverage/lcov.info</sonar.typescript.lcov.reportPaths>
   </properties>
 
   <build>
     <plugins>
+      <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>3.10.0.2594</version>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
