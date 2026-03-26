@@ -1,6 +1,3 @@
-Voici ta documentation mise à jour pour inclure la configuration de `REDIS_URL` pour `nodify-api` :
-
-````markdown
 # Installation Steps
 
 1. **Clone the project from GitHub**  
