@@ -26,8 +26,11 @@
     <!-- SonarQube Configuration -->
     <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
     <sonar.token>${env.SONAR_TOKEN}</sonar.token>
+    <sonar.projectKey>com.nodify:parent</sonar.projectKey>
+    <sonar.projectName>Nodify - Parent</sonar.projectName>
     <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
     <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
+    <sonar.java.binaries>target/classes</sonar.java.binaries>
     
     <!-- Exclude all pom.xml files and test files -->
     <sonar.exclusions>
