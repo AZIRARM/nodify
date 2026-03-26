@@ -18,6 +18,15 @@
         <com.fasterxml.jackson.core>2.18.6</com.fasterxml.jackson.core>
         <jdk-version>20</jdk-version>
         <maven-compiler-plugin>3.13.0</maven-compiler-plugin>
+             
+             <!-- SonarQube Configuration -->
+             <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
+             <sonar.token>${env.SONAR_TOKEN}</sonar.token>
+             <sonar.projectKey>com.nodify:parent</sonar.projectKey>
+             <sonar.projectName>Nodify - Parent</sonar.projectName>
+             <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+             <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
+             <sonar.java.binaries>target/classes</sonar.java.binaries>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -142,6 +151,12 @@
     <build>
         <pluginManagement>
             <plugins>
+                     
+                 <plugin>
+                     <groupId>org.sonarsource.scanner.maven</groupId>
+                     <artifactId>sonar-maven-plugin</artifactId>
+                     <version>3.10.0.2594</version>
+                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
