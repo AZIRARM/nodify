@@ -14,6 +14,18 @@
     <name>itexpert-content-core</name>
     <description>ITExpert Content Core</description>
     <packaging>jar</packaging>
+         
+         <properties>
+             <!-- SonarQube Configuration -->
+             <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
+             <sonar.token>${env.SONAR_TOKEN}</sonar.token>
+             <sonar.projectKey>com.nodify:core</sonar.projectKey>
+             <sonar.projectName>Nodify - Core</sonar.projectName>
+             <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+             <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
+             <sonar.java.binaries>target/classes</sonar.java.binaries>
+             <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+         </properties>
 
     <dependencies>
         <dependency>
@@ -120,6 +132,11 @@
 
     <build>
         <plugins>
+         <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>3.10.0.2594</version>
+        </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
