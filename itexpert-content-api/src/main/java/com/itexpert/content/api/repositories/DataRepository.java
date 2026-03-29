@@ -21,4 +21,6 @@ public interface DataRepository extends ReactiveMongoRepository<Data, UUID> {
     Mono<Data>  findByContentNodeCodeAndKey(String code, String key);
 
     Flux<Data>  findByContentNodeCodeAndName(String code, String name);
+
+    Mono<Long> countByContentNodeCode(String code);
 }

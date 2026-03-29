@@ -89,7 +89,7 @@ public class ContentNodeEndPoint {
                         bytes = Base64.getDecoder().decode(contentFile.getData());
                     }
                     return ResponseEntity.ok()
-                            .contentLength(contentFile.getSize())
+                                .contentLength(contentFile.getSize())
                             .contentType(MediaType.APPLICATION_OCTET_STREAM)
                             .header("Content-Disposition", "attachment; filename=\"" + contentFile.getName() + "\"")
                             .body(bytes);

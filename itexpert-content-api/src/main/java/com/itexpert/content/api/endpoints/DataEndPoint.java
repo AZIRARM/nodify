@@ -67,6 +67,24 @@ public class DataEndPoint {
     }
 
     /**
+     * Counts data objects by content code.
+     *
+     * @param code the content code
+     * @return the number of data objects matching the given content code
+     */
+    @Operation(
+            summary = "Count data by content code",
+            description = "Returns the number of data entries associated with the given content code."
+    )
+    @GetMapping("/content-code/{code}/count")
+    public Mono<Long> countByContentCode(
+            @Parameter(description = "The content code")
+            @PathVariable String code) {
+
+        return dataHandler.countByContentCode(code);
+    }
+
+    /**
      * Saves a new Data object.
      *
      * @param data The Data object to be saved.

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateService} from "@ngx-translate/core";
 import {SidenavService} from "../../../services/SidenavService";
@@ -15,7 +15,7 @@ import { CookiesService } from 'src/app/services/CookiesService';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   user: any;
 
   theme: string = 'dark';
@@ -44,7 +44,7 @@ export class HeaderComponent implements OnInit {
   isDarkMode: boolean = true;
 
   isToolbarVisible = false;
-
+  showHint = true;
   private hideTimer: any;
 
   constructor(
@@ -64,14 +64,19 @@ export class HeaderComponent implements OnInit {
     this.initCountUreadedNotifications();
   }
 
- ngOnInit() {
+  ngOnInit() {
     document.addEventListener('mousemove', (e) => {
-      if (e.clientY < 20) {
-        this.showToolbar();
-      }
-    });
+        if (e.clientY < 10 && !this.isToolbarVisible) {
+          this.showToolbar();
+        }
+      });
   }
 
+  ngOnDestroy() {
+    if (this.hideTimer) {
+      clearTimeout(this.hideTimer);
+    }
+  }
 
   toggleSidenav(): void {
     if (this.isOpen) {
@@ -83,9 +88,7 @@ export class HeaderComponent implements OnInit {
   }
 
   logout() {
-
     this.translate.get("LOGOUT_TITLE").subscribe(trad1 => {
-
       this.translate.get("LOGOUT_MESSAGE").subscribe(trad2 => {
         this.dialogRef = this.dialog.open(ValidationDialogComponent, {
           data: {
@@ -105,7 +108,6 @@ export class HeaderComponent implements OnInit {
             }
           });
       });
-
     });
   }
 
@@ -127,12 +129,10 @@ export class HeaderComponent implements OnInit {
     window.location.reload();
   }
 
-
   toggleTheme() {
     this.isDarkMode = !this.isDarkMode;
     this.themeService.toggleTheme(this.isDarkMode ? 'dark' : 'light');
   }
-
 
   activeLink = 'workspace';
 
@@ -145,16 +145,17 @@ export class HeaderComponent implements OnInit {
     return currentLang ? currentLang.label : this.selectedLanguage;
   }
 
-  showToolbar() {
-    this.cancelHideTimer();
-    this.isToolbarVisible = true;
-  }
+showToolbar() {
+  this.cancelHideTimer();
+  this.isToolbarVisible = true;
+}
 
-  startHideTimer() {
-    this.hideTimer = setTimeout(() => {
-      this.isToolbarVisible = false;
-    }, 2000);
-  }
+ startHideTimer() {
+   this.cancelHideTimer();
+   this.hideTimer = setTimeout(() => {
+     this.isToolbarVisible = false;
+   }, 1500);
+ }
 
   cancelHideTimer() {
     if (this.hideTimer) {
@@ -162,5 +163,4 @@ export class HeaderComponent implements OnInit {
       this.hideTimer = null;
     }
   }
-
 }

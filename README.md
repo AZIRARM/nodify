@@ -3,7 +3,15 @@
 
 **Delivering seamless content experiences across all channels**
 
-<img src="assets/pictures/nodify_transparent.png" width="50%"/>
+## 📦 Official Repositories
+
+| Repository | Description |
+|------------|-------------|
+| **[nodify](https://github.com/AZIRARM/nodify)** | Core Nodify Headless CMS project |
+| **[nodify-clients](https://github.com/AZIRARM/nodify-clients)** | Official clients for Java, Python, and Node.js |
+| **[nodify-templates](https://github.com/AZIRARM/nodify-templates)** | Ready-to-use templates for Nodify Studio |
+| **[nodify-plugins](https://github.com/AZIRARM/nodify-plugins)** | Extensible plugins for Nodify |
+| **[nodify-php-client](https://github.com/AZIRARM/nodify-php-client)** | PHP client for Nodify API |
 
 ## 🚀 Demo
 
@@ -19,6 +27,13 @@ The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
 
 > ⚠️ This is a shared demo environment. Data may be reset at any time.
 
+## 📚 Quick Links
+
+- 📖 [Documentation](#)
+- 🎨 [Templates Gallery](https://github.com/AZIRARM/nodify-templates)
+- 🔌 [Plugins Marketplace](https://github.com/AZIRARM/nodify-plugins)
+- 💻 [Client Libraries](https://github.com/AZIRARM/nodify-clients)
+- 🐘 [PHP Client](https://github.com/AZIRARM/nodify-php-client)
 
 ## Understanding Headless CMS
 
@@ -72,15 +87,57 @@ The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
 
 <img src="assets/pictures/nodify-api.png" width="50%"/>
 
-## Your Content, Your Way
+## 🎯 Ready-to-Use Templates
 
-* Summary of key benefits
-* Call to action: Try Nodify today
+Nodify comes with pre-built templates to accelerate your development:
 
-## Installation
-[INSTALLATION.md](assets/INSTALLATION.md)
+- **Tech Forum Template** - Complete developer community forum
+- **Tiny Tales Stories Template** - AI-powered children's stories generator
+- **News Template** - Modern news publishing platform
+- **E-commerce Template** - Product catalog and shopping experience
 
-## License
+Explore all templates in the [nodify-templates](https://github.com/AZIRARM/nodify-templates) repository.
+
+## 🔌 Extend with Plugins
+
+Enhance your Nodify experience with official plugins:
+
+- **SEO Optimizer** - Automatic meta tags and sitemap generation
+- **Image Optimizer** - On-the-fly image resizing and optimization
+- **Webhook Manager** - Advanced webhook configuration and monitoring
+- **Analytics Dashboard** - Built-in content performance analytics
+
+Browse all plugins in the [nodify-plugins](https://github.com/AZIRARM/nodify-plugins) repository.
+
+## 💻 Client Libraries
+
+Integrate Nodify with your tech stack using official clients:
+
+| Language | Repository |
+|----------|------------|
+| **Java** | [nodify-clients/java](https://github.com/AZIRARM/nodify-clients/tree/main/java) |
+| **Python** | [nodify-clients/python](https://github.com/AZIRARM/nodify-clients/tree/main/python) |
+| **Node.js** | [nodify-clients/nodejs](https://github.com/AZIRARM/nodify-clients/tree/main/nodejs) |
+| **PHP** | [nodify-php-client](https://github.com/AZIRARM/nodify-php-client) |
+
+## 📥 Installation
+
+### Quick Start with Docker
+
+```bash
+docker run -d -p 8080:8080 --name nodify azirar/nodify:latest
+```
+
+### Manual Installation
+
+See the [INSTALLATION.md](assets/INSTALLATION.md) guide for detailed setup instructions.
+
+## 🤝 Contributing
+
+We welcome contributions! Please check our contribution guidelines before submitting pull requests.
+
+## 📄 License
+
 Nodify is licensed under the Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)**.
 
 This project is licensed under the Creative Commons BY-NC 4.0 license.
@@ -97,4 +154,12 @@ This project is licensed under the Creative Commons BY-NC 4.0 license.
 
 See the full license here: https://creativecommons.org/licenses/by-nc/4.0/
 
-<img src="assets/pictures/nodify_transparent.png" width="50%"/>
+## 🌟 Support
+
+- 📧 Email: [support@azirar.ovh](mailto:support@azirar.ovh)
+- 💬 Issues: [GitHub Issues](https://github.com/AZIRARM/nodify/issues)
+- 📚 Documentation: [Wiki](https://github.com/AZIRARM/nodify/wiki)
+
+---
+
+**Made with ❤️ by the Nodify Community**

@@ -12,6 +12,7 @@ import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 
 import {MatButtonModule} from '@angular/material/button';
 import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
@@ -256,6 +257,7 @@ export function defaultLanguage() {
     MatSelectModule,
     MatPaginatorModule,
     MatSortModule,
+    MatProgressSpinnerModule,
     MatDialogModule,
     MatCheckboxModule,
     MatSlideToggleModule,

@@ -62,5 +62,8 @@ public class DataHandler {
         return dataRepository.deleteById(uuid).then(Mono.fromCallable(() -> true));
     }
 
+    public Mono<Long> countByContentCode(String code) {
+        return dataRepository.countByContentNodeCode(code);
+    }
 }
 

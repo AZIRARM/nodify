@@ -66,6 +66,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   dialogRefCode: MatDialogRef<ContentCodeComponent>;
 
   private lockRefreshSub?: Subscription;
+  private subscriptions: Subscription[] = [];
 
   totalDeleteds: number = 0;
 
@@ -94,6 +95,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
@@ -101,9 +103,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   private initLocks(contents: ContentNode[]) {
     contents.forEach((content: ContentNode) => {
-     this.lockService.getLockInfoSocket(content.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+      const lockSub = this.lockService.getLockInfoSocket(content.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
            content.lockInfo = lockInfo;
          });
+      this.subscriptions.push(lockSub);
     });
   }
 
@@ -112,9 +115,8 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.currentContent = null as any;
     this.mapDatas.clear();
 
-    this.contentNodeService.getAllByParentCodeAndStatus(this.node.code, StatusEnum.SNAPSHOT).subscribe(
+    const contentSub = this.contentNodeService.getAllByParentCodeAndStatus(this.node.code, StatusEnum.SNAPSHOT).subscribe(
       (response: any) => {
-        //next() callback
         this.fetchDatas(response);
         this.initLocks(response);
 
@@ -127,12 +129,12 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         this.dataSource = new MatTableDataSource(response);
         this.initEnvironments();
       },
-      (error) => {                              //error() callback
+      (error) => {
         this.toast.error('Request failed with error');
       });
+    this.subscriptions.push(contentSub);
 
-
-    this.contentNodeService.getDeleted(this.node?.code ?? '').subscribe(
+    const deletedSub = this.contentNodeService.getDeleted(this.node?.code ?? '').subscribe(
         (response: any) => {
           this.totalDeleteds = response.length;
         },
@@ -140,16 +142,18 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
           console.error(error);
         }
       );
+    this.subscriptions.push(deletedSub);
   }
 
   private initEnvironments() {
-    this.nodeService.getAllParentOrigin().subscribe(
+    const envSub = this.nodeService.getAllParentOrigin().subscribe(
       (response: any) => {
         this.environments = response.filter((env: Node) => this.user!.roles.includes("ADMIN") || this.user!.projects.includes(env.code));
       },
       (error) => {
         console.error('Request failed with error');
       });
+    this.subscriptions.push(envSub);
   }
 
   validate() {
@@ -169,12 +173,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         width: '80vw',
         disableClose: true
       });
-      this.dialogRefPublish.afterClosed()
+      const dialogSub = this.dialogRefPublish.afterClosed()
         .subscribe(result => {
           if (result.data === 'validated') {
             this.createNewContent();
           }
         });
+      this.subscriptions.push(dialogSub);
     } else {
       this.createNewContent();
     }
@@ -191,11 +196,11 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefPublish.afterClosed()
+    const dialogSub = this.dialogRefPublish.afterClosed()
       .subscribe(result => {
 
         if (result && result.data !== 'canceled') {
-          this.contentNodeService.publish(content.code, true).subscribe(
+          const publishSub = this.contentNodeService.publish(content.code, true).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -210,8 +215,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
                 })
               })
             });
+          this.subscriptions.push(publishSub);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   delete(node: Node) {
@@ -224,10 +231,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefDelete.afterClosed()
+    const dialogSub = this.dialogRefDelete.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.contentNodeService.delete(node.code).subscribe(
+          const deleteSub = this.contentNodeService.delete(node.code).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -240,8 +247,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
                 this.loggerService.error(trad);
               })
             });
+          this.subscriptions.push(deleteSub);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
 
@@ -257,12 +266,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '90vw',
       disableClose: true
     });
-    this.dialogRefCode.afterClosed()
+    const dialogSub = this.dialogRefCode.afterClosed()
       .subscribe((data: any) => {
         if (data.refresh) {
           this.init();
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   private createNewContent() {
@@ -300,10 +310,11 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefRules.afterClosed()
+    const dialogSub = this.dialogRefRules.afterClosed()
       .subscribe(result => {
         this.save(result.data);
       });
+    this.subscriptions.push(dialogSub);
   }
 
   values(content: ContentNode) {
@@ -313,10 +324,11 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefValues.afterClosed()
+    const dialogSub = this.dialogRefValues.afterClosed()
       .subscribe(result => {
         this.save(result.data);
       });
+    this.subscriptions.push(dialogSub);
   }
 
   private save(content: ContentNode) {
@@ -325,7 +337,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     content.parentCode = this.node.code;
     content.parentCodeOrigin = this.node.parentCodeOrigin;
 
-    this.contentNodeService.save(content).subscribe(
+    const saveSub = this.contentNodeService.save(content).subscribe(
       (response: any) => {
 
         this.currentContent = response;
@@ -342,6 +354,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
           })
         })
       });
+    this.subscriptions.push(saveSub);
   }
 
   getPublishedIcon(element: any) {
@@ -362,16 +375,17 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       data: {
           itemName: content.type,
           itemCode: content.code,
-          itemIcon: 'perm_media', // Icône pour les contenus
+          itemIcon: 'perm_media',
           titleKey: 'CONTENT_PUBLICATION_HISTORY',
           displayTypeColumn: false,
-          publicationService: this.contentNodeService // Passage du service dans data
+          publicationService: this.contentNodeService
        }
       });
 
-      this.dialogRefPublished.afterClosed().subscribe(() => {
+      const dialogSub = this.dialogRefPublished.afterClosed().subscribe(() => {
         this.init();
       });
+      this.subscriptions.push(dialogSub);
   }
 
   translations(contentNode: ContentNode) {
@@ -381,12 +395,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefTranslations.afterClosed()
+    const dialogSub = this.dialogRefTranslations.afterClosed()
       .subscribe(result => {
         if (result) {
           this.save(contentNode);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   deleteUrl(url: ContentUrl) {
@@ -398,7 +413,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   export(element: ContentNode, environmentCode: string) {
 
-    this.contentNodeService.export(element.code, environmentCode).subscribe((data: any) => {
+    const exportSub = this.contentNodeService.export(element.code, environmentCode).subscribe((data: any) => {
       let blob: Blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
 
       const a = document.createElement('a');
@@ -410,6 +425,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       a.click();
       URL.revokeObjectURL(objectUrl);
     });
+    this.subscriptions.push(exportSub);
   }
 
 
@@ -426,12 +442,13 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     let callback = this;
     reader.onload = ((evt: any) => {
       content = evt.target.result;
-      service.import(this.node.code, JSON.parse(content)).subscribe((data: any) => {
+      const importSub = service.import(this.node.code, JSON.parse(content)).subscribe((data: any) => {
         this.translate.get("IMPORT_SUCCESS").subscribe((translation: string) => {
           this.toast.success(translation);
           callback.init();
         });
       });
+      this.subscriptions.push(importSub);
     }).bind(this);
   }
 
@@ -448,26 +465,28 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         width: '80vw',
         disableClose: true,
        data: {
-         parentNode: this.node, // ou this.contentNode
+         parentNode: this.node,
          titleKey: 'DELETED_CONTENTS',
          icon: 'delete',
          displayTypeColumn: false,
-         deleteService: this.contentNodeService // Passer le service
+         deleteService: this.contentNodeService
        }
       }
     );
-    this.dialogRefDeleteds.afterClosed()
+    const dialogSub = this.dialogRefDeleteds.afterClosed()
       .subscribe(result => {
         this.init();
       });
+    this.subscriptions.push(dialogSub);
   }
 
   deploy(element: any, environmentCode: string) {
-    this.contentNodeService.deploy(element.code, environmentCode).subscribe((data: any) => {
+    const deploySub = this.contentNodeService.deploy(element.code, environmentCode).subscribe((data: any) => {
       this.translate.get("DEPLOY_SUCCESS").subscribe((translation: string) => {
         this.toast.success(translation);
       });
     });
+    this.subscriptions.push(deploySub);
   }
 
   getEnvironments() {
@@ -491,10 +510,11 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefDatas.afterClosed()
+    const dialogSub = this.dialogRefDatas.afterClosed()
       .subscribe(result => {
         this.init();
       });
+    this.subscriptions.push(dialogSub);
   }
 
   fetchDatas(contents:any) {
@@ -505,7 +525,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
   fetchLocksFactory(contents: any[]) {
     contents.forEach((content: any) => {
-      this.dataService
+      const dataSub = this.dataService
         .countDatasByContentNodeCodeWebSocket(content.code)
         .subscribe({
           next: (count: number) => {
@@ -516,6 +536,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
             this.mapDatas.set(content.code, false);
           }
         });
+      this.subscriptions.push(dataSub);
     });
   }
 

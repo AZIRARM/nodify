@@ -279,7 +279,7 @@
 
             <!-- Export -->
             <button mat-icon-button class="action-icon-btn"
-                    *ngIf="userAccessService.canEdit() && parentNode"
+                    *ngIf="userAccessService.canEdit()"
                     (click)="export(element,'')"
                     matTooltip="{{ 'EXPORT' | translate }}">
               <mat-icon class="text-accent">ios_share</mat-icon>

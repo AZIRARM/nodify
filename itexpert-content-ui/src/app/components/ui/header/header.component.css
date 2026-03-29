@@ -1,3 +1,4 @@
+/* header.component.css */
 .main-toolbar {
   position: fixed;
   top: -64px;
@@ -134,4 +135,21 @@
 .active-language {
   font-weight: 600;
   color: white;
+}
+.header-hint {
+  position: fixed;
+  top: 0; /* Collez-le en haut */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001; /* Doit être au dessus ou égal à la toolbar */
+  cursor: pointer;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 0 20px 20px; /* Arrondi seulement en bas */
+  padding: 4px 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: opacity 0.3s ease-in-out;
+}
+
+.main-toolbar.visible ~ .header-hint {
+  display: none;
 }

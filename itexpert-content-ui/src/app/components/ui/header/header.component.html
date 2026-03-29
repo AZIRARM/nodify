@@ -1,3 +1,10 @@
+<div class="header-hint"
+     *ngIf="!isToolbarVisible"
+     (mouseenter)="showToolbar()"
+     (click)="showToolbar()">
+  <mat-icon>expand_more</mat-icon>
+</div>
+
 <mat-toolbar color="primary" class="main-toolbar"
              [class.visible]="isToolbarVisible"
              (mouseenter)="showToolbar()"

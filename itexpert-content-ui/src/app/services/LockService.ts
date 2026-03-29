@@ -24,26 +24,25 @@ export class LockService extends Service {
   }
 
   getLockInfoSocket(code: string, token: string): Observable<LockInfo> {
-    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/owner/?code=${code}&authorization=Bearer ${token}`;
-
     return new Observable<LockInfo>(observer => {
+      let socket: WebSocket;
+      let reconnectTimeout: any;
 
-      const socket = new WebSocket(url);
+      function connect() {
+        socket = new WebSocket(`${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/owner/?code=${code}&authorization=Bearer ${token}`);
 
-      socket.onmessage = event => {
-        observer.next(JSON.parse(event.data));
-      };
+        socket.onmessage = event => observer.next(JSON.parse(event.data));
+        socket.onerror = err => observer.error(err);
+        socket.onclose = () => {
+          // Reconnexion après 3 secondes
+          reconnectTimeout = setTimeout(connect, 3000);
+        };
+      }
 
-      socket.onerror = err => {
-        observer.error(err);
-      };
+      connect();
 
-      socket.onclose = () => {
-        observer.complete();
-      };
-
-      // cleanup automatique quand unsubscribe
       return () => {
+        clearTimeout(reconnectTimeout);
         socket.close();
       };
     });

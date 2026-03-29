@@ -66,7 +66,8 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   dialogRefTreeNode: MatDialogRef<NodesViewDialogComponent>;
 
   private lockRefreshSub?: Subscription;
-  private allNodes: Node[] = []; // Pour stocker tous les nodes avant filtrage
+  private allNodes: Node[] = [];
+  private subscriptions: Subscription[] = [];
 
   totalDeleteds: number = 33;
 
@@ -93,22 +94,20 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
 
-      // Forcer la détection des changements
       this.cdr.detectChanges();
 
-      this.paginator.page.subscribe(() => {
+      const pageSub = this.paginator.page.subscribe(() => {
         this.pageIndex = this.paginator.pageIndex;
         this.pageSize = this.paginator.pageSize;
         this.updateDataSource();
-
-        // Forcer la mise à jour après changement de page
         this.cdr.detectChanges();
       });
+      this.subscriptions.push(pageSub);
     }
-
   }
 
   ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
@@ -116,15 +115,18 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private initLocks(nodes: Node[]) {
     nodes.forEach((node: Node) => {
-      this.lockService.getLockInfoSocket(node.code, this.authService.getAccessToken()).subscribe((lockInfo: any) => {
+      const lockSub = this.lockService.getLockInfoSocket(node.code, this.authService.getAccessToken()).subscribe((lockInfo: any) => {
         node.lockInfo = lockInfo;
       });
+      this.subscriptions.push(lockSub);
     });
   }
 
   init() {
+    let requestSub: Subscription;
+
     if (this.parentNode) {
-      this.nodeService.getAllByParentCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
+      requestSub = this.nodeService.getAllByParentCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
           this.initLocks(response);
           this.processNodes(response);
@@ -133,7 +135,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
           console.error('Request failed with error');
         });
     } else {
-      this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
+      requestSub = this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
           const isAdmin: boolean = this.userAccessService.isAdmin();
           if (!isAdmin) {
@@ -152,8 +154,9 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
           this.router.navigateByUrl("login");
         });
     }
+    this.subscriptions.push(requestSub);
 
-    this.nodeService.getDeleted(this.parentNode?.code ?? '').subscribe(
+    const deletedSub = this.nodeService.getDeleted(this.parentNode?.code ?? '').subscribe(
         (response: any) => {
           this.totalDeleteds = response.length;
         },
@@ -161,38 +164,31 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
           console.error(error);
         }
       );
+    this.subscriptions.push(deletedSub);
   }
 
   private processNodes(nodes: Node[]) {
-    // Ajouter les propriétés haveContents et haveChilds
     nodes.forEach((node: any) => {
       this.haveContents(node);
       this.haveChilds(node);
     });
 
-    // Trier les nodes
     nodes = nodes.sort((a: any, b: any) => {
       if (a.favorite && !b.favorite) return -1;
       if (!a.favorite && b.favorite) return 1;
       return a.code.localeCompare(b.code);
     });
 
-    // Stocker tous les nodes
     this.allNodes = nodes;
     this.totalElements = nodes.length;
-
-    // Mettre à jour la source de données
     this.updateDataSource();
     this.initEnvironments();
   }
 
   private updateDataSource() {
     if (this.paginator) {
-      // Calculer l'index de début et de fin pour la pagination
       const startIndex = this.pageIndex * this.pageSize;
       const endIndex = startIndex + this.pageSize;
-
-      // Extraire les nodes pour la page courante
       const pagedNodes = this.allNodes.slice(startIndex, endIndex);
       this.dataSource.data = pagedNodes;
     } else {
@@ -200,7 +196,6 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // Méthode pour gérer le changement de page
   onPageChange(event: any) {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
@@ -215,15 +210,16 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         disableClose: true
       }
     );
-    this.dialogRef.afterClosed()
+    const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
         this.save(result.data);
       });
+    this.subscriptions.push(dialogSub);
   }
 
   save(node: Node) {
     node.modifiedBy = this.user.id;
-    this.nodeService.save(node).subscribe(
+    const saveSub = this.nodeService.save(node).subscribe(
       response => {
         this.translate.get("SAVE_SUCCESS").subscribe(trad => {
           this.loggerService.success(trad);
@@ -235,6 +231,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
           this.loggerService.error(error);
         });
       });
+    this.subscriptions.push(saveSub);
   }
 
   create() {
@@ -251,13 +248,14 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         disableClose: true
       }
     );
-    this.dialogRef.afterClosed()
+    const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
         if (result) {
           node = result.data;
           this.save(node);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   publish(node: Node) {
@@ -270,10 +268,10 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       width: '80vw',
       disableClose: true
     });
-    this.validationModal.afterClosed()
+    const dialogSub = this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.nodeService.publish(node.code).subscribe(
+          const publishSub = this.nodeService.publish(node.code).subscribe(
             response => {
               this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -287,8 +285,10 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
                 })
               })
             });
+          this.subscriptions.push(publishSub);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   delete(node: Node) {
@@ -301,10 +301,10 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       width: '80vw',
       disableClose: true
     });
-    this.validationModal.afterClosed()
+    const dialogSub = this.validationModal.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
-          this.nodeService.delete(node.code).subscribe(
+          const deleteSub = this.nodeService.delete(node.code).subscribe(
             response => {
               this.translate.get("DELETE_SUCCESS").subscribe(trad => {
                 this.loggerService.success(trad);
@@ -316,8 +316,10 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.loggerService.error(trad);
               })
             });
+          this.subscriptions.push(deleteSub);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   contents(node: Node) {
@@ -330,12 +332,12 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         disableClose: true
       }
     );
-    this.dialogRefContents.afterClosed()
+    const dialogSub = this.dialogRefContents.afterClosed()
       .subscribe(result => {
         if (result) {
           let contentNode: ContentNode = result.data;
           if (contentNode) {
-            this.contentNodeService.save(contentNode).subscribe(
+            const saveSub = this.contentNodeService.save(contentNode).subscribe(
               response => {
                 this.translate.get("SAVE_SUCCESS").subscribe(trad => {
                   this.loggerService.success(trad);
@@ -349,11 +351,13 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
                   })
                 })
               });
+            this.subscriptions.push(saveSub);
           }
         } else {
           this.init();
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   deleteds() {
@@ -366,14 +370,15 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
           titleKey: 'DELETED_NODES',
           icon: 'delete_sweep',
           displayTypeColumn: true,
-          deleteService: this.nodeService // Passer le service directement
+          deleteService: this.nodeService
         }
       }
     );
-    this.dialogRefDeleteds.afterClosed()
+    const dialogSub = this.dialogRefDeleteds.afterClosed()
       .subscribe(result => {
         this.init();
       });
+    this.subscriptions.push(dialogSub);
   }
 
   subnodes(node: Node) {
@@ -383,11 +388,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   back(): void {
     if (this.parentNode && this.parentNode.parentCode) {
-      this.nodeService.getNodeByCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
+      const nodeSub = this.nodeService.getNodeByCodeAndStatus(this.parentNode.code, StatusEnum.SNAPSHOT).subscribe(
         (response: any) => {
           console.log('response received : ' + response);
           if (response) {
-            this.nodeService.getNodeByCodeAndStatus(response.parentCode, StatusEnum.SNAPSHOT).subscribe(
+            const parentSub = this.nodeService.getNodeByCodeAndStatus(response.parentCode, StatusEnum.SNAPSHOT).subscribe(
               (response2: any) => {
                 if (response2) {
                   this.parentNode = response2;
@@ -400,6 +405,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
               (error) => {
                 console.error('Request failed with error');
               });
+            this.subscriptions.push(parentSub);
           } else {
             this.parentNode = null;
             this.init();
@@ -408,6 +414,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         (error) => {
           console.error('Request failed with error');
         });
+      this.subscriptions.push(nodeSub);
     } else if (this.parentNode) {
       this.parentNode = null;
       this.init();
@@ -421,12 +428,13 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefRules.afterClosed()
+    const dialogSub = this.dialogRefRules.afterClosed()
       .subscribe(result => {
         if (result) {
           this.save(node);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   values(node: Node) {
@@ -436,12 +444,13 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefValues.afterClosed()
+    const dialogSub = this.dialogRefValues.afterClosed()
       .subscribe(result => {
         if (result) {
           this.save(node);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
 
@@ -455,7 +464,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initEnvironments() {
-    this.nodeService.getAllParentOrigin().subscribe(
+    const envSub = this.nodeService.getAllParentOrigin().subscribe(
       (response: any) => {
         this.environments = response.filter(
           (env: Node) => this.user!.roles.includes("ADMIN")
@@ -469,6 +478,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       (error) => {
         console.error('Request failed with error');
       });
+    this.subscriptions.push(envSub);
   }
 
   gotoPublished(node: Node) {
@@ -479,16 +489,17 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         data: {
           itemName: node.name,
           itemCode: node.code,
-          itemIcon: 'folder', // Icône pour les nœuds
+          itemIcon: 'folder',
           titleKey: 'NODE_PUBLICATION_HISTORY',
           displayTypeColumn: true,
-          publicationService: this.nodeService // Passage du service dans data
+          publicationService: this.nodeService
         }
       });
 
-      this.dialogRefPublished.afterClosed().subscribe(() => {
+      const dialogSub = this.dialogRefPublished.afterClosed().subscribe(() => {
         this.init();
       });
+      this.subscriptions.push(dialogSub);
   }
 
   translations(node: Node) {
@@ -498,16 +509,17 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefTranslations.afterClosed()
+    const dialogSub = this.dialogRefTranslations.afterClosed()
       .subscribe(result => {
         if (result) {
           this.save(node);
         }
       });
+    this.subscriptions.push(dialogSub);
   }
 
   export(element: Node, environmentCode: string) {
-    this.nodeService.export(element.code, environmentCode).subscribe((data: any) => {
+    const exportSub = this.nodeService.export(element.code, environmentCode).subscribe((data: any) => {
       const jsonString = JSON.stringify(data, null, 2);
       const blob: Blob = new Blob([jsonString], {type: 'application/json'});
       const a = document.createElement('a');
@@ -517,6 +529,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       a.click();
       URL.revokeObjectURL(objectUrl);
     });
+    this.subscriptions.push(exportSub);
   }
 
   import(fileList: any) {
@@ -530,28 +543,31 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     let content: any;
     reader.onload = ((evt: any) => {
       content = evt.target.result;
-      this.nodeService.import((this.parentNode ? this.parentNode.code : null), JSON.parse(content)).subscribe((data: any) => {
+      const importSub = this.nodeService.import((this.parentNode ? this.parentNode.code : null), JSON.parse(content)).subscribe((data: any) => {
         this.translate.get("IMPORT_SUCCESS").subscribe((translation: string) => {
           this.toast.success(translation);
           this.init();
         });
-      })
+      });
+      this.subscriptions.push(importSub);
     }).bind(this);
   }
 
   haveChilds(element: any) {
     if (!element.hasOwnProperty("haveContent")) {
-      this.nodeService.haveChilds(element.code).subscribe((response: any) => {
+      const childSub = this.nodeService.haveChilds(element.code).subscribe((response: any) => {
         element.haveChilds = !!(response && response === true);
       });
+      this.subscriptions.push(childSub);
     }
   }
 
   haveContents(element: any) {
     if (!element.hasOwnProperty("haveContent")) {
-      this.nodeService.haveContents(element.code).subscribe((response: any) => {
+      const contentSub = this.nodeService.haveContents(element.code).subscribe((response: any) => {
         element.haveContent = !!(response && response === true);
       });
+      this.subscriptions.push(contentSub);
     }
   }
 
@@ -561,11 +577,12 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   deploy(element: any, environmentCode: string) {
-    this.nodeService.deploy(element.code, environmentCode).subscribe((data: any) => {
+    const deploySub = this.nodeService.deploy(element.code, environmentCode).subscribe((data: any) => {
       this.translate.get("DEPLOY_SUCCESS").subscribe((translation: string) => {
         this.toast.success(translation);
       });
     });
+    this.subscriptions.push(deploySub);
   }
 
   getEnvironments() {
@@ -588,10 +605,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         data: element
       }
     );
-    this.dialogRefTreeNode.afterClosed()
+    const dialogSub = this.dialogRefTreeNode.afterClosed()
       .subscribe(result => {
         this.init();
       });
+    this.subscriptions.push(dialogSub);
   }
 
   canEdit(node: Node): boolean {
