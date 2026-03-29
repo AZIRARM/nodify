@@ -44,15 +44,10 @@ jobs:
     - name: Run tests for core module
       run: mvn -B test -pl itexpert-content-core
     
-    # Analyse SonarQube pour chaque module (depuis la racine)
-    - name: 🔍 SonarQube Scan - Lib
-      run: mvn sonar:sonar -pl itexpert-content-lib -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-    
-    - name: 🔍 SonarQube Scan - Core
-      run: mvn sonar:sonar -pl itexpert-content-core -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-    
-    - name: 🔍 SonarQube Scan - API
-      run: mvn sonar:sonar -pl itexpert-content-api -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-    
-    - name: 🔍 SonarQube Scan - Studio
-      run: mvn sonar:sonar -pl itexpert-content-ui -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+       # SonarQube Scan pour chaque module
+    - name: 🔍 SonarQube Scan
+      run: |
+        mvn sonar:sonar -pl itexpert-content-lib -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:lib -Dsonar.projectName="Nodify - Lib" -Dsonar.java.binaries=itexpert-content-lib/target/classes
+        mvn sonar:sonar -pl itexpert-content-core -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:core -Dsonar.projectName="Nodify - Core" -Dsonar.java.binaries=itexpert-content-core/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=itexpert-content-core/target/site/jacoco/jacoco.xml
+        mvn sonar:sonar -pl itexpert-content-api -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:api -Dsonar.projectName="Nodify - API" -Dsonar.java.binaries=itexpert-content-api/target/classes
+        mvn sonar:sonar -pl itexpert-content-ui -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:studio -Dsonar.projectName="Nodify - Studio" -Dsonar.sources=itexpert-content-ui/src -Dsonar.exclusions="**/node_modules/**,**/dist/**"
