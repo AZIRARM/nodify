@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
 @Slf4j
-@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
+@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 @EnableConfigurationProperties
 @EnableReactiveMongoRepositories
 public class ContentApiApplication {
