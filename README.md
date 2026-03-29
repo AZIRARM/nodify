@@ -1,7 +1,5 @@
 [![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-[![Quality Gate Status](https://sonar.azirar.ovh/api/project_badges/measure?project=com.nodify%3Acore&metric=alert_status&token=${{ secrets.SONAR_TOKEN }})](https://sonar.azirar.ovh/dashboard?id=com.nodify%3Acore)
-
 # Nodify: Your Versatile Headless CMS Solution
 
 **Delivering seamless content experiences across all channels**
