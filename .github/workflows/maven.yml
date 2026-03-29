@@ -1,53 +1,18 @@
-name: Java CI with Maven
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-    
-    - name: Cache SonarQube packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.sonar/cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
-    
-    # Build tous les modules
-    - name: Build all modules
-      run: mvn -B clean install -DskipTests
-      # -DskipTests pour éviter les erreurs de tests Angular
-    
-    # Exécuter les tests du module core uniquement
-    - name: Run tests for core module
-      run: mvn -B test -pl itexpert-content-core
-    
-       # SonarQube Scan pour chaque module
-    - name: 🔍 SonarQube Scan
-      run: |
-        mvn sonar:sonar -pl itexpert-content-lib -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:lib -Dsonar.projectName="Nodify - Lib" -Dsonar.java.binaries=itexpert-content-lib/target/classes
-        mvn sonar:sonar -pl itexpert-content-core -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:core -Dsonar.projectName="Nodify - Core" -Dsonar.java.binaries=itexpert-content-core/target/classes -Dsonar.coverage.jacoco.xmlReportPaths=itexpert-content-core/target/site/jacoco/jacoco.xml
-        mvn sonar:sonar -pl itexpert-content-api -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:api -Dsonar.projectName="Nodify - API" -Dsonar.java.binaries=itexpert-content-api/target/classes
-        mvn sonar:sonar -pl itexpert-content-ui -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=com.nodify:studio -Dsonar.projectName="Nodify - Studio" -Dsonar.sources=itexpert-content-ui/src -Dsonar.exclusions="**/node_modules/**,**/dist/**"
+Downloaded from central: https://repo.maven.apache.org/maven2/org/sonarsource/scanner/api/sonar-scanner-api/2.16.3.1081/sonar-scanner-api-2.16.3.1081.jar (625 kB at 9.2 MB/s)
+[INFO] User cache: /home/runner/.sonar/cache
+[INFO] SonarQube version: 26.2.0.119303
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.581 s
+[INFO] Finished at: 2026-03-29T15:04:27Z
+[INFO] ------------------------------------------------------------------------
+Error:  Failed to execute goal org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar (default-cli) on project itexpert-content-lib: Maven session does not declare a top level project -> [Help 1]
+Error:  
+Error:  To see the full stack trace of the errors, re-run Maven with the -e switch.
+Error:  Re-run Maven using the -X switch to enable full debug logging.
+Error:  
+Error:  For more information about the errors and possible solutions, please read the following articles:
+Error:  [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+Error: Process completed with exit code 1.
