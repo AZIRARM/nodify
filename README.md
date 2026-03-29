@@ -1,10 +1,6 @@
 [![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-[![Quality Gate Status](https://sonar.azirar.ovh/api/project_badges/measure?project=com.nodify%3Acore&metric=alert_status)](https://sonar.azirar.ovh/dashboard?id=com.nodify%3Acore)
-[![Bugs](https://sonar.azirar.ovh/api/project_badges/measure?project=com.nodify%3Acore&metric=bugs)](https://sonar.azirar.ovh/dashboard?id=com.nodify%3Acore)
-[![Vulnerabilities](https://sonar.azirar.ovh/api/project_badges/measure?project=com.nodify%3Acore&metric=vulnerabilities)](https://sonar.azirar.ovh/dashboard?id=com.nodify%3Acore)
-[![Code Smells](https://sonar.azirar.ovh/api/project_badges/measure?project=com.nodify%3Acore&metric=code_smells)](https://sonar.azirar.ovh/dashboard?id=com.nodify%3Acore)
-[![Coverage](https://sonar.azirar.ovh/api/project_badges/measure?project=com.nodify%3Acore&metric=coverage)](https://sonar.azirar.ovh/dashboard?id=com.nodify%3Acore)
+[![Quality Gate Status](https://sonar.azirar.ovh/api/project_badges/measure?project=com.nodify%3Acore&metric=alert_status&token=${{ secrets.SONAR_TOKEN }})](https://sonar.azirar.ovh/dashboard?id=com.nodify%3Acore)
 
 # Nodify: Your Versatile Headless CMS Solution
 
