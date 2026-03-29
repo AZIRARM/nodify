@@ -35,20 +35,30 @@ jobs:
         key: ${{ runner.os }}-sonar
         restore-keys: ${{ runner.os }}-sonar
     
+    # Build du module parent (sans analyse Sonar)
     - name: 📦 Build itexpert-content-parent
       run: mvn -B clean install -pl itexpert-content-parent -am
     
-    - name: 📚 Build itexpert-content-lib
-      run: mvn -B install -pl itexpert-content-lib -am
+    # Build et analyse du module lib
+    - name: 📚 Build and analyze Nodify - Lib
+      run: |
+        mvn -B install -pl itexpert-content-lib -am
+        mvn sonar:sonar -pl itexpert-content-lib -Dsonar.token=${{ secrets.SONAR_TOKEN }}
     
-    - name: ⚙️ Build itexpert-content-core
-      run: mvn -B install -pl itexpert-content-core -am
+    # Build, test et analyse du module core
+    - name: ⚙️ Build, test and analyze Nodify - Core
+      run: |
+        mvn -B install -pl itexpert-content-core -am
+        mvn sonar:sonar -pl itexpert-content-core -Dsonar.token=${{ secrets.SONAR_TOKEN }}
     
-    - name: 🔌 Build itexpert-content-api
-      run: mvn -B install -pl itexpert-content-api -am
+    # Build et analyse du module api
+    - name: 🔌 Build and analyze Nodify - API
+      run: |
+        mvn -B install -pl itexpert-content-api -am
+        mvn sonar:sonar -pl itexpert-content-api -Dsonar.token=${{ secrets.SONAR_TOKEN }}
     
-    - name: 🎨 Build itexpert-content-ui
-      run: mvn -B install -pl itexpert-content-ui -am
-    
-    - name: 🔍 SonarQube Scan
-      run: mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+    # Build et analyse du module ui (Angular)
+    - name: 🎨 Build and analyze Nodify - Studio
+      run: |
+        mvn -B install -pl itexpert-content-ui -am -DskipTests
+        mvn sonar:sonar -pl itexpert-content-ui -Dsonar.token=${{ secrets.SONAR_TOKEN }}
