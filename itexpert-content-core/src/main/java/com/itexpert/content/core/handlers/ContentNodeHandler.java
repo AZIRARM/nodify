@@ -53,32 +53,32 @@ public class ContentNodeHandler {
 
     public Mono<ContentNode> save(ContentNode contentNode) {
         return Mono.just(contentNode).filter(model -> ObjectUtils.isEmpty(model.getId()))
-                .flatMap(model ->
-                        contentNodeRepository.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
-                                .map(entity -> Mono.empty())
-                                .switchIfEmpty(saveFactory(contentNode, true))
+                .flatMap(model -> contentNodeRepository
+                        .findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
+                        .map(entity -> Mono.empty())
+                        .switchIfEmpty(saveFactory(contentNode, true))
 
                 ).switchIfEmpty(this.saveFactory(contentNode, false));
     }
 
     private Mono saveFactory(ContentNode model, boolean isCreation) {
         return Mono.just(model).map(contentNode -> {
-                    if (isCreation) {
-                        contentNode.setId(UUID.randomUUID());
-                        contentNode.setVersion("0");
-                        contentNode.setStatus(StatusEnum.SNAPSHOT);
-                        contentNode.setCreationDate(Instant.now().toEpochMilli());
-                        contentNode.setModificationDate(contentNode.getCreationDate());
-                    } else {
-                        contentNode.setModificationDate(Instant.now().toEpochMilli());
-                    }
+            if (isCreation) {
+                contentNode.setId(UUID.randomUUID());
+                contentNode.setVersion("0");
+                contentNode.setStatus(StatusEnum.SNAPSHOT);
+                contentNode.setCreationDate(Instant.now().toEpochMilli());
+                contentNode.setModificationDate(contentNode.getCreationDate());
+            } else {
+                contentNode.setModificationDate(Instant.now().toEpochMilli());
+            }
 
-                    if (ObjectUtils.isEmpty(contentNode.getRules())) {
-                        contentNode.setRules(RulesUtils.getDefaultRules());
-                    }
+            if (ObjectUtils.isEmpty(contentNode.getRules())) {
+                contentNode.setRules(RulesUtils.getDefaultRules());
+            }
 
-                    return contentNode;
-                }).map(contentNodeMapper::fromModel)
+            return contentNode;
+        }).map(contentNodeMapper::fromModel)
                 .flatMap(contentNodeRepository::save)
                 .map(contentNodeMapper::fromEntity)
                 .flatMap(node -> this.notify(node, isCreation ? NotificationEnum.DELETION : NotificationEnum.UPDATE));
@@ -151,12 +151,9 @@ public class ContentNodeHandler {
                                 }
                             });
                 })
-                .flatMap(model ->
-                        notify(model, NotificationEnum.DEPLOYMENT)
-                                .thenReturn(model)
-                );
+                .flatMap(model -> notify(model, NotificationEnum.DEPLOYMENT)
+                        .thenReturn(model));
     }
-
 
     public Flux<ContentNode> findAllByStatus(String status) {
         return contentNodeRepository.findAllByStatus(status).map(contentNodeMapper::fromEntity);
@@ -191,7 +188,6 @@ public class ContentNodeHandler {
                 });
     }
 
-
     public Mono<ContentNode> revert(String code, String version, String modifiedBy) {
         return this.contentNodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
                 .map(contentNode -> {
@@ -200,7 +196,8 @@ public class ContentNodeHandler {
                     return contentNode;
                 }).flatMap(contentNodeRepository::save)
                 .map(contentNode -> contentNode.getVersion())
-                .flatMap(lastVersion -> contentNodeRepository.findByCodeAndVersion(code, version).map(node -> Tuples.of(lastVersion, node)))
+                .flatMap(lastVersion -> contentNodeRepository.findByCodeAndVersion(code, version)
+                        .map(node -> Tuples.of(lastVersion, node)))
                 .map(tuple -> {
                     com.itexpert.content.lib.entities.ContentNode contentNode = tuple.getT2();
                     String lastVersion = tuple.getT1();
@@ -250,19 +247,21 @@ public class ContentNodeHandler {
 
     private Flux<ContentNode> findDeletedFactory(String code) {
         return this.contentNodeRepository.findAllByStatus(StatusEnum.DELETED.name())
-                .flatMap(contentNode ->
-                        this.contentIsPartOfNodeCode(this.contentNodeMapper.fromEntity(contentNode), code));
+                .flatMap(contentNode -> this.contentIsPartOfNodeCode(this.contentNodeMapper.fromEntity(contentNode),
+                        code));
     }
 
     private Mono<ContentNode> contentIsPartOfNodeCode(ContentNode contentNode, String code) {
         return this.nodeRepository.findByCodeAndStatus(contentNode.getParentCode(), StatusEnum.SNAPSHOT.name())
                 .doOnNext(node -> {
                     boolean a = ObjectUtils.isNotEmpty(node) && ObjectUtils.isNotEmpty(code)
-                            && (code.equals(node.getCode()) || code.equals(node.getParentCode()) || code.equals(node.getParentCodeOrigin()));
+                            && (code.equals(node.getCode()) || code.equals(node.getParentCode())
+                                    || code.equals(node.getParentCodeOrigin()));
                     log.info(node.getCode());
                 })
                 .filter(node -> ObjectUtils.isNotEmpty(code)
-                        && (code.equals(node.getCode()) || code.equals(node.getParentCode()) || code.equals(node.getParentCodeOrigin())))
+                        && (code.equals(node.getCode()) || code.equals(node.getParentCode())
+                                || code.equals(node.getParentCodeOrigin())))
                 .map(node -> contentNode);
     }
 
@@ -273,28 +272,25 @@ public class ContentNodeHandler {
 
     public Flux<ContentNode> saveAll(List<ContentNode> contentNodes) {
         return Flux.fromIterable(contentNodes)
-                .flatMap(contentNode ->
-                        this.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
-                                .flatMap(existingEntity -> {
-                                    // Si une entité avec SNAPSHOT existe
-                                    existingEntity.setStatus(StatusEnum.ARCHIVE);
-                                    contentNode.setStatus(StatusEnum.SNAPSHOT);
-                                    contentNode.setVersion(Integer.toString(Integer.parseInt(existingEntity.getVersion()) + 1));
+                .flatMap(contentNode -> this.findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
+                        .flatMap(existingEntity -> {
+                            // Si une entité avec SNAPSHOT existe
+                            existingEntity.setStatus(StatusEnum.ARCHIVE);
+                            contentNode.setStatus(StatusEnum.SNAPSHOT);
+                            contentNode.setVersion(Integer.toString(Integer.parseInt(existingEntity.getVersion()) + 1));
 
-                                    // Sauvegarde l'entité existante en ARCHIVE
-                                    return contentNodeRepository.save(contentNodeMapper.fromModel(existingEntity))
-                                            // Sauvegarde la nouvelle version
-                                            .then(contentNodeRepository.save(contentNodeMapper.fromModel(contentNode)));
-                                })
-                                .switchIfEmpty(
-                                        // Si aucune entité n'existe, sauvegarder directement
-                                        Mono.defer(() -> {
-                                            contentNode.setStatus(StatusEnum.SNAPSHOT);
-                                            contentNode.setVersion("0");
-                                            return contentNodeRepository.save(contentNodeMapper.fromModel(contentNode));
-                                        })
-                                )
-                )
+                            // Sauvegarde l'entité existante en ARCHIVE
+                            return contentNodeRepository.save(contentNodeMapper.fromModel(existingEntity))
+                                    // Sauvegarde la nouvelle version
+                                    .then(contentNodeRepository.save(contentNodeMapper.fromModel(contentNode)));
+                        })
+                        .switchIfEmpty(
+                                // Si aucune entité n'existe, sauvegarder directement
+                                Mono.defer(() -> {
+                                    contentNode.setStatus(StatusEnum.SNAPSHOT);
+                                    contentNode.setVersion("0");
+                                    return contentNodeRepository.save(contentNodeMapper.fromModel(contentNode));
+                                })))
                 .flatMap(entity -> {
                     // Mapper l'entité sauvegardée pour retourner le DTO ContentNode
                     ContentNode dto = contentNodeMapper.fromEntity(entity);
@@ -302,11 +298,9 @@ public class ContentNodeHandler {
                 });
     }
 
-
     public Mono<ContentNode> findByCodeAndStatus(String code, String status) {
         return contentNodeRepository.findByCodeAndStatus(code, status).map(contentNodeMapper::fromEntity);
     }
-
 
     public Mono<ContentNode> importContentNode(ContentNode contentNode) {
         log.debug("[IMPORT] Start importContentNode, code={}", contentNode.getCode());
@@ -345,14 +339,13 @@ public class ContentNodeHandler {
                 .doOnError(e -> log.error("[IMPORT] Error When import ContentNode code={}", contentNode.getCode(), e));
     }
 
-
     public Mono<Boolean> deleteDefinitively(String code) {
         return contentNodeRepository.findAllByCode(code)
                 .flatMap(node -> this.contentNodeRepository.delete(node)
                         .map(unused -> this.dataHandler.deleteAllByContentNodeCode(code))
-                        .map(response -> node)
-                )
-                .flatMap(model -> this.notify(this.contentNodeMapper.fromEntity(model), NotificationEnum.DELETION_DEFINITIVELY))
+                        .map(response -> node))
+                .flatMap(model -> this.notify(this.contentNodeMapper.fromEntity(model),
+                        NotificationEnum.DELETION_DEFINITIVELY))
                 .collectList()
                 .map(unused -> Boolean.TRUE)
                 .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
@@ -362,15 +355,16 @@ public class ContentNodeHandler {
         return contentNodeRepository.findByCodeAndVersion(code, version)
                 .flatMap(node -> this.contentNodeRepository.delete(node)
                         .map(unused -> this.dataHandler.deleteAllByContentNodeCode(code))
-                        .map(response -> node)
-                )
-                .flatMap(model -> this.notify(this.contentNodeMapper.fromEntity(model), NotificationEnum.DELETION_DEFINITIVELY))
+                        .map(response -> node))
+                .flatMap(model -> this.notify(this.contentNodeMapper.fromEntity(model),
+                        NotificationEnum.DELETION_DEFINITIVELY))
                 .map(unused -> Boolean.TRUE)
                 .onErrorContinue((throwable, o) -> log.error(throwable.getMessage(), throwable));
     }
 
     public Mono<Boolean> nodeHaveContents(String code) {
-        return this.contentNodeRepository.countDistinctByParentCodeAndStatus(code, StatusEnum.SNAPSHOT.name()).map(count -> count > 0);
+        return this.contentNodeRepository.countDistinctByParentCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
+                .map(count -> count > 0);
     }
 
     public Mono<ContentNode> deployContent(String contentNodeCode, String environmentCode) {
@@ -380,71 +374,84 @@ public class ContentNodeHandler {
     }
 
     private Mono<ContentNode> deployContentFactory(ContentNode model, String environmentCode) {
-        // Modifier les codes
-        model.setCode(model.getCode().replace(
+        // 1. Modifier les codes (opération synchrone, OK)
+        String newCode = model.getCode().replace(
+                model.getCode().split("-")[1],
+                environmentCode.split("-")[0]);
+        model.setCode(newCode);
+
+        // 2. Calculer le parentCode potentiel
+        String parentCodeCandidate = model.getParentCode().replace(
                 model.getParentCode().split("-")[1],
-                environmentCode.split("-")[0]
-        ));
-        model.setParentCode(model.getParentCode().replace(
-                model.getParentCode().split("-")[1],
-                environmentCode.split("-")[0]
-        ));
-        model.setParentCodeOrigin(null);
+                environmentCode.split("-")[0]);
 
-        return contentNodeRepository.findByCodeAndStatus(model.getCode(), StatusEnum.SNAPSHOT.name())
-                .flatMap(existingEntity -> {
-                    // Cas existant
-                    ContentNode existingModel = contentNodeMapper.fromEntity(existingEntity);
-                    model.setId(UUID.randomUUID());
-                    model.setParentCode(existingModel.getParentCode());
-                    model.setVersion(String.valueOf(Integer.parseInt(existingModel.getVersion()) + 1));
-                    model.setStatus(StatusEnum.SNAPSHOT);
-                    model.setCreationDate(existingModel.getCreationDate());
-                    model.setModificationDate(Instant.now().toEpochMilli());
-
-                    if (ObjectUtils.isNotEmpty(existingModel.getSlug())) {
-                        model.setSlug(existingModel.getSlug());
-                    }
-
-                    // Archiver l'ancien
-                    existingEntity.setStatus(StatusEnum.ARCHIVE);
-                    existingEntity.setModificationDate(Instant.now().toEpochMilli());
-
-                    return contentNodeRepository.save(existingEntity)
-                            .thenReturn(model);
+        // 3. Vérification réactive de l'existence du parent
+        return nodeRepository.findByCodeAndStatus(parentCodeCandidate, StatusEnum.SNAPSHOT.name())
+                .flatMap(parent -> {
+                    // ✅ Parent trouvé : utiliser parentCodeCandidate
+                    model.setParentCode(parentCodeCandidate);
+                    model.setParentCodeOrigin(null);
+                    return Mono.just(model);
                 })
-                .switchIfEmpty(Mono.defer(() ->
-                        // Nouveau déploiement
-                        nodeRepository.findByCodeAndStatus(model.getParentCode(), StatusEnum.SNAPSHOT.name())
-                                .hasElement()
-                                .flatMap(parentExists -> {
-                                    if (!parentExists) {
-                                        model.setParentCodeOrigin(environmentCode);
-                                        model.setParentCode(environmentCode);
-                                    }
+                .switchIfEmpty(Mono.defer(() -> {
+                    // ❌ Parent non trouvé : fallback sur environmentCode
+                    model.setParentCode(environmentCode);
+                    model.setParentCodeOrigin(null);
+                    return Mono.just(model);
+                }))
+                // 4. Suite du flux : vérification de l'existence du ContentNode
+                .flatMap(updatedModel -> contentNodeRepository
+                        .findByCodeAndStatus(updatedModel.getCode(), StatusEnum.SNAPSHOT.name())
+                        .flatMap(existingEntity -> {
+                            // ─── Cas existant ───
+                            ContentNode existingModel = contentNodeMapper.fromEntity(existingEntity);
+                            updatedModel.setId(UUID.randomUUID());
+                            updatedModel.setParentCode(existingModel.getParentCode()); // Conserver le parent d'origine
+                            updatedModel.setVersion(String.valueOf(Integer.parseInt(existingModel.getVersion()) + 1));
+                            updatedModel.setStatus(StatusEnum.SNAPSHOT);
+                            updatedModel.setCreationDate(existingModel.getCreationDate());
+                            updatedModel.setModificationDate(Instant.now().toEpochMilli());
 
-                                    model.setId(UUID.randomUUID());
-                                    model.setVersion("0");
-                                    model.setStatus(StatusEnum.SNAPSHOT);
-                                    model.setCreationDate(Instant.now().toEpochMilli());
-                                    model.setModificationDate(model.getCreationDate());
+                            if (ObjectUtils.isNotEmpty(existingModel.getSlug())) {
+                                updatedModel.setSlug(existingModel.getSlug());
+                            }
 
-                                    return Mono.just(model);
-                                })
-                ))
-                .flatMap(modelToSave ->
-                        contentNodeSlugHelper.update(modelToSave)
-                                .flatMap(updatedModel -> {
-                                    com.itexpert.content.lib.entities.ContentNode entity =
-                                            contentNodeMapper.fromModel(updatedModel);
-                                    return contentNodeRepository.save(entity)
-                                            .map(contentNodeMapper::fromEntity);
-                                })
-                )
-                .flatMap(finalModel ->
-                        notify(finalModel, NotificationEnum.DEPLOYMENT)
-                                .thenReturn(finalModel)
-                );
+                            // Archiver l'ancien
+                            existingEntity.setStatus(StatusEnum.ARCHIVE);
+                            existingEntity.setModificationDate(Instant.now().toEpochMilli());
+
+                            return contentNodeRepository.save(existingEntity)
+                                    .thenReturn(updatedModel);
+                        })
+                        .switchIfEmpty(Mono.defer(() -> {
+                            // ─── Nouveau déploiement ───
+                            return nodeRepository
+                                    .findByCodeAndStatus(updatedModel.getParentCode(), StatusEnum.SNAPSHOT.name())
+                                    .hasElement()
+                                    .flatMap(parentExists -> {
+                                        if (!parentExists) {
+                                            updatedModel.setParentCodeOrigin(environmentCode);
+                                            updatedModel.setParentCode(environmentCode);
+                                        }
+                                        updatedModel.setId(UUID.randomUUID());
+                                        updatedModel.setVersion("0");
+                                        updatedModel.setStatus(StatusEnum.SNAPSHOT);
+                                        updatedModel.setCreationDate(Instant.now().toEpochMilli());
+                                        updatedModel.setModificationDate(updatedModel.getCreationDate());
+                                        return Mono.just(updatedModel);
+                                    });
+                        })))
+                // 5. Sauvegarde finale avec slug
+                .flatMap(modelToSave -> contentNodeSlugHelper.update(modelToSave)
+                        .flatMap(updatedModel -> {
+                            com.itexpert.content.lib.entities.ContentNode entity = contentNodeMapper
+                                    .fromModel(updatedModel);
+                            return contentNodeRepository.save(entity)
+                                    .map(contentNodeMapper::fromEntity);
+                        }))
+                // 6. Notification
+                .flatMap(finalModel -> notify(finalModel, NotificationEnum.DEPLOYMENT)
+                        .thenReturn(finalModel));
     }
 
     public Mono<ContentNode> fillContent(
@@ -469,29 +476,28 @@ public class ContentNodeHandler {
     public Mono<Boolean> deleteById(UUID id) {
         return this.contentNodeRepository.findById(id)
                 .map(this.contentNodeMapper::fromEntity)
-                .flatMap(content ->
-                        this.contentNodeRepository.deleteById(id).map(unused -> this.notify(content, NotificationEnum.DELETION_DEFINITIVELY)).then(Mono.just(content))
-                ).hasElement();
+                .flatMap(content -> this.contentNodeRepository.deleteById(id)
+                        .map(unused -> this.notify(content, NotificationEnum.DELETION_DEFINITIVELY))
+                        .then(Mono.just(content)))
+                .hasElement();
     }
 
     public Mono<Boolean> publishVersion(String code, String version, String user) {
         return contentNodeRepository.findByCodeAndVersion(code, version)
-                .flatMap(archived ->
-                        contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
-                                .flatMap(published -> {
-                                    published.setStatus(StatusEnum.ARCHIVE);
-                                    published.setModifiedBy(user);
-                                    published.setModificationDate(Instant.now().toEpochMilli());
-                                    return contentNodeRepository.save(published);
-                                })
-                                .then(Mono.defer(() -> {
-                                    archived.setStatus(StatusEnum.PUBLISHED);
-                                    archived.setModifiedBy(user);
-                                    archived.setModificationDate(Instant.now().toEpochMilli());
-                                    return contentNodeRepository.save(archived);
-                                }))
-                                .thenReturn(true)
-                )
+                .flatMap(archived -> contentNodeRepository.findByCodeAndStatus(code, StatusEnum.PUBLISHED.name())
+                        .flatMap(published -> {
+                            published.setStatus(StatusEnum.ARCHIVE);
+                            published.setModifiedBy(user);
+                            published.setModificationDate(Instant.now().toEpochMilli());
+                            return contentNodeRepository.save(published);
+                        })
+                        .then(Mono.defer(() -> {
+                            archived.setStatus(StatusEnum.PUBLISHED);
+                            archived.setModifiedBy(user);
+                            archived.setModificationDate(Instant.now().toEpochMilli());
+                            return contentNodeRepository.save(archived);
+                        }))
+                        .thenReturn(true))
                 .defaultIfEmpty(false); // si la version n’existe pas
     }
 
@@ -506,4 +512,3 @@ public class ContentNodeHandler {
     }
 
 }
-
