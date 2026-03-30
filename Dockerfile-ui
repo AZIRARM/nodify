@@ -3,7 +3,7 @@ FROM node:current-slim AS builder
 
 WORKDIR /app
 
-# Copier package.json et package-lock.json (si présent) pour installer les dépendances
+# Copier package.json et package-lock.json
 COPY itexpert-content-ui/package.json itexpert-content-ui/package-lock.json* ./
 
 RUN npm install
@@ -29,6 +29,5 @@ RUN chmod +x /etc/nginx/entrypoint.sh
 
 ENTRYPOINT ["/etc/nginx/entrypoint.sh"]
 
-# Healthcheck pour vérifier que le serveur est vivant
 HEALTHCHECK --start-period=15s --interval=1m --timeout=10s --retries=5 \
   CMD curl --silent --fail --request GET http://localhost/health || exit 1
