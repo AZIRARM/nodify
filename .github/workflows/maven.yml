@@ -94,6 +94,6 @@ jobs:
         script_stop: true
         script: |
           cd /home/azirar/docker-compose/nodify
-          docker-compose pull
-          docker-compose up -d
+          docker compose pull
+          docker compose up -d
           docker image prune -f
