@@ -43,7 +43,11 @@ jobs:
     - name: Run tests for core module
       run: mvn -B test -pl itexpert-content-core
     
-    # Analyse SonarQube pour chaque module (depuis la racine avec -f)
+    # Exécuter les tests du module API
+    - name: Run tests for api module
+      run: mvn -B test -pl itexpert-content-api
+    
+    # Analyse SonarQube pour chaque module
     - name: 🔍 SonarQube Scan - Lib
       run: mvn -f itexpert-content-lib/pom.xml sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
     
