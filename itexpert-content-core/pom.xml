@@ -15,17 +15,17 @@
     <description>ITExpert Content Core</description>
     <packaging>jar</packaging>
          
-         <properties>
-             <!-- SonarQube Configuration -->
-             <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
-             <sonar.token>${env.SONAR_TOKEN}</sonar.token>
-             <sonar.projectKey>com.nodify:core</sonar.projectKey>
-             <sonar.projectName>Nodify - Core</sonar.projectName>
-             <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
-             <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
-             <sonar.java.binaries>target/classes</sonar.java.binaries>
-             <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-         </properties>
+    <properties>
+        <!-- SonarQube Configuration -->
+        <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
+        <sonar.token>${env.SONAR_TOKEN}</sonar.token>
+        <sonar.projectKey>com.nodify:core</sonar.projectKey>
+        <sonar.projectName>Nodify - Core</sonar.projectName>
+        <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+        <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
+        <sonar.java.binaries>target/classes</sonar.java.binaries>
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -40,7 +40,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -62,28 +61,23 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
             <version>3.2.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -110,7 +104,6 @@
             <version>0.11.2</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -129,25 +122,44 @@
         </dependency>
     </dependencies>
 
-
     <build>
         <plugins>
-         <plugin>
-            <groupId>org.sonarsource.scanner.maven</groupId>
-            <artifactId>sonar-maven-plugin</artifactId>
-            <version>3.10.0.2594</version>
-        </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.10.0.2594</version>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.itexpert.content.core.ContentCoreApplication</mainClass>
                 </configuration>
-
                 <executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- JaCoCo Plugin pour la couverture de tests -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
