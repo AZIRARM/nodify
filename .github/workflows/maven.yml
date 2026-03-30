@@ -83,7 +83,7 @@ jobs:
         docker build -f Dockerfile-ui -t ${{ secrets.DOCKER_USERNAME }}/nodify-studio:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/nodify-studio:latest
     
-    # Deploy to server
+    # Deploy to server with ssh
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
       with:
