@@ -1,5 +1,5 @@
 [![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
-
+[![Java CI with Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
 # Nodify: Your Versatile Headless CMS Solution
 
 **Delivering seamless content experiences across all channels**
