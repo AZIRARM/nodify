@@ -93,6 +93,10 @@ jobs:
         port: 22
         script_stop: true
         script: |
+          # Login to Docker Hub on server
+          echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
+          # Deploy
           cd /home/azirar/docker-compose/nodify
           docker compose pull
           docker compose up -d
