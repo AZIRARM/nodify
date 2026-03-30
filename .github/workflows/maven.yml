@@ -70,17 +70,17 @@ jobs:
     # Build and push images
     - name: Build and push Nodify API
       run: |
-        docker build -f itexpert-content-api/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/nodify-api:latest itexpert-content-api/
+        docker build -f Dockerfile-api -t ${{ secrets.DOCKER_USERNAME }}/nodify-api:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/nodify-api:latest
     
     - name: Build and push Nodify Core
       run: |
-        docker build -f itexpert-content-core/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/nodify-core:latest itexpert-content-core/
+        docker build -f Dockerfile-core -t ${{ secrets.DOCKER_USERNAME }}/nodify-core:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/nodify-core:latest
     
     - name: Build and push Nodify Studio
       run: |
-        docker build -f itexpert-content-ui/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/nodify-studio:latest itexpert-content-ui/
+        docker build -f Dockerfile-ui -t ${{ secrets.DOCKER_USERNAME }}/nodify-studio:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/nodify-studio:latest
     
     # Deploy to server
