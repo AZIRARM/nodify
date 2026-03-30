@@ -1,8 +1,13 @@
 [![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Java CI with Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
-# Nodify: Your Versatile Headless CMS Solution
+[![GitHub Repo stars](https://img.shields.io/github/stars/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/network/members)
+[![Docker Pulls](https://img.shields.io/docker/pulls/azirar/nodify-api)](https://hub.docker.com/r/azirar/nodify-api)
 
-**Delivering seamless content experiences across all channels**
+
+# 🚀 Nodify: The Most Powerful Open-Source Headless CMS as a True CaaS
+
+**Delivering seamless content experiences across all channels — natively multilingual, any content, any channel.**
 
 ## 📦 Official Repositories
 
@@ -35,6 +40,16 @@ The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
 - 🔌 [Plugins Marketplace](https://github.com/AZIRARM/nodify-plugins)
 - 💻 [Client Libraries](https://github.com/AZIRARM/nodify-clients)
 - 🐘 [PHP Client](https://github.com/AZIRARM/nodify-php-client)
+
+## ✨ Why Nodify?
+
+| Feature | Description |
+|---------|-------------|
+| 🌍 **Native Multilingual** | Any content, any language, any channel |
+| 📦 **Official SDKs** | Python, PHP, Java/Kotlin, Node.js |
+| 🔌 **Extensible** | Plugins, webhooks, and custom APIs |
+| 🐳 **Docker-ready** | One-command deployment |
+| 🎨 **Ready Templates** | Tech Forum, News, E-commerce, Stories |
 
 ## Understanding Headless CMS
 
@@ -121,17 +136,113 @@ Integrate Nodify with your tech stack using official clients:
 | **Node.js** | [nodify-clients/nodejs](https://github.com/AZIRARM/nodify-clients/tree/main/nodejs) |
 | **PHP** | [nodify-php-client](https://github.com/AZIRARM/nodify-php-client) |
 
+## 📊 GitHub Stats
+
+[![GitHub release](https://img.shields.io/github/v/release/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/releases)
+[![GitHub last commit](https://img.shields.io/github/last-commit/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/commits/main)
+[![GitHub contributors](https://img.shields.io/github/contributors/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/graphs/contributors)
+
 ## 📥 Installation
 
-### Quick Start with Docker
+### Quick Start with Docker Compose
+
+Clone the repository and run Nodify with all dependencies (MongoDB and Redis included):
 
 ```bash
-docker run -d -p 8080:8080 --name nodify azirar/nodify:latest
+git clone https://github.com/AZIRARM/nodify.git
+cd nodify
+docker compose up -d
 ```
 
-### Manual Installation
+Nodify will be available at:
+- **Nodify Studio:** http://localhost:7821
+- **Nodify API:** http://localhost:7805
+- **Nodify Core:** http://localhost:7804
 
-See the [INSTALLATION.md](assets/INSTALLATION.md) guide for detailed setup instructions.
+### Docker Compose Configuration
+
+Create a `docker-compose.yml` file:
+
+```yaml
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: nodify-mongodb
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: nodify-redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  nodify-core:
+    image: azirar/nodify-core:latest
+    container_name: nodify-core
+    environment:
+      MONGO_URL: "mongodb://mongodb:27017/nodify"
+      ADMIN_PWD: Admin13579++
+      API_URL: "http://nodify-api:1080"
+      TZ: "${TZ:-Europe/Paris}"
+      REDIS_URL: "redis://redis:6379"
+      JAVA_OPTS: "-Xmx768m -Xms384m"
+    ports:
+      - "7804:8080"
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+
+  nodify-api:
+    image: azirar/nodify-api:latest
+    container_name: nodify-api
+    environment:
+      MONGO_URL: "mongodb://mongodb:27017/nodify"
+      TZ: "${TZ:-Europe/Paris}"
+      REDIS_URL: "redis://redis:6379"
+      JAVA_OPTS: "-Xmx512m -Xms256m"
+    ports:
+      - "7805:1080"
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+
+  nodify-studio:
+    image: azirar/nodify-studio:latest
+    container_name: nodify-studio
+    ports:
+      - "7821:80"
+    environment:
+      CORE_URL: "http://nodify-core:8080"
+      API_URL: "http://nodify-api:1080"
+    depends_on:
+      - nodify-core
+      - nodify-api
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  redis_data:
+```
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MONGO_URL` | MongoDB connection string | `mongodb://mongodb:27017/nodify` |
+| `REDIS_URL` | Redis connection URL | `redis://redis:6379` |
+| `ADMIN_PWD` | Admin password | Admin13579++ |
+| `API_URL` | Public API URL | http://nodify-api:1080 |
+| `CORE_URL` | Core service URL | http://nodify-core:8080 |
+| `JAVA_OPTS` | JVM options for Core and API | See above |
 
 ## 🤝 Contributing
 
@@ -161,6 +272,5 @@ See the full license here: https://creativecommons.org/licenses/by-nc/4.0/
 - 💬 Issues: [GitHub Issues](https://github.com/AZIRARM/nodify/issues)
 - 📚 Documentation: [Wiki](https://github.com/AZIRARM/nodify/wiki)
 
----
-
 **Made with ❤️ by the Nodify Community**
+```
