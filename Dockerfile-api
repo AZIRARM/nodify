@@ -1,10 +1,9 @@
 FROM maven:3.9.4-eclipse-temurin-21 AS build
 
-
-# Install tzdata to support all timezones
-RUN apt-get update && apt-get install -y tzdata \
-    && rm -rf /var/lib/apt/lists/*
-
+# Install Node.js pour Angular
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get update && apt-get install -y nodejs tzdata && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -16,13 +15,16 @@ COPY itexpert-content-core ./itexpert-content-core
 COPY itexpert-content-api ./itexpert-content-api
 COPY itexpert-content-ui ./itexpert-content-ui
 
-# Tu peux copier itexpert-content-ui si tu veux build le frontend ici, sinon non
-# COPY itexpert-content-ui ./itexpert-content-ui
+# Copier package.json pour Angular
+COPY itexpert-content-ui/package*.json ./itexpert-content-ui/
 
-# Build complet Maven (cela construira tous les modules)
+# Installer les dépendances Angular
+RUN cd itexpert-content-ui && npm install
+
+# Build complet Maven
 RUN mvn clean package -DskipTests
 
-# Ensuite, image finale runtime (exemple pour api)
+# Image finale runtime
 FROM eclipse-temurin:21
 
 ENV APP_HOME=/app
