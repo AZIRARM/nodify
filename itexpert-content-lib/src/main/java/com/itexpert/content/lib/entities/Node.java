@@ -8,7 +8,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -17,72 +16,60 @@ import java.util.UUID;
 
 @Document(collection = "nodes")
 @CompoundIndexes({
-        @CompoundIndex(
-                name = "uniq_code_snapshot",
-                def = "{'code': 1, 'status': 1}",
-                unique = true,
-                partialFilter = "{ 'status': 'SNAPSHOT' }"
-        ),
-        @CompoundIndex(
-                name = "uniq_code_published",
-                def = "{'code': 1, 'status': 1}",
-                unique = true,
-                partialFilter = "{ 'status': 'PUBLISHED' }"
-        )
+                @CompoundIndex(name = "uniq_code_snapshot", def = "{'code': 1, 'status': 1}", unique = true, partialFilter = "{ 'status': 'SNAPSHOT' }"),
+                @CompoundIndex(name = "uniq_code_published", def = "{'code': 1, 'status': 1}", unique = true, partialFilter = "{ 'status': 'PUBLISHED' }")
 })
 @Data
 public class Node implements Serializable, Cloneable {
 
-    @Id
-    private UUID id;
+        @Id
+        private UUID id;
 
-    private String code;
+        private String code;
 
-    private String slug;
+        private String slug;
 
-    private String parentCode;
+        private String parentCode;
 
-    private String parentCodeOrigin;
+        private String parentCodeOrigin;
 
-    private String name;
+        private String name;
 
-    private String description;
+        private String description;
 
-    private String defaultLanguage;
+        private String defaultLanguage;
 
-    private String type;
+        private String type;
 
-    private List<String> subNodes;
+        private List<String> subNodes;
 
+        private List<String> tags;
 
-    private List<String> tags;
+        private List<Value> values;
 
-    private List<Value> values;
+        private List<String> roles;
 
-    private List<String> roles;
+        private List<Rule> rules;
 
-    private List<Rule> rules;
+        private List<String> languages;
 
-    private List<String> languages;
+        private Long creationDate;
 
-    private Long creationDate;
+        private Long modificationDate;
 
-    private Long modificationDate;
+        private String modifiedBy;
 
-    private String modifiedBy;
+        private String version;
+        private Long publicationDate;
+        private StatusEnum status;
 
+        private Integer maxVersionsToKeep;
 
-    private String version;
-    private Long publicationDate;
-    private StatusEnum status;
+        private boolean favorite;
 
-    private Integer maxVersionsToKeep;
+        private List<Translation> translations;
 
-    private boolean favorite;
-
-    private List<Translation> translations;
-
-    public Node clone() throws CloneNotSupportedException {
-        return (Node) super.clone();
-    }
+        public Node clone() throws CloneNotSupportedException {
+                return (Node) super.clone();
+        }
 }
