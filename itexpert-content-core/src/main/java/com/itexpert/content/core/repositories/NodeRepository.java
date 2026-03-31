@@ -33,7 +33,6 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     @Query("{  $or:  [ {'code' : ?0},{'parentCode' : ?0} ]}")
     Flux<Node> findByCodeOrCodeParent(String codeParent);
 
-
     @Query("{  $or:  [ {'code' : ?0},{'parentCode' : ?0} ] ,'status': ?1}")
     Flux<Node> findByCodeParentAndStatus(String codeParent, String status);
 
@@ -42,7 +41,6 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
 
     @Query("{ 'status': ?0 }")
     Flux<Node> findAllByStatus(String status);
-
 
     @Query("{ 'status': ?0, code : { $in :  ?1  } }")
     Flux<Node> findByStatusAndCodes(String status, List<String> codes);
@@ -58,7 +56,7 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     @Query(value = "{ 'code' : {$in:?0}}", delete = true)
     Mono<?> deleteAllByCode(List<String> strings);
 
-    Flux<Node> findBySlugAndStatusAndCodeNotIn(String slug, String status,  List<String> excludedCodes);
+    Flux<Node> findBySlugAndStatusAndCodeNotIn(String slug, String status, List<String> excludedCodes);
 
     @Query("{ 'parentCode' : ?0, 'status': ?1 }")
     Flux<Node> findAllByParentCodeAndStatus(String parentCode, String status);
@@ -80,7 +78,6 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     @Query("{ 'maxVersionsToKeep': { $gt: 0 },'status': 'ARCHIVE'}")
     Flux<Node> findNodeToClean();
 
-
     @Query("{ 'status': 'ARCHIVE' }")
     Flux<Node> findAllArchived();
 
@@ -88,4 +85,7 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     Flux<Node> findArchivedByNodeId(UUID nodeId);
 
     Flux<Node> findByParentCodeAndStatus(String parentCode, String status);
+
+    @Query(value = "{}", fields = "{ code: 1 }")
+    Flux<String> findDistinctCodes();
 }
