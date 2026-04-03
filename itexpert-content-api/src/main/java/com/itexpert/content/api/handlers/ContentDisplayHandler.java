@@ -27,8 +27,7 @@ public class ContentDisplayHandler {
     private final ContentDisplayMapper contentDisplayMapper;
 
     public Flux<ContentDisplay> findAll() {
-        return this.contentDisplayRepository.findAll().map(contentDisplayMapper::fromEntity
-        );
+        return this.contentDisplayRepository.findAll().map(contentDisplayMapper::fromEntity);
     }
 
     public Mono<ContentDisplay> findByContentCode(String code) {
@@ -40,13 +39,12 @@ public class ContentDisplayHandler {
         return this.contentDisplayRepository.findById(uuid).map(contentDisplayMapper::fromEntity);
     }
 
-
     public Mono<Boolean> addDisplay(String code) {
 
         return this.contentDisplayRepository.findByContentCode(code)
                 .switchIfEmpty(Mono.just(new com.itexpert.content.lib.entities.ContentDisplay()))
                 .map(contentDisplay -> {
-                    if(ObjectUtils.isEmpty(contentDisplay.getId())) {
+                    if (ObjectUtils.isEmpty(contentDisplay.getId())) {
                         contentDisplay.setId(UUID.randomUUID());
                         contentDisplay.setDisplays(0L);
                         contentDisplay.setContentCode(code);
@@ -57,9 +55,10 @@ public class ContentDisplayHandler {
                 .map(contentClick -> Boolean.TRUE);
     }
 
-
     public Mono<Long> saveAll(List<ContentDisplay> contentDisplays) {
-        return this.contentDisplayRepository.saveAll(contentDisplays.stream().map(contentDisplayMapper::fromModel).collect(Collectors.toList())).count();
+        return this.contentDisplayRepository
+                .saveAll(contentDisplays.stream().map(contentDisplayMapper::fromModel).collect(Collectors.toList()))
+                .count();
 
     }
 
@@ -69,17 +68,16 @@ public class ContentDisplayHandler {
                 .onErrorReturn(Boolean.FALSE);
     }
 
-
     public Flux<ContentDisplayCharts> getCharts() {
         return contentNodeRepository.findAllByStatus(StatusEnum.PUBLISHED.name())
                 .flatMap(
                         content -> {
                             return this.contentDisplayRepository.findByContentCode(content.getCode())
-                                    .map(contentDisplay -> new ContentDisplayCharts(contentDisplay.getContentCode(), contentDisplay.getDisplays().toString()));
+                                    .map(contentDisplay -> new ContentDisplayCharts(contentDisplay.getContentCode(),
+                                            contentDisplay.getDisplays().toString()));
                         }
 
                 );
 
     }
 }
-

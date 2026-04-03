@@ -42,7 +42,7 @@ public class AccessRoleEndPoint {
                 .map(ResponseEntity::ok);
     }
 
-    //@RolesAllowed("ADMIN")
+    // @RolesAllowed("ADMIN")
     @DeleteMapping(value = "/id/{id}")
     public Mono<ResponseEntity<Boolean>> delete(@PathVariable String id) {
         return roleRoleHandler.delete(UUID.fromString(id))
