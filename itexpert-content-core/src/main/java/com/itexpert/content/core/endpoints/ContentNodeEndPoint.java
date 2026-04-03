@@ -107,7 +107,8 @@ public class ContentNodeEndPoint {
     }
 
     @DeleteMapping(value = "/code/{code}/version/{version}/deleteDefinitively")
-    public Mono<ResponseEntity<Boolean>> deleteDefinitivelyVersion(@PathVariable String code, @PathVariable String version) {
+    public Mono<ResponseEntity<Boolean>> deleteDefinitivelyVersion(@PathVariable String code,
+            @PathVariable String version) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -145,7 +146,7 @@ public class ContentNodeEndPoint {
 
     @PostMapping(value = "/code/{code}/publish/{publish}")
     public Mono<ResponseEntity<ContentNode>> publish(@PathVariable String code,
-                                                     @PathVariable Boolean publish) {
+            @PathVariable Boolean publish) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -188,7 +189,7 @@ public class ContentNodeEndPoint {
 
     @PostMapping(value = "/code/{code}/version/{version}/revert")
     public Mono<ContentNode> revert(@PathVariable String code,
-                                    @PathVariable String version) {
+            @PathVariable String version) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -208,8 +209,8 @@ public class ContentNodeEndPoint {
 
     @PostMapping(value = "/code/{code}/status/{status}/fill")
     public Mono<ContentNode> fillContent(@PathVariable String code,
-                                         @PathVariable StatusEnum status,
-                                         @RequestBody ContentNodePayload contentNode) {
+            @PathVariable StatusEnum status,
+            @RequestBody ContentNodePayload contentNode) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -255,19 +256,24 @@ public class ContentNodeEndPoint {
                     if (isAdmin) {
                         return contentNodeHandler.findAllByStatus(StatusEnum.DELETED.name())
                                 .flatMap(contentNodeHandler::setPublicationStatus)
-                                .filter(contentNode -> (ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent))
-                                        || (ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent))));
+                                .filter(contentNode -> (ObjectUtils.isNotEmpty(contentNode.getParentCode())
+                                        && contentNode.getParentCode().equals(parent))
+                                        || (ObjectUtils.isEmpty(contentNode.getParentCode())
+                                                && (ObjectUtils.isEmpty(parent))));
                     }
                     return SecurityUtils.getUsername()
                             .flatMapMany(username -> contentNodeHandler.findDeleted(username)
                                     .flatMap(contentNodeHandler::setPublicationStatus)
-                                    .filter(contentNode -> (ObjectUtils.isNotEmpty(contentNode.getParentCode()) && contentNode.getParentCode().equals(parent))
-                                            || (ObjectUtils.isEmpty(contentNode.getParentCode()) && (ObjectUtils.isEmpty(parent)))));
+                                    .filter(contentNode -> (ObjectUtils.isNotEmpty(contentNode.getParentCode())
+                                            && contentNode.getParentCode().equals(parent))
+                                            || (ObjectUtils.isEmpty(contentNode.getParentCode())
+                                                    && (ObjectUtils.isEmpty(parent)))));
                 });
     }
 
     @GetMapping(value = "/code/{code}/status/{status}")
-    public Mono<ResponseEntity<ContentNode>> findByCodeAndStatus(@PathVariable String code, @PathVariable String status) {
+    public Mono<ResponseEntity<ContentNode>> findByCodeAndStatus(@PathVariable String code,
+            @PathVariable String status) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -288,8 +294,8 @@ public class ContentNodeEndPoint {
 
     @PostMapping(value = "/import")
     public Mono<ResponseEntity<ContentNode>> importContentNode(@RequestBody ContentNode contentNode,
-                                                               @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
-                                                               @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
+            @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
+            @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -301,10 +307,13 @@ public class ContentNodeEndPoint {
                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
                                 }
                                 return this.nodeHandler.findByCodeAndStatus(nodeParentCode, StatusEnum.SNAPSHOT.name())
-                                        .map(node -> ObjectUtils.isEmpty(node.getParentCodeOrigin()) ? node.getCode() : node.getParentCodeOrigin())
-                                        .flatMap(codeParentOrigin -> this.nodeHandler.findByCodeAndStatus(codeParentOrigin, StatusEnum.SNAPSHOT.name()))
+                                        .map(node -> ObjectUtils.isEmpty(node.getParentCodeOrigin()) ? node.getCode()
+                                                : node.getParentCodeOrigin())
+                                        .flatMap(codeParentOrigin -> this.nodeHandler
+                                                .findByCodeAndStatus(codeParentOrigin, StatusEnum.SNAPSHOT.name()))
                                         .doOnNext(node -> log.debug(node.toString()))
-                                        .flatMap(environment -> this.renameContentNodeCodesHelper.changeCodesAndReturnJson(contentNode, environment.getCode(), fromFile))
+                                        .flatMap(environment -> this.renameContentNodeCodesHelper
+                                                .changeCodesAndReturnJson(contentNode, environment.getCode(), fromFile))
                                         .map(content -> {
                                             content.setParentCode(nodeParentCode);
                                             return content;
@@ -319,7 +328,7 @@ public class ContentNodeEndPoint {
 
     @GetMapping(value = "/code/{code}/export")
     public Mono<ResponseEntity<byte[]>> export(@PathVariable String code,
-                                               @RequestParam(name = "environment", required = false) String environment) {
+            @RequestParam(name = "environment", required = false) String environment) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -336,7 +345,8 @@ public class ContentNodeEndPoint {
                                             contentNode.setParentCodeOrigin(null);
                                             return contentNode;
                                         })
-                                        .flatMap(model -> this.contentNodeHandler.notify(model, NotificationEnum.EXPORT))
+                                        .flatMap(
+                                                model -> this.contentNodeHandler.notify(model, NotificationEnum.EXPORT))
                                         .map(contentNode -> {
                                             Gson gson = new GsonBuilder().create();
                                             return gson.toJson(contentNode);
@@ -346,7 +356,11 @@ public class ContentNodeEndPoint {
                                             return ResponseEntity.ok()
                                                     .contentLength(bytes.length)
                                                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                                                    .header("Content-Disposition", "attachment; filename=\"content-" + code + (ObjectUtils.isNotEmpty(environment) ? "-" + environment : "") + ".json\"")
+                                                    .header("Content-Disposition", "attachment; filename=\"content-"
+                                                            + code
+                                                            + (ObjectUtils.isNotEmpty(environment) ? "-" + environment
+                                                                    : "")
+                                                            + ".json\"")
                                                     .body(bytes);
                                         });
                             });
@@ -355,7 +369,7 @@ public class ContentNodeEndPoint {
 
     @GetMapping(value = "/code/{code}/deploy")
     public Mono<Boolean> deploy(@PathVariable String code,
-                                @RequestParam(name = "environment", required = false) String environmentCode) {
+            @RequestParam(name = "environment", required = false) String environmentCode) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -371,7 +385,7 @@ public class ContentNodeEndPoint {
                 });
     }
 
-    private boolean hasProjectAccess(String code) {
+    protected boolean hasProjectAccess(String code) {
         // Implémentez votre logique de vérification d'accès aux projets ici
         return true;
     }
