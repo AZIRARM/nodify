@@ -86,6 +86,6 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
 
     Flux<Node> findByParentCodeAndStatus(String parentCode, String status);
 
-    @Query(value = "{}", fields = "{ code: 1 }")
-    Flux<String> findDistinctCodes();
+    @Query(value = "{ 'code': { $in: ?0 } }", fields = "{ 'code': 1 }")
+    Flux<String> findExistingCodesIn(List<String> codes);
 }
