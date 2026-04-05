@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -26,21 +29,34 @@ public class ContentNodeCleanupScheduler {
      * @return Mono<Long> The number of deleted ContentNode records
      */
     public Mono<Long> cleanNodesWithInvalidParentCodesReactive() {
-        return nodeRepository.findDistinctCodes()
+        return contentNodeRepository.findDistinctParentCodes()
+                .filter(code -> code != null && !code.isBlank())
+                .collectList()
+                .flatMap(this::processOrphanCleanup); // Clearer for the compiler
+    }
+
+    private Mono<Long> processOrphanCleanup(List<String> parentCodesInContent) {
+        // If no parentCodes exist, nothing to check
+        if (parentCodesInContent.isEmpty()) {
+            return Mono.just(0L);
+        }
+
+        return nodeRepository.findExistingCodesIn(parentCodesInContent)
                 .collectList()
                 .flatMap(existingCodes -> {
-                    // Safety check: prevent mass deletion when no valid Node codes exist
-                    if (existingCodes == null || existingCodes.isEmpty()) {
-                        log.warn("No valid Node codes found - operation cancelled to prevent mass deletion");
+                    // Identify codes present in ContentNode but missing in Node
+                    List<String> orphanedCodes = parentCodesInContent.stream()
+                            .filter(code -> !existingCodes.contains(code))
+                            .toList();
+
+                    if (orphanedCodes.isEmpty()) {
+                        log.info("Scheduler: No orphaned ContentNodes found.");
                         return Mono.just(0L);
                     }
-                    // Delete all ContentNodes whose parentCode is NOT in the list of existing Node
-                    // codes
-                    return contentNodeRepository.deleteByParentCodeNotIn(existingCodes);
-                })
-                .doOnSuccess(
-                        count -> log.info("Scheduler: ContentNode cleanup completed, {} orphaned nodes deleted", count))
-                .doOnError(e -> log.error("Scheduler: ContentNode cleanup failed", e));
+
+                    log.info("Scheduler: Deleting ContentNodes for {} orphaned codes", orphanedCodes.size());
+                    return contentNodeRepository.deleteByParentCodeIn(orphanedCodes);
+                });
     }
 
     /**

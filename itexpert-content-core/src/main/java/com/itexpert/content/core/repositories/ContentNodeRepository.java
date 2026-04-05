@@ -3,6 +3,7 @@ package com.itexpert.content.core.repositories;
 import com.itexpert.content.lib.entities.ContentNode;
 import com.itexpert.content.lib.enums.StatusEnum;
 
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.DeleteQuery;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -63,6 +64,9 @@ public interface ContentNodeRepository extends ReactiveMongoRepository<ContentNo
   @Query("{ 'status': 'ARCHIVE', 'code': ?0 }")
   Flux<ContentNode> findArchivedByNodeCode(String code);
 
+  @Aggregation(pipeline = { "{ '$group': { '_id': '$parentCode' } }" })
+  Flux<String> findDistinctParentCodes();
+
   @Query(value = "{ parentCode: { $nin: ?0 } }", delete = true)
-  Mono<Long> deleteByParentCodeNotIn(List<String> codes);
+  Mono<Long> deleteByParentCodeIn(List<String> codes);
 }

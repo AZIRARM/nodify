@@ -12,13 +12,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import java.util.Arrays;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ContentNodeCleanupSchedulerTest {
@@ -34,106 +32,129 @@ class ContentNodeCleanupSchedulerTest {
 
     @BeforeEach
     void setUp() {
+        // Initialization if needed
     }
 
     /**
-     * Test: Successfully deletes ContentNodes that have invalid parentCode
-     * references
-     * when valid Node codes exist.
+     * Test: Successfully identifies an orphan and deletes it.
+     * ContentNode has [CODE1, CODE2], Node only has [CODE1].
+     * CODE2 should be deleted.
      */
     @Test
-    void cleanNodesWithInvalidParentCodes_ShouldDeleteInvalidNodes_WhenThereAreNodesToDelete() {
-        List<String> distinctCodes = List.of("CODE1", "CODE2", "CODE3");
-        long deletedCount = 5L;
+    void cleanNodesWithInvalidParentCodes_ShouldDeleteOrphanedNodes_WhenTheyExist() {
+        List<String> codesInContent = List.of("CODE1", "CODE2");
+        List<String> existingCodesInNode = List.of("CODE1");
+        List<String> expectedOrphans = List.of("CODE2");
+        long deletedCount = 1L;
 
-        when(nodeRepository.findDistinctCodes()).thenReturn(Flux.fromIterable(distinctCodes));
-        when(contentNodeRepository.deleteByParentCodeNotIn(distinctCodes)).thenReturn(Mono.just(deletedCount));
+        // 1. Get distinct parent codes from ContentNode
+        when(contentNodeRepository.findDistinctParentCodes()).thenReturn(Flux.fromIterable(codesInContent));
+
+        // 2. Check which ones exist in Node collection
+        when(nodeRepository.findExistingCodesIn(codesInContent)).thenReturn(Flux.fromIterable(existingCodesInNode));
+
+        // 3. Delete the orphans (CODE2)
+        when(contentNodeRepository.deleteByParentCodeIn(expectedOrphans)).thenReturn(Mono.just(deletedCount));
 
         StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
                 .expectNext(deletedCount)
                 .verifyComplete();
 
-        verify(nodeRepository).findDistinctCodes();
-        verify(contentNodeRepository).deleteByParentCodeNotIn(distinctCodes);
+        verify(contentNodeRepository).findDistinctParentCodes();
+        verify(nodeRepository).findExistingCodesIn(codesInContent);
+        verify(contentNodeRepository).deleteByParentCodeIn(expectedOrphans);
     }
 
     /**
-     * Test: Prevents mass deletion when Node collection is empty (no distinct codes
-     * found).
-     * The safety check should return 0 without calling the delete operation.
+     * Test: No deletion should occur if all parentCodes are found in Node
+     * collection.
      */
     @Test
-    void cleanNodesWithInvalidParentCodes_ShouldNotDeleteAnything_WhenNoDistinctCodesFound() {
-        List<String> distinctCodes = List.of();
+    void cleanNodesWithInvalidParentCodes_ShouldNotDelete_WhenAllCodesAreValid() {
+        List<String> codes = List.of("CODE1", "CODE2");
 
-        when(nodeRepository.findDistinctCodes()).thenReturn(Flux.fromIterable(distinctCodes));
-        // deleteByParentCodeNotIn should NEVER be called due to safety check
-        // No need to mock it because it won't be invoked
+        when(contentNodeRepository.findDistinctParentCodes()).thenReturn(Flux.fromIterable(codes));
+        when(nodeRepository.findExistingCodesIn(codes)).thenReturn(Flux.fromIterable(codes));
 
         StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
                 .expectNext(0L)
                 .verifyComplete();
 
-        verify(nodeRepository).findDistinctCodes();
-        // Verify that deleteByParentCodeNotIn is NEVER called (safety check prevents
-        // it)
-        verify(contentNodeRepository, never()).deleteByParentCodeNotIn(anyList());
+        verify(contentNodeRepository, never()).deleteByParentCodeIn(anyList());
     }
 
     /**
-     * Test: Handles error when Node repository fails (e.g., database connection
-     * issue).
+     * Test: If ContentNode collection is empty, the process stops early.
+     */
+    @Test
+    void cleanNodesWithInvalidParentCodes_ShouldReturnZero_WhenNoContentNodesExist() {
+        when(contentNodeRepository.findDistinctParentCodes()).thenReturn(Flux.empty());
+
+        StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
+                .expectNext(0L)
+                .verifyComplete();
+
+        verify(nodeRepository, never()).findExistingCodesIn(anyList());
+        verify(contentNodeRepository, never()).deleteByParentCodeIn(anyList());
+    }
+
+    /**
+     * Test: Handles error when Node repository fails.
      */
     @Test
     void cleanNodesWithInvalidParentCodes_ShouldHandleError_WhenNodeRepositoryFails() {
-        RuntimeException error = new RuntimeException("Database connection failed");
+        List<String> codes = List.of("CODE1");
+        RuntimeException error = new RuntimeException("Database error");
 
-        when(nodeRepository.findDistinctCodes()).thenReturn(Flux.error(error));
+        when(contentNodeRepository.findDistinctParentCodes()).thenReturn(Flux.fromIterable(codes));
+        when(nodeRepository.findExistingCodesIn(anyList())).thenReturn(Flux.error(error));
 
         StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
-                .verifyErrorMatches(
-                        e -> e instanceof RuntimeException && e.getMessage().equals("Database connection failed"));
+                .verifyErrorMatches(e -> e instanceof RuntimeException && e.getMessage().equals("Database error"));
 
-        verify(nodeRepository).findDistinctCodes();
-        verify(contentNodeRepository, never()).deleteByParentCodeNotIn(any());
+        verify(contentNodeRepository, never()).deleteByParentCodeIn(anyList());
     }
 
     /**
-     * Test: Handles error when ContentNode repository delete operation fails.
+     * Test: Handles error when deletion operation fails.
      */
     @Test
-    void cleanNodesWithInvalidParentCodes_ShouldHandleError_WhenContentNodeRepositoryFails() {
-        List<String> distinctCodes = List.of("CODE1", "CODE2");
-        RuntimeException error = new RuntimeException("Delete operation failed");
+    void cleanNodesWithInvalidParentCodes_ShouldHandleError_WhenDeleteFails() {
+        List<String> codesInContent = List.of("ORPHAN");
+        List<String> emptyExisting = List.of();
+        RuntimeException error = new RuntimeException("Delete failed");
 
-        when(nodeRepository.findDistinctCodes()).thenReturn(Flux.fromIterable(distinctCodes));
-        when(contentNodeRepository.deleteByParentCodeNotIn(distinctCodes)).thenReturn(Mono.error(error));
+        when(contentNodeRepository.findDistinctParentCodes()).thenReturn(Flux.fromIterable(codesInContent));
+        when(nodeRepository.findExistingCodesIn(codesInContent)).thenReturn(Flux.fromIterable(emptyExisting));
+        when(contentNodeRepository.deleteByParentCodeIn(anyList())).thenReturn(Mono.error(error));
 
         StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
-                .verifyErrorMatches(
-                        e -> e instanceof RuntimeException && e.getMessage().equals("Delete operation failed"));
-
-        verify(nodeRepository).findDistinctCodes();
-        verify(contentNodeRepository).deleteByParentCodeNotIn(distinctCodes);
+                .verifyErrorMatches(e -> e.getMessage().equals("Delete failed"));
     }
 
     /**
-     * Test: Handles null/empty scenario from Node repository.
-     * The safety check should prevent deletion and return 0.
+     * Test: Ensure null or blank parentCodes are filtered out to avoid unnecessary
+     * DB checks.
      */
     @Test
-    void cleanNodesWithInvalidParentCodes_ShouldNotDeleteAnything_WhenNullDistinctCodes() {
-        when(nodeRepository.findDistinctCodes()).thenReturn(Flux.empty());
-        // deleteByParentCodeNotIn should NEVER be called due to safety check
-        // No need to mock it because it won't be invoked
+    void cleanNodesWithInvalidParentCodes_ShouldFilterInvalidStrings() {
+        // We use blank and empty strings.
+        // We avoid literal null because Reactor Flux cannot emit null signals.
+        List<String> codesWithBlanks = Arrays.asList("CODE1", "", "   ");
+
+        when(contentNodeRepository.findDistinctParentCodes())
+                .thenReturn(Flux.fromIterable(codesWithBlanks));
+
+        // The scheduler should filter out "" and " ", leaving only "CODE1"
+        when(nodeRepository.findExistingCodesIn(List.of("CODE1")))
+                .thenReturn(Flux.just("CODE1"));
 
         StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
-                .expectNext(0L)
+                .expectNext(0L) // No orphans because CODE1 is found in Node
                 .verifyComplete();
 
-        verify(nodeRepository).findDistinctCodes();
-        // Verify that deleteByParentCodeNotIn is NEVER called (safety check prevents
-        // it)
-        verify(contentNodeRepository, never()).deleteByParentCodeNotIn(anyList());
+        // Verify only the valid code was used for the check
+        verify(nodeRepository).findExistingCodesIn(List.of("CODE1"));
+        verify(contentNodeRepository, never()).deleteByParentCodeIn(anyList());
     }
 }
