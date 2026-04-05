@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,6 +36,11 @@ class ContentNodeCleanupSchedulerTest {
     void setUp() {
     }
 
+    /**
+     * Test: Successfully deletes ContentNodes that have invalid parentCode
+     * references
+     * when valid Node codes exist.
+     */
     @Test
     void cleanNodesWithInvalidParentCodes_ShouldDeleteInvalidNodes_WhenThereAreNodesToDelete() {
         List<String> distinctCodes = List.of("CODE1", "CODE2", "CODE3");
@@ -51,21 +57,33 @@ class ContentNodeCleanupSchedulerTest {
         verify(contentNodeRepository).deleteByParentCodeNotIn(distinctCodes);
     }
 
+    /**
+     * Test: Prevents mass deletion when Node collection is empty (no distinct codes
+     * found).
+     * The safety check should return 0 without calling the delete operation.
+     */
     @Test
-    void cleanNodesWithInvalidParentCodes_ShouldDeleteNothing_WhenNoDistinctCodesFound() {
+    void cleanNodesWithInvalidParentCodes_ShouldNotDeleteAnything_WhenNoDistinctCodesFound() {
         List<String> distinctCodes = List.of();
 
         when(nodeRepository.findDistinctCodes()).thenReturn(Flux.fromIterable(distinctCodes));
-        when(contentNodeRepository.deleteByParentCodeNotIn(distinctCodes)).thenReturn(Mono.just(0L));
+        // deleteByParentCodeNotIn should NEVER be called due to safety check
+        // No need to mock it because it won't be invoked
 
         StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
                 .expectNext(0L)
                 .verifyComplete();
 
         verify(nodeRepository).findDistinctCodes();
-        verify(contentNodeRepository).deleteByParentCodeNotIn(distinctCodes);
+        // Verify that deleteByParentCodeNotIn is NEVER called (safety check prevents
+        // it)
+        verify(contentNodeRepository, never()).deleteByParentCodeNotIn(anyList());
     }
 
+    /**
+     * Test: Handles error when Node repository fails (e.g., database connection
+     * issue).
+     */
     @Test
     void cleanNodesWithInvalidParentCodes_ShouldHandleError_WhenNodeRepositoryFails() {
         RuntimeException error = new RuntimeException("Database connection failed");
@@ -80,6 +98,9 @@ class ContentNodeCleanupSchedulerTest {
         verify(contentNodeRepository, never()).deleteByParentCodeNotIn(any());
     }
 
+    /**
+     * Test: Handles error when ContentNode repository delete operation fails.
+     */
     @Test
     void cleanNodesWithInvalidParentCodes_ShouldHandleError_WhenContentNodeRepositoryFails() {
         List<String> distinctCodes = List.of("CODE1", "CODE2");
@@ -96,16 +117,23 @@ class ContentNodeCleanupSchedulerTest {
         verify(contentNodeRepository).deleteByParentCodeNotIn(distinctCodes);
     }
 
+    /**
+     * Test: Handles null/empty scenario from Node repository.
+     * The safety check should prevent deletion and return 0.
+     */
     @Test
-    void cleanNodesWithInvalidParentCodes_ShouldHandleNullDistinctCodes() {
+    void cleanNodesWithInvalidParentCodes_ShouldNotDeleteAnything_WhenNullDistinctCodes() {
         when(nodeRepository.findDistinctCodes()).thenReturn(Flux.empty());
-        when(contentNodeRepository.deleteByParentCodeNotIn(List.of())).thenReturn(Mono.just(0L));
+        // deleteByParentCodeNotIn should NEVER be called due to safety check
+        // No need to mock it because it won't be invoked
 
         StepVerifier.create(contentNodeCleanupScheduler.cleanNodesWithInvalidParentCodesReactive())
                 .expectNext(0L)
                 .verifyComplete();
 
         verify(nodeRepository).findDistinctCodes();
-        verify(contentNodeRepository).deleteByParentCodeNotIn(List.of());
+        // Verify that deleteByParentCodeNotIn is NEVER called (safety check prevents
+        // it)
+        verify(contentNodeRepository, never()).deleteByParentCodeNotIn(anyList());
     }
 }
