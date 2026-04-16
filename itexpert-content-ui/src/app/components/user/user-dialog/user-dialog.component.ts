@@ -1,10 +1,10 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {NodeService} from "../../../services/NodeService";
-import {User} from "../../../modeles/User";
-import {RoleService} from "../../../services/RoleService";
-import {StatusEnum} from "../../../modeles/StatusEnum";
-import {UserAccessService} from "../../../services/UserAccessService";
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { NodeService } from "../../../services/NodeService";
+import { User } from "../../../modeles/User";
+import { RoleService } from "../../../services/RoleService";
+import { StatusEnum } from "../../../modeles/StatusEnum";
+import { UserAccessService } from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-user-dialog',
@@ -17,6 +17,9 @@ export class UserDialogComponent implements OnInit {
   connectedUser: User;
   roles: any[] = [];
   projects: any[] = [];
+
+  filteredProjects: any[] = [];
+  projectSearchText: string = '';
 
   constructor(
     public dialogRef: MatDialogRef<UserDialogComponent>,
@@ -55,20 +58,16 @@ export class UserDialogComponent implements OnInit {
       }
     );
 
-    this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
+    this.nodeService.getAllActifs().subscribe(
       (data: any) => {
-        if (data && Array.isArray(data)) {
-          this.projects = data;
-        } else if (data) {
-          // Si data n'est pas un tableau mais un objet, on le convertit
-          this.projects = Object.values(data);
-        } else {
-          this.projects = [];
-        }
+        const results = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+        this.projects = results;
+        this.filteredProjects = results;
       },
       error => {
         console.error('Erreur chargement projets', error);
         this.projects = [];
+        this.filteredProjects = [];
       }
     );
   }
@@ -91,11 +90,11 @@ export class UserDialogComponent implements OnInit {
 
   isFormValid(): boolean {
     return !!(this.user &&
-             this.user.email &&
-             this.user.firstname &&
-             this.user.lastname &&
-             this.user.roles &&
-             this.user.roles.length > 0);
+      this.user.email &&
+      this.user.firstname &&
+      this.user.lastname &&
+      this.user.roles &&
+      this.user.roles.length > 0);
   }
 
   getSelectedProjectsDisplay(): string {
@@ -126,6 +125,22 @@ export class UserDialogComponent implements OnInit {
         this.user.roles.push(role);
       }
     }
-    this.dialogRef.close({data: this.user});
+    this.dialogRef.close({ data: this.user });
+  }
+
+  filterProjects(event: any) {
+    const search = event.target.value.toLowerCase();
+    this.projectSearchText = search;
+
+    if (!search) {
+      this.filteredProjects = this.projects;
+      return;
+    }
+
+    this.filteredProjects = this.projects.filter(p =>
+      p.code?.toLowerCase().includes(search) ||
+      p.slug?.toLowerCase().includes(search) ||
+      p.name?.toLowerCase().includes(search)
+    );
   }
 }

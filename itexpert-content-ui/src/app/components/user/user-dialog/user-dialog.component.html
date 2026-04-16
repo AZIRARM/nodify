@@ -23,45 +23,29 @@
       <!-- Prénom -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "USER_FIRSTNAME" | translate }}</mat-label>
-        <input
-          matInput
-          [(ngModel)]="user.firstname"
-          placeholder="{{ 'USER_FIRSTNAME' | translate }}"
-          required>
+        <input matInput [(ngModel)]="user.firstname" placeholder="{{ 'USER_FIRSTNAME' | translate }}" required>
         <mat-icon matSuffix>badge</mat-icon>
       </mat-form-field>
 
       <!-- Nom -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "USER_LASTNAME" | translate }}</mat-label>
-        <input
-          matInput
-          [(ngModel)]="user.lastname"
-          placeholder="{{ 'USER_LASTNAME' | translate }}"
-          required>
+        <input matInput [(ngModel)]="user.lastname" placeholder="{{ 'USER_LASTNAME' | translate }}" required>
         <mat-icon matSuffix>badge</mat-icon>
       </mat-form-field>
 
       <!-- Email -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "USER_EMAIL" | translate }}</mat-label>
-        <input
-          matInput
-          [(ngModel)]="user.email"
-          placeholder="{{ 'USER_EMAIL' | translate }}"
-          [disabled]="!userAccessService.isAdmin()"
-          required>
+        <input matInput [(ngModel)]="user.email" placeholder="{{ 'USER_EMAIL' | translate }}"
+          [disabled]="!userAccessService.isAdmin()" required>
         <mat-icon matSuffix>email</mat-icon>
       </mat-form-field>
 
       <!-- Mot de passe (uniquement pour création) -->
       <mat-form-field appearance="outline" class="full-width" *ngIf="!user.id">
         <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
-        <input
-          matInput
-          type="password"
-          [(ngModel)]="user.password"
-          placeholder="{{ 'USER_PASSWORD' | translate }}"
+        <input matInput type="password" [(ngModel)]="user.password" placeholder="{{ 'USER_PASSWORD' | translate }}"
           required>
         <mat-icon matSuffix>lock</mat-icon>
       </mat-form-field>
@@ -69,10 +53,7 @@
       <!-- Rôles -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "USER_ROLES" | translate }}</mat-label>
-        <mat-select
-          [(ngModel)]="selectedRole"
-          name="selectRoles"
-          [disabled]="connectedUserIsAdmin() && userIsAdmin()"
+        <mat-select [(ngModel)]="selectedRole" name="selectRoles" [disabled]="connectedUserIsAdmin() && userIsAdmin()"
           required>
           <mat-option *ngFor="let role of roles" [value]="role.code">
             <div class="option-content">
@@ -86,20 +67,30 @@
       <!-- Projets -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "PROJECTS" | translate }}</mat-label>
-        <mat-select
-          [(ngModel)]="user.projects"
-          name="selectProjects"
-          [disabled]="connectedUserIsAdmin() && userIsAdmin()"
-          multiple>
+        <mat-select [(ngModel)]="user.projects" name="selectProjects"
+          [disabled]="connectedUserIsAdmin() && userIsAdmin()" multiple>
+
+          <div class="select-search-header">
+            <input matInput class="select-search-input" placeholder="{{ 'SEARCH' | translate }}..."
+              (input)="filterProjects($event)" (keydown)="$event.stopPropagation()">
+          </div>
+
           <mat-select-trigger>
             {{ getSelectedProjectsDisplay() }}
           </mat-select-trigger>
-          <mat-option *ngFor="let project of projects" [value]="project.code">
+
+          <mat-option *ngFor="let project of filteredProjects" [value]="project.code">
             <div class="option-content">
               <span class="project-name">{{ project.name }}</span>
               <span class="project-code">({{ project.code }})</span>
+              <small class="project-slug" *ngIf="project.slug"> - {{ project.slug }}</small>
             </div>
           </mat-option>
+
+          <mat-option disabled *ngIf="filteredProjects.length === 0">
+            {{ "NO_RESULT" | translate }}
+          </mat-option>
+
         </mat-select>
         <mat-icon matSuffix>folder</mat-icon>
       </mat-form-field>
@@ -115,18 +106,11 @@
 
   <!-- Actions -->
   <div mat-dialog-actions class="dialog-actions">
-    <button
-      mat-stroked-button
-      class="cancel-btn"
-      (click)="cancel()">
+    <button mat-stroked-button class="cancel-btn" (click)="cancel()">
       <mat-icon>close</mat-icon>
       {{ "CANCEL" | translate }}
     </button>
-    <button
-      mat-flat-button
-      class="save-btn"
-      (click)="validate()"
-      [disabled]="!isFormValid()">
+    <button mat-flat-button class="save-btn" (click)="validate()" [disabled]="!isFormValid()">
       <mat-icon>save</mat-icon>
       {{ "SAVE" | translate }}
     </button>

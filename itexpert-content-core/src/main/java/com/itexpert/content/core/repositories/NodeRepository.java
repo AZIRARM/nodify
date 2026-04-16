@@ -1,6 +1,8 @@
 package com.itexpert.content.core.repositories;
 
 import com.itexpert.content.lib.entities.Node;
+import com.itexpert.content.lib.enums.StatusEnum;
+
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
@@ -24,16 +26,16 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     @Query("{ 'code' : ?0, 'status': ?1 }")
     Mono<Node> findByCodeAndStatus(String code, String status);
 
-    @Query("{  $or:  [ {'code' : ?0},{'parentCodeOrigin' : ?0} ] ,'status': ?1}")
+    @Query("{  :  [ {'code' : ?0},{'parentCodeOrigin' : ?0} ] ,'status': ?1}")
     Flux<Node> findByCodeParentOriginAndStatus(String codeParentOrigin, String status);
 
-    @Query("{  $or:  [ {'code' : ?0},{'parentCodeOrigin' : ?0} ]}")
+    @Query("{  :  [ {'code' : ?0},{'parentCodeOrigin' : ?0} ]}")
     Flux<Node> findByCodeOrCodeParentOrigin(String codeParentOrigin);
 
-    @Query("{  $or:  [ {'code' : ?0},{'parentCode' : ?0} ]}")
+    @Query("{  :  [ {'code' : ?0},{'parentCode' : ?0} ]}")
     Flux<Node> findByCodeOrCodeParent(String codeParent);
 
-    @Query("{  $or:  [ {'code' : ?0},{'parentCode' : ?0} ] ,'status': ?1}")
+    @Query("{  :  [ {'code' : ?0},{'parentCode' : ?0} ] ,'status': ?1}")
     Flux<Node> findByCodeParentAndStatus(String codeParent, String status);
 
     @Query("{ 'code' : ?0}")
@@ -42,7 +44,7 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     @Query("{ 'status': ?0 }")
     Flux<Node> findAllByStatus(String status);
 
-    @Query("{ 'status': ?0, code : { $in :  ?1  } }")
+    @Query("{ 'status': ?0, code : {  :  ?1  } }")
     Flux<Node> findByStatusAndCodes(String status, List<String> codes);
 
     @Query("{ 'code' : ?0, 'version': ?1}")
@@ -53,7 +55,7 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
     @Query("{ 'parentCodeOrigin' : null, 'status': 'SNAPSHOT'}")
     Flux<Node> findAllParentOrigin();
 
-    @Query(value = "{ 'code' : {$in:?0}}", delete = true)
+    @Query(value = "{ 'code' : {:?0}}", delete = true)
     Mono<?> deleteAllByCode(List<String> strings);
 
     Flux<Node> findBySlugAndStatusAndCodeNotIn(String slug, String status, List<String> excludedCodes);
@@ -69,13 +71,13 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
 
     Flux<Node> findBySlugAndCode(String slug, String code);
 
-    @Query("{ 'status': 'SNAPSHOT', 'maxVersionsToKeep': { $gt: 0 } }")
+    @Query("{ 'status': 'SNAPSHOT', 'maxVersionsToKeep': { : 0 } }")
     Flux<Node> findActiveNodesToClean();
 
     @Query("{ 'status': 'ARCHIVE', 'code': ?0 }")
     Flux<Node> findArchivedByCode(String code);
 
-    @Query("{ 'maxVersionsToKeep': { $gt: 0 },'status': 'ARCHIVE'}")
+    @Query("{ 'maxVersionsToKeep': { : 0 },'status': 'ARCHIVE'}")
     Flux<Node> findNodeToClean();
 
     @Query("{ 'status': 'ARCHIVE' }")
@@ -86,6 +88,8 @@ public interface NodeRepository extends ReactiveMongoRepository<Node, UUID> {
 
     Flux<Node> findByParentCodeAndStatus(String parentCode, String status);
 
-    @Query(value = "{ 'code': { $in: ?0 } }", fields = "{ 'code': 1 }")
+    @Query(value = "{ 'code': { : ?0 } }", fields = "{ 'code': 1 }")
     Flux<String> findExistingCodesIn(List<String> codes);
+
+    Flux<Node> findAllByStatus(StatusEnum snapshot);
 }

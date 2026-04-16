@@ -78,12 +78,14 @@ public class NodeEndPoint {
                                 if (isAdmin) {
                                     return nodeHandler.findAllByStatus(status)
                                             .flatMap(nodeHandler::setPublicationStatus)
-                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
+                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                    node1.isFavorite()));
                                 }
                                 return SecurityUtils.getUsername()
                                         .flatMapMany(username -> nodeHandler.findAllByStatusAndUser(status, username)
                                                 .flatMap(nodeHandler::setPublicationStatus)
-                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite())));
+                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                        node1.isFavorite())));
                             });
                 });
     }
@@ -112,14 +114,18 @@ public class NodeEndPoint {
                                 if (isAdmin) {
                                     return nodeHandler.findAllByStatus(StatusEnum.DELETED.name())
                                             .flatMap(nodeHandler::setPublicationStatus)
-                                            .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent))
-                                                    || (ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent))));
+                                            .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode())
+                                                    && node.getParentCode().equals(parent))
+                                                    || (ObjectUtils.isEmpty(node.getParentCode())
+                                                            && (ObjectUtils.isEmpty(parent))));
                                 }
                                 return SecurityUtils.getUsername()
                                         .flatMapMany(username -> nodeHandler.findDeleted(username)
                                                 .flatMap(nodeHandler::setPublicationStatus)
-                                                .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent))
-                                                        || (ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)))));
+                                                .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode())
+                                                        && node.getParentCode().equals(parent))
+                                                        || (ObjectUtils.isEmpty(node.getParentCode())
+                                                                && (ObjectUtils.isEmpty(parent)))));
                             });
                 });
     }
@@ -188,7 +194,8 @@ public class NodeEndPoint {
     }
 
     @DeleteMapping(value = "/code/{code}/version/{version}/deleteDefinitively")
-    public Mono<ResponseEntity<Boolean>> deleteDefinitivelyVersion(@PathVariable String code, @PathVariable String version) {
+    public Mono<ResponseEntity<Boolean>> deleteDefinitivelyVersion(@PathVariable String code,
+            @PathVariable String version) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -256,12 +263,18 @@ public class NodeEndPoint {
                                 if (isAdmin) {
                                     return nodeHandler.findParentsNodesByStatus(status)
                                             .flatMap(nodeHandler::setPublicationStatus)
-                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
+                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                    node1.isFavorite()));
                                 }
                                 return SecurityUtils.getUsername()
                                         .flatMapMany(username -> nodeHandler.findParentsNodesByStatus(status, username)
                                                 .flatMap(nodeHandler::setPublicationStatus)
-                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite())));
+                                                .map(node -> {
+                                                    node.setParentCode(null);
+                                                    return node;
+                                                })
+                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                        node1.isFavorite())));
                             });
                 });
     }
@@ -363,7 +376,8 @@ public class NodeEndPoint {
                                         .map(jsonBytes -> ResponseEntity.ok()
                                                 .contentLength(jsonBytes.length)
                                                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                                                .header("Content-Disposition", "attachment; filename=\"" + code + ".json\"")
+                                                .header("Content-Disposition",
+                                                        "attachment; filename=\"" + code + ".json\"")
                                                 .body(jsonBytes));
                             });
                 });
@@ -379,8 +393,8 @@ public class NodeEndPoint {
 
     @PostMapping(value = "/importAll")
     public Flux<Node> importNodes(@RequestBody List<Node> nodes,
-                                  @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
-                                  @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
+            @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
+            @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
         return nodeHandler.importNodes(nodes, nodeParentCode, fromFile)
                 .flatMap(nodeHandler::setPublicationStatus);
     }
@@ -411,7 +425,7 @@ public class NodeEndPoint {
 
     @GetMapping(value = "/code/{code}/deploy")
     public Flux<Node> deploy(@PathVariable String code,
-                             @RequestParam(name = "environment", required = false) String environmentCode) {
+            @RequestParam(name = "environment", required = false) String environmentCode) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMapMany(canAccess -> {
                     if (!canAccess) {
@@ -427,13 +441,16 @@ public class NodeEndPoint {
                                         return nodes;
                                     })
                                     .map(nodes -> {
-                                        log.debug("[EXPORT] About to importNodes, environmentCode={}, nodes count={}", environmentCode, nodes.size());
+                                        log.debug("[EXPORT] About to importNodes, environmentCode={}, nodes count={}",
+                                                environmentCode, nodes.size());
                                         nodes.forEach(node -> {
-                                            log.debug("[EXPORT] Node to import: code={}, status={}", node.getCode(), node.getStatus());
+                                            log.debug("[EXPORT] Node to import: code={}, status={}", node.getCode(),
+                                                    node.getStatus());
                                             node.setModifiedBy(username);
                                             Optional.ofNullable(node.getContents()).orElse(List.of())
                                                     .forEach(contentNode -> {
-                                                        log.debug("[EXPORT]   ContentNode: code={}, status={}", contentNode.getCode(), contentNode.getStatus());
+                                                        log.debug("[EXPORT]   ContentNode: code={}, status={}",
+                                                                contentNode.getCode(), contentNode.getStatus());
                                                         contentNode.setModifiedBy(username);
                                                     });
                                         });
@@ -444,8 +461,10 @@ public class NodeEndPoint {
                                     .flatMap(nodeHandler::setPublicationStatus)
                                     .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT))
                                     .filter(node -> node.getParentCode().equals(environmentCode))
-                                    .flatMap(node -> this.nodeHandler.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
-                                            .flatMap(nodeToPublish -> this.nodeHandler.publish(nodeToPublish.getCode(), username))));
+                                    .flatMap(node -> this.nodeHandler
+                                            .findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                                            .flatMap(nodeToPublish -> this.nodeHandler.publish(nodeToPublish.getCode(),
+                                                    username))));
                 });
     }
 
@@ -499,15 +518,15 @@ public class NodeEndPoint {
                                 return SecurityUtils.getUsername()
                                         .flatMap(username -> this.userHandler.findByEmail(username)
                                                 .map(UserPost::getProjects)
-                                                .flatMap(userProjects -> nodeHandler.generateTreeView(code, userProjects))
+                                                .flatMap(userProjects -> nodeHandler.generateTreeView(code,
+                                                        userProjects))
                                                 .map(ResponseEntity::ok));
                             });
                 });
     }
 
     private String extratUser(UserPost user) {
-        return ObjectUtils.isEmpty(user) ? "" :
-                (user.getFirstname() + " " + user.getLastname());
+        return ObjectUtils.isEmpty(user) ? "" : (user.getFirstname() + " " + user.getLastname());
     }
 
     private Mono<Node> removeStatusSnaphotFromContents(Node node) {
@@ -532,7 +551,8 @@ public class NodeEndPoint {
     }
 
     private String cleanStatusSnapshot(String input) {
-        if (input == null) return null;
+        if (input == null)
+            return null;
 
         int qIndex = input.indexOf('?');
         if (qIndex < 0) {
@@ -562,5 +582,16 @@ public class NodeEndPoint {
     public Mono<ResponseEntity<Boolean>> propagateMaxHistoryToKeep(@PathVariable String nodeCodePatent) {
         return nodeHandler.propagateMaxHistoryToKeep(nodeCodePatent)
                 .map(ResponseEntity::ok);
+    }
+
+    @GetMapping(value = "/actifs")
+    public Flux<Node> findAllActifs() {
+        return SecurityUtils.hasRole(RoleEnum.ADMIN.name())
+                .flatMapMany(isAdmin -> {
+                    if (isAdmin) {
+                        return this.nodeHandler.findAllActifs();
+                    }
+                    return Flux.empty();
+                });
     }
 }

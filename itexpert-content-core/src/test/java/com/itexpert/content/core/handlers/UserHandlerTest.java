@@ -1,6 +1,7 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.mappers.UserMapper;
+import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.repositories.UserRepository;
 import com.itexpert.content.core.utils.auth.PBKDF2Encoder;
 import com.itexpert.content.lib.entities.User;
@@ -15,10 +16,12 @@ import reactor.test.StepVerifier;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class UserHandlerTest {
     private UserRepository userRepository;
+    private NodeRepository nodeRepository;
     private UserMapper userMapper;
     private PBKDF2Encoder passwordEncoder;
     private NotificationHandler notificationHandler;
@@ -30,13 +33,14 @@ public class UserHandlerTest {
         passwordEncoder = mock(PBKDF2Encoder.class);
         userMapper = Mappers.getMapper(UserMapper.class);
         userRepository = mock(UserRepository.class);
+        nodeRepository = mock(NodeRepository.class);
         notificationHandler = mock(NotificationHandler.class);
         userHandler = new UserHandler(
                 userRepository,
+                nodeRepository,
                 userMapper,
                 passwordEncoder,
-                notificationHandler
-        );
+                notificationHandler);
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())
@@ -44,11 +48,12 @@ public class UserHandlerTest {
                 .type("USER_ACTIONS")
                 .build();
 
-        when(notificationHandler.create(any(), any(), any(), any(), any(), any(), any())).thenReturn(Mono.just(notification));
+        when(notificationHandler.create(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(Mono.just(notification));
 
     }
 
-     @Test
+    @Test
     void delete_ShouldReturnTrue_WhenUserIsNotAdmin() {
         UUID userId = UUID.randomUUID();
         User normalUser = new User();
@@ -82,8 +87,8 @@ public class UserHandlerTest {
 
         StepVerifier.create(result)
                 .assertNext(aBoolean -> {
-                    assert !aBoolean
-;                })
+                    assert !aBoolean;
+                })
                 .verifyComplete();
 
         verify(userRepository, times(0)).deleteById(any(UUID.class));

@@ -1,10 +1,10 @@
-import {Injectable} from '@angular/core';
-import {Service} from "./Service";
-import {HttpClient} from "@angular/common/http";
-import {Node} from "../modeles/Node";
+import { Injectable } from '@angular/core';
+import { Service } from "./Service";
+import { HttpClient } from "@angular/common/http";
+import { Node } from "../modeles/Node";
 import { AuthenticationService } from './AuthenticationService';
 import { interval, fromEvent, merge, Subscription, timer, forkJoin, Observable, of } from 'rxjs';
-import {Env} from "../../assets/configurations/environment";
+import { Env } from "../../assets/configurations/environment";
 
 @Injectable()
 export class NodeService extends Service {
@@ -16,6 +16,9 @@ export class NodeService extends Service {
 
   getParentsNodes(status: string) {
     return super.get("parent/status/" + status);
+  }
+  getAllActifs() {
+    return super.get("actifs");
   }
 
   getPublished() {
@@ -40,7 +43,7 @@ export class NodeService extends Service {
   }
 
   delete(code: String) {
-    return super.remove("code/" + code );
+    return super.remove("code/" + code);
   }
 
   deleteDefinitively(code: String) {
@@ -48,7 +51,7 @@ export class NodeService extends Service {
   }
 
   deleteVersionDefinitively(code: String, version: string) {
-    return super.remove("code/" + code+"/version/" + version + "/deleteDefinitively");
+    return super.remove("code/" + code + "/version/" + version + "/deleteDefinitively");
   }
 
   activate(code: String) {
@@ -72,7 +75,7 @@ export class NodeService extends Service {
   }
 
   revertToVersion(code: string, version: string) {
-    return super.post("code/" + code + "/version/" + version  + "/revert", null);
+    return super.post("code/" + code + "/version/" + version + "/revert", null);
   }
 
   export(code: string, environmentCode: string) {
@@ -117,7 +120,7 @@ export class NodeService extends Service {
   }
 
 
-handle(): Observable<Node> {
+  handle(): Observable<Node> {
     const token = this.authenticationService.getAccessToken();
 
     const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/nodes?authorization=Bearer ${token}`;
