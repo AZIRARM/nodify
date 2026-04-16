@@ -6,6 +6,7 @@ import com.itexpert.content.core.mappers.ContentNodeMapper;
 import com.itexpert.content.core.models.ContentNodePayload;
 import com.itexpert.content.core.repositories.ContentNodeRepository;
 import com.itexpert.content.core.repositories.NodeRepository;
+import com.itexpert.content.core.utils.CommonsUtils;
 import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.core.utils.SnapshotUtils;
 import com.itexpert.content.lib.enums.NotificationEnum;
@@ -75,6 +76,10 @@ public class ContentNodeHandler {
 
             if (ObjectUtils.isEmpty(contentNode.getRules())) {
                 contentNode.setRules(RulesUtils.getDefaultRules());
+            }
+
+            if (ObjectUtils.isEmpty(contentNode.getCode())) {
+                contentNode.setCode(CommonsUtils.genererCode(contentNode.getType().name()));
             }
 
             return contentNode;

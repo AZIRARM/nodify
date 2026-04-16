@@ -50,7 +50,7 @@ public class UserEndPoint {
 
     }
 
-    //@RolesAllowed("ADMIN")
+    // @RolesAllowed("ADMIN")
     @PostMapping("/")
     public Mono<ResponseEntity<UserPost>> save(@RequestBody(required = true) UserPost user) {
         return userHandler.save(user)
@@ -58,17 +58,24 @@ public class UserEndPoint {
     }
 
     @PostMapping(value = "/password")
-    public Mono<ResponseEntity<Boolean>> changePassword(@RequestBody(required = true)
-                                                        UserPassword userPassword) {
+    public Mono<ResponseEntity<Boolean>> changePassword(@RequestBody(required = true) UserPassword userPassword) {
         return userHandler.changePassword(userPassword)
                 .map(ResponseEntity::ok);
     }
 
-    //@RolesAllowed("ADMIN")
+    // @RolesAllowed("ADMIN")
     @DeleteMapping(value = "/id/{id}")
     public Mono<ResponseEntity<Boolean>> delete(@PathVariable String id) {
         return userHandler.delete(UUID.fromString(id))
                 .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/subscribe")
+    public Mono<ResponseEntity<Boolean>> subscribe(@RequestBody(required = true) UserPost userPost) {
+        return this.userHandler.subscribe(userPost)
+                .map(result -> true)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.CONFLICT).body(false));
     }
 
 }
