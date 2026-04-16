@@ -1,11 +1,10 @@
-import {Component} from '@angular/core';
-import {UserLogin} from "../../../modeles/UserLogin";
-import {Router} from "@angular/router";
-import {AuthenticationService} from "../../../services/AuthenticationService";
+import { Component } from '@angular/core';
+import { UserLogin } from "../../../modeles/UserLogin";
+import { Router } from "@angular/router";
+import { AuthenticationService } from "../../../services/AuthenticationService";
 import { CookiesService } from 'src/app/services/CookiesService';
-import { UserService } from 'src/app/services/UserService';
-import {LoggerService} from "../../../services/LoggerService";
-import {TranslateService} from "@ngx-translate/core";
+import { LoggerService } from "../../../services/LoggerService";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: 'app-login',
@@ -18,11 +17,10 @@ export class LoginComponent {
   constructor(
     private authenticationService: AuthenticationService,
     private cookiesService: CookiesService,
-    private userService: UserService,
     private loggerService: LoggerService,
     private translate: TranslateService,
     private router: Router
-  ) {}
+  ) { }
 
   login() {
     if (this.userLogin.email && this.userLogin.password) {
@@ -49,5 +47,9 @@ export class LoginComponent {
   cancel() {
     // Optionnel: rediriger vers une page d'accueil
     // this.router.navigateByUrl('/');
+  }
+
+  subscribe() {
+    this.router.navigateByUrl("/subscribe")
   }
 }

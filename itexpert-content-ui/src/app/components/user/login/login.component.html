@@ -3,11 +3,20 @@
   <!-- En-tête (sans marge négative) -->
   <div class="login-header">
     <div class="header-content">
-      <div class="header-icon">
-        <mat-icon>login</mat-icon>
+      <div class="header-left-section">
+        <div class="header-icon">
+          <mat-icon>login</mat-icon>
+        </div>
+        <div class="header-title">
+          <span class="title-main">{{ "LOGIN" | translate }}</span>
+        </div>
       </div>
-      <div class="header-title">
-        <span class="title-main">{{ "LOGIN" | translate }}</span>
+
+      <div class="header-right-section">
+        <button mat-stroked-button class="subscribe-btn" (click)="subscribe()">
+          <mat-icon>person_add</mat-icon>
+          {{ "SUBSCRIBE" | translate }}
+        </button>
       </div>
     </div>
   </div>
@@ -29,12 +38,7 @@
         <!-- Champ Email -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ "EMAIL" | translate }}</mat-label>
-          <input
-            matInput
-            type="email"
-            [(ngModel)]="userLogin.email"
-            placeholder="{{ 'EMAIL' | translate }}"
-            required
+          <input matInput type="email" [(ngModel)]="userLogin.email" placeholder="{{ 'EMAIL' | translate }}" required
             (keydown.enter)="login()">
           <mat-icon matSuffix>email</mat-icon>
         </mat-form-field>
@@ -42,13 +46,8 @@
         <!-- Champ Mot de passe -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
-          <input
-            matInput
-            type="password"
-            [(ngModel)]="userLogin.password"
-            placeholder="{{ 'USER_PASSWORD' | translate }}"
-            required
-            (keydown.enter)="login()">
+          <input matInput type="password" [(ngModel)]="userLogin.password"
+            placeholder="{{ 'USER_PASSWORD' | translate }}" required (keydown.enter)="login()">
           <mat-icon matSuffix>lock</mat-icon>
         </mat-form-field>
 
@@ -56,17 +55,11 @@
 
       <!-- Actions -->
       <div class="login-actions">
-        <button
-          mat-stroked-button
-          class="cancel-btn"
-          (click)="cancel()">
+        <button mat-stroked-button class="cancel-btn" (click)="cancel()">
           <mat-icon>close</mat-icon>
           {{ "CANCEL" | translate }}
         </button>
-        <button
-          mat-flat-button
-          class="login-btn"
-          (click)="login()"
+        <button mat-flat-button class="login-btn" (click)="login()"
           [disabled]="!userLogin.email || !userLogin.password">
           <mat-icon>login</mat-icon>
           {{ "LOGIN" | translate }}

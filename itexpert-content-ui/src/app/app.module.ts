@@ -1,95 +1,95 @@
-import {NgModule} from '@angular/core';
-import {BrowserModule} from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
 
-import {AppRoutingModule} from './app-routing.module';
-import {AppComponent} from './app.component';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
-import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from '@angular/common/http';
-import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {TranslateHttpLoader} from '@ngx-translate/http-loader';
+import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common/http';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 
-import {MatButtonModule} from '@angular/material/button';
-import {MatSidenavModule} from '@angular/material/sidenav';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatMenuModule} from '@angular/material/menu';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatIconModule} from '@angular/material/icon';
-import {MatListModule} from '@angular/material/list';
-import {RouterModule} from '@angular/router';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatTooltipModule} from '@angular/material/tooltip';
-import {MatTableModule} from '@angular/material/table'
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatSelectModule} from '@angular/material/select';
-import {MatInputModule} from "@angular/material/input";
-import {MatPaginatorModule} from "@angular/material/paginator";
-import {MatSortModule} from '@angular/material/sort';
-import {MatDialogModule} from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { RouterModule } from '@angular/router';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableModule } from '@angular/material/table'
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from "@angular/material/input";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatSortModule } from '@angular/material/sort';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
-import {ToastrModule} from 'ngx-toastr';
-import {NodesComponent} from './components/node/nodes/nodes.component';
-import {UsersComponent} from './components/user/users/users.component';
-import {NotificationsComponent} from './components/notification/notifications/notifications.component';
-import {HeaderComponent} from './components/ui/header/header.component';
-import {FooterComponent} from './components/ui/footer/footer.component';
+import { ToastrModule } from 'ngx-toastr';
+import { NodesComponent } from './components/node/nodes/nodes.component';
+import { UsersComponent } from './components/user/users/users.component';
+import { NotificationsComponent } from './components/notification/notifications/notifications.component';
+import { HeaderComponent } from './components/ui/header/header.component';
+import { FooterComponent } from './components/ui/footer/footer.component';
 
-import {SidenavService} from "./services/SidenavService";
-import {NodeService} from "./services/NodeService";
-import {ContentNodeService} from "./services/ContentNodeService";
-import {LanguageService} from "./services/LanguageService";
-import {LoggerService} from './services/LoggerService';
-import {RoleService} from './services/RoleService';
-import {AuthenticationService} from './services/AuthenticationService';
+import { SidenavService } from "./services/SidenavService";
+import { NodeService } from "./services/NodeService";
+import { ContentNodeService } from "./services/ContentNodeService";
+import { LanguageService } from "./services/LanguageService";
+import { LoggerService } from './services/LoggerService';
+import { RoleService } from './services/RoleService';
+import { AuthenticationService } from './services/AuthenticationService';
 
 
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {ValidationDialogComponent} from './components/commons/validation-dialog/validation-dialog.component';
-import {LanguagesComponent} from './components/language/languages/languages.component';
-import {LanguageDialogComponent} from './components/language/language-dialog/language-dialog.component';
-import {UserDialogComponent} from './components/user/user-dialog/user-dialog.component';
-import {NodeDialogComponent} from "./components/node/node-dialog/node-dialog.component";
-import {UserService} from "./services/UserService";
-import {LoginComponent} from './components/user/login/login.component';
-import {UserInfosComponent} from './components/user/user-infos/user-infos.component';
-import {PasswordDialogComponent} from "./components/user/password-dialog/password-dialog.component";
-import {HelpsComponent} from './components/ui/helps/helps.component';
-import {UserParametersComponent} from './components/user/user-parameters/user-parameters.component';
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {ParametersService} from "./services/ParametersService";
-import {NotificationService} from "./services/NotificationService";
-import {TokenInterceptor} from "./interceptors/TokenInterceptor";
-import {ContentNodeDialogComponent} from './components/content-node/content-node-dialog/content-node-dialog.component';
-import {AccessRoleService} from "./services/AccessRoleService";
-import {ValuesDialogComponent} from './components/commons/values-dialog/values-dialog.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ValidationDialogComponent } from './components/commons/validation-dialog/validation-dialog.component';
+import { LanguagesComponent } from './components/language/languages/languages.component';
+import { LanguageDialogComponent } from './components/language/language-dialog/language-dialog.component';
+import { UserDialogComponent } from './components/user/user-dialog/user-dialog.component';
+import { NodeDialogComponent } from "./components/node/node-dialog/node-dialog.component";
+import { UserService } from "./services/UserService";
+import { LoginComponent } from './components/user/login/login.component';
+import { UserInfosComponent } from './components/user/user-infos/user-infos.component';
+import { PasswordDialogComponent } from "./components/user/password-dialog/password-dialog.component";
+import { HelpsComponent } from './components/ui/helps/helps.component';
+import { UserParametersComponent } from './components/user/user-parameters/user-parameters.component';
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { ParametersService } from "./services/ParametersService";
+import { NotificationService } from "./services/NotificationService";
+import { TokenInterceptor } from "./interceptors/TokenInterceptor";
+import { ContentNodeDialogComponent } from './components/content-node/content-node-dialog/content-node-dialog.component';
+import { AccessRoleService } from "./services/AccessRoleService";
+import { ValuesDialogComponent } from './components/commons/values-dialog/values-dialog.component';
 import {
   NodeRulesConditionsDialogComponent
 } from './components/commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component';
-import {MatDatepickerModule} from "@angular/material/datepicker";
+import { MatDatepickerModule } from "@angular/material/datepicker";
 import {
   PublishedItemsDialogComponent
 } from './components/commons/published-items-dialog/published-items-dialog.component';
-import {TranslationsDialogComponent} from './components/commons/translations-dialog/translations-dialog.component';
-import {DeletedItemsDialogComponent} from './components/commons/deleted-items-dialog/deleted-items-dialog.component';
-import {UserNamePipe} from './pipes/user-name.pipe';
-import {FileSizePipe} from './pipes/FileSizePipe';
-import {MatBadgeModule} from "@angular/material/badge";
-import {FeedbackService} from "./services/FeedbackService";
-import {ContentClickService} from "./services/ContentClickService";
-import {ContentChartsComponent} from './components/analytics/content-charts/content-charts.component';
-import {ContentDisplayService} from "./services/ContentDisplayService";
-import {UserAccessService} from "./services/UserAccessService";
-import {AuthGuard} from "./services/AuthGuard";
-import {TypeofPipe} from "./pipes/TypeofPipe";
-import {MatCardModule} from "@angular/material/card";
-import {MatChipsModule} from "@angular/material/chips";
-import {CodemirrorModule} from "@ctrl/ngx-codemirror";
-import {ContentDatasComponent} from "./components/content-node/content-datas/content-datas.component";
-import {ThemeService} from "./services/ThemeService";
-import {ContentCodeComponent} from "./components/content-node/content-code/content-code.component";
-import {ContentCodeJsComponent} from "./components/content-node/content-code/content-code-js/content-code-js.component";
+import { TranslationsDialogComponent } from './components/commons/translations-dialog/translations-dialog.component';
+import { DeletedItemsDialogComponent } from './components/commons/deleted-items-dialog/deleted-items-dialog.component';
+import { UserNamePipe } from './pipes/user-name.pipe';
+import { FileSizePipe } from './pipes/FileSizePipe';
+import { MatBadgeModule } from "@angular/material/badge";
+import { FeedbackService } from "./services/FeedbackService";
+import { ContentClickService } from "./services/ContentClickService";
+import { ContentChartsComponent } from './components/analytics/content-charts/content-charts.component';
+import { ContentDisplayService } from "./services/ContentDisplayService";
+import { UserAccessService } from "./services/UserAccessService";
+import { AuthGuard } from "./services/AuthGuard";
+import { TypeofPipe } from "./pipes/TypeofPipe";
+import { MatCardModule } from "@angular/material/card";
+import { MatChipsModule } from "@angular/material/chips";
+import { CodemirrorModule } from "@ctrl/ngx-codemirror";
+import { ContentDatasComponent } from "./components/content-node/content-datas/content-datas.component";
+import { ThemeService } from "./services/ThemeService";
+import { ContentCodeComponent } from "./components/content-node/content-code/content-code.component";
+import { ContentCodeJsComponent } from "./components/content-node/content-code/content-code-js/content-code-js.component";
 import {
   ContentCodeCssComponent
 } from "./components/content-node/content-code/content-code-css/content-code-css.component";
@@ -111,39 +111,40 @@ import {
 import {
   ContentCodeActionsComponent
 } from "./components/content-node/content-code/content-code-actions/content-code-actions.component";
-import {DataService} from "./services/DataService";
+import { DataService } from "./services/DataService";
 import {
   ContentCodeTitleComponent
 } from "./components/content-node/content-code/content-code-title/content-code-title.component";
 import {
   ContentCodeInfosComponent
 } from "./components/content-node/content-code/content-code-infos/content-code-infos.component";
-import {FlexModule} from "@angular/flex-layout";
+import { FlexModule } from "@angular/flex-layout";
 import {
   ContentCodeXmlComponent
 } from "./components/content-node/content-code/content-code-xml/content-code-xml.component";
-import {PluginService} from "./services/PluginService";
-import {PluginComponent} from "./components/plugins/plugin/plugin.component";
-import {PluginDialogComponent} from "./components/plugins/plugin-dialog/plugin-dialog.component";
+import { PluginService } from "./services/PluginService";
+import { PluginComponent } from "./components/plugins/plugin/plugin.component";
+import { PluginDialogComponent } from "./components/plugins/plugin-dialog/plugin-dialog.component";
 import {
   DeletedPluginsDialogComponent
 } from "./components/plugins/deleted-plugins-dialog/deleted-plugins-dialog.component";
-import {PluginFileService} from "./services/PluginFileService";
-import {PluginFilesDialogComponent} from "./components/plugins/plugin-files-dialog/plugin-files-dialog.component";
-import {NgxEchartsModule} from "ngx-echarts";
+import { PluginFileService } from "./services/PluginFileService";
+import { PluginFilesDialogComponent } from "./components/plugins/plugin-files-dialog/plugin-files-dialog.component";
+import { NgxEchartsModule } from "ngx-echarts";
 import * as echarts from 'echarts/core';
-import {BarChart, TreeChart} from "echarts/charts";
-import {GridComponent, TitleComponent, TooltipComponent} from "echarts/components";
-import {CanvasRenderer} from "echarts/renderers";
-import {NodesViewDialogComponent} from "./components/node/nodes-view-dialog/nodes-view-dialog.component";
-import {ChartService} from "./services/ChartService";
+import { BarChart, TreeChart } from "echarts/charts";
+import { GridComponent, TitleComponent, TooltipComponent } from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+import { NodesViewDialogComponent } from "./components/node/nodes-view-dialog/nodes-view-dialog.component";
+import { ChartService } from "./services/ChartService";
 import { SlugService } from './services/SlugService';
 import { CookiesService } from './services/CookiesService';
-import {LoaderService} from "./services/Loader.service";
-import {LoaderComponent} from "./components/ui/loader/loader.component";
+import { LoaderService } from "./services/Loader.service";
+import { LoaderComponent } from "./components/ui/loader/loader.component";
 import { LockService } from './services/LockService';
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
 import { MarkdownModule } from 'ngx-markdown';
+import { SubscribeComponent } from './components/user/subscribe/subscribe.component';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -174,6 +175,7 @@ export function defaultLanguage() {
     PasswordDialogComponent,
     UserDialogComponent,
     LoginComponent,
+    SubscribeComponent,
     UserInfosComponent,
     HelpsComponent,
     UserParametersComponent,
@@ -273,7 +275,7 @@ export function defaultLanguage() {
   ],
 
   providers: [
-    {provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true},
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     LoggerService,
     SidenavService,
     AuthenticationService,

@@ -1,18 +1,19 @@
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {AppComponent} from "./app.component";
-import {NodesComponent} from "./components/node/nodes/nodes.component";
-import {LanguagesComponent} from "./components/language/languages/languages.component";
-import {UsersComponent} from "./components/user/users/users.component";
-import {LoginComponent} from "./components/user/login/login.component";
-import {UserInfosComponent} from "./components/user/user-infos/user-infos.component";
-import {HelpsComponent} from "./components/ui/helps/helps.component";
-import {UserParametersComponent} from "./components/user/user-parameters/user-parameters.component";
-import {NotificationsComponent} from "./components/notification/notifications/notifications.component";
-import {ContentChartsComponent} from "./components/analytics/content-charts/content-charts.component";
-import {AuthGuard} from "./services/AuthGuard";
-import {PluginComponent} from "./components/plugins/plugin/plugin.component";
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { AppComponent } from "./app.component";
+import { NodesComponent } from "./components/node/nodes/nodes.component";
+import { LanguagesComponent } from "./components/language/languages/languages.component";
+import { UsersComponent } from "./components/user/users/users.component";
+import { LoginComponent } from "./components/user/login/login.component";
+import { UserInfosComponent } from "./components/user/user-infos/user-infos.component";
+import { HelpsComponent } from "./components/ui/helps/helps.component";
+import { UserParametersComponent } from "./components/user/user-parameters/user-parameters.component";
+import { NotificationsComponent } from "./components/notification/notifications/notifications.component";
+import { ContentChartsComponent } from "./components/analytics/content-charts/content-charts.component";
+import { AuthGuard } from "./services/AuthGuard";
+import { PluginComponent } from "./components/plugins/plugin/plugin.component";
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
+import { SubscribeComponent } from './components/user/subscribe/subscribe.component';
 
 const routes: Routes =
   [
@@ -29,6 +30,10 @@ const routes: Routes =
     {
       path: 'login',
       component: LoginComponent
+    },
+    {
+      path: 'subscribe',
+      component: SubscribeComponent
     },
     {
       path: 'userInfos',
@@ -62,14 +67,14 @@ const routes: Routes =
       canActivate: [AuthGuard]
     },
     {
-        path: 'admin',
-        canActivate: [AuthGuard],
-        children: [
-          { path: 'users', component: UsersComponent },
-          { path: 'languages', component: LanguagesComponent },
-          { path: 'unlock-resources', component: ReleaseLocksComponent }
-        ]
-      }
+      path: 'admin',
+      canActivate: [AuthGuard],
+      children: [
+        { path: 'users', component: UsersComponent },
+        { path: 'languages', component: LanguagesComponent },
+        { path: 'unlock-resources', component: ReleaseLocksComponent }
+      ]
+    }
 
   ];
 

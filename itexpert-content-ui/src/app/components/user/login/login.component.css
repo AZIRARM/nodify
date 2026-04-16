@@ -32,11 +32,14 @@
   height: 80px;
   min-height: 80px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  flex-shrink: 0; /* Empêche l'en-tête de rétrécir */
+  flex-shrink: 0;
+  /* Empêche l'en-tête de rétrécir */
 
   .header-content {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
     gap: 16px;
 
     .header-icon {
@@ -44,8 +47,23 @@
         font-size: 32px;
         width: 32px;
         height: 32px;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         color: white;
+      }
+    }
+
+    .header-left-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subscribe-btn {
+      color: white !important;
+      border-color: rgba(255, 255, 255, 0.5) !important;
+
+      mat-icon {
+        margin-right: 8px;
       }
     }
 
@@ -54,7 +72,7 @@
         font-size: 1.5rem;
         font-weight: 600;
         letter-spacing: 0.5px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         color: white;
       }
     }
@@ -69,8 +87,10 @@
   justify-content: center;
   padding: 20px;
   overflow-y: auto;
-  min-height: 0; /* Important pour le flex */
-  margin-bottom: 0; /* Pas de marge en bas */
+  min-height: 0;
+  /* Important pour le flex */
+  margin-bottom: 0;
+  /* Pas de marge en bas */
 }
 
 /* ===== CARTE DE CONNEXION ===== */
@@ -82,7 +102,8 @@
   max-width: 450px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.5s ease-out;
-  margin: auto; /* Centré verticalement et horizontalement */
+  margin: auto;
+  /* Centré verticalement et horizontalement */
 
   .logo-container {
     text-align: center;
@@ -184,6 +205,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

@@ -219,6 +219,10 @@
   "LOGOUT": "Logout",
   "MY_ACCOUNT": "My Account",
 
+  "_SUBSCRIBE": "=== AUTHENTIFICATION ===",
+  "SUBSCRIBE": "Subscribe",
+  "REGISTER": "Register",
+
   "_ROLES": "=== ROLES ===",
   "ROLE": "Role",
   "ROLES": "Roles",

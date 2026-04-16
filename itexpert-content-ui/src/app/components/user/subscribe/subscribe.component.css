@@ -1,0 +1,287 @@
+/* ===== STYLES DE BASE ===== */
+:host {
+    display: block;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, var(--table-primary) 0%, #764ba2 100%);
+}
+
+.subscribe-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(135deg, var(--table-primary) 0%, #764ba2 100%);
+    overflow: hidden;
+}
+
+/* ===== EN-TÊTE (fixe en haut) ===== */
+.subscribe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    height: 80px;
+    min-height: 80px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+    /* Empêche l'en-tête de rétrécir */
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        gap: 16px;
+
+        .header-icon {
+            mat-icon {
+                font-size: 32px;
+                width: 32px;
+                height: 32px;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+                color: white;
+            }
+        }
+
+        .header-left-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-btn {
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+
+            mat-icon {
+                margin-right: 8px;
+            }
+        }
+
+        .header-title {
+            .title-main {
+                font-size: 1.5rem;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                color: white;
+            }
+        }
+    }
+}
+
+/* ===== CONTENU PRINCIPAL (prend l'espace restant) ===== */
+.subscribe-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+    min-height: 0;
+    /* Important pour le flex */
+    margin-bottom: 0;
+    /* Pas de marge en bas */
+}
+
+/* ===== CARTE DE CONNEXION ===== */
+.subscribe-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.5s ease-out;
+    margin: auto;
+    /* Centré verticalement et horizontalement */
+
+    .logo-container {
+        text-align: center;
+        margin-bottom: 32px;
+
+        img {
+            width: 180px;
+            height: auto;
+            opacity: 0.9;
+        }
+    }
+
+    .form-container {
+        margin-bottom: 32px;
+
+        .full-width {
+            width: 100%;
+            margin-bottom: 16px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            ::ng-deep .mat-mdc-form-field-flex {
+                height: 56px !important;
+            }
+
+            ::ng-deep .mat-mdc-form-field-infix {
+                padding: 12px 0 !important;
+            }
+
+            mat-icon {
+                color: #666;
+            }
+        }
+    }
+
+    .subscribe-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+
+        button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            height: 48px;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+
+            mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        .cancel-btn {
+            color: #666;
+            border: 2px solid #e0e0e0;
+            background: transparent;
+
+            &:hover {
+                background-color: #f5f5f5;
+                border-color: #ccc;
+            }
+        }
+
+        .subscribe-btn {
+            background: linear-gradient(135deg, var(--table-primary) 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 10px rgba(63, 81, 181, 0.4);
+
+            &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(63, 81, 181, 0.6);
+            }
+
+            &:active:not(:disabled) {
+                transform: translateY(0);
+            }
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        }
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .subscribe-header {
+        padding: 12px 16px;
+        height: 64px;
+        min-height: 64px;
+
+        .header-content {
+            gap: 12px;
+
+            .header-icon mat-icon {
+                font-size: 28px;
+                width: 28px;
+                height: 28px;
+            }
+
+            .header-title .title-main {
+                font-size: 1.3rem;
+            }
+        }
+    }
+
+    .subscribe-card {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .subscribe-actions {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+        }
+    }
+}
+
+/* ===== THÈME SOMBRE ===== */
+:host-context(.dark-theme) {
+    .subscribe-page {
+        background: linear-gradient(135deg, #1a1a2e 0%, var(--table-primary-dark) 100%);
+    }
+
+    .subscribe-header {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .subscribe-card {
+        background: #2d2d2d;
+
+        .form-container {
+            .full-width {
+                ::ng-deep .mat-mdc-form-field-label {
+                    color: #aaa;
+                }
+
+                mat-icon {
+                    color: #aaa;
+                }
+            }
+        }
+
+        .cancel-btn {
+            color: #aaa !important;
+            border-color: #404040 !important;
+
+            &:hover {
+                background-color: #404040 !important;
+            }
+        }
+    }
+}

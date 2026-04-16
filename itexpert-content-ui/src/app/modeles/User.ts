@@ -5,6 +5,7 @@ export class User {
   public lastname: string;
   public email: string;
   public password: string;
+  public validated: boolean;
   public roles: string[];
   public projects: string[];
 }
