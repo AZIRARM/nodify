@@ -56,6 +56,7 @@ public class AuthenticationEndPointTest {
         UserPost userPost = new UserPost();
         userPost.setEmail(email);
         userPost.setPassword(encodedPassword);
+        userPost.setValidated(Boolean.TRUE);
 
         when(userHandler.findByEmail(email)).thenReturn(Mono.just(userPost));
         when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
@@ -75,6 +76,37 @@ public class AuthenticationEndPointTest {
         verify(userHandler, times(1)).findByEmail(email);
         verify(passwordEncoder, atLeastOnce()).encode(password);
         verify(jwtUtil, times(1)).generateToken(userPost);
+    }
+
+    @Test
+    public void testLoginErrorNotValidatedAccount() {
+        String email = "test@example.com";
+        String password = "password123";
+        String encodedPassword = "encodedPassword123";
+        String token = "jwt-token-123";
+
+        UserLogin userLogin = new UserLogin();
+        userLogin.setEmail(email);
+        userLogin.setPassword(password);
+
+        UserPost userPost = new UserPost();
+        userPost.setEmail(email);
+        userPost.setPassword(encodedPassword);
+        userPost.setValidated(Boolean.FALSE);
+
+        when(userHandler.findByEmail(email)).thenReturn(Mono.just(userPost));
+        when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
+
+        webTestClient.post()
+                .uri("/authentication/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(userLogin)
+                .exchange()
+                .expectStatus().is5xxServerError()
+                .expectBody().isEmpty();
+
+        verify(userHandler, times(1)).findByEmail(email);
+        verify(passwordEncoder, atLeastOnce()).encode(password);
     }
 
     @Test

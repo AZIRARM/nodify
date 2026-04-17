@@ -110,17 +110,21 @@ public class UserHandlerTest {
         entity.setLastname(userPost.getLastname());
         entity.setId(UUID.randomUUID());
 
+        Node node = new Node();
+        node.setCode("code");
+
         when(userRepository.findByEmail(anyString())).thenReturn(Mono.empty());
         when(userRepository.findAll()).thenReturn(Flux.empty());
+        when(userRepository.findById(any(UUID.class))).thenReturn(Mono.just(entity));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(entity));
-        when(nodeHandler.save(any(Node.class))).thenReturn(Mono.just(new Node()));
+        when(nodeHandler.save(any(Node.class))).thenReturn(Mono.just(node));
         when(passwordEncoder.encode(any())).thenReturn("encoded_password");
 
         StepVerifier.create(userHandler.subscribe(userPost))
                 .expectNextMatches(savedUser -> savedUser.getEmail().equals(userPost.getEmail()))
                 .verifyComplete();
 
-        verify(userRepository).save(any(User.class));
+        verify(userRepository, times(2)).save(any(User.class));
         verify(nodeHandler).save(any(Node.class));
     }
 
