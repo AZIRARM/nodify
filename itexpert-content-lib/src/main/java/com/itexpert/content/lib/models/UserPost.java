@@ -24,6 +24,8 @@ public class UserPost {
 
     private String password;
 
+    private Boolean validated;
+
     private List<String> roles;
 
     private List<String> projects;

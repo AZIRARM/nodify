@@ -10,6 +10,8 @@
         <span class="title-main">{{ (parentNode ? 'NODE' : 'PROJECTS') | translate }}</span>
       </div>
     </div>
+
+    @if(userAccessService.canEdit() ) {
     <div class="header-actions">
       <button mat-mini-fab class="action-btn secondary-btn" *ngIf="parentNode" (click)="back()"
         matTooltip="{{ 'BACK_TO_PARENT_NODE' | translate }}">
@@ -18,7 +20,7 @@
 
       <div style="position: relative; display: inline-block;">
         <button mat-mini-fab class="action-btn warn-btn" (click)="deleteds()"
-          matTooltip="{{ 'DELETED_PLUGINS' | translate }}" style="position: relative; overflow: visible !important;">
+          matTooltip="{{ 'DELETED_NODES' | translate }}" style="position: relative; overflow: visible !important;">
           <mat-icon>delete_sweep</mat-icon>
         </button>
 
@@ -39,6 +41,7 @@
         <mat-icon>add</mat-icon>
       </button>
     </div>
+    }
   </div>
 
   <!-- Tableau -->
@@ -54,10 +57,14 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let element">
+          @if(userAccessService.canEdit() ) {
           <button mat-icon-button class="status-btn" (click)="gotoPublished(element)"
             *ngIf="element.lockInfo && !element.lockInfo.locked" matTooltip="{{ 'PUBLICATION_STATUS' | translate }}">
             <mat-icon [class]="'status-icon ' + getPublishedIcon(element)">fiber_manual_record</mat-icon>
           </button>
+          } @else {
+          <mat-icon [class]="'status-icon ' + getPublishedIcon(element)">fiber_manual_record</mat-icon>
+          }
         </td>
       </ng-container>
 

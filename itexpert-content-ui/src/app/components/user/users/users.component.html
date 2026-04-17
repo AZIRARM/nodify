@@ -13,11 +13,7 @@
 
     <!-- Actions dans l'en-tête -->
     <div class="header-actions" *ngIf="userAccessService.isAdmin()">
-      <button
-        mat-fab
-        class="create-fab"
-        (click)="create()"
-        matTooltip="{{ 'CREATE_USER' | translate }}">
+      <button mat-fab class="create-fab" (click)="create()" matTooltip="{{ 'CREATE_USER' | translate }}">
         <mat-icon>add</mat-icon>
       </button>
     </div>
@@ -97,10 +93,7 @@
 
               <!-- Édition -->
               @if(userAccessService.isAdmin()) {
-              <button
-                mat-icon-button
-                class="action-icon-btn"
-                (click)="update(element)"
+              <button mat-icon-button class="action-icon-btn" (click)="update(element)"
                 matTooltip="{{ 'EDIT' | translate }}">
                 <mat-icon class="text-primary">edit</mat-icon>
               </button>
@@ -108,22 +101,24 @@
 
               <!-- Suppression (sauf admin) -->
               @if(userAccessService.isAdmin() && !element.roles?.includes('ADMIN')) {
-              <button
-                mat-icon-button
-                class="action-icon-btn"
-                (click)="delete(element)"
+              <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
                 matTooltip="{{ 'DELETE' | translate }}">
                 <mat-icon class="text-danger">delete</mat-icon>
               </button>
+              }
+              <!-- Suppression (sauf admin) -->
+              @if(userAccessService.isAdmin() && !element.roles?.includes('ADMIN')) {
+              <mat-slide-toggle [checked]="element.validated" (change)="activate(element)"
+                [matTooltip]="(element.validated ? 'DEACTIVATE' : 'ACTIVATE') | translate" color="primary">
+              </mat-slide-toggle>
               }
             </div>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            [class.granted-row]="row.IsGranted"
-            class="user-row"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.granted-row]="row.IsGranted"
+          class="user-row"></tr>
       </table>
 
       <!-- Message si aucun utilisateur -->

@@ -2,6 +2,7 @@ package com.itexpert.content.core.endpoints;
 
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.models.auth.AuthResponse;
+import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.core.utils.auth.JWTUtil;
 import com.itexpert.content.core.utils.auth.PBKDF2Encoder;
 import com.itexpert.content.lib.models.UserLogin;
@@ -31,11 +32,9 @@ public class AuthenticationEndPoint {
                 .doOnNext(userPost -> {
                     passwordEncoder.matches(passwordEncoder.encode(userLogin.getPassword()), userPost.getPassword());
                 })
-                .filter(userDetails -> passwordEncoder.encode(userLogin.getPassword()).equals(userDetails.getPassword()))
+                .filter(userDetails -> passwordEncoder.encode(userLogin.getPassword()).equals(userDetails.getPassword())
+                        && (userDetails.getValidated() || userDetails.getRoles().contains(RoleEnum.ADMIN.name())))
                 .map(userDetails -> ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(userDetails))))
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
     }
-
-
-
 }

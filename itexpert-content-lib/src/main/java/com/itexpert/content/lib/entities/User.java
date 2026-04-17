@@ -25,6 +25,8 @@ public class User implements Serializable, Cloneable {
     @Indexed(unique = true)
     private String email;
 
+    private Boolean validated;
+
     private String password;
 
     private List<String> roles;

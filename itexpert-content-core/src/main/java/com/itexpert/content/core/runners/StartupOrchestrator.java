@@ -16,18 +16,19 @@ public class StartupOrchestrator implements CommandLineRunner {
     private final DefaultUserInitializer userInit;
     private final DefautPluginsInitializer pluginsInit;
     private final DevTemplatesInitializer devTemplatesInit;
+    private final UpdateDatasInitializer updateDatasInitializer;
 
     @Override
     public void run(String... args) {
-        Mono<Void> pipeline =
-                adminAccessRoleInit.init()
-                        .then(adminUserRoleInit.init())
-                        .then(languagesInit.init())
-                        .then(userInit.init())
-                        .then(environmentInit.init())
-                        .then(pluginsInit.init())
-                        .then(devTemplatesInit.init()
-                        );
+        Mono<Void> pipeline = adminAccessRoleInit.init()
+                .then(adminUserRoleInit.init())
+                .then(languagesInit.init())
+                .then(userInit.init())
+                .then(environmentInit.init())
+                .then(pluginsInit.init())
+                .then(devTemplatesInit.init())
+                .then(devTemplatesInit.init())
+                .then(updateDatasInitializer.init());
 
         pipeline.block(); // on attend toute la séquence
     }

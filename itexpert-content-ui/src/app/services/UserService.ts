@@ -1,10 +1,13 @@
-import {Injectable} from '@angular/core';
-import {Service} from "./Service";
-import {HttpClient} from "@angular/common/http";
-import {User} from "../modeles/User";
+import { Injectable } from '@angular/core';
+import { Service } from "./Service";
+import { HttpClient } from "@angular/common/http";
+import { User } from "../modeles/User";
 
 @Injectable()
 export class UserService extends Service {
+  subscribe(userSubscribe: User) {
+    return super.post("subscribe", userSubscribe);
+  }
   constructor(httpClient: HttpClient) {
     super("users", httpClient);
   }

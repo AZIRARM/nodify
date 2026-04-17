@@ -30,14 +30,14 @@ export class UsersComponent implements OnInit {
   }
 
   ngOnInit() {
-   this.user = this.userAccessService.getCurrentUser()
-   this.init();
+    this.user = this.userAccessService.getCurrentUser()
+    this.init();
   }
 
   init() {
     this.userService.getAll().subscribe(
       (response: any) => {
-        response=response.sort((a:any, b:any) => a.lastname.localeCompare(b.lastname));
+        response = response.sort((a: any, b: any) => a.lastname.localeCompare(b.lastname));
         this.dataSource = new MatTableDataSource(response);
       },
       (error) => {
@@ -78,6 +78,11 @@ export class UsersComponent implements OnInit {
           this.save(user);
         }
       });
+  }
+
+  activate(user: User) {
+    user.validated = !user.validated;
+    this.save(user);
   }
 
   save(user: User) {

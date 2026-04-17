@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.handlers.NodeHandler;
 import com.itexpert.content.core.handlers.UserHandler;
-import com.itexpert.content.core.helpers.ProjectSecurity;
 import com.itexpert.content.core.models.TreeNode;
 import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.core.utils.auth.SecurityUtils;
@@ -38,7 +37,6 @@ public class NodeEndPoint {
 
     private final NodeHandler nodeHandler;
     private final UserHandler userHandler;
-    private final ProjectSecurity authorizationHelper;
 
     @GetMapping("/")
     public Flux<Node> findAll() {
@@ -78,12 +76,14 @@ public class NodeEndPoint {
                                 if (isAdmin) {
                                     return nodeHandler.findAllByStatus(status)
                                             .flatMap(nodeHandler::setPublicationStatus)
-                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
+                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                    node1.isFavorite()));
                                 }
                                 return SecurityUtils.getUsername()
                                         .flatMapMany(username -> nodeHandler.findAllByStatusAndUser(status, username)
                                                 .flatMap(nodeHandler::setPublicationStatus)
-                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite())));
+                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                        node1.isFavorite())));
                             });
                 });
     }
@@ -112,14 +112,18 @@ public class NodeEndPoint {
                                 if (isAdmin) {
                                     return nodeHandler.findAllByStatus(StatusEnum.DELETED.name())
                                             .flatMap(nodeHandler::setPublicationStatus)
-                                            .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent))
-                                                    || (ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent))));
+                                            .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode())
+                                                    && node.getParentCode().equals(parent))
+                                                    || (ObjectUtils.isEmpty(node.getParentCode())
+                                                            && (ObjectUtils.isEmpty(parent))));
                                 }
                                 return SecurityUtils.getUsername()
                                         .flatMapMany(username -> nodeHandler.findDeleted(username)
                                                 .flatMap(nodeHandler::setPublicationStatus)
-                                                .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode()) && node.getParentCode().equals(parent))
-                                                        || (ObjectUtils.isEmpty(node.getParentCode()) && (ObjectUtils.isEmpty(parent)))));
+                                                .filter(node -> (ObjectUtils.isNotEmpty(node.getParentCode())
+                                                        && node.getParentCode().equals(parent))
+                                                        || (ObjectUtils.isEmpty(node.getParentCode())
+                                                                && (ObjectUtils.isEmpty(parent)))));
                             });
                 });
     }
@@ -159,14 +163,24 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return proceedToDelete(code);
+                                            });
                                 }
-                                return SecurityUtils.getUsername()
-                                        .flatMap(user -> nodeHandler.delete(code, user))
-                                        .map(ResponseEntity::ok);
+                                return proceedToDelete(code);
                             });
                 });
+    }
+
+    private Mono<ResponseEntity<Boolean>> proceedToDelete(String code) {
+        return SecurityUtils.getUsername()
+                .flatMap(user -> nodeHandler.delete(code, user))
+                .map(ResponseEntity::ok);
     }
 
     @DeleteMapping(value = "/code/{code}/deleteDefinitively")
@@ -178,17 +192,23 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return nodeHandler.deleteDefinitively(code).map(ResponseEntity::ok);
+                                            });
                                 }
-                                return nodeHandler.deleteDefinitively(code)
-                                        .map(ResponseEntity::ok);
+                                return nodeHandler.deleteDefinitively(code).map(ResponseEntity::ok);
                             });
                 });
     }
 
     @DeleteMapping(value = "/code/{code}/version/{version}/deleteDefinitively")
-    public Mono<ResponseEntity<Boolean>> deleteDefinitivelyVersion(@PathVariable String code, @PathVariable String version) {
+    public Mono<ResponseEntity<Boolean>> deleteDefinitivelyVersion(@PathVariable String code,
+            @PathVariable String version) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMap(hasRole -> {
                     if (!hasRole) {
@@ -196,11 +216,17 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return nodeHandler.deleteDefinitivelyVersion(code, version)
+                                                        .map(ResponseEntity::ok);
+                                            });
                                 }
-                                return nodeHandler.deleteDefinitivelyVersion(code, version)
-                                        .map(ResponseEntity::ok);
+                                return nodeHandler.deleteDefinitivelyVersion(code, version).map(ResponseEntity::ok);
                             });
                 });
     }
@@ -214,14 +240,24 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return proceedToActivate(code);
+                                            });
                                 }
-                                return SecurityUtils.getUsername()
-                                        .flatMap(user -> nodeHandler.activate(code, user))
-                                        .map(ResponseEntity::ok);
+                                return proceedToActivate(code);
                             });
                 });
+    }
+
+    private Mono<ResponseEntity<Boolean>> proceedToActivate(String code) {
+        return SecurityUtils.getUsername()
+                .flatMap(user -> nodeHandler.activate(code, user))
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping(value = "/code/{code}/publish")
@@ -233,15 +269,25 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return proceedToPublish(code);
+                                            });
                                 }
-                                return SecurityUtils.getUsername()
-                                        .flatMap(user -> nodeHandler.publish(code, user)
-                                                .flatMap(nodeHandler::setPublicationStatus))
-                                        .map(ResponseEntity::ok);
+                                return proceedToPublish(code);
                             });
                 });
+    }
+
+    private Mono<ResponseEntity<Node>> proceedToPublish(String code) {
+        return SecurityUtils.getUsername()
+                .flatMap(user -> nodeHandler.publish(code, user)
+                        .flatMap(nodeHandler::setPublicationStatus))
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping(value = "/parent/status/{status}")
@@ -256,12 +302,14 @@ public class NodeEndPoint {
                                 if (isAdmin) {
                                     return nodeHandler.findParentsNodesByStatus(status)
                                             .flatMap(nodeHandler::setPublicationStatus)
-                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite()));
+                                            .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                    node1.isFavorite()));
                                 }
                                 return SecurityUtils.getUsername()
                                         .flatMapMany(username -> nodeHandler.findParentsNodesByStatus(status, username)
                                                 .flatMap(nodeHandler::setPublicationStatus)
-                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(), node1.isFavorite())));
+                                                .sort((node1, node2) -> Boolean.compare(node2.isFavorite(),
+                                                        node1.isFavorite())));
                             });
                 });
     }
@@ -311,15 +359,25 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return proceedToRevert(code, version);
+                                            });
                                 }
-                                return SecurityUtils.getUsername()
-                                        .flatMap(user -> nodeHandler.revert(code, version, user)
-                                                .flatMap(nodeHandler::setPublicationStatus))
-                                        .map(ResponseEntity::ok);
+                                return proceedToRevert(code, version);
                             });
                 });
+    }
+
+    private Mono<ResponseEntity<Node>> proceedToRevert(String code, String version) {
+        return SecurityUtils.getUsername()
+                .flatMap(user -> nodeHandler.revert(code, version, user)
+                        .flatMap(nodeHandler::setPublicationStatus))
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping("/")
@@ -331,17 +389,27 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(node.getParentCodeOrigin())) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(node.getCode())
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return proceedToSave(node);
+                                            });
                                 }
-                                return SecurityUtils.getUsername()
-                                        .flatMap(user -> {
-                                            node.setModifiedBy(user);
-                                            return nodeHandler.save(node)
-                                                    .flatMap(nodeHandler::setPublicationStatus)
-                                                    .map(ResponseEntity::ok);
-                                        });
+                                return proceedToSave(node);
                             });
+                });
+    }
+
+    private Mono<ResponseEntity<Node>> proceedToSave(Node node) {
+        return SecurityUtils.getUsername()
+                .flatMap(user -> {
+                    node.setModifiedBy(user);
+                    return nodeHandler.save(node)
+                            .flatMap(nodeHandler::setPublicationStatus)
+                            .map(ResponseEntity::ok);
                 });
     }
 
@@ -356,17 +424,26 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return nodeHandler.exportAll(code, environment)
+                                                        .map(this::toExportResponse);
+                                            });
                                 }
-                                return nodeHandler.exportAll(code, environment)
-                                        .map(jsonBytes -> ResponseEntity.ok()
-                                                .contentLength(jsonBytes.length)
-                                                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                                                .header("Content-Disposition", "attachment; filename=\"" + code + ".json\"")
-                                                .body(jsonBytes));
+                                return nodeHandler.exportAll(code, environment).map(this::toExportResponse);
                             });
                 });
+    }
+
+    private ResponseEntity<byte[]> toExportResponse(byte[] jsonBytes) {
+        return ResponseEntity.ok()
+                .contentLength(jsonBytes.length)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(jsonBytes);
     }
 
     @PostMapping(value = "/import")
@@ -379,8 +456,8 @@ public class NodeEndPoint {
 
     @PostMapping(value = "/importAll")
     public Flux<Node> importNodes(@RequestBody List<Node> nodes,
-                                  @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
-                                  @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
+            @RequestParam(name = "nodeParentCode", required = false) String nodeParentCode,
+            @RequestParam(name = "fromFile", required = false, defaultValue = "true") Boolean fromFile) {
         return nodeHandler.importNodes(nodes, nodeParentCode, fromFile)
                 .flatMap(nodeHandler::setPublicationStatus);
     }
@@ -411,41 +488,36 @@ public class NodeEndPoint {
 
     @GetMapping(value = "/code/{code}/deploy")
     public Flux<Node> deploy(@PathVariable String code,
-                             @RequestParam(name = "environment", required = false) String environmentCode) {
+            @RequestParam(name = "environment", required = false) String environmentCode) {
         return SecurityUtils.hasAnyRole(RoleEnum.ADMIN.name(), RoleEnum.EDITOR.name())
                 .flatMapMany(canAccess -> {
                     if (!canAccess) {
                         return Flux.error(new RuntimeException("Accès refusé"));
                     }
                     return SecurityUtils.getUsername()
-                            .flatMapMany(username -> this.exportAll(code, environmentCode)
-                                    .map(responseEntity -> {
+                            .flatMapMany(username -> this.nodeHandler.exportAll(code, environmentCode)
+                                    .map(jsonBytes -> {
                                         Gson gson = new GsonBuilder().create();
-                                        String json = new String(responseEntity.getBody(), StandardCharsets.UTF_8);
-                                        List<Node> nodes = gson.fromJson(json, new TypeToken<List<Node>>() {
+                                        String json = new String(jsonBytes, StandardCharsets.UTF_8);
+                                        return (List<Node>) gson.fromJson(json, new TypeToken<List<Node>>() {
                                         }.getType());
-                                        return nodes;
                                     })
-                                    .map(nodes -> {
-                                        log.debug("[EXPORT] About to importNodes, environmentCode={}, nodes count={}", environmentCode, nodes.size());
+                                    .flatMapMany(nodes -> {
                                         nodes.forEach(node -> {
-                                            log.debug("[EXPORT] Node to import: code={}, status={}", node.getCode(), node.getStatus());
                                             node.setModifiedBy(username);
                                             Optional.ofNullable(node.getContents()).orElse(List.of())
-                                                    .forEach(contentNode -> {
-                                                        log.debug("[EXPORT]   ContentNode: code={}, status={}", contentNode.getCode(), contentNode.getStatus());
-                                                        contentNode.setModifiedBy(username);
-                                                    });
+                                                    .forEach(contentNode -> contentNode.setModifiedBy(username));
                                         });
-                                        return this.importNodes(nodes, environmentCode, false);
+                                        return this.nodeHandler.importNodes(nodes, environmentCode, false);
                                     })
-                                    .flatMapMany(nodes -> nodes)
                                     .flatMap(this::removeStatusSnaphotFromContents)
                                     .flatMap(nodeHandler::setPublicationStatus)
                                     .flatMap(node -> this.nodeHandler.notify(node, NotificationEnum.IMPORT))
                                     .filter(node -> node.getParentCode().equals(environmentCode))
-                                    .flatMap(node -> this.nodeHandler.findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
-                                            .flatMap(nodeToPublish -> this.nodeHandler.publish(nodeToPublish.getCode(), username))));
+                                    .flatMap(node -> this.nodeHandler
+                                            .findByCodeAndStatus(node.getCode(), StatusEnum.SNAPSHOT.name())
+                                            .flatMap(nodeToPublish -> this.nodeHandler.publish(nodeToPublish.getCode(),
+                                                    username))));
                 });
     }
 
@@ -461,14 +533,24 @@ public class NodeEndPoint {
                     }
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
-                                if (isEditor && !authorizationHelper.hasProjectAccess(code)) {
-                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                if (isEditor) {
+                                    return SecurityUtils.hasProjectAccess(code)
+                                            .flatMap(hasAccess -> {
+                                                if (!hasAccess) {
+                                                    return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                                                }
+                                                return proceedToDeployVersion(code, version);
+                                            });
                                 }
-                                return SecurityUtils.getUsername()
-                                        .flatMap(user -> nodeHandler.publishVersion(code, version, user))
-                                        .map(ResponseEntity::ok);
+                                return proceedToDeployVersion(code, version);
                             });
                 });
+    }
+
+    private Mono<ResponseEntity<Boolean>> proceedToDeployVersion(String code, String version) {
+        return SecurityUtils.getUsername()
+                .flatMap(user -> nodeHandler.publishVersion(code, version, user))
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping(value = "/code/{code}/slug/{slug}/exists")
@@ -499,63 +581,45 @@ public class NodeEndPoint {
                                 return SecurityUtils.getUsername()
                                         .flatMap(username -> this.userHandler.findByEmail(username)
                                                 .map(UserPost::getProjects)
-                                                .flatMap(userProjects -> nodeHandler.generateTreeView(code, userProjects))
+                                                .flatMap(userProjects -> nodeHandler.generateTreeView(code,
+                                                        userProjects))
                                                 .map(ResponseEntity::ok));
                             });
                 });
-    }
-
-    private String extratUser(UserPost user) {
-        return ObjectUtils.isEmpty(user) ? "" :
-                (user.getFirstname() + " " + user.getLastname());
     }
 
     private Mono<Node> removeStatusSnaphotFromContents(Node node) {
         if (ObjectUtils.isEmpty(node) || ObjectUtils.isEmpty(node.getContents())) {
             return Mono.just(node);
         }
-
         List<ContentNode> cleanedContents = node.getContents().stream()
                 .map(contentNode -> {
                     if (ObjectUtils.isNotEmpty(contentNode.getContent())
                             && !contentNode.getType().equals(ContentTypeEnum.FILE)
                             && !contentNode.getType().equals(ContentTypeEnum.PICTURE)) {
-                        String cleaned = cleanStatusSnapshot(contentNode.getContent());
-                        contentNode.setContent(cleaned);
+                        contentNode.setContent(cleanStatusSnapshot(contentNode.getContent()));
                     }
                     return contentNode;
-                })
-                .toList();
-
+                }).toList();
         node.setContents(cleanedContents);
         return Mono.just(node);
     }
 
     private String cleanStatusSnapshot(String input) {
-        if (input == null) return null;
-
+        if (input == null)
+            return null;
         int qIndex = input.indexOf('?');
-        if (qIndex < 0) {
+        if (qIndex < 0)
             return input;
-        }
-
         String base = input.substring(0, qIndex);
         String query = input.substring(qIndex + 1);
-
         String[] params = query.split("&");
         List<String> kept = new ArrayList<>();
-
         for (String p : params) {
-            if (!"status=SNAPSHOT".equals(p)) {
+            if (!"status=SNAPSHOT".equals(p))
                 kept.add(p);
-            }
         }
-
-        if (kept.isEmpty()) {
-            return base;
-        }
-
-        return base + "?" + String.join("&", kept);
+        return kept.isEmpty() ? base : base + "?" + String.join("&", kept);
     }
 
     @PostMapping(value = "/propagateMaxHistoryToKeep/{nodeCodePatent}")

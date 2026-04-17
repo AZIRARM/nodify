@@ -1,28 +1,44 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.mappers.UserMapper;
+import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.core.repositories.UserRepository;
 import com.itexpert.content.core.utils.auth.PBKDF2Encoder;
 import com.itexpert.content.lib.enums.NotificationEnum;
+import com.itexpert.content.lib.models.Node;
 import com.itexpert.content.lib.models.UserPassword;
 import com.itexpert.content.lib.models.UserPost;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@AllArgsConstructor
 @Service
 public class UserHandler {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PBKDF2Encoder passwordEncoder;
     private final NotificationHandler notificationHandler;
+    private final NodeHandler nodeHandler;
+
+    public UserHandler(UserRepository userRepository,
+            UserMapper userMapper,
+            PBKDF2Encoder passwordEncoder,
+            NotificationHandler notificationHandler,
+            @Lazy NodeHandler nodeHandler) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.notificationHandler = notificationHandler;
+        this.nodeHandler = nodeHandler;
+    }
 
     public Flux<UserPost> findAll() {
         return userRepository.findAll().map(userMapper::fromEntity);
@@ -52,10 +68,10 @@ public class UserHandler {
                                                     })
                                                     .map(userMapper::fromModel)
                                                     .map(this.userRepository::save)
-                                                    .onErrorContinue((throwable, o) -> log.error(throwable.getMessage()))
+                                                    .onErrorContinue(
+                                                            (throwable, o) -> log.error(throwable.getMessage()))
 
-                                    ).flatMap(Mono::from)
-                    )
+                                    ).flatMap(Mono::from))
                     .map(userMapper::fromEntity)
                     .flatMap(model -> this.notify(model, NotificationEnum.CREATION_OR_UPDATE, Boolean.TRUE));
         } else {
@@ -69,7 +85,6 @@ public class UserHandler {
 
     }
 
-
     public Mono<Boolean> delete(UUID uuid) {
         return this.userRepository.findById(uuid)
                 .flatMap(entity -> {
@@ -77,14 +92,11 @@ public class UserHandler {
                         return Mono.just(Boolean.FALSE);
                     }
                     return this.notify(this.userMapper.fromEntity(entity), NotificationEnum.DELETION, Boolean.TRUE)
-                            .flatMap(notification ->
-                                    this.userRepository.deleteById(uuid)
-                                            .thenReturn(Boolean.TRUE)
-                            )
+                            .flatMap(notification -> this.userRepository.deleteById(uuid)
+                                    .thenReturn(Boolean.TRUE))
                             .onErrorReturn(Boolean.FALSE);
                 });
     }
-
 
     public Mono<UserPost> findByEmail(String username) {
         return userRepository.findByEmail(username).map(userMapper::fromEntity);
@@ -98,7 +110,8 @@ public class UserHandler {
                         user.setPassword(passwordEncoder.encode(userPassword.getNewPassword()));
                         return userRepository.save(user)
                                 .map(this.userMapper::fromEntity)
-                                .flatMap(userPost -> this.notify(userPost, NotificationEnum.PASSWORD_CHANGE, Boolean.FALSE))
+                                .flatMap(userPost -> this.notify(userPost, NotificationEnum.PASSWORD_CHANGE,
+                                        Boolean.FALSE))
                                 .map(userBDD -> Boolean.TRUE);
                     }
                     return userRepository.save(user)
@@ -110,20 +123,39 @@ public class UserHandler {
                 .switchIfEmpty(Mono.just(Boolean.FALSE));
     }
 
-
     public Mono<UserPost> notify(UserPost model, NotificationEnum type, Boolean notifyAll) {
         return Mono.just(model).flatMap(user -> {
             return notificationHandler
                     .create(type,
-                           "",
+                            "",
                             user.getEmail(),
                             "USER",
                             "",
                             "",
-                            notifyAll
-                            )
+                            notifyAll)
                     .map(notification -> model);
         });
     }
-}
 
+    public Mono<UserPost> subscribe(UserPost userPost) {
+        userPost.setValidated(Boolean.FALSE);
+        userPost.setRoles(List.of(RoleEnum.EDITOR.name()));
+        return this.findByEmail(userPost.getEmail())
+                .flatMap(existingUser -> Mono.<UserPost>error(new RuntimeException("User already exists")))
+                .switchIfEmpty(
+                        this.save(userPost)
+                                .flatMap(savedUser -> createDefaultUserNode(savedUser)
+                                        .flatMap(node -> {
+                                            savedUser.setProjects(List.of(node.getId().toString()));
+                                            return this.save(savedUser);
+                                        })));
+    }
+
+    private Mono<Node> createDefaultUserNode(UserPost userPost) {
+        Node defaultNode = new Node();
+        defaultNode.setName(userPost.getEmail());
+        defaultNode.setDescription(userPost.getFirstname() + " " + userPost.getLastname());
+        defaultNode.setDefaultLanguage("EN");
+        return this.nodeHandler.save(defaultNode);
+    }
+}

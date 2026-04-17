@@ -34,6 +34,7 @@ public class WebSecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         .pathMatchers("/authentication/login").permitAll()
+                        .pathMatchers("/v0/users/subscribe").permitAll()
                         .pathMatchers("/file").permitAll()
                         .pathMatchers("/export").permitAll()
                         .pathMatchers("/health").permitAll()
@@ -42,8 +43,7 @@ public class WebSecurityConfig {
                         .pathMatchers("/swagger-ui/**").permitAll()
                         .pathMatchers("/swagger-ui.html").permitAll()
                         .pathMatchers("/webjars/swagger-ui/**").permitAll()
-                        .anyExchange().authenticated()
-                )
+                        .anyExchange().authenticated())
                 .build();
     }
 
