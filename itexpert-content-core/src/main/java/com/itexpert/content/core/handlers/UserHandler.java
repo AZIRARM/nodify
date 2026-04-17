@@ -1,6 +1,7 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.mappers.UserMapper;
+import com.itexpert.content.core.models.auth.RoleEnum;
 import com.itexpert.content.core.repositories.UserRepository;
 import com.itexpert.content.core.utils.auth.PBKDF2Encoder;
 import com.itexpert.content.lib.enums.NotificationEnum;
@@ -10,14 +11,15 @@ import com.itexpert.content.lib.models.UserPost;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@AllArgsConstructor
 @Service
 public class UserHandler {
     private final UserRepository userRepository;
@@ -25,6 +27,18 @@ public class UserHandler {
     private final PBKDF2Encoder passwordEncoder;
     private final NotificationHandler notificationHandler;
     private final NodeHandler nodeHandler;
+
+    public UserHandler(UserRepository userRepository,
+            UserMapper userMapper,
+            PBKDF2Encoder passwordEncoder,
+            NotificationHandler notificationHandler,
+            @Lazy NodeHandler nodeHandler) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.notificationHandler = notificationHandler;
+        this.nodeHandler = nodeHandler;
+    }
 
     public Flux<UserPost> findAll() {
         return userRepository.findAll().map(userMapper::fromEntity);
@@ -125,12 +139,16 @@ public class UserHandler {
 
     public Mono<UserPost> subscribe(UserPost userPost) {
         userPost.setValidated(Boolean.FALSE);
+        userPost.setRoles(List.of(RoleEnum.EDITOR.name()));
         return this.findByEmail(userPost.getEmail())
                 .flatMap(existingUser -> Mono.<UserPost>error(new RuntimeException("User already exists")))
                 .switchIfEmpty(
                         this.save(userPost)
                                 .flatMap(savedUser -> createDefaultUserNode(savedUser)
-                                        .thenReturn(savedUser)));
+                                        .flatMap(node -> {
+                                            savedUser.setProjects(List.of(node.getId().toString()));
+                                            return this.save(savedUser);
+                                        })));
     }
 
     private Mono<Node> createDefaultUserNode(UserPost userPost) {

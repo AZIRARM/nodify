@@ -25,28 +25,7 @@
 
       <!-- Conteneur ECharts -->
       <div class="chart-container">
-        <div
-          echarts
-          [options]="chartOptions"
-          class="echarts-instance"
-          [style.width]="'100%'"
-          [style.height]="'100%'">
-        </div>
-      </div>
-
-      <!-- Légende -->
-      <div class="chart-legend">
-        <div class="legend-item">
-          <span class="legend-color feedback"></span>
-          <span class="legend-label">{{ "FEEDBACK" | translate }}</span>
-        </div>
-        <div class="legend-item">
-          <span class="legend-color clicked"></span>
-          <span class="legend-label">{{ "CLICKED" | translate }}</span>
-        </div>
-        <div class="legend-item">
-          <span class="legend-color displayed"></span>
-          <span class="legend-label">{{ "DISPLAYED" | translate }}</span>
+        <div echarts [options]="chartOptions" class="echarts-instance" [style.width]="'100%'" [style.height]="'100%'">
         </div>
       </div>
 

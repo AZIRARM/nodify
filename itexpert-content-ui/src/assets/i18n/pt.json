@@ -219,6 +219,10 @@
   "LOGOUT": "Sair",
   "MY_ACCOUNT": "Minha conta",
 
+  "_SUBSCRIBE": "=== AUTENTICAÇÃO ===",
+  "SUBSCRIBE": "Inscrição",
+  "REGISTER": "Registrar-se",
+
   "_ROLES": "=== FUNÇÕES ===",
   "ROLE": "Função",
   "ROLES": "Funções",

@@ -1,18 +1,14 @@
 package com.itexpert.content.core.runners;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.itexpert.content.core.entities.ChangeLog;
-import com.itexpert.content.core.handlers.NodeHandler;
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.repositories.ChangeLogRepository;
-import com.itexpert.content.lib.enums.StatusEnum;
-import com.itexpert.content.lib.models.Node;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -31,9 +27,9 @@ public class UpdateDatasInitializer {
         return changeLogRepository.findByName(SCRIPT_NAME)
                 .flatMap(existingLog -> {
                     log.info("Script {} already executed. Skipping.", SCRIPT_NAME);
-                    return Mono.empty();
+                    return Mono.just(existingLog);
                 })
-                .switchIfEmpty(executeMigration())
+                .switchIfEmpty(Mono.defer(() -> executeMigration()))
                 .then();
     }
 
@@ -50,6 +46,7 @@ public class UpdateDatasInitializer {
 
     private Mono<ChangeLog> saveChangeLog() {
         ChangeLog changeLog = new ChangeLog();
+        changeLog.setId(UUID.randomUUID());
         changeLog.setCreated(Instant.now());
         changeLog.setName(SCRIPT_NAME);
         changeLog.setDescription("Init new field validated with true");
