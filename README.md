@@ -4,7 +4,6 @@
 [![GitHub forks](https://img.shields.io/github/forks/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/network/members)
 [![Docker Pulls](https://img.shields.io/docker/pulls/azirar/nodify-api)](https://hub.docker.com/r/azirar/nodify-api)
 
-
 # 🚀 Nodify: The Most Powerful Open-Source Headless CMS as a True CaaS
 
 **Delivering seamless content experiences across all channels — natively multilingual, any content, any channel.**
@@ -12,7 +11,7 @@
 ## 📦 Official Repositories
 
 | Repository | Description |
-|------------|-------------|
+| :--- | :--- |
 | **[nodify](https://github.com/AZIRARM/nodify)** | Core Nodify Headless CMS project |
 | **[nodify-clients](https://github.com/AZIRARM/nodify-clients)** | Official clients for Java, Python, and Node.js |
 | **[nodify-templates](https://github.com/AZIRARM/nodify-templates)** | Ready-to-use templates for Nodify Studio |
@@ -24,27 +23,24 @@
 You can explore a live demo of **Nodify Headless CMS** here:  
 🔗 [Nodify Demo](https://nodify.azirar.ovh)
 
-**Credentials:**
-- **Username:** `admin`
-- **Password:** `Admin13579++`
-
-**Availability:**  
-The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
+**Get Started:**
+* **Registration:** You can now create your own account directly on the demo platform to start testing.
+* **Availability:** The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
 
 > ⚠️ This is a shared demo environment. Data may be reset at any time.
 
 ## 📚 Quick Links
 
-- 📖 [Documentation](#)
-- 🎨 [Templates Gallery](https://github.com/AZIRARM/nodify-templates)
-- 🔌 [Plugins Marketplace](https://github.com/AZIRARM/nodify-plugins)
-- 💻 [Client Libraries](https://github.com/AZIRARM/nodify-clients)
-- 🐘 [PHP Client](https://github.com/AZIRARM/nodify-php-client)
+* 📖 [Documentation](#)
+* 🎨 [Templates Gallery](https://github.com/AZIRARM/nodify-templates)
+* 🔌 [Plugins Marketplace](https://github.com/AZIRARM/nodify-plugins)
+* 💻 [Client Libraries](https://github.com/AZIRARM/nodify-clients)
+* 🐘 [PHP Client](https://github.com/AZIRARM/nodify-php-client)
 
 ## ✨ Why Nodify?
 
 | Feature | Description |
-|---------|-------------|
+| :--- | :--- |
 | 🌍 **Native Multilingual** | Any content, any language, any channel |
 | 📦 **Official SDKs** | Python, PHP, Java/Kotlin, Node.js |
 | 🔌 **Extensible** | Plugins, webhooks, and custom APIs |
@@ -81,25 +77,25 @@ The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
 
 ## Flexibility and Customization
 
-* Customizable content models: Define your own content structures.
-* Flexible APIs: Integrate with your existing tech stack.
-* Extensible with plugins: Add new features as needed.
+* **Customizable content models:** Define your own content structures.
+* **Flexible APIs:** Integrate with your existing tech stack.
+* **Extensible with plugins:** Add new features as needed.
 
 <img src="assets/pictures/nodify-flexibility.png" width="50%"/>
 
 ## Create Global Content Experiences
 
-* Translate content easily: Manage multiple language versions.
-* Regionalize content: Target specific audiences.
-* Handle complex multilingual requirements: Support various writing systems and dialects.
+* **Translate content easily:** Manage multiple language versions.
+* **Regionalize content:** Target specific audiences.
+* **Handle complex multilingual requirements:** Support various writing systems and dialects.
 
 <img src="assets/pictures/nodify-experience.png" width="50%"/>
 
 ## Empower Your Development Team
 
-* Robust APIs: RESTful APIs for seamless integration.
-* Webhooks: Trigger actions based on events.
-* Version control: Track changes and collaborate effectively.
+* **Robust APIs:** RESTful APIs for seamless integration.
+* **Webhooks:** Trigger actions based on events.
+* **Version control:** Track changes and collaborate effectively.
 
 <img src="assets/pictures/nodify-api.png" width="50%"/>
 
@@ -107,10 +103,10 @@ The demo server is accessible daily from **10:00 AM** to **12:00 AM** (UTC+1).
 
 Nodify comes with pre-built templates to accelerate your development:
 
-- **Tech Forum Template** - Complete developer community forum
-- **Tiny Tales Stories Template** - AI-powered children's stories generator
-- **News Template** - Modern news publishing platform
-- **E-commerce Template** - Product catalog and shopping experience
+* **Tech Forum Template** - Complete developer community forum
+* **Tiny Tales Stories Template** - AI-powered children's stories generator
+* **News Template** - Modern news publishing platform
+* **E-commerce Template** - Product catalog and shopping experience
 
 Explore all templates in the [nodify-templates](https://github.com/AZIRARM/nodify-templates) repository.
 
@@ -118,10 +114,10 @@ Explore all templates in the [nodify-templates](https://github.com/AZIRARM/nodif
 
 Enhance your Nodify experience with official plugins:
 
-- **SEO Optimizer** - Automatic meta tags and sitemap generation
-- **Image Optimizer** - On-the-fly image resizing and optimization
-- **Webhook Manager** - Advanced webhook configuration and monitoring
-- **Analytics Dashboard** - Built-in content performance analytics
+* **SEO Optimizer** - Automatic meta tags and sitemap generation
+* **Image Optimizer** - On-the-fly image resizing and optimization
+* **Webhook Manager** - Advanced webhook configuration and monitoring
+* **Analytics Dashboard** - Built-in content performance analytics
 
 Browse all plugins in the [nodify-plugins](https://github.com/AZIRARM/nodify-plugins) repository.
 
@@ -130,7 +126,7 @@ Browse all plugins in the [nodify-plugins](https://github.com/AZIRARM/nodify-plu
 Integrate Nodify with your tech stack using official clients:
 
 | Language | Repository |
-|----------|------------|
+| :--- | :--- |
 | **Java** | [nodify-clients/java](https://github.com/AZIRARM/nodify-clients/tree/main/java) |
 | **Python** | [nodify-clients/python](https://github.com/AZIRARM/nodify-clients/tree/main/python) |
 | **Node.js** | [nodify-clients/nodejs](https://github.com/AZIRARM/nodify-clients/tree/main/nodejs) |
@@ -138,7 +134,7 @@ Integrate Nodify with your tech stack using official clients:
 
 ## 📊 GitHub Stats
 
-[![GitHub release](https://img.shields.io/github/v/release/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/releases)
+[![GitHub release](https://img.shields.io/github/v/release/AZIRARM/nodify)]([https://github.com/AZIRARM/nodify/releases](https://github.com/AZIRARM/nodify/releases))
 [![GitHub last commit](https://img.shields.io/github/last-commit/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/commits/main)
 [![GitHub contributors](https://img.shields.io/github/contributors/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/graphs/contributors)
 
@@ -155,13 +151,11 @@ docker compose up -d
 ```
 
 Nodify will be available at:
-- **Nodify Studio:** http://localhost:7821
-- **Nodify API:** http://localhost:7805
-- **Nodify Core:** http://localhost:7804
+* **Nodify Studio:** http://localhost:7821
+* **Nodify API:** http://localhost:7805
+* **Nodify Core:** http://localhost:7804
 
 ### Docker Compose Configuration
-
-Create a `docker-compose.yml` file:
 
 ```yaml
 services:
@@ -236,12 +230,12 @@ volumes:
 ### Environment Variables
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+| :--- | :--- | :--- |
 | `MONGO_URL` | MongoDB connection string | `mongodb://mongodb:27017/nodify` |
 | `REDIS_URL` | Redis connection URL | `redis://redis:6379` |
-| `ADMIN_PWD` | Admin password | Admin13579++ |
-| `API_URL` | Public API URL | http://nodify-api:1080 |
-| `CORE_URL` | Core service URL | http://nodify-core:8080 |
+| `ADMIN_PWD` | Admin password | `Admin13579++` |
+| `API_URL` | Public API URL | `http://nodify-api:1080` |
+| `CORE_URL` | Core service URL | `http://nodify-core:8080` |
 | `JAVA_OPTS` | JVM options for Core and API | See above |
 
 ## 🤝 Contributing
@@ -252,25 +246,20 @@ We welcome contributions! Please check our contribution guidelines before submit
 
 Nodify is licensed under the Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)**.
 
-This project is licensed under the Creative Commons BY-NC 4.0 license.
-
 **You are free to:**
-
-* Share — Copy and redistribute the software in any medium or format.
-* Adapt — Remix, transform, and build upon the software.
+* **Share** — Copy and redistribute the software in any medium or format.
+* **Adapt** — Remix, transform, and build upon the software.
 
 **But under the following conditions:**
+* **No Commercial Use** — You may not use this software for commercial purposes.
+* **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made.
 
-* No Commercial Use — You may not use this software for commercial purposes.
-* Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made.
-
-See the full license here: https://creativecommons.org/licenses/by-nc/4.0/
+See the full license here: [https://creativecommons.org/licenses/by-nc/4.0/](https://creativecommons.org/licenses/by-nc/4.0/)
 
 ## 🌟 Support
 
-- 📧 Email: [support@azirar.ovh](mailto:support@azirar.ovh)
-- 💬 Issues: [GitHub Issues](https://github.com/AZIRARM/nodify/issues)
-- 📚 Documentation: [Wiki](https://github.com/AZIRARM/nodify/wiki)
+* 📧 **Email:** [support@azirar.ovh](mailto:support@azirar.ovh)
+* 💬 **Issues:** [GitHub Issues](https://github.com/AZIRARM/nodify/issues)
+* 📚 **Documentation:** [Wiki](https://github.com/AZIRARM/nodify/wiki)
 
 **Made with ❤️ by the Nodify Community**
-
