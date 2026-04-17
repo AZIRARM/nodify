@@ -1,7 +1,3 @@
-إليك ملف **Markdown** مترجم بالكامل إلى اللغة العربية مع الحفاظ على التنسيق والروابط والرموز التعبيرية. لقد قمت بتحديث قسم **Demo** ليشير إلى أن المستخدمين يمكنهم الآن إنشاء حساباتهم الخاصة.
-
----
-
 [![رخصة المشاع الإبداعي BY-NC 4.0](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![تكامل Java المستمر عبر Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
 [![نجوم المستودع](https://img.shields.io/github/stars/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/stargazers)
