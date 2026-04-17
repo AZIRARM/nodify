@@ -1,148 +1,148 @@
-[![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
-[![Java CI with Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
+[![Licença Creative Commons BY-NC 4.0](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![Java CI com Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/network/members)
 [![Docker Pulls](https://img.shields.io/docker/pulls/azirar/nodify-api)](https://hub.docker.com/r/azirar/nodify-api)
 
-# 🚀 Nodify: एक वास्तविक CaaS के रूप में सबसे शक्तिशाली ओपन-सोर्स हेडलेस CMS
+# 🚀 Nodify: O Mais Poderoso Headless CMS Open-Source como um CaaS Real
 
-**सभी चैनलों पर सहज कंटेंट अनुभव प्रदान करना — मूल रूप से बहुभाषी, कोई भी कंटेंट, किसी भी चैनल पर।**
+**Entregando experiências de conteúdo integradas em todos os canais — nativamente multilíngue, qualquer conteúdo, qualquer canal.**
 
-## 📦 आधिकारिक रिपॉजिटरी (Repositories)
+## 📦 Repositórios Oficiais
 
-| रिपॉजिटरी | विवरण |
+| Repositório | Descrição |
 | :--- | :--- |
-| **[nodify](https://github.com/AZIRARM/nodify)** | कोर नोडिफाई (Nodify) हेडलेस CMS प्रोजेक्ट |
-| **[nodify-clients](https://github.com/AZIRARM/nodify-clients)** | Java, Python, और Node.js के लिए आधिकारिक क्लाइंट |
-| **[nodify-templates](https://github.com/AZIRARM/nodify-templates)** | नोडिफाई स्टूडियो के लिए उपयोग हेतु तैयार टेम्पलेट्स |
-| **[nodify-plugins](https://github.com/AZIRARM/nodify-plugins)** | नोडिफाई के लिए विस्तार योग्य प्लगइन्स |
-| **[nodify-php-client](https://github.com/AZIRARM/nodify-php-client)** | नोडिफाई API के लिए PHP क्लाइंट |
+| **[nodify](https://github.com/AZIRARM/nodify)** | Projeto core do Nodify Headless CMS |
+| **[nodify-clients](https://github.com/AZIRARM/nodify-clients)** | Clientes oficiais para Java, Python e Node.js |
+| **[nodify-templates](https://github.com/AZIRARM/nodify-templates)** | Templates prontos para uso no Nodify Studio |
+| **[nodify-plugins](https://github.com/AZIRARM/nodify-plugins)** | Plugins extensíveis para o Nodify |
+| **[nodify-php-client](https://github.com/AZIRARM/nodify-php-client)** | Cliente PHP para a API do Nodify |
 
-## 🚀 डेमो (Demo)
+## 🚀 Demo
 
-आप यहाँ **नोडिफाई हेडलेस CMS** का लाइव डेमो देख सकते हैं:  
-🔗 [Nodify डेमो यहाँ देखें](https://nodify.azirar.ovh)
+Você pode explorar uma demonstração ao vivo do **Nodify Headless CMS** aqui:  
+🔗 [Demo do Nodify](https://nodify.azirar.ovh)
 
-**शुरू कैसे करें:**
-* **पंजीकरण:** अब आप परीक्षण शुरू करने के लिए सीधे डेमो प्लेटफॉर्म पर अपना खाता बना सकते हैं।
-* **उपलब्धता:** डेमो सर्वर प्रतिदिन **सुबह 10:00 बजे** से **रात 12:00 बजे** (UTC+1) तक सुलभ है।
+**Como começar:**
+* **Registro:** Agora você pode criar sua própria conta diretamente na plataforma de demonstração para começar os testes.
+* **Disponibilidade:** O servidor de demonstração está acessível diariamente das **10:00** às **00:00** (UTC+1).
 
-> ⚠️ यह एक साझा डेमो वातावरण है। डेटा किसी भी समय रीसेट किया जा सकता है।
+> ⚠️ Este é um ambiente de demonstração compartilhado. Os dados podem ser resetados a qualquer momento.
 
-## 📚 त्वरित लिंक
+## 📚 Links Rápidos
 
-* 📖 [दस्तावेज़ीकरण (Documentation)](#)
-* 🎨 [टेम्पलेट्स गैलरी](https://github.com/AZIRARM/nodify-templates)
-* 🔌 [प्लगइन्स मार्केटप्लेस](https://github.com/AZIRARM/nodify-plugins)
-* 💻 [क्लाइंट लाइब्रेरीज़](https://github.com/AZIRARM/nodify-clients)
-* 🐘 [PHP क्लाइंट](https://github.com/AZIRARM/nodify-php-client)
+* 📖 [Documentação](#)
+* 🎨 [Galeria de Templates](https://github.com/AZIRARM/nodify-templates)
+* 🔌 [Marketplace de Plugins](https://github.com/AZIRARM/nodify-plugins)
+* 💻 [Bibliotecas de Clientes](https://github.com/AZIRARM/nodify-clients)
+* 🐘 [Cliente PHP](https://github.com/AZIRARM/nodify-php-client)
 
-## ✨ नोडिफाई क्यों चुनें?
+## ✨ Por que o Nodify?
 
-| विशेषता | विवरण |
+| Funcionalidade | Descrição |
 | :--- | :--- |
-| 🌍 **मूल रूप से बहुभाषी** | कोई भी कंटेंट, किसी भी भाषा में, किसी भी चैनल के लिए |
-| 📦 **आधिकारिक SDKs** | Python, PHP, Java/Kotlin, Node.js |
-| 🔌 **विस्तार योग्य** | प्लगइन्स, वेबहुक और कस्टम APIs |
-| 🐳 **डॉकर-रेडी** | केवल एक कमांड के साथ डिप्लॉयमेंट |
-| 🎨 **रेडी टेम्पलेट्स** | टेक फोरम, समाचार, ई-कॉमर्स, कहानियाँ |
+| 🌍 **Multilíngue Nativo** | Qualquer conteúdo, qualquer idioma, qualquer canal |
+| 📦 **SDKs Oficiais** | Python, PHP, Java/Kotlin, Node.js |
+| 🔌 **Extensível** | Plugins, webhooks e APIs personalizadas |
+| 🐳 **Pronto para Docker** | Implantação com um único comando |
+| 🎨 **Templates Prontos** | Fórum Tech, Notícias, E-commerce, Histórias |
 
-## हेडलेस CMS को समझना
+## Entendendo o Headless CMS
 
-* यह फ्रंट-एंड (प्रेजेंटेशन लेयर) को बैक-एंड (कंटेंट मैनेजमेंट) से अलग करता है।
-* APIs के माध्यम से कंटेंट डिलीवर करता है।
-* अत्यधिक अनुकूलन योग्य (Customizable) और अनुकूलनीय।
+* Separa o front-end (camada de apresentação) do back-end (gestão de conteúdo).
+* Entrega conteúdo através de APIs.
+* Altamente customizável e adaptável.
 
 <img src="assets/pictures/headless-cms.png" width="50%"/>
 
-## नोडिफाई ही क्यों?
+## Por que escolher o Nodify?
 
-* **बहुभाषी (Multilingual):** कई भाषाओं में कंटेंट आसानी से बनाएं और प्रबंधित करें।
-* **मल्टीचैनल:** किसी भी डिवाइस या प्लेटफॉर्म पर कंटेंट पहुँचाएं।
-* **अत्यधिक अनुकूलन योग्य:** अपनी विशिष्ट आवश्यकताओं के अनुसार CMS को ढालें।
-* **स्केलेबल:** बढ़ते कंटेंट वॉल्यूम को आसानी से संभालें।
-* **डेवलपर-फ्रेंडली:** मजबूत APIs और सहज एकीकरण (Integrations)।
+* **Multilíngue:** Crie e gerencie conteúdo em vários idiomas sem esforço.
+* **Multicanal:** Entregue conteúdo para qualquer dispositivo ou plataforma.
+* **Altamente Customizável:** Adapte o CMS às suas necessidades específicas.
+* **Escalável:** Lide facilmente com volumes crescentes de conteúdo.
+* **Developer-friendly:** APIs robustas e integrações simplificadas.
 
 <img src="assets/pictures/why-nodify.png" width="50%"/>
 
-## कंटेंट कहीं भी, कभी भी पहुँचाएँ
+## Entregue conteúdo em qualquer lugar, a qualquer hora
 
-* वेबसाइटें
-* मोबाइल ऐप्स
-* IoT डिवाइस
-* सोशल मीडिया
-* वॉयस असिस्टेंट
+* Websites
+* Aplicativos móveis
+* Dispositivos IoT
+* Redes Sociais
+* Assistentes de voz
 
 <img src="assets/pictures/nodify-iot.png" width="50%"/>
 
-## लचीलापन और अनुकूलन
+## Flexibilidade e Customização
 
-* **कस्टमाइज़ेबल कंटेंट मॉडल:** अपनी स्वयं की कंटेंट संरचनाएं परिभाषित करें।
-* **लचीले APIs:** अपने मौजूदा टेक स्टैक के साथ एकीकृत करें।
-* **प्लगइन्स के साथ विस्तार योग्य:** आवश्यकतानुसार नई सुविधाएँ जोड़ें।
+* **Modelos de conteúdo customizáveis:** Defina suas próprias estruturas de conteúdo.
+* **APIs flexíveis:** Integre com sua stack tecnológica existente.
+* **Extensível com plugins:** Adicione novas funcionalidades conforme necessário.
 
 <img src="assets/pictures/nodify-flexibility.png" width="50%"/>
 
-## वैश्विक कंटेंट अनुभव बनाएँ
+## Crie experiências de conteúdo globais
 
-* **कंटेंट का आसानी से अनुवाद करें:** कई भाषा संस्करणों को प्रबंधित करें।
-* **क्षेत्रीयकरण:** विशिष्ट दर्शकों को लक्षित करें।
-* **जटिल बहुभाषी आवश्यकताओं को संभालें:** विभिन्न लेखन प्रणालियों और बोलियों का समर्थन।
+* **Traduza conteúdo facilmente:** Gerencie múltiplas versões de idiomas.
+* **Regionalize o conteúdo:** Foque em públicos específicos.
+* **Gerencie requisitos complexos:** Suporte para diversos sistemas de escrita e dialetos.
 
 <img src="assets/pictures/nodify-experience.png" width="50%"/>
 
-## अपनी डेवलपमेंट टीम को सशक्त बनाएँ
+## Empodere sua equipe de desenvolvimento
 
-* **मजबूत APIs:** निर्बाध एकीकरण के लिए RESTful APIs।
-* **वेबहुक्स (Webhooks):** घटनाओं के आधार पर क्रियाओं (Actions) को ट्रिगर करें।
-* **वर्जन कंट्रोल:** परिवर्तनों को ट्रैक करें और प्रभावी ढंग से सहयोग करें।
+* **APIs robustas:** APIs RESTful para integração perfeita.
+* **Webhooks:** Dispare ações baseadas em eventos.
+* **Controle de versão:** Rastreie mudanças e colabore efetivamente.
 
 <img src="assets/pictures/nodify-api.png" width="50%"/>
 
-## 🎯 उपयोग के लिए तैयार टेम्पलेट्स
+## 🎯 Templates prontos para uso
 
-नोडिफाई आपके विकास को गति देने के लिए पहले से बने टेम्पलेट्स के साथ आता है:
+O Nodify vem com templates pré-construídos para acelerar seu desenvolvimento:
 
-* **टेक फोरम टेम्पलेट** - संपूर्ण डेवलपर कम्युनिटी फोरम।
-* **टिनी टेल्स स्टोरीज़ टेम्पलेट** - AI-संचालित बच्चों की कहानियों का जनरेटर।
-* **न्यूज़ टेम्पलेट** - आधुनिक समाचार प्रकाशन मंच।
-* **ई-कॉमर्स टेम्पलेट** - उत्पाद कैटलॉग और खरीदारी का अनुभव।
+* **Template de Fórum Tech** - Fórum completo para comunidades de desenvolvedores.
+* **Template Tiny Tales Stories** - Gerador de histórias infantis movido a IA.
+* **Template de Notícias** - Plataforma moderna de publicação de notícias.
+* **Template de E-commerce** - Catálogo de produtos e experiência de compra.
 
-सभी टेम्पलेट्स को [nodify-templates](https://github.com/AZIRARM/nodify-templates) रिपॉजिटरी में देखें।
+Explore todos os templates no repositório [nodify-templates](https://github.com/AZIRARM/nodify-templates).
 
-## 🔌 प्लगइन्स के साथ विस्तार करें
+## 🔌 Estenda com Plugins
 
-आधिकारिक प्लगइन्स के साथ अपने नोडिफाई अनुभव को बेहतर बनाएं:
+Melhore sua experiência com o Nodify através de plugins oficiais:
 
-* **SEO Optimizer** - स्वचालित मेटा टैग और साइटमैप जनरेशन।
-* **Image Optimizer** - ऑन-द-फ्लाई इमेज रिसाइजिंग और ऑप्टिमाइज़ेशन।
-* **Webhook Manager** - उन्नत वेबहुक कॉन्फ़िगरेशन और मॉनिटरिंग।
-* **Analytics Dashboard** - इन-बिल्ट कंटेंट परफॉरमेंस एनालिटिक्स।
+* **SEO Optimizer** - Geração automática de meta tags e sitemaps.
+* **Image Optimizer** - Redimensionamento e otimização de imagens em tempo real.
+* **Webhook Manager** - Configuração e monitoramento avançado de webhooks.
+* **Analytics Dashboard** - Análise de performance de conteúdo integrada.
 
-सभी प्लगइन्स को [nodify-plugins](https://github.com/AZIRARM/nodify-plugins) रिपॉजिटरी में ब्राउज़ करें।
+Navegue por todos os plugins no repositório [nodify-plugins](https://github.com/AZIRARM/nodify-plugins).
 
-## 💻 क्लाइंट लाइब्रेरीज़ (Client Libraries)
+## 💻 Bibliotecas de Clientes
 
-आधिकारिक क्लाइंट्स का उपयोग करके नोडिफाई को अपने टेक स्टैक के साथ एकीकृत करें:
+Integre o Nodify com sua stack usando os clientes oficiais:
 
-| भाषा | रिपॉजिटरी |
+| Linguagem | Repositório |
 | :--- | :--- |
 | **Java** | [nodify-clients/java](https://github.com/AZIRARM/nodify-clients/tree/main/java) |
 | **Python** | [nodify-clients/python](https://github.com/AZIRARM/nodify-clients/tree/main/python) |
 | **Node.js** | [nodify-clients/nodejs](https://github.com/AZIRARM/nodify-clients/tree/main/nodejs) |
 | **PHP** | [nodify-php-client](https://github.com/AZIRARM/nodify-php-client) |
 
-## 📊 GitHub आंकड़े (Stats)
+## 📊 Estatísticas do GitHub
 
 [![GitHub release](https://img.shields.io/github/v/release/AZIRARM/nodify)]([https://github.com/AZIRARM/nodify/releases](https://github.com/AZIRARM/nodify/releases))
 [![GitHub last commit](https://img.shields.io/github/last-commit/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/commits/main)
 [![GitHub contributors](https://img.shields.io/github/contributors/AZIRARM/nodify)](https://github.com/AZIRARM/nodify/graphs/contributors)
 
-## 📥 इंस्टॉलेशन
+## 📥 Instalação
 
-### डॉकर कंपोज़ (Docker Compose) के साथ त्वरित शुरुआत
+### Início Rápido com Docker Compose
 
-रिपॉजिटरी को क्लोन करें और नोडिफाई को सभी डिपेंडेंसी (MongoDB और Redis सहित) के साथ चलाएं:
+Clone o repositório e execute o Nodify com todas as dependências (MongoDB e Redis inclusos):
 
 ```bash
 git clone https://github.com/AZIRARM/nodify.git
@@ -150,12 +150,12 @@ cd nodify
 docker compose up -d
 ```
 
-नोडिफाई यहाँ उपलब्ध होगा:
+O Nodify estará disponível em:
 * **Nodify Studio:** http://localhost:7821
 * **Nodify API:** http://localhost:7805
 * **Nodify Core:** http://localhost:7804
 
-### डॉकर कंपोज़ कॉन्फ़िगरेशन (docker-compose.yml)
+### Configuração do Docker Compose
 
 ```yaml
 services:
@@ -227,39 +227,39 @@ volumes:
   redis_data:
 ```
 
-### एनवायरनमेंट वेरिएबल्स (Environment Variables)
+### Variáveis de Ambiente
 
-| वेरिएबल | विवरण | डिफॉल्ट |
+| Variável | Descrição | Padrão |
 | :--- | :--- | :--- |
-| `MONGO_URL` | MongoDB कनेक्शन स्ट्रिंग | `mongodb://mongodb:27017/nodify` |
-| `REDIS_URL` | Redis कनेक्शन URL | `redis://redis:6379` |
-| `ADMIN_PWD` | एडमिन पासवर्ड | `Admin13579++` |
-| `API_URL` | पब्लिक API URL | `http://nodify-api:1080` |
-| `CORE_URL` | कोर सर्विस URL | `http://nodify-core:8080` |
-| `JAVA_OPTS` | Core और API के लिए JVM ऑप्शंस | ऊपर देखें |
+| `MONGO_URL` | String de conexão do MongoDB | `mongodb://mongodb:27017/nodify` |
+| `REDIS_URL` | URL de conexão do Redis | `redis://redis:6379` |
+| `ADMIN_PWD` | Senha do administrador | `Admin13579++` |
+| `API_URL` | URL pública da API | `http://nodify-api:1080` |
+| `CORE_URL` | URL do serviço Core | `http://nodify-core:8080` |
+| `JAVA_OPTS` | Opções JVM para Core e API | Veja acima |
 
-## 🤝 योगदान (Contributing)
+## 🤝 Contribuindo
 
-हम योगदान का स्वागत करते हैं! कृपया पुल अनुरोध (Pull Requests) जमा करने से पहले हमारे योगदान दिशानिर्देशों की जांच करें।
+Contribuições são bem-vindas! Por favor, verifique nossas diretrizes de contribuição antes de enviar pull requests.
 
-## 📄 लाइसेंस (License)
+## 📄 Licença
 
-नोडिफाई को क्रिएटिव कॉमन्स एट्रिब्यूशन-नॉन-कमर्शियल 4.0 इंटरनेशनल **(CC BY-NC 4.0)** के तहत लाइसेंस प्राप्त है।
+O Nodify está licenciado sob a Creative Commons Attribution-NonCommercial 4.0 International **(CC BY-NC 4.0)**.
 
-**आप इसके लिए स्वतंत्र हैं:**
-* **साझा करना** — किसी भी माध्यम या प्रारूप में सॉफ़्टवेयर को कॉपी और पुनर्वितरित करना।
-* **अनुकूलित करना** — सॉफ़्टवेयर को रीमिक्स करना, बदलना और उस पर निर्माण करना।
+**Você é livre para:**
+* **Compartilhar** — Copiar e redistribuir o software em qualquer meio ou formato.
+* **Adaptar** — Remixar, transformar e construir sobre o software.
 
-**लेकिन निम्नलिखित शर्तों के तहत:**
-* **गैर-व्यावसायिक उपयोग** — आप व्यावसायिक उद्देश्यों के लिए इस सॉफ़्टवेयर का उपयोग नहीं कर सकते।
-* **एट्रिब्यूशन** — आपको उचित क्रेडिट देना होगा, लाइसेंस का लिंक प्रदान करना होगा, और यह बताना होगा कि क्या बदलाव किए गए थे।
+**Sob as seguintes condições:**
+* **Uso Não Comercial** — Você não pode usar este software para fins comerciais.
+* **Atribuição** — Você deve dar o crédito apropriado, prover um link para a licença e indicar se mudanças foram feitas.
 
-पूरा लाइसेंस यहाँ देखें: [https://creativecommons.org/licenses/by-nc/4.0/](https://creativecommons.org/licenses/by-nc/4.0/)
+Veja a licença completa aqui: [https://creativecommons.org/licenses/by-nc/4.0/](https://creativecommons.org/licenses/by-nc/4.0/)
 
-## 🌟 सहायता (Support)
+## 🌟 Suporte
 
-* 📧 **ईमेल:** [support@azirar.ovh](mailto:support@azirar.ovh)
-* 💬 **मुद्दे (Issues):** [GitHub Issues](https://github.com/AZIRARM/nodify/issues)
-* 📚 **दस्तावेज़ीकरण:** [Wiki](https://github.com/AZIRARM/nodify/wiki)
+* 📧 **Email:** [support@azirar.ovh](mailto:support@azirar.ovh)
+* 💬 **Issues:** [GitHub Issues](https://github.com/AZIRARM/nodify/issues)
+* 📚 **Documentação:** [Wiki](https://github.com/AZIRARM/nodify/wiki)
 
-**नोडिफाई कम्युनिटी द्वारा ❤️ के साथ बनाया गया**
+**Feito com ❤️ pela Comunidade Nodify**
