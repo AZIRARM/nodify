@@ -146,7 +146,7 @@ public class UserHandler {
                         this.save(userPost)
                                 .flatMap(savedUser -> createDefaultUserNode(savedUser)
                                         .flatMap(node -> {
-                                            savedUser.setProjects(List.of(node.getId().toString()));
+                                            savedUser.setProjects(List.of(node.getCode()));
                                             return this.save(savedUser);
                                         })));
     }
