@@ -1,7 +1,3 @@
-Hier ist die vollständig optimierte und übersetzte Version deines **README.md** auf Deutsch. Ich habe die Struktur beibehalten und den Demo-Bereich so angepasst, dass er die neue Registrierungsfunktion hervorhebt.
-
----
-
 [![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Java CI with Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/stargazers)
