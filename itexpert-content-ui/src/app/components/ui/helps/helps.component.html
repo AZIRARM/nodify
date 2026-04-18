@@ -9,52 +9,53 @@
   <!-- Tab Navigation -->
   <div class="tab-navigation">
 
-    <button
-      class="tab-button"
-      [class.active]="activeTab === 'marketing'"
-      (click)="switchTab('marketing')">
+    <button class="tab-button" [class.active]="activeTab() === 'marketing'" (click)="switchTab('marketing')">
       <span class="icon">📊</span>
       <span class="label">Marketing & E-merchandiser</span>
     </button>
 
-    <button
-      class="tab-button"
-      [class.active]="activeTab === 'developer'"
-      (click)="switchTab('developer')">
+    <button class="tab-button" [class.active]="activeTab() === 'developer'" (click)="switchTab('developer')">
       <span class="icon">👨‍💻</span>
       <span class="label">Developer</span>
     </button>
+
   </div>
 
   <!-- Loading State -->
-  <div class="loading-state" *ngIf="loading">
+  <div class="loading-state" *ngIf="loading()">
     <div class="spinner"></div>
     <p>Loading documentation...</p>
   </div>
 
   <!-- Error State -->
-  <div class="error-state" *ngIf="error && !loading">
+  <div class="error-state" *ngIf="error() && !loading()">
     <div class="error-icon">⚠️</div>
-    <p class="error-message">{{ error }}</p>
-    <button class="retry-button" (click)="activeTab === 'developer' ? loadDeveloperDocs() : loadMarketingDocs()">
+    <p class="error-message">{{ error() }}</p>
+
+    <button class="retry-button" (click)="activeTab() === 'developer' ? loadDeveloperDocs() : loadMarketingDocs()">
       Retry
     </button>
   </div>
 
   <!-- Content -->
-  <div class="content-area" *ngIf="!loading && !error">
-    <div class="markdown-content" *ngIf="activeTab === 'marketing'">
-      <markdown [data]="marketingMarkdown"></markdown>
+  <div class="content-area" *ngIf="!loading() && !error()">
+
+    <div class="markdown-content" *ngIf="activeTab() === 'marketing'">
+      <markdown [data]="marketingMarkdown()"></markdown>
     </div>
 
-    <div class="markdown-content" *ngIf="activeTab === 'developer'">
-      <markdown [data]="developerMarkdown"></markdown>
+    <div class="markdown-content" *ngIf="activeTab() === 'developer'">
+      <markdown [data]="developerMarkdown()"></markdown>
     </div>
+
   </div>
 
-  <!-- Footer - CORRIGÉ : remplacement de @ par &#64; -->
+  <!-- Footer -->
   <div class="helps-footer">
-    <p>Need more help? Contact us at <a href="mailto:support&#64;nodify-cms.com">support&#64;nodify-cms.com</a></p>
+    <p>
+      Need more help? Contact us at
+      <a href="mailto:support&#64;nodify-cms.com">support&#64;nodify-cms.com</a>
+    </p>
     <p class="small">Version 1.0 | Last updated: February 2024</p>
   </div>
 </div>

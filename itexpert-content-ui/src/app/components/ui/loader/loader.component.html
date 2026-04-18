@@ -1,3 +1,5 @@
-<div class="overlay" *ngIf="loaderService && loaderService.loading$ | async">
+@if (isLoading()) {
+<div class="overlay">
   <div class="spinner"></div>
 </div>
+}
