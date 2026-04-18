@@ -1,6 +1,5 @@
 <div class="language-dialog">
 
-  <!-- En-tête -->
   <div class="dialog-header">
     <div class="header-content">
       <div class="header-icon">
@@ -15,80 +14,57 @@
     </button>
   </div>
 
-  <!-- Contenu -->
   <div mat-dialog-content class="dialog-content">
-
     <div class="language-form">
 
-      <!-- Code de la langue -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "LANGUAGE_CODE" | translate }}</mat-label>
-        <input
-          matInput
-          [(ngModel)]="language.code"
-          placeholder="{{ 'LANGUAGE_CODE' | translate }}"
-          required
-          [readonly]="language.id ? true : null">
+        <input matInput [ngModel]="language().code" (ngModelChange)="updateCode($event)" required
+          [readonly]="language().id">
         <mat-icon matSuffix>code</mat-icon>
-        <mat-hint *ngIf="!language.id">{{ "LANGUAGE_CODE_HINT" | translate }}</mat-hint>
+        <mat-hint *ngIf="!language().id">
+          {{ "LANGUAGE_CODE_HINT" | translate }}
+        </mat-hint>
       </mat-form-field>
 
-      <!-- Nom de la langue -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "LANGUAGE_NAME" | translate }}</mat-label>
-        <input
-          matInput
-          [(ngModel)]="language.name"
-          placeholder="{{ 'LANGUAGE_NAME' | translate }}"
-          required>
+        <input matInput [ngModel]="language().name" (ngModelChange)="updateName($event)" required>
         <mat-icon matSuffix>label</mat-icon>
       </mat-form-field>
 
-      <!-- Description -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "LANGUAGE_DESCRIPTION" | translate }}</mat-label>
-        <input
-          matInput
-          [(ngModel)]="language.description"
-          placeholder="{{ 'LANGUAGE_DESCRIPTION' | translate }}">
+        <input matInput [ngModel]="language().description" (ngModelChange)="updateDescription($event)">
         <mat-icon matSuffix>description</mat-icon>
       </mat-form-field>
 
-      <!-- URL de l'icône -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ "LANGUAGE_URL_ICON" | translate }}</mat-label>
-        <input
-          matInput
-          [(ngModel)]="language.urlIcon"
-          placeholder="{{ 'LANGUAGE_URL_ICON' | translate }}">
+        <input matInput [ngModel]="language().urlIcon" (ngModelChange)="updateUrlIcon($event)">
         <mat-icon matSuffix>image</mat-icon>
       </mat-form-field>
 
-      <!-- Prévisualisation de l'icône -->
-      <div class="icon-preview" *ngIf="language.urlIcon">
-        <span class="preview-label">{{ "ICON_PREVIEW" | translate }}:</span>
-        <img [src]="language.urlIcon" alt="{{ language.code }}" class="preview-image">
+      <div class="icon-preview" *ngIf="language().urlIcon">
+        <span class="preview-label">
+          {{ "ICON_PREVIEW" | translate }}:
+        </span>
+        <img [src]="language().urlIcon" [alt]="language().code" class="preview-image">
       </div>
 
     </div>
   </div>
 
-  <!-- Actions -->
   <div mat-dialog-actions class="dialog-actions">
-    <button
-      mat-stroked-button
-      class="cancel-btn"
-      (click)="cancel()">
+    <button mat-stroked-button class="cancel-btn" (click)="cancel()">
       <mat-icon>close</mat-icon>
       {{ "CANCEL" | translate }}
     </button>
-    <button
-      mat-flat-button
-      class="save-btn"
-      (click)="validate()"
-      [disabled]="!isFormValid()">
+
+    <button mat-flat-button class="save-btn" (click)="validate()" [disabled]="!isFormValid()">
       <mat-icon>save</mat-icon>
       {{ "SAVE" | translate }}
     </button>
+
   </div>
 </div>

@@ -5,7 +5,7 @@
     <div class="header-content">
       <div class="header-icon">
         <mat-icon>notifications_active</mat-icon>
-        <span class="notification-count-badge" *ngIf="total > 0">{{ total }}</span>
+        <span class="notification-count-badge" *ngIf="total() > 0">{{ total() }}</span>
       </div>
       <div class="header-title">
         <span class="title-main">{{ "NOTIFICATIONS" | translate }}</span>
@@ -26,65 +26,65 @@
     <!-- Barre d'outils améliorée -->
     <div class="notifications-toolbar">
       <div class="toolbar-stats">
-        <div class="stat-item" *ngIf="total > 0">
+
+        <div class="stat-item" *ngIf="total() > 0">
           <span class="stat-label">{{ "TOTAL" | translate }} :</span>
-          <span class="stat-value">{{ total }}</span>
+          <span class="stat-value">{{ total() }}</span>
         </div>
-        <div class="stat-item" *ngIf="unreadCount > 0">
+
+        <div class="stat-item" *ngIf="unreadCount() > 0">
           <span class="stat-label">{{ "UNREAD" | translate }} :</span>
-          <span class="stat-value unread">{{ unreadCount }}</span>
+          <span class="stat-value unread">{{ unreadCount() }}</span>
         </div>
+
       </div>
 
       <div class="toolbar-actions">
-        <mat-slide-toggle
-          #markReadToggle
-          class="mark-read-toggle"
-          color="primary"
-          [checked]="false"
-          (change)="markAllAsReaded($event)"
-          [disabled]="dataSource.data.length === 0">
+
+        <mat-slide-toggle #markReadToggle class="mark-read-toggle" color="primary" [checked]="false"
+          (change)="markAllAsReaded($event)" [disabled]="dataSource.data.length === 0">
+
           <span class="toggle-label">{{ "MARK_ALL_AS_READ" | translate }}</span>
+
         </mat-slide-toggle>
 
-        <button mat-icon-button
-                class="filter-btn"
-                [matMenuTriggerFor]="filterMenu"
-                matTooltip="{{ 'FILTER' | translate }}">
+        <button mat-icon-button class="filter-btn" [matMenuTriggerFor]="filterMenu"
+          matTooltip="{{ 'FILTER' | translate }}">
           <mat-icon>filter_list</mat-icon>
         </button>
+
         <mat-menu #filterMenu="matMenu" class="filter-menu">
+
           <button mat-menu-item (click)="filterBy('all')">
             <mat-icon>notifications</mat-icon>
             <span>{{ "ALL" | translate }}</span>
           </button>
+
           <button mat-menu-item (click)="filterBy('unread')">
             <mat-icon>mark_as_unread</mat-icon>
             <span>{{ "UNREAD_ONLY" | translate }}</span>
           </button>
+
         </mat-menu>
+
       </div>
     </div>
 
-    <!-- Tableau amélioré -->
+    <!-- Tableau -->
     <div class="table-wrapper">
       <table mat-table [dataSource]="dataSource" class="notifications-table">
 
-        <!-- Status Column (nouvelle) -->
         <ng-container matColumnDef="Status">
           <th mat-header-cell *matHeaderCellDef class="status-column">
             <mat-icon>circle</mat-icon>
           </th>
           <td mat-cell *matCellDef="let element" class="status-column">
-            <div class="status-indicator"
-                 [class.read]="element.read"
-                 [class.unread]="!element.read"
-                 [matTooltip]="(element.read ? 'READ' : 'UNREAD') | translate">
+            <div class="status-indicator" [class.read]="element.read" [class.unread]="!element.read"
+              [matTooltip]="(element.read ? 'READ' : 'UNREAD') | translate">
             </div>
           </td>
         </ng-container>
 
-        <!-- Date Column -->
         <ng-container matColumnDef="Date">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -100,7 +100,6 @@
           </td>
         </ng-container>
 
-        <!-- Type Column -->
         <ng-container matColumnDef="Type">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -116,7 +115,6 @@
           </td>
         </ng-container>
 
-        <!-- Code Column -->
         <ng-container matColumnDef="Code">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -131,7 +129,6 @@
           </td>
         </ng-container>
 
-        <!-- Message Column -->
         <ng-container matColumnDef="Message">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -146,7 +143,6 @@
           </td>
         </ng-container>
 
-        <!-- Version Column -->
         <ng-container matColumnDef="Version">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -159,7 +155,6 @@
           </td>
         </ng-container>
 
-        <!-- Modified By Column -->
         <ng-container matColumnDef="By">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -175,7 +170,6 @@
           </td>
         </ng-container>
 
-        <!-- Actions Column -->
         <ng-container matColumnDef="Actions">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -184,61 +178,53 @@
           </th>
           <td mat-cell *matCellDef="let element">
             <div class="actions-cell">
-              <button
-                *ngIf="!element.read"
-                mat-icon-button
-                class="action-icon-btn"
-                (click)="markAsReaded(element)"
+
+              <button *ngIf="!element.read" mat-icon-button class="action-icon-btn" (click)="markAsReaded(element)"
                 matTooltip="{{ 'MARK_AS_READ' | translate }}">
                 <mat-icon class="text-success">mark_email_read</mat-icon>
               </button>
-              <button
-                mat-icon-button
-                class="action-icon-btn"
-                [matMenuTriggerFor]="rowMenu"
+
+              <button mat-icon-button class="action-icon-btn" [matMenuTriggerFor]="rowMenu"
                 (click)="$event.stopPropagation()">
                 <mat-icon>more_vert</mat-icon>
               </button>
+
               <mat-menu #rowMenu="matMenu">
                 <button mat-menu-item (click)="viewDetails(element)">
                   <mat-icon>visibility</mat-icon>
                   <span>{{ "VIEW_DETAILS" | translate }}</span>
                 </button>
+
                 <button mat-menu-item (click)="deleteNotification(element)" class="text-danger">
                   <mat-icon>delete</mat-icon>
                   <span>{{ "DELETE" | translate }}</span>
                 </button>
               </mat-menu>
+
             </div>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            [class.unread-row]="!row.read"
-            (click)="viewDetails(row)"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.unread-row]="!row.read"
+          (click)="viewDetails(row)">
+        </tr>
+
       </table>
 
-      <!-- Message si aucune notification -->
       <div class="empty-state" *ngIf="dataSource.data.length === 0">
         <mat-icon>notifications_off</mat-icon>
         <p>{{ 'NO_NOTIFICATIONS' | translate }}</p>
         <p class="empty-subtext">{{ 'NO_NOTIFICATIONS_MESSAGE' | translate }}</p>
       </div>
+
     </div>
 
     <!-- Pagination -->
     <div class="paginator-wrapper">
-      <mat-paginator
-        #MatPaginator
-        [length]="total"
-        [pageSize]="pageSize"
-        [pageIndex]="pageIndex"
-        [pageSizeOptions]="pageSizeOptions"
-        (page)="onPageChange($event)"
-        [showFirstLastButtons]="true"
-        [disabled]="total === 0"
-        class="modern-paginator">
+      <mat-paginator #MatPaginator [length]="total()" [pageSize]="pageSize()" [pageIndex]="pageIndex()"
+        [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" [showFirstLastButtons]="true"
+        [disabled]="total() === 0" class="modern-paginator">
       </mat-paginator>
     </div>
 
