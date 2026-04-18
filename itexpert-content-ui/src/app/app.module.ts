@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
-import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
@@ -215,7 +215,6 @@ export function defaultLanguage() {
     AppRoutingModule,
     BrowserAnimationsModule,
 
-    HttpClientModule,
     ToastrModule.forRoot({
       timeOut: 3000,
       positionClass: 'toast-bottom-right',
@@ -274,34 +273,37 @@ export function defaultLanguage() {
     CommonModule
   ],
 
-  providers: [
+  providers:
+    [provideHttpClient(
+      withInterceptorsFromDi()
+    ),
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
-    LoggerService,
-    SidenavService,
-    AuthenticationService,
-    NodeService,
-    ContentNodeService,
-    LanguageService,
-    RoleService,
-    UserService,
-    ParametersService,
-    NotificationService,
-    AccessRoleService,
-    FeedbackService,
-    ContentClickService,
-    ContentDisplayService,
-    UserAccessService,
-    ThemeService,
-    DataService,
-    PluginService,
-    PluginFileService,
-    ChartService,
-    SlugService,
-    AuthGuard,
-    CookiesService,
-    LoaderService,
-    LockService
-  ],
+      LoggerService,
+      SidenavService,
+      AuthenticationService,
+      NodeService,
+      ContentNodeService,
+      LanguageService,
+      RoleService,
+      UserService,
+      ParametersService,
+      NotificationService,
+      AccessRoleService,
+      FeedbackService,
+      ContentClickService,
+      ContentDisplayService,
+      UserAccessService,
+      ThemeService,
+      DataService,
+      PluginService,
+      PluginFileService,
+      ChartService,
+      SlugService,
+      AuthGuard,
+      CookiesService,
+      LoaderService,
+      LockService
+    ],
 
   bootstrap: [AppComponent],
 
