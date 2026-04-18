@@ -1,30 +1,30 @@
-import {AfterViewInit, Component, Inject, ViewChild} from '@angular/core';
-import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
-import {Plugin} from "../../../modeles/Plugin";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import { AfterViewInit, Component, Inject, ViewChild, inject, signal, WritableSignal } from '@angular/core';
+import { CodemirrorComponent } from "@ctrl/ngx-codemirror";
+import { Plugin } from "../../../modeles/Plugin";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { TranslateService } from '@ngx-translate/core';
 import { LoggerService } from 'src/app/services/LoggerService';
 
 @Component({
-    selector: 'app-plugin-dialog',
-    templateUrl: './plugin-dialog.component.html',
-    styleUrl: './plugin-dialog.component.css',
-    standalone: false
+  selector: 'app-plugin-dialog',
+  templateUrl: './plugin-dialog.component.html',
+  styleUrl: './plugin-dialog.component.css',
+  standalone: false
 })
 export class PluginDialogComponent implements AfterViewInit {
   plugin: Plugin;
-  isFullscreen: boolean = false;
+  isFullscreen: WritableSignal<boolean> = signal(false);
 
   @ViewChild(CodemirrorComponent) codeMirrorComponent!: CodemirrorComponent;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<PluginDialogComponent>,
-    private translate: TranslateService,
-    private loggerService: LoggerService
-  ) {
-    if (data && data.plugin) {
-      this.plugin = data.plugin;
+  private data = inject(MAT_DIALOG_DATA);
+  public dialogRef = inject(MatDialogRef<PluginDialogComponent>);
+  private translate = inject(TranslateService);
+  private loggerService = inject(LoggerService);
+
+  constructor() {
+    if (this.data && this.data.plugin) {
+      this.plugin = this.data.plugin;
     } else {
       this.plugin = new Plugin();
       this.plugin.editable = true;
@@ -57,7 +57,7 @@ export class PluginDialogComponent implements AfterViewInit {
   }
 
   toggleFullscreen(): void {
-    this.isFullscreen = !this.isFullscreen;
+    this.isFullscreen.set(!this.isFullscreen());
 
     setTimeout(() => {
       if (this.codeMirrorComponent?.codeMirror) {
@@ -67,7 +67,7 @@ export class PluginDialogComponent implements AfterViewInit {
   }
 
   close(): void {
-    this.dialogRef.close({validate: false});
+    this.dialogRef.close({ validate: false });
   }
 
   validate() {
@@ -76,7 +76,7 @@ export class PluginDialogComponent implements AfterViewInit {
         this.loggerService.error(trad);
       });
     } else {
-      this.dialogRef.close({validate: true, plugin: this.plugin});
+      this.dialogRef.close({ validate: true, plugin: this.plugin });
     }
   }
 }

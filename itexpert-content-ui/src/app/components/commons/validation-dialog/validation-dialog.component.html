@@ -23,10 +23,11 @@
 
       <!-- Message -->
       <div class="message-container">
-        <div *ngIf="isHtml; else textMessage" [innerHTML]="message | translate"></div>
-        <ng-template #textMessage>
-          <p [translate]="message"></p>
-        </ng-template>
+        @if (isHtml) {
+        <div [innerHTML]="message | translate"></div>
+        } @else {
+        <p [translate]="message"></p>
+        }
       </div>
 
     </div>

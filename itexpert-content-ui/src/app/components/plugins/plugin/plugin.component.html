@@ -10,35 +10,46 @@
       </div>
     </div>
 
-    <div class="header-actions" *ngIf="userAccessService.canEdit()">
+    <div class="header-actions">
+      @if (userAccessService.canEdit()) {
       <div style="position: relative; display: inline-block;">
-        <button mat-mini-fab class="action-btn warn-btn"
-                (click)="deleteds()"
-                matTooltip="{{ 'DELETED_PLUGINS' | translate }}">
+        <button mat-mini-fab class="action-btn warn-btn" (click)="deleteds()"
+          [matTooltip]="'DELETED_PLUGINS' | translate">
           <mat-icon>delete_sweep</mat-icon>
         </button>
 
-        @if(totalDeleteds > 0) {
-        <span class="deleted-badge">{{ totalDeleteds }}</span>
+        @if (totalDeleteds() > 0) {
+        <span class="deleted-badge">{{ totalDeleteds() }}</span>
         }
       </div>
 
-      <button mat-mini-fab class="action-btn primary-btn" (click)="fileInput.click()" matTooltip="{{ 'IMPORT' | translate }}">
+      <button mat-mini-fab class="action-btn primary-btn" (click)="fileInput.click()"
+        [matTooltip]="'IMPORT' | translate">
         <mat-icon>cloud_upload</mat-icon>
       </button>
       <input hidden #fileInput type="file" id="file" (change)="import($event)">
 
-      <button mat-fab class="create-fab" (click)="create()" matTooltip="{{ 'CREATE_PLUGIN' | translate }}">
+      <button mat-fab class="create-fab" (click)="create()" [matTooltip]="'CREATE_PLUGIN' | translate">
         <mat-icon>add</mat-icon>
       </button>
+      }
     </div>
   </div>
 
   <!-- Contenu -->
   <div class="dialog-content">
+    <!-- Indicateur de chargement -->
+    @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>{{ 'LOADING' | translate }}</p>
+    </div>
+    }
+
     <!-- Tableau des plugins -->
-    <div class="table-wrapper" *ngIf="userAccessService.getCurrentUser()">
-      <table mat-table [dataSource]="dataSource" class="plugins-table">
+    @if (!isLoading()) {
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="dataSource()" class="plugins-table">
 
         <!-- Colonne Status -->
         <ng-container matColumnDef="Status">
@@ -49,15 +60,14 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            <button mat-icon-button class="status-btn"
-                    (click)="status(element)"
-                    [disabled]="!userAccessService.canEdit()"
-                    [matTooltip]="(element.enabled ? 'DISABLE' : 'ENABLE') | translate">
+            <button mat-icon-button class="status-btn" (click)="status(element)"
+              [disabled]="!userAccessService.canEdit()"
+              [matTooltip]="(element.enabled ? 'DISABLE' : 'ENABLE') | translate">
               <mat-icon [ngClass]="{
-                'status-icon': true,
-                'green': element.enabled,
-                'red': !element.enabled
-              }">fiber_manual_record</mat-icon>
+                  'status-icon': true,
+                  'green': element.enabled,
+                  'red': !element.enabled
+                }">fiber_manual_record</mat-icon>
             </button>
           </td>
         </ng-container>
@@ -139,40 +149,33 @@
           </th>
           <td mat-cell *matCellDef="let element">
             <div class="actions-cell">
-              @if(userAccessService.canEdit()) {
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="assets(element)"
-                      matTooltip="{{ 'ASSETS' | translate }}">
+              @if (userAccessService.canEdit()) {
+              <button mat-icon-button class="action-icon-btn" (click)="assets(element)"
+                [matTooltip]="'ASSETS' | translate">
                 <mat-icon class="text-accent">post_add</mat-icon>
               </button>
               }
 
-              @if(userAccessService.canEdit()) {
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="update(element)"
-                      matTooltip="{{ 'EDIT' | translate }}">
+              @if (userAccessService.canEdit()) {
+              <button mat-icon-button class="action-icon-btn" (click)="update(element)"
+                [matTooltip]="'EDIT' | translate">
                 <mat-icon class="text-primary">edit</mat-icon>
               </button>
               }
 
-              @if(userAccessService.canEdit()) {
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="export(element)"
-                      matTooltip="{{ 'EXPORT' | translate }}">
+              @if (userAccessService.canEdit()) {
+              <button mat-icon-button class="action-icon-btn" (click)="export(element)"
+                [matTooltip]="'EXPORT' | translate">
                 <mat-icon class="text-success">ios_share</mat-icon>
               </button>
               }
 
-              @if(userAccessService.isAdmin()) {
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="delete(element)"
-                      matTooltip="{{ 'DELETE' | translate }}"
-                      style="position: relative;">
-
-                @if(element.nombreSuppressions > 0) {
+              @if (userAccessService.isAdmin()) {
+              <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
+                [matTooltip]="'DELETE' | translate" style="position: relative;">
+                @if (element.nombreSuppressions > 0) {
                 <span class="delete-badge">{{ element.nombreSuppressions }}</span>
                 }
-
                 <mat-icon class="text-danger">delete</mat-icon>
               </button>
               }
@@ -181,16 +184,18 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            [class.granted-row]="row.IsGranted"
-            class="plugin-row"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.granted-row]="row.IsGranted"
+          class="plugin-row"></tr>
       </table>
 
       <!-- Message si aucun plugin -->
-      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+      @if (dataSource().data.length === 0) {
+      <div class="empty-state">
         <mat-icon>extension_off</mat-icon>
         <p>{{ "NO_PLUGINS" | translate }}</p>
       </div>
+      }
     </div>
+    }
   </div>
 </div>

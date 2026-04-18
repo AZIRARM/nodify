@@ -1,49 +1,46 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {Node} from "../../../modeles/Node";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {Value} from "../../../modeles/Value";
-import {MatTableDataSource} from "@angular/material/table";
-import {UserAccessService} from "../../../services/UserAccessService";
+import { Component, Inject, OnDestroy, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import { Node } from "../../../modeles/Node";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { Value } from "../../../modeles/Value";
+import { MatTableDataSource } from "@angular/material/table";
+import { UserAccessService } from "../../../services/UserAccessService";
 import { LoggerService } from 'src/app/services/LoggerService';
 import { LockService } from 'src/app/services/LockService';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import {AuthenticationService} from "../../../services/AuthenticationService";
+import { AuthenticationService } from "../../../services/AuthenticationService";
 
 @Component({
-    selector: 'app-values-dialog',
-    templateUrl: './values-dialog.component.html',
-    styleUrls: ['./values-dialog.component.css'],
-    standalone: false
+  selector: 'app-values-dialog',
+  templateUrl: './values-dialog.component.html',
+  styleUrls: ['./values-dialog.component.css'],
+  standalone: false
 })
 export class ValuesDialogComponent implements OnInit, OnDestroy {
 
-  workingValues: Value[] = [];
-  key: string = '';
-  value: string = '';
-
+  workingValues: WritableSignal<Value[]> = signal<Value[]>([]);
+  key: WritableSignal<string> = signal<string>('');
+  value: WritableSignal<string> = signal<string>('');
   displayedColumns: string[] = ['Key', 'Value', 'Actions'];
-  dataSource: MatTableDataSource<Value>;
-
-  private lockCheckSub: Subscription;
-
-  editingItem: Value | null = null;
+  dataSource: WritableSignal<MatTableDataSource<Value>> = signal(new MatTableDataSource<Value>([]));
+  editingItem: WritableSignal<Value | null> = signal<Value | null>(null);
   originalItemBackup: any = null;
+  private lockCheckSub?: Subscription;
 
-  constructor(
-    public dialogRef: MatDialogRef<ValuesDialogComponent>,
-    public userAccessService: UserAccessService,
-    private loggerService: LoggerService,
-    private lockService: LockService,
-    private translateService: TranslateService,
-    private authenticationService: AuthenticationService,
-    @Inject(MAT_DIALOG_DATA) public node: Node
-  ) {
-    if (node) {
-      if (!node.values) {
-        node.values = [];
+  public dialogRef = inject(MatDialogRef<ValuesDialogComponent>);
+  public userAccessService = inject(UserAccessService);
+  private loggerService = inject(LoggerService);
+  private lockService = inject(LockService);
+  private translateService = inject(TranslateService);
+  private authenticationService = inject(AuthenticationService);
+  private node = inject<Node>(MAT_DIALOG_DATA);
+
+  constructor() {
+    if (this.node) {
+      if (!this.node.values) {
+        this.node.values = [];
       }
-      this.workingValues = node.values.map(v => ({...v}));
+      this.workingValues.set(this.node.values.map(v => ({ ...v })));
     }
   }
 
@@ -52,28 +49,27 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
 
     this.lockService.acquire(this.node.code).subscribe(acquired => {
       if (!acquired) {
-         this.translateService.get("RESOURCE_LOCKED")
-            .subscribe(translation => {
-              this.loggerService.warn(translation);
-            });
+        this.translateService.get("RESOURCE_LOCKED")
+          .subscribe(translation => {
+            this.loggerService.warn(translation);
+          });
         this.dialogRef.close();
       } else {
         this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-         this.translateService.get("RESOURCE_RELEASED")
+          this.translateService.get("RESOURCE_RELEASED")
             .subscribe(translation => {
               this.loggerService.warn(translation);
             });
           this.dialogRef.close();
         });
 
-       this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
-         if (lockInfo.locked) {
-           this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
-             .subscribe(translation => this.loggerService.warn(translation));
-           this.dialogRef.close();
-         }
-       });
-
+        this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+          if (lockInfo.locked) {
+            this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+              .subscribe(translation => this.loggerService.warn(translation));
+            this.dialogRef.close();
+          }
+        });
       }
     });
   }
@@ -90,36 +86,41 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
   }
 
   validate() {
-    this.node.values = this.workingValues;
-    this.dialogRef.close({data: this.node});
+    this.node.values = this.workingValues();
+    this.dialogRef.close({ data: this.node });
   }
 
   remove(key: string) {
-    this.workingValues = this.workingValues.filter(v => v.key !== key);
+    const currentValues = this.workingValues();
+    this.workingValues.set(currentValues.filter(v => v.key !== key));
     this.init();
   }
 
   add() {
-    if (!this.key || !this.value) return;
+    const currentKey = this.key();
+    const currentValue = this.value();
+    if (!currentKey || !currentValue) return;
 
     let val = new Value();
-    val.key = this.key;
-    val.value = this.value;
+    val.key = currentKey;
+    val.value = currentValue;
 
-    this.workingValues.push(val);
+    const currentValues = this.workingValues();
+    currentValues.push(val);
+    this.workingValues.set(currentValues);
     this.init();
     this.resetForm();
   }
 
   startEdit(element: Value) {
-    if (this.editingItem) {
+    if (this.editingItem()) {
       this.cancelEdit();
     }
     this.originalItemBackup = {
       key: element.key,
       value: element.value
     };
-    this.editingItem = element;
+    this.editingItem.set(element);
   }
 
   saveEdit(element: Value) {
@@ -130,7 +131,8 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const keyExists = this.workingValues.some(v =>
+    const currentValues = this.workingValues();
+    const keyExists = currentValues.some(v =>
       v !== element && v.key === element.key
     );
 
@@ -141,22 +143,24 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const index = this.workingValues.findIndex(v => v === element);
+    const index = currentValues.findIndex(v => v === element);
     if (index !== -1) {
-      this.workingValues[index] = element;
+      currentValues[index] = element;
+      this.workingValues.set(currentValues);
       this.init();
     }
 
-    this.editingItem = null;
+    this.editingItem.set(null);
     this.originalItemBackup = null;
   }
 
   cancelEdit() {
-    if (this.editingItem && this.originalItemBackup) {
-      this.editingItem.key = this.originalItemBackup.key;
-      this.editingItem.value = this.originalItemBackup.value;
+    const editingItemValue = this.editingItem();
+    if (editingItemValue && this.originalItemBackup) {
+      editingItemValue.key = this.originalItemBackup.key;
+      editingItemValue.value = this.originalItemBackup.value;
     }
-    this.editingItem = null;
+    this.editingItem.set(null);
     this.originalItemBackup = null;
   }
 
@@ -164,16 +168,18 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
     const newValue = new Value();
     newValue.key = '';
     newValue.value = '';
-    this.workingValues.push(newValue);
+    const currentValues = this.workingValues();
+    currentValues.push(newValue);
+    this.workingValues.set(currentValues);
     this.init();
     this.startEdit(newValue);
   }
 
   hasChanges(): boolean {
-    if (this.editingItem !== null) return true;
+    if (this.editingItem() !== null) return true;
 
     const originalValues = this.node.values || [];
-    const currentValues = this.workingValues || [];
+    const currentValues = this.workingValues() || [];
 
     if (originalValues.length !== currentValues.length) return true;
 
@@ -190,11 +196,11 @@ export class ValuesDialogComponent implements OnInit, OnDestroy {
   }
 
   private init() {
-    this.dataSource = new MatTableDataSource(this.workingValues);
+    this.dataSource.set(new MatTableDataSource(this.workingValues()));
   }
 
   resetForm() {
-    this.key = '';
-    this.value = '';
+    this.key.set('');
+    this.value.set('');
   }
 }

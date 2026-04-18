@@ -19,7 +19,8 @@
   <div mat-dialog-content class="dialog-content">
 
     <!-- Formulaire d'ajout de règle -->
-    <div class="form-section" *ngIf="userAccessService.canEdit()">
+    @if (userAccessService.canEdit()) {
+    <div class="form-section">
       <h3 class="section-title">
         <mat-icon>add_circle</mat-icon>
         {{ 'ADD_RULE' | translate }}
@@ -28,49 +29,45 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field type-field">
           <mat-label>{{ 'TYPE' | translate }}</mat-label>
-          <mat-select [(ngModel)]="ruleType" required>
+          <mat-select [value]="ruleType()" (valueChange)="ruleType.set($event)" required>
             <mat-option value="BOOL">BOOL</mat-option>
             <mat-option value="DATE">DATE</mat-option>
           </mat-select>
           <mat-icon matSuffix>category</mat-icon>
         </mat-form-field>
 
-        <button
-          mat-flat-button
-          class="action-btn"
-          [disabled]="!ruleType"
-          (click)="create()">
+        <button mat-flat-button class="action-btn" [disabled]="!ruleType()" (click)="create()">
           <mat-icon>add</mat-icon>
           <span>{{ 'ADD' | translate }}</span>
         </button>
       </div>
     </div>
+    }
 
     <!-- Liste des règles -->
-    <div class="form-section" *ngIf="rulesConditions && rulesConditions.length > 0">
+    @if (rulesConditions() && rulesConditions().length > 0) {
+    <div class="form-section">
       <h3 class="section-title">
         <mat-icon>list</mat-icon>
         {{ 'RULES_LIST' | translate }}
       </h3>
 
       <div class="rules-list">
-        <div *ngFor="let selected of rulesConditions" class="rule-item">
+        @for (selected of rulesConditions(); track selected.code) {
+        <div class="rule-item">
 
           <!-- Ligne de règle -->
           <div class="rule-row">
             <!-- Nom de la règle -->
             <mat-form-field appearance="outline" class="rule-field name-field">
               <mat-label>{{ 'RULE_NAME' | translate }}</mat-label>
-              <input
-                matInput
-                [(ngModel)]="selected.name"
-                placeholder="{{ 'RULE_NAME' | translate }}"
-                [disabled]="!selected.editable"
-              >
+              <input matInput [(ngModel)]="selected.name" placeholder="{{ 'RULE_NAME' | translate }}"
+                [disabled]="!selected.editable">
             </mat-form-field>
 
             <!-- Opérateur (pour les types non-BOOL) -->
-            <mat-form-field appearance="outline" class="rule-field operator-field" *ngIf="selected.type !== 'BOOL'">
+            @if (selected.type !== 'BOOL') {
+            <mat-form-field appearance="outline" class="rule-field operator-field">
               <mat-label>{{ 'OPERATOR' | translate }}</mat-label>
               <mat-select [(ngModel)]="selected.operator" [disabled]="!userAccessService.canEdit()">
                 <mat-option value="EQ">=</mat-option>
@@ -81,69 +78,71 @@
                 <mat-option value="DIF">≠</mat-option>
               </mat-select>
             </mat-form-field>
+            }
 
             <!-- Valeur (pour les dates) -->
-            <mat-form-field appearance="outline" class="rule-field value-field" *ngIf="selected.type === 'DATE'">
+            @if (selected.type === 'DATE') {
+            <mat-form-field appearance="outline" class="rule-field value-field">
               <mat-label>{{ 'VALUE' | translate }}</mat-label>
-              <input
-                matInput
-                type="datetime-local"
-                [(ngModel)]="selected.value"
-                (ngModelChange)="updateBehavior(selected)"
-                [disabled]="!userAccessService.canEdit()"
-              >
+              <input matInput type="datetime-local" [(ngModel)]="selected.value"
+                (ngModelChange)="updateBehavior(selected)" [disabled]="!userAccessService.canEdit()">
             </mat-form-field>
+            }
 
             <!-- Comportement -->
             <mat-form-field appearance="outline" class="rule-field behavior-field">
               <mat-label>{{ 'BEHAVIOR' | translate }}</mat-label>
               <mat-select [(ngModel)]="selected.behavior" [disabled]="!userAccessService.canEdit()">
-                <mat-option *ngIf="node?.hasOwnProperty('contents')" [value]="true">
+                @if (node?.hasOwnProperty('contents')) {
+                <mat-option [value]="true">
                   {{ 'ENABLE_NODE' | translate }}
                 </mat-option>
-                <mat-option *ngIf="node?.hasOwnProperty('contents')" [value]="false">
+                <mat-option [value]="false">
                   {{ 'DISABLE_NODE' | translate }}
                 </mat-option>
-                <mat-option *ngIf="!node?.hasOwnProperty('contents')" [value]="true">
+                }
+                @if (!node?.hasOwnProperty('contents')) {
+                <mat-option [value]="true">
                   {{ 'ENABLE_CONTENT' | translate }}
                 </mat-option>
-                <mat-option *ngIf="!node?.hasOwnProperty('contents')" [value]="false">
+                <mat-option [value]="false">
                   {{ 'DISABLE_CONTENT' | translate }}
                 </mat-option>
+                }
               </mat-select>
             </mat-form-field>
 
             <!-- Checkbox d'activation -->
-            <div class="checkbox-cell"
-                 *ngIf="(selected.type=='BOOL') || (selected.operator && selected.value && selected.type=='DATE')">
-              <mat-checkbox
-                class="rule-activate-checkbox"
-                color="primary"
-                [(ngModel)]="selected.enable"
+            @if ((selected.type=='BOOL') || (selected.operator && selected.value && selected.type=='DATE')) {
+            <div class="checkbox-cell">
+              <mat-checkbox class="rule-activate-checkbox" color="primary" [(ngModel)]="selected.enable"
                 [disabled]="!userAccessService.canEdit()">
                 {{ 'ACTIVATE_RULE' | translate }}
               </mat-checkbox>
             </div>
+            }
 
             <!-- Bouton supprimer -->
-            <button
-              mat-icon-button
-              class="delete-rule-btn"
-              *ngIf="selected.erasable"
-              (click)="remove(selected)"
-              matTooltip="{{ 'DELETE_RULE' | translate }}">
+            @if (selected.erasable) {
+            <button mat-icon-button class="delete-rule-btn" (click)="remove(selected)"
+              [matTooltip]="'DELETE_RULE' | translate">
               <mat-icon>delete</mat-icon>
             </button>
+            }
           </div>
         </div>
+        }
       </div>
     </div>
+    }
 
     <!-- Message si aucune règle -->
-    <div class="empty-state" *ngIf="!rulesConditions || rulesConditions.length === 0">
+    @if (!rulesConditions() || rulesConditions().length === 0) {
+    <div class="empty-state">
       <mat-icon>rule_folder</mat-icon>
       <p>{{ 'NO_RULES' | translate }}</p>
     </div>
+    }
   </div>
 
   <!-- Actions -->
@@ -152,14 +151,11 @@
       <mat-icon>close</mat-icon>
       {{ "CANCEL" | translate }}
     </button>
-    <button
-      mat-flat-button
-      class="save-btn"
-      (click)="validate()"
-      *ngIf="canSave() && userAccessService.canEdit()"
-    >
+    @if (canSave() && userAccessService.canEdit()) {
+    <button mat-flat-button class="save-btn" (click)="validate()">
       <mat-icon>save</mat-icon>
       {{ "SAVE" | translate }}
     </button>
+    }
   </div>
 </div>
