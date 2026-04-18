@@ -80,7 +80,7 @@
 }
 
 /* ===== ACTIONS DE L'EN-TÊTE ===== */
-  .header-actions {
+.header-actions {
   display: flex;
   margin-left: auto;
   justify-content: flex-end;
@@ -226,7 +226,8 @@
   }
 }
 
-.date-cell, .user-cell {
+.date-cell,
+.user-cell {
   font-size: 0.75rem;
 }
 
@@ -319,9 +320,17 @@
 
 /* ===== ICÔNES DE STATUT ===== */
 .status-icon {
-  &.green { color: var(--table-success); }
-  &.yellow { color: var(--table-warning); }
-  &.red { color: var(--table-danger); }
+  &.green {
+    color: var(--table-success);
+  }
+
+  &.yellow {
+    color: var(--table-warning);
+  }
+
+  &.red {
+    color: var(--table-danger);
+  }
 }
 
 /* ===== UTILITAIRES ===== */
@@ -349,10 +358,19 @@
     border-color: var(--table-border);
 
     .breadcrumb {
-      .breadcrumb-icon { color: var(--table-accent-light); }
+      .breadcrumb-icon {
+        color: var(--table-accent-light);
+      }
+
       .breadcrumb-text {
-        &.no-parent { color: var(--table-accent-light); }
-        .breadcrumb-label { color: #999; }
+        &.no-parent {
+          color: var(--table-accent-light);
+        }
+
+        .breadcrumb-label {
+          color: #999;
+        }
+
         .breadcrumb-value {
           color: var(--table-accent-light);
           background: rgba(92, 107, 192, 0.15);
@@ -362,12 +380,18 @@
   }
 
   .name-cell {
-    .node-name { color: var(--table-text-primary); }
+    .node-name {
+      color: var(--table-text-primary);
+    }
+
     .node-code {
       background: var(--table-bg-row-hover);
       color: var(--table-text-secondary);
     }
-    .node-description { color: #aaa; }
+
+    .node-description {
+      color: #aaa;
+    }
   }
 
   .lock-info {
@@ -437,7 +461,22 @@
     margin: 0;
   }
 }
+
 .header-content {
   display: flex;
   align-items: center;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+}
+
+.loading-state p {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.6);
 }

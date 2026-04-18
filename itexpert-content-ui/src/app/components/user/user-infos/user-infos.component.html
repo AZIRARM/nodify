@@ -16,8 +16,8 @@
   <div class="dialog-content">
 
     <!-- Carte d'informations utilisateur -->
-    <div class="user-info-card" *ngIf="user">
-
+    @if (user()) {
+    <div class="user-info-card">
       <!-- Avatar / Icône -->
       <div class="user-avatar">
         <mat-icon>person</mat-icon>
@@ -25,14 +25,13 @@
 
       <!-- Informations -->
       <div class="user-details">
-
         <!-- Prénom -->
         <div class="info-row">
           <div class="info-label">
             <mat-icon>badge</mat-icon>
             <span>{{ "USER_FIRSTNAME" | translate }}</span>
           </div>
-          <div class="info-value">{{ user.firstname }}</div>
+          <div class="info-value">{{ user().firstname }}</div>
         </div>
 
         <!-- Nom -->
@@ -41,7 +40,7 @@
             <mat-icon>badge</mat-icon>
             <span>{{ "USER_LASTNAME" | translate }}</span>
           </div>
-          <div class="info-value">{{ user.lastname }}</div>
+          <div class="info-value">{{ user().lastname }}</div>
         </div>
 
         <!-- Email -->
@@ -50,7 +49,7 @@
             <mat-icon>email</mat-icon>
             <span>{{ "USER_EMAIL" | translate }}</span>
           </div>
-          <div class="info-value">{{ user.email }}</div>
+          <div class="info-value">{{ user().email }}</div>
         </div>
 
         <!-- Rôles -->
@@ -61,33 +60,30 @@
           </div>
           <div class="info-value">
             <div class="roles-container">
-              <span class="role-badge" *ngFor="let role of user.roles">
-                {{ role | translate }}
-              </span>
+              @for (role of user().roles; track role) {
+              <span class="role-badge">{{ role | translate }}</span>
+              }
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- Actions -->
       <div class="user-actions">
-        <button
-          mat-flat-button
-          class="change-password-btn"
-          (click)="changePassword()">
+        <button mat-flat-button class="change-password-btn" (click)="changePassword()">
           <mat-icon>lock</mat-icon>
           {{ "CHANGE_PASSWORD" | translate }}
         </button>
       </div>
-
     </div>
+    }
 
     <!-- Message si utilisateur non trouvé -->
-    <div class="empty-state" *ngIf="!user">
+    @if (!user()) {
+    <div class="empty-state">
       <mat-icon>person_off</mat-icon>
       <p>{{ "USER_NOT_FOUND" | translate }}</p>
     </div>
-
+    }
   </div>
 </div>

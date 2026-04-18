@@ -4,7 +4,6 @@
     <div class="subscribe-header">
         <div class="header-content">
             <div class="header-left-section">
-
                 <div class="header-icon">
                     <mat-icon>person_add</mat-icon>
                 </div>
@@ -19,66 +18,68 @@
                     {{ "LOGIN" | translate }}
                 </button>
             </div>
-
         </div>
     </div>
 
     <!-- Contenu principal (avec espace pour le footer) -->
     <div class="subscribe-content">
-
-
-
-        <div class="subscribe-content">
-            <div class="subscribe-card">
-
-                <div class="logo-container">
-                    <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'SUBSCRIBE' | translate }}">
-                </div>
-
-                <div class="form-container">
-
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>{{ "USER_FIRSTNAME" | translate }}</mat-label>
-                        <input matInput type="text" [(ngModel)]="userSubscribe.firstname"
-                            placeholder="{{ 'USER_FIRSTNAME' | translate }}" required>
-                        <mat-icon matSuffix>person</mat-icon>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>{{ "USER_LASTNAME" | translate }}</mat-label>
-                        <input matInput type="text" [(ngModel)]="userSubscribe.lastname"
-                            placeholder="{{ 'USER_LASTNAME' | translate }}" required>
-                        <mat-icon matSuffix>badge</mat-icon>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>{{ "EMAIL" | translate }}</mat-label>
-                        <input matInput type="email" [(ngModel)]="userSubscribe.email"
-                            placeholder="{{ 'EMAIL' | translate }}" required>
-                        <mat-icon matSuffix>email</mat-icon>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>{{ "PASSWORD" | translate }}</mat-label>
-                        <input matInput type="password" [(ngModel)]="userSubscribe.password"
-                            placeholder="{{ 'PASSWORD' | translate }}" required (keydown.enter)="subscribe()">
-                        <mat-icon matSuffix>lock</mat-icon>
-                    </mat-form-field>
-
-                </div>
-
-                <div class="subscribe-actions">
-                    <button mat-stroked-button class="cancel-btn" (click)="cancel()">
-                        <mat-icon>close</mat-icon>
-                        {{ "CANCEL" | translate }}
-                    </button>
-                    <button mat-flat-button class="login-btn" (click)="subscribe()"
-                        [disabled]="!userSubscribe.email || !userSubscribe.password || !userSubscribe.firstname || !userSubscribe.lastname">
-                        <mat-icon>how_to_reg</mat-icon>
-                        {{ "REGISTER" | translate }}
-                    </button>
-                </div>
-
+        <div class="subscribe-card">
+            <div class="logo-container">
+                <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'SUBSCRIBE' | translate }}">
             </div>
+
+            <!-- Indicateur de chargement -->
+            @if (isLoading()) {
+            <div class="loading-container">
+                <mat-spinner diameter="40"></mat-spinner>
+                <p>{{ 'LOADING' | translate }}</p>
+            </div>
+            }
+
+            <!-- Formulaire -->
+            @if (!isLoading()) {
+            <div class="form-container">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ "USER_FIRSTNAME" | translate }}</mat-label>
+                    <input matInput type="text" [(ngModel)]="userSubscribe().firstname"
+                        [placeholder]="'USER_FIRSTNAME' | translate" required>
+                    <mat-icon matSuffix>person</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ "USER_LASTNAME" | translate }}</mat-label>
+                    <input matInput type="text" [(ngModel)]="userSubscribe().lastname"
+                        [placeholder]="'USER_LASTNAME' | translate" required>
+                    <mat-icon matSuffix>badge</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ "EMAIL" | translate }}</mat-label>
+                    <input matInput type="email" [(ngModel)]="userSubscribe().email" [placeholder]="'EMAIL' | translate"
+                        required>
+                    <mat-icon matSuffix>email</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ "PASSWORD" | translate }}</mat-label>
+                    <input matInput type="password" [(ngModel)]="userSubscribe().password"
+                        [placeholder]="'PASSWORD' | translate" required (keydown.enter)="subscribe()">
+                    <mat-icon matSuffix>lock</mat-icon>
+                </mat-form-field>
+            </div>
+
+            <div class="subscribe-actions">
+                <button mat-stroked-button class="cancel-btn" (click)="cancel()">
+                    <mat-icon>close</mat-icon>
+                    {{ "CANCEL" | translate }}
+                </button>
+                <button mat-flat-button class="login-btn" (click)="subscribe()"
+                    [disabled]="!userSubscribe().email || !userSubscribe().password || !userSubscribe().firstname || !userSubscribe().lastname">
+                    <mat-icon>how_to_reg</mat-icon>
+                    {{ "REGISTER" | translate }}
+                </button>
+            </div>
+            }
         </div>
     </div>
+</div>

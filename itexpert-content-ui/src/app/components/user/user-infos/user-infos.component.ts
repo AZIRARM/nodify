@@ -1,26 +1,24 @@
-import {Component, OnInit} from '@angular/core';
-import {User} from "../../../modeles/User";
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {PasswordDialogComponent} from "../password-dialog/password-dialog.component";
-import {UserAccessService} from "../../../services/UserAccessService";
+import { Component, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import { User } from "../../../modeles/User";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { PasswordDialogComponent } from "../password-dialog/password-dialog.component";
+import { UserAccessService } from "../../../services/UserAccessService";
 
 @Component({
-    selector: 'app-user-infos',
-    templateUrl: './user-infos.component.html',
-    styleUrls: ['./user-infos.component.css'],
-    standalone: false
+  selector: 'app-user-infos',
+  templateUrl: './user-infos.component.html',
+  styleUrls: ['./user-infos.component.css'],
+  standalone: false
 })
 export class UserInfosComponent implements OnInit {
-  user: User;
+  user: WritableSignal<User> = signal<User>({} as User);
   dialogRef: MatDialogRef<PasswordDialogComponent>;
 
-  constructor(
-    private dialog: MatDialog,
-    private userAccessService: UserAccessService
-  ) {}
+  private dialog = inject(MatDialog);
+  private userAccessService = inject(UserAccessService);
 
   ngOnInit() {
-    this.user = this.userAccessService.getCurrentUser();
+    this.user.set(this.userAccessService.getCurrentUser());
   }
 
   changePassword() {
