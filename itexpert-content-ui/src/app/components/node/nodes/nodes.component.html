@@ -11,9 +11,9 @@
       </div>
     </div>
 
-    @if (userAccessService.canEdit()) {
+    @if(userAccessService.canEdit()) {
     <div class="header-actions">
-      @if (parentNode()) {
+      @if(parentNode()) {
       <button mat-mini-fab class="action-btn secondary-btn" (click)="back()"
         [matTooltip]="'BACK_TO_PARENT_NODE' | translate">
         <mat-icon>arrow_back</mat-icon>
@@ -26,20 +26,18 @@
           <mat-icon>delete_sweep</mat-icon>
         </button>
 
-        @if (totalDeleteds() > 0) {
+        @if(totalDeleteds() > 0) {
         <span class="deleted-badge-over">{{ totalDeleteds() }}</span>
         }
       </div>
 
-      @if (userAccessService.canEdit()) {
       <button mat-mini-fab class="action-btn primary-btn" (click)="fileInput.click()"
         [matTooltip]="'IMPORT' | translate">
         <mat-icon>cloud_upload</mat-icon>
       </button>
-      }
       <input hidden #fileInput type="file" id="file" (change)="import($event.target)">
 
-      @if ((parentNode() && userAccessService.canEdit()) || (!parentNode() && userAccessService.isAdmin())) {
+      @if((parentNode() && userAccessService.canEdit()) || (!parentNode() && userAccessService.isAdmin())) {
       <button mat-fab class="create-fab" (click)="create()" [matTooltip]="'NODE_CREATE' | translate">
         <mat-icon>add</mat-icon>
       </button>
@@ -48,16 +46,7 @@
     }
   </div>
 
-  <!-- Indicateur de chargement -->
-  @if (isLoading()) {
-  <div class="loading-state">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>{{ 'LOADING' | translate }}</p>
-  </div>
-  }
-
   <!-- Tableau -->
-  @if (!isLoading()) {
   <div class="table-wrapper">
     <table mat-table [dataSource]="dataSource()" class="modern-table">
 
@@ -70,13 +59,11 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let element">
-          @if (userAccessService.canEdit()) {
-          @if (element.lockInfo && !element.lockInfo.locked) {
+          @if(userAccessService.canEdit()) {
           <button mat-icon-button class="status-btn" (click)="gotoPublished(element)"
-            [matTooltip]="'PUBLICATION_STATUS' | translate">
+            *ngIf="element.lockInfo && !element.lockInfo.locked" [matTooltip]="'PUBLICATION_STATUS' | translate">
             <mat-icon [class]="'status-icon ' + getPublishedIcon(element)">fiber_manual_record</mat-icon>
           </button>
-          }
           } @else {
           <mat-icon [class]="'status-icon ' + getPublishedIcon(element)">fiber_manual_record</mat-icon>
           }
@@ -110,16 +97,16 @@
               <span class="node-name" [title]="element.name + ', ' + ('CODE'|translate) + ': ' + element.code">
                 {{ element.name }}
               </span>
-              @if (element.code !== element.name) {
+              @if(element.code !== element.name) {
               <span class="node-code">({{ element.code }})</span>
               }
             </div>
-            @if (element.lockInfo && !element.lockInfo.locked) {
+            @if(element.lockInfo && !element.lockInfo.locked) {
             <div class="node-description">
               <i>{{ element.description }}</i>
             </div>
             }
-            @if (element.lockInfo && element.lockInfo.locked) {
+            @if(element.lockInfo && element.lockInfo.locked) {
             <div class="lock-info">
               <mat-icon class="lock-icon">lock</mat-icon>
               <span>{{ 'LOCKED_BY' | translate }} {{ element.lockInfo.owner }}</span>
@@ -164,7 +151,7 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let element">
-          @if (element.lockInfo && !element.lockInfo.locked) {
+          @if(element.lockInfo && !element.lockInfo.locked) {
           <button mat-icon-button class="action-icon-btn" (click)="translations(element)"
             [matTooltip]="'TRANSLATIONS' | translate">
             <mat-icon [class.text-warning]="element.translations?.length > 0">flag</mat-icon>
@@ -182,7 +169,7 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let element">
-          @if (element.lockInfo && !element.lockInfo.locked) {
+          @if(element.lockInfo && !element.lockInfo.locked) {
           <button mat-icon-button class="action-icon-btn" (click)="rules(element)" [matTooltip]="'RULES' | translate">
             <mat-icon [class.text-warning]="element.rules?.length > 0">list</mat-icon>
           </button>
@@ -199,7 +186,7 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let element">
-          @if (element.lockInfo && !element.lockInfo.locked) {
+          @if(element.lockInfo && !element.lockInfo.locked) {
           <button mat-icon-button class="action-icon-btn" (click)="values(element)" [matTooltip]="'VALUES' | translate">
             <mat-icon [class.text-warning]="element.values?.length > 0">payments</mat-icon>
           </button>
@@ -248,7 +235,7 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let element">
-          @if (userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked) {
+          @if(userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked) {
           <button mat-icon-button class="action-icon-btn success-btn" (click)="publish(element)"
             [matTooltip]="'DEPLOY_VERSION' | translate">
             <mat-icon>play_arrow</mat-icon>
@@ -274,14 +261,14 @@
             </button>
 
             <!-- Vue -->
-            @if ((parentNode() && userAccessService.canEdit()) || userAccessService.isAdmin()) {
+            @if((parentNode() && userAccessService.canEdit()) || userAccessService.isAdmin()) {
             <button mat-icon-button class="action-icon-btn" (click)="view(element)" [matTooltip]="'VIEW' | translate">
               <mat-icon class="text-info">visibility</mat-icon>
             </button>
             }
 
             <!-- Édition -->
-            @if (((parentNode() && userAccessService.canEdit()) || userAccessService.isAdmin()) && element.lockInfo &&
+            @if(((parentNode() && userAccessService.canEdit()) || userAccessService.isAdmin()) && element.lockInfo &&
             !element.lockInfo.locked) {
             <button mat-icon-button class="action-icon-btn" (click)="update(element)" [matTooltip]="'EDIT' | translate">
               <mat-icon class="text-primary">edit</mat-icon>
@@ -289,7 +276,7 @@
             }
 
             <!-- Export -->
-            @if (userAccessService.canEdit()) {
+            @if(userAccessService.canEdit()) {
             <button mat-icon-button class="action-icon-btn" (click)="export(element,'')"
               [matTooltip]="'EXPORT' | translate">
               <mat-icon class="text-accent">ios_share</mat-icon>
@@ -297,7 +284,7 @@
             }
 
             <!-- Déploiement -->
-            @if (userAccessService.canEdit() && parentNode() && element.lockInfo && !element.lockInfo.locked) {
+            @if(userAccessService.canEdit() && parentNode() && element.lockInfo && !element.lockInfo.locked) {
             <button mat-icon-button class="action-icon-btn" [matMenuTriggerFor]="deployNodeMenu"
               [matTooltip]="'DEPLOY_ENVIRONMENT' | translate">
               <mat-icon class="text-success">share</mat-icon>
@@ -314,7 +301,7 @@
             </mat-menu>
 
             <!-- Suppression -->
-            @if (((parentNode() && userAccessService.canEdit()) || userAccessService.isAdmin()) && element.lockInfo &&
+            @if(((parentNode() && userAccessService.canEdit()) || userAccessService.isAdmin()) && element.lockInfo &&
             !element.lockInfo.locked) {
             <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
               [matTooltip]="'DELETE' | translate">
@@ -323,7 +310,7 @@
             }
 
             <!-- Favori -->
-            @if (((userAccessService.canEdit() && parentNode()) || userAccessService.isAdmin()) && element.lockInfo &&
+            @if(((userAccessService.canEdit() && parentNode()) || userAccessService.isAdmin()) && element.lockInfo &&
             !element.lockInfo.locked) {
             <button mat-icon-button class="action-icon-btn" (click)="favorite(element)"
               [matTooltip]="'FAVORITE' | translate">
@@ -341,7 +328,7 @@
         class="modern-row"></tr>
     </table>
 
-    <div class="empty-state" @if (dataSource().data.length===0)>
+    <div class="empty-state" *ngIf="dataSource().data.length === 0">
       <mat-icon>extension</mat-icon>
       <p>{{ "NO_NODES" | translate }}</p>
     </div>
@@ -351,5 +338,4 @@
       [showFirstLastButtons]="true" (page)="onPageChange($event)" class="modern-paginator">
     </mat-paginator>
   </div>
-  }
 </div>
