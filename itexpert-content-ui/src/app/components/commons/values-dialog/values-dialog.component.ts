@@ -11,9 +11,10 @@ import { Subscription } from 'rxjs';
 import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
-  selector: 'app-values-dialog',
-  templateUrl: './values-dialog.component.html',
-  styleUrls: ['./values-dialog.component.css']
+    selector: 'app-values-dialog',
+    templateUrl: './values-dialog.component.html',
+    styleUrls: ['./values-dialog.component.css'],
+    standalone: false
 })
 export class ValuesDialogComponent implements OnInit, OnDestroy {
 

@@ -10,9 +10,10 @@ import { interval, Subscription } from 'rxjs';
 import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
-  selector: 'app-node-rules-conditions-dialog',
-  templateUrl: './node-rules-conditions-dialog.component.html',
-  styleUrls: ['./node-rules-conditions-dialog.component.css']
+    selector: 'app-node-rules-conditions-dialog',
+    templateUrl: './node-rules-conditions-dialog.component.html',
+    styleUrls: ['./node-rules-conditions-dialog.component.css'],
+    standalone: false
 })
 export class NodeRulesConditionsDialogComponent implements OnInit, OnDestroy {
 

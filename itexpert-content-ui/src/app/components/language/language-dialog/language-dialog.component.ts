@@ -3,9 +3,10 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Language} from "../../../modeles/Language";
 
 @Component({
-  selector: 'app-language-dialog',
-  templateUrl: './language-dialog.component.html',
-  styleUrls: ['./language-dialog.component.css']
+    selector: 'app-language-dialog',
+    templateUrl: './language-dialog.component.html',
+    styleUrls: ['./language-dialog.component.css'],
+    standalone: false
 })
 export class LanguageDialogComponent {
 

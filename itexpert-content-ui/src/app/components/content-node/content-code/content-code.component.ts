@@ -12,9 +12,10 @@ import { interval, Subscription } from 'rxjs';
 import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
-  selector: 'app-code-dialog',
-  templateUrl: './content-code.component.html',
-  styleUrls: ['./content-code.component.css']
+    selector: 'app-code-dialog',
+    templateUrl: './content-code.component.html',
+    styleUrls: ['./content-code.component.css'],
+    standalone: false
 })
 export class ContentCodeComponent implements OnInit, OnDestroy {
   @Input() @Output() node: Node;

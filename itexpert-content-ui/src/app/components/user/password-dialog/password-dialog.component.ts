@@ -7,9 +7,10 @@ import {UserService} from "../../../services/UserService";
 import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
-  selector: 'app-password-dialog',
-  templateUrl: './password-dialog.component.html',
-  styleUrls: ['./password-dialog.component.css']
+    selector: 'app-password-dialog',
+    templateUrl: './password-dialog.component.html',
+    styleUrls: ['./password-dialog.component.css'],
+    standalone: false
 })
 export class PasswordDialogComponent implements OnInit {
 

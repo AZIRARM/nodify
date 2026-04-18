@@ -12,9 +12,10 @@ import {PluginFile} from "../../../modeles/PluginFile";
 import {PluginFileService} from "../../../services/PluginFileService";
 
 @Component({
-  selector: 'app-plugin-files-dialog',
-  templateUrl: './plugin-files-dialog.component.html',
-  styleUrl: './plugin-files-dialog.component.css'
+    selector: 'app-plugin-files-dialog',
+    templateUrl: './plugin-files-dialog.component.html',
+    styleUrl: './plugin-files-dialog.component.css',
+    standalone: false
 })
 export class PluginFilesDialogComponent implements OnInit {
   user: User;

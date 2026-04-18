@@ -7,9 +7,10 @@ import { LoggerService } from "../../../services/LoggerService";
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.css'],
+    standalone: false
 })
 export class LoginComponent {
   userLogin: UserLogin = new UserLogin();

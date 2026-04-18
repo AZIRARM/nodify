@@ -12,9 +12,10 @@ import { Subscription } from 'rxjs';
 import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
-  selector: 'app-translations-dialog',
-  templateUrl: './translations-dialog.component.html',
-  styleUrls: ['./translations-dialog.component.css']
+    selector: 'app-translations-dialog',
+    templateUrl: './translations-dialog.component.html',
+    styleUrls: ['./translations-dialog.component.css'],
+    standalone: false
 })
 export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   data: any;

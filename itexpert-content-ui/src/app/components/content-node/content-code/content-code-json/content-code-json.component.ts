@@ -4,9 +4,10 @@ import {ContentNode} from "../../../../modeles/ContentNode";
 import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
 
 @Component({
-  selector: 'app-content-code-json',
-  templateUrl: './content-code-json.component.html',
-  styleUrl: './content-code-json.component.css'
+    selector: 'app-content-code-json',
+    templateUrl: './content-code-json.component.html',
+    styleUrl: './content-code-json.component.css',
+    standalone: false
 })
 export class ContentCodeJsonComponent implements AfterViewInit{
 

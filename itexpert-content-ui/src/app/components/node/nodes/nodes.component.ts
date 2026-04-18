@@ -31,9 +31,10 @@ import { interval, Subscription } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
-  selector: 'app-nodes',
-  templateUrl: './nodes.component.html',
-  styleUrls: ['./nodes.component.css']
+    selector: 'app-nodes',
+    templateUrl: './nodes.component.html',
+    styleUrls: ['./nodes.component.css'],
+    standalone: false
 })
 export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   displayedColumns: string[] = ['Status', 'Name', 'Version', 'Last Modification', 'Modified by', 'Translations', 'Rules', 'Values', 'Subnodes', 'Contents', 'Publication', 'Actions'];

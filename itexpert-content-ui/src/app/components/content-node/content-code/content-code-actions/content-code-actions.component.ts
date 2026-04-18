@@ -9,9 +9,10 @@ import { tap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 
 @Component({
-  selector: 'app-content-code-actions',
-  templateUrl: './content-code-actions.component.html',
-  styleUrl: './content-code-actions.component.css'
+    selector: 'app-content-code-actions',
+    templateUrl: './content-code-actions.component.html',
+    styleUrl: './content-code-actions.component.css',
+    standalone: false
 })
 export class ContentCodeActionsComponent implements AfterViewInit {
 

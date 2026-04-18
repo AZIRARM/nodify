@@ -28,9 +28,10 @@ export interface PublicationItem {
 }
 
 @Component({
-  selector: 'app-published-items-dialog',
-  templateUrl: './published-items-dialog.component.html',
-  styleUrls: ['./published-items-dialog.component.css']
+    selector: 'app-published-items-dialog',
+    templateUrl: './published-items-dialog.component.html',
+    styleUrls: ['./published-items-dialog.component.css'],
+    standalone: false
 })
 export class PublishedItemsDialogComponent implements OnInit {
 

@@ -28,9 +28,10 @@ export interface DeletableItem {
 }
 
 @Component({
-  selector: 'app-deleted-items-dialog',
-  templateUrl: './deleted-items-dialog.component.html',
-  styleUrls: ['./deleted-items-dialog.component.css']
+    selector: 'app-deleted-items-dialog',
+    templateUrl: './deleted-items-dialog.component.html',
+    styleUrls: ['./deleted-items-dialog.component.css'],
+    standalone: false
 })
 export class DeletedItemsDialogComponent implements OnInit {
 

@@ -34,9 +34,10 @@ import { interval, Subscription } from 'rxjs';
 import {AuthenticationService} from "../../../services/AuthenticationService";
 
 @Component({
-  selector: 'app-node-content-dialog',
-  templateUrl: './content-node-dialog.component.html',
-  styleUrls: ['./content-node-dialog.component.css']
+    selector: 'app-node-content-dialog',
+    templateUrl: './content-node-dialog.component.html',
+    styleUrls: ['./content-node-dialog.component.css'],
+    standalone: false
 })
 export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   user: User;

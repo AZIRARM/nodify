@@ -12,9 +12,10 @@ import {Plugin} from "../../../modeles/Plugin";
 import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
-  selector: 'app-deleted-plugins-dialog',
-  templateUrl: './deleted-plugins-dialog.component.html',
-  styleUrl: './deleted-plugins-dialog.component.css'
+    selector: 'app-deleted-plugins-dialog',
+    templateUrl: './deleted-plugins-dialog.component.html',
+    styleUrl: './deleted-plugins-dialog.component.css',
+    standalone: false
 })
 export class DeletedPluginsDialogComponent implements OnInit {
   user: any;

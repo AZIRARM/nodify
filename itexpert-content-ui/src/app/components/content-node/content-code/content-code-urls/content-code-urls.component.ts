@@ -4,9 +4,10 @@ import { ContentNode } from "../../../../modeles/ContentNode";
 import { ContentUrl } from "../../../../modeles/ContentUrl";
 
 @Component({
-  selector: 'app-content-code-urls',
-  templateUrl: './content-code-urls.component.html',
-  styleUrl: './content-code-urls.component.css'
+    selector: 'app-content-code-urls',
+    templateUrl: './content-code-urls.component.html',
+    styleUrl: './content-code-urls.component.css',
+    standalone: false
 })
 export class ContentCodeUrlsComponent {
 

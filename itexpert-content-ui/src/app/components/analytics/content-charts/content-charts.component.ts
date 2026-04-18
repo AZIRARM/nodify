@@ -6,9 +6,10 @@ import {forkJoin, Observable, of, switchMap} from "rxjs";
 import {map} from "rxjs/operators";
 
 @Component({
-  selector: 'app-content-charts',
-  templateUrl: './content-charts.component.html',
-  styleUrls: ['./content-charts.component.css']
+    selector: 'app-content-charts',
+    templateUrl: './content-charts.component.html',
+    styleUrls: ['./content-charts.component.css'],
+    standalone: false
 })
 export class ContentChartsComponent implements OnInit {
 

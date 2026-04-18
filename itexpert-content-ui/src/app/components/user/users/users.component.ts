@@ -10,9 +10,10 @@ import { ValidationDialogComponent } from "../../commons/validation-dialog/valid
 import { UserAccessService } from "../../../services/UserAccessService";
 
 @Component({
-  selector: 'app-users',
-  templateUrl: './users.component.html',
-  styleUrls: ['./users.component.css']
+    selector: 'app-users',
+    templateUrl: './users.component.html',
+    styleUrls: ['./users.component.css'],
+    standalone: false
 })
 export class UsersComponent implements OnInit {
   displayedColumns: string[] = ['Firstname', 'Lastname', 'Email', 'Role', 'Actions'];

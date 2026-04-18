@@ -3,9 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-helps',
-  templateUrl: './helps.component.html',
-  styleUrls: ['./helps.component.css']
+    selector: 'app-helps',
+    templateUrl: './helps.component.html',
+    styleUrls: ['./helps.component.css'],
+    standalone: false
 })
 export class HelpsComponent implements OnInit {
   developerMarkdown: string = '';

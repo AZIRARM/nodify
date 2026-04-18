@@ -8,9 +8,10 @@ import {ThemeService} from "../../../services/ThemeService";
 import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
-  selector: 'app-user-parameters',
-  templateUrl: './user-parameters.component.html',
-  styleUrls: ['./user-parameters.component.css']
+    selector: 'app-user-parameters',
+    templateUrl: './user-parameters.component.html',
+    styleUrls: ['./user-parameters.component.css'],
+    standalone: false
 })
 export class UserParametersComponent implements OnInit {
   parameters: Parameters;

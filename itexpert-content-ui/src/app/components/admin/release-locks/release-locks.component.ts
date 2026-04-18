@@ -10,9 +10,10 @@ import { NodeService } from 'src/app/services/NodeService';
 import { ContentNodeService } from 'src/app/services/ContentNodeService';
 
 @Component({
-  selector: 'app-release-locks',
-  templateUrl: './release-locks.component.html',
-  styleUrls: ['./release-locks.component.css']
+    selector: 'app-release-locks',
+    templateUrl: './release-locks.component.html',
+    styleUrls: ['./release-locks.component.css'],
+    standalone: false
 })
 export class ReleaseLocksComponent implements OnInit {
 

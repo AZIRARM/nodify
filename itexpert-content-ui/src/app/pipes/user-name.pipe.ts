@@ -3,7 +3,8 @@ import {UserService} from "../services/UserService";
 import {AsyncPipe} from "@angular/common";
 
 @Pipe({
-  name: 'userName'
+    name: 'userName',
+    standalone: false
 })
 export class UserNamePipe implements PipeTransform {
 

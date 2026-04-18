@@ -6,9 +6,10 @@ import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
 import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-content-code-html',
-  templateUrl: './content-code-html.component.html',
-  styleUrl: './content-code-html.component.css'
+    selector: 'app-content-code-html',
+    templateUrl: './content-code-html.component.html',
+    styleUrl: './content-code-html.component.css',
+    standalone: false
 })
 export class ContentCodeHtmlComponent implements AfterViewInit {
 

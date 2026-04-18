@@ -2,9 +2,10 @@ import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 
 @Component({
-  selector: 'app-validation-dialog',
-  templateUrl: './validation-dialog.component.html',
-  styleUrls: ['./validation-dialog.component.css']
+    selector: 'app-validation-dialog',
+    templateUrl: './validation-dialog.component.html',
+    styleUrls: ['./validation-dialog.component.css'],
+    standalone: false
 })
 export class ValidationDialogComponent {
   message: string;

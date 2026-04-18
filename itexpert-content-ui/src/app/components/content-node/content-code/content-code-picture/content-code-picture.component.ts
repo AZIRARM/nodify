@@ -3,9 +3,10 @@ import {MatDialogRef} from '@angular/material/dialog';
 import {ContentNode} from "../../../../modeles/ContentNode";
 
 @Component({
-  selector: 'app-content-code-picture',
-  templateUrl: './content-code-picture.component.html',
-  styleUrl: './content-code-picture.component.css'
+    selector: 'app-content-code-picture',
+    templateUrl: './content-code-picture.component.html',
+    styleUrl: './content-code-picture.component.css',
+    standalone: false
 })
 export class ContentCodePictureComponent {
 

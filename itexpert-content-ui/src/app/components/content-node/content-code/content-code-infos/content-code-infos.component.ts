@@ -6,9 +6,10 @@ import { toArray, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-content-code-infos',
-  templateUrl: './content-code-infos.component.html',
-  styleUrl: './content-code-infos.component.css'
+    selector: 'app-content-code-infos',
+    templateUrl: './content-code-infos.component.html',
+    styleUrl: './content-code-infos.component.css',
+    standalone: false
 })
 export class ContentCodeInfosComponent {
   @Input()

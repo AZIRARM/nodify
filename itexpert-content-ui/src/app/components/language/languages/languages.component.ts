@@ -11,9 +11,10 @@ import {ValidationDialogComponent} from "../../commons/validation-dialog/validat
 import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
-  selector: 'app-languages',
-  templateUrl: './languages.component.html',
-  styleUrls: ['./languages.component.css']
+    selector: 'app-languages',
+    templateUrl: './languages.component.html',
+    styleUrls: ['./languages.component.css'],
+    standalone: false
 })
 export class LanguagesComponent implements OnInit {
   displayedColumns: string[] = ['Code', 'Name', 'UrlIcon', 'Description', 'Actions'];

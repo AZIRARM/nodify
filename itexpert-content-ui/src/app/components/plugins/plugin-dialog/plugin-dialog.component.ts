@@ -6,9 +6,10 @@ import { TranslateService } from '@ngx-translate/core';
 import { LoggerService } from 'src/app/services/LoggerService';
 
 @Component({
-  selector: 'app-plugin-dialog',
-  templateUrl: './plugin-dialog.component.html',
-  styleUrl: './plugin-dialog.component.css'
+    selector: 'app-plugin-dialog',
+    templateUrl: './plugin-dialog.component.html',
+    styleUrl: './plugin-dialog.component.css',
+    standalone: false
 })
 export class PluginDialogComponent implements AfterViewInit {
   plugin: Plugin;

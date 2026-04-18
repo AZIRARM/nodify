@@ -14,9 +14,10 @@ import {AuthenticationService} from "../../../services/AuthenticationService";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 
 @Component({
-  selector: 'app-node-dialog',
-  templateUrl: './node-dialog.component.html',
-  styleUrls: ['./node-dialog.component.css']
+    selector: 'app-node-dialog',
+    templateUrl: './node-dialog.component.html',
+    styleUrls: ['./node-dialog.component.css'],
+    standalone: false
 })
 export class NodeDialogComponent implements OnInit, OnDestroy  {
 

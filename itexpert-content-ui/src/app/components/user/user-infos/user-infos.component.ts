@@ -5,9 +5,10 @@ import {PasswordDialogComponent} from "../password-dialog/password-dialog.compon
 import {UserAccessService} from "../../../services/UserAccessService";
 
 @Component({
-  selector: 'app-user-infos',
-  templateUrl: './user-infos.component.html',
-  styleUrls: ['./user-infos.component.css']
+    selector: 'app-user-infos',
+    templateUrl: './user-infos.component.html',
+    styleUrls: ['./user-infos.component.css'],
+    standalone: false
 })
 export class UserInfosComponent implements OnInit {
   user: User;

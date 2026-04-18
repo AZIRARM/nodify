@@ -6,9 +6,10 @@ import { LoggerService } from 'src/app/services/LoggerService';
 import { UserService } from 'src/app/services/UserService';
 
 @Component({
-  selector: 'app-subscribe',
-  templateUrl: './subscribe.component.html',
-  styleUrl: './subscribe.component.css'
+    selector: 'app-subscribe',
+    templateUrl: './subscribe.component.html',
+    styleUrl: './subscribe.component.css',
+    standalone: false
 })
 export class SubscribeComponent {
 

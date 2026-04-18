@@ -2,9 +2,10 @@ import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { LoaderService } from '../../../services/Loader.service';
 
 @Component({
-  selector: 'app-loader-component',
-  templateUrl: './loader.component.html',
-  styleUrls: ['./loader.component.css']
+    selector: 'app-loader-component',
+    templateUrl: './loader.component.html',
+    styleUrls: ['./loader.component.css'],
+    standalone: false
 })
 export class LoaderComponent implements OnInit{
   isLoading = false;

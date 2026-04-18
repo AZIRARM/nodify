@@ -14,9 +14,10 @@ import {DeletedPluginsDialogComponent} from "../deleted-plugins-dialog/deleted-p
 import {PluginFilesDialogComponent} from "../plugin-files-dialog/plugin-files-dialog.component";
 
 @Component({
-  selector: 'app-plugin',
-  templateUrl: './plugin.component.html',
-  styleUrl: './plugin.component.css'
+    selector: 'app-plugin',
+    templateUrl: './plugin.component.html',
+    styleUrl: './plugin.component.css',
+    standalone: false
 })
 export class PluginComponent implements OnInit {
   user: User;

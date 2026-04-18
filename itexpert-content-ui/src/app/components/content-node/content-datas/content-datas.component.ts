@@ -11,9 +11,10 @@ import {MatPaginator} from "@angular/material/paginator";
 import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
 
 @Component({
-  selector: 'app-content-datas',
-  templateUrl: './content-datas.component.html',
-  styleUrl: './content-datas.component.css'
+    selector: 'app-content-datas',
+    templateUrl: './content-datas.component.html',
+    styleUrl: './content-datas.component.css',
+    standalone: false
 })
 export class ContentDatasComponent implements AfterViewInit {
 
