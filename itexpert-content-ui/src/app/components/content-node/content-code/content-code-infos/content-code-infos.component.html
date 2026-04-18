@@ -6,60 +6,44 @@
     <!-- Code (readonly) -->
     <mat-form-field appearance="outline" class="grid-item">
       <mat-label>{{ "CODE" | translate }}</mat-label>
-      <input
-        matInput
-        [(ngModel)]="contentNode.code"
-        placeholder="{{ 'CODE' | translate }}"
-        readonly>
+      <input matInput [(ngModel)]="contentNode.code" [placeholder]="'CODE' | translate" readonly>
       <mat-icon matSuffix>fingerprint</mat-icon>
     </mat-form-field>
 
     <!-- Slug avec validation -->
     <mat-form-field appearance="outline" class="grid-item">
       <mat-label>{{ "SLUG" | translate }}</mat-label>
-      <input
-        matInput
-        [(ngModel)]="contentNode.slug"
-        (ngModelChange)="onSlugChange($event)"
-        placeholder="{{ 'SLUG' | translate }}"
-        [class.invalid]="slugAvailable === false"
-        [class.valid]="slugAvailable === true">
+      <input matInput [(ngModel)]="contentNode.slug" (ngModelChange)="onSlugChange($event)"
+        [placeholder]="'SLUG' | translate" [class.invalid]="slugAvailable() === false"
+        [class.valid]="slugAvailable() === true">
       <mat-icon matSuffix>link</mat-icon>
     </mat-form-field>
 
     <!-- Max versions -->
     <mat-form-field appearance="outline" class="grid-item">
       <mat-label>{{ "MAX_VERSIONS_TO_KEEP" | translate }}</mat-label>
-      <input
-        matInput
-        type="number"
-        [(ngModel)]="contentNode.maxVersionsToKeep"
-        placeholder="{{ 'MAX_VERSIONS' | translate }}"
-        [defaultValue]="0"
-        min="0"
-        step="1"
-        required>
+      <input matInput type="number" [(ngModel)]="contentNode.maxVersionsToKeep"
+        [placeholder]="'MAX_VERSIONS' | translate" [defaultValue]="0" min="0" step="1" required>
       <mat-icon matSuffix>history</mat-icon>
     </mat-form-field>
 
     <!-- Description -->
     <mat-form-field appearance="outline" class="grid-item grid-full">
       <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
-      <input
-        matInput
-        [(ngModel)]="contentNode.description"
-        placeholder="{{ 'DESCRIPTION' | translate }}">
+      <input matInput [(ngModel)]="contentNode.description" [placeholder]="'DESCRIPTION' | translate">
       <mat-icon matSuffix>description</mat-icon>
     </mat-form-field>
 
   </div>
 
   <!-- Message de validation du slug -->
-  <div class="slug-validation-message" *ngIf="slugAvailable !== undefined">
-    <div class="validation-badge" [class.success]="slugAvailable === true" [class.error]="slugAvailable === false">
-      <mat-icon>{{ slugAvailable === true ? 'check_circle' : 'error' }}</mat-icon>
-      <span>{{ (slugAvailable === true ? 'SLUG_AVAILABLE' : 'SLUG_ALREADY_USED') | translate }}</span>
+  @if (slugAvailable() !== undefined) {
+  <div class="slug-validation-message">
+    <div class="validation-badge" [class.success]="slugAvailable() === true" [class.error]="slugAvailable() === false">
+      <mat-icon>{{ slugAvailable() === true ? 'check_circle' : 'error' }}</mat-icon>
+      <span>{{ (slugAvailable() === true ? 'SLUG_AVAILABLE' : 'SLUG_ALREADY_USED') | translate }}</span>
     </div>
   </div>
+  }
 
 </div>

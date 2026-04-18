@@ -13,7 +13,7 @@
 
   <div class="dialog-content">
 
-    @if (chartOptions()?.series) {
+    @if (chartOptions().series) {
     <div class="chart-card">
 
       <div class="chart-header">
@@ -29,7 +29,7 @@
     </div>
     }
 
-    @if (!chartOptions() || !chartOptions()?.series) {
+    @if (!chartOptions() || !chartOptions().series) {
     <div class="empty-state">
       <mat-icon>insert_chart_outlined</mat-icon>
       <p>{{ "NO_CHART_DATA" | translate }}</p>

@@ -1,18 +1,13 @@
 <div class="content-code-actions">
 
   <!-- Bouton Fermer avec texte -->
-  <button
-    class="action-btn close-btn"
-    (click)="closeFactory()">
+  <button class="action-btn close-btn" (click)="closeFactory()">
     <mat-icon>close</mat-icon>
     <span>{{ "CLOSE" | translate }}</span>
   </button>
 
   <!-- Bouton Sauvegarder avec texte -->
-  <button
-    class="action-btn save-btn"
-    (click)="validateFactory()"
-    [disabled]="!canSave">
+  <button class="action-btn save-btn" (click)="validateFactory()" [disabled]="!canSave()">
     <mat-icon>save</mat-icon>
     <span>{{ "SAVE" | translate }}</span>
   </button>

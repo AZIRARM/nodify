@@ -1,18 +1,17 @@
-import { Component, Input } from '@angular/core';
-import {MatDialogRef} from '@angular/material/dialog';
+import { Component, Input, inject, signal, WritableSignal } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 import { ContentNode } from "../../../../modeles/ContentNode";
 import { ContentUrl } from "../../../../modeles/ContentUrl";
 
 @Component({
-    selector: 'app-content-code-urls',
-    templateUrl: './content-code-urls.component.html',
-    styleUrl: './content-code-urls.component.css',
-    standalone: false
+  selector: 'app-content-code-urls',
+  templateUrl: './content-code-urls.component.html',
+  styleUrl: './content-code-urls.component.css',
+  standalone: false
 })
 export class ContentCodeUrlsComponent {
 
   @Input() contentNode: ContentNode;
-
   @Input() dialogRef: MatDialogRef<any>;
 
   addUrl() {

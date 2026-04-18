@@ -1,22 +1,20 @@
-<div class="content-code-container" *ngIf="contentNode">
-
+<div class="content-code-container">
+  @if (contentNode) {
   <!-- Tous les composants de code -->
   <div class="code-components">
-    <app-content-code-html [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
-    <app-content-code-js [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
-    <app-content-code-css [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
-    <app-content-code-picture (onFileChange)="onFileChange($event)" [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
-    <app-content-code-file (onFileChange)="onFileChange($event)" [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
-    <app-content-code-json [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
-    <app-content-code-xml [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
-    <app-content-code-urls [contentNode]="contentNode"  [dialogRef]="dialogRef"/>
+    <app-content-code-html [contentNode]="contentNode" [dialogRef]="dialogRef" />
+    <app-content-code-js [contentNode]="contentNode" [dialogRef]="dialogRef" />
+    <app-content-code-css [contentNode]="contentNode" [dialogRef]="dialogRef" />
+    <app-content-code-picture (onFileChange)="onFileChange($event)" [contentNode]="contentNode"
+      [dialogRef]="dialogRef" />
+    <app-content-code-file (onFileChange)="onFileChange($event)" [contentNode]="contentNode" [dialogRef]="dialogRef" />
+    <app-content-code-json [contentNode]="contentNode" [dialogRef]="dialogRef" />
+    <app-content-code-xml [contentNode]="contentNode" [dialogRef]="dialogRef" />
+    <app-content-code-urls [contentNode]="contentNode" [dialogRef]="dialogRef" />
   </div>
 
   <!-- Actions collées en bas -->
-  <app-content-code-actions
-    [contentNode]="contentNode"
-    (close)="close(false)"
-    (validate)="validate()">
+  <app-content-code-actions [contentNode]="contentNode" (close)="close(false)" (validate)="validate()">
   </app-content-code-actions>
-
+  }
 </div>
