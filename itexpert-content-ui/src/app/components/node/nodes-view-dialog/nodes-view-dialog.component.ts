@@ -1,16 +1,16 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import type {EChartsCoreOption} from 'echarts/core';
-import {NodeService} from "../../../services/NodeService";
-import {Node} from "../../../modeles/Node";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {map} from 'rxjs/operators';
-import {Observable} from "rxjs";
-import {ContentCodeComponent} from "../../content-node/content-code/content-code.component";
-import {ContentNode} from "../../../modeles/ContentNode";
-import {ContentNodeService} from "../../../services/ContentNodeService";
-import {StatusEnum} from "../../../modeles/StatusEnum";
-import {User} from "../../../modeles/User";
-import {UserAccessService} from "../../../services/UserAccessService";
+import { Component, Inject, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import type { EChartsCoreOption } from 'echarts/core';
+import { NodeService } from "../../../services/NodeService";
+import { Node } from "../../../modeles/Node";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { map } from 'rxjs/operators';
+import { Observable } from "rxjs";
+import { ContentCodeComponent } from "../../content-node/content-code/content-code.component";
+import { ContentNode } from "../../../modeles/ContentNode";
+import { ContentNodeService } from "../../../services/ContentNodeService";
+import { StatusEnum } from "../../../modeles/StatusEnum";
+import { User } from "../../../modeles/User";
+import { UserAccessService } from "../../../services/UserAccessService";
 
 @Component({
   selector: 'app-nodes-view-dialog',
@@ -21,24 +21,28 @@ import {UserAccessService} from "../../../services/UserAccessService";
 export class NodesViewDialogComponent implements OnInit {
 
   options: Observable<EChartsCoreOption>;
-  user: User;
+  user: WritableSignal<User> = signal<User>({} as User);
   node: Node;
+  isLoading: WritableSignal<boolean> = signal(false);
 
-  constructor(
-    private nodeService: NodeService,
-    private contentNodeService: ContentNodeService,
-    private userAccessService: UserAccessService,
-    @Inject(MAT_DIALOG_DATA) private data: Node,
-    private dialog: MatDialog) {
+  private nodeService = inject(NodeService);
+  private contentNodeService = inject(ContentNodeService);
+  private userAccessService = inject(UserAccessService);
+  private dialog = inject(MatDialog);
+  private data = inject(MAT_DIALOG_DATA);
 
-    this.node = data;
+  constructor() {
+    this.node = this.data;
   }
 
   ngOnInit() {
-    this.user = this.userAccessService.getCurrentUser();
-
+    this.user.set(this.userAccessService.getCurrentUser());
+    this.isLoading.set(true);
     this.options = this.nodeService.getNodeView(this.node.code).pipe(
-      map(treeNode => this.buildChartOptions(treeNode))
+      map(treeNode => {
+        this.isLoading.set(false);
+        return this.buildChartOptions(treeNode);
+      })
     );
   }
 
@@ -160,7 +164,7 @@ export class NodesViewDialogComponent implements OnInit {
         node: node,
         contentNode: content,
         type: content.type,
-        user: this.user
+        user: this.user()
       },
       height: '100%',
       width: '90vw',
@@ -168,7 +172,7 @@ export class NodesViewDialogComponent implements OnInit {
     });
     this.dialogRefCode.afterClosed()
       .subscribe((data: any) => {
-        if (data.refresh) {
+        if (data?.refresh) {
           //this.init();
         }
       });
