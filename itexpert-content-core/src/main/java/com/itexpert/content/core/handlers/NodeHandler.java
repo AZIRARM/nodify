@@ -274,26 +274,27 @@ public class NodeHandler {
 
     public Mono<Node> revert(String code, String version, String modifiedBy) {
         return this.nodeRepository.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
-                .map(node -> {
-                    node.setStatus(StatusEnum.ARCHIVE);
-                    node.setModificationDate(Instant.now().toEpochMilli());
-                    return node;
-                }).flatMap(nodeRepository::save)
-                .map(node -> node.getVersion())
-                .flatMap(lastVersion -> nodeRepository.findByCodeAndVersion(code, version)
-                        .map(node -> Tuples.of(lastVersion, node)))
-                .map(tuple -> {
-                    com.itexpert.content.lib.entities.Node node = tuple.getT2();
-                    String lastVersion = tuple.getT1();
-                    node.setVersion(Long.valueOf(Long.parseLong(lastVersion) + 1).toString());
-                    node.setStatus(StatusEnum.SNAPSHOT);
-                    node.setModifiedBy(modifiedBy);
-                    node.setModificationDate(Instant.now().toEpochMilli());
-                    return node;
-                }).flatMap(nodeRepository::save)
-                .map(nodeMapper::fromEntity)
-                .flatMap(model -> this.notify(model, NotificationEnum.REVERT));
+                .flatMap(currentSnapshot -> {
+                    String currentVersion = currentSnapshot.getVersion();
+                    currentSnapshot.setStatus(StatusEnum.ARCHIVE);
+                    currentSnapshot.setModifiedBy(modifiedBy);
+                    currentSnapshot.setModificationDate(Instant.now().toEpochMilli());
 
+                    return this.nodeRepository.save(currentSnapshot)
+                            .then(this.nodeRepository.findByCodeAndVersion(code, version))
+                            .flatMap(archivedVersion -> {
+                                long newVersion = Long.parseLong(currentVersion) + 1;
+                                archivedVersion.setVersion(String.valueOf(newVersion));
+                                archivedVersion.setStatus(StatusEnum.SNAPSHOT);
+                                archivedVersion.setModifiedBy(modifiedBy);
+                                archivedVersion.setModificationDate(Instant.now().toEpochMilli());
+                                return this.nodeRepository.save(archivedVersion);
+                            });
+                })
+                .doOnNext(node -> log.info("Reverted node {}, version {}", node.getCode(), node.getVersion()))
+                .map(nodeMapper::fromEntity)
+                .doOnNext(node -> log.info("Reverted node {}, version {}", node.getCode(), node.getVersion()))
+                .flatMap(model -> this.notify(model, NotificationEnum.REVERT));
     }
 
     public Mono<Boolean> activate(String code, String modifiedBy) {
@@ -674,9 +675,9 @@ public class NodeHandler {
 
                             return nodeRepository.save(published)
                                     .flatMap(saved -> this.notify(nodeMapper.fromEntity(saved),
-                                            NotificationEnum.ARCHIVING))
-                                    .thenReturn(published);
+                                            NotificationEnum.ARCHIVING));
                         })
+                        .switchIfEmpty(Mono.empty())
                         .then(Mono.defer(() -> {
                             archived.setStatus(StatusEnum.PUBLISHED);
                             archived.setModifiedBy(user);
@@ -684,8 +685,7 @@ public class NodeHandler {
 
                             return nodeRepository.save(archived)
                                     .flatMap(saved -> this.notify(nodeMapper.fromEntity(saved),
-                                            NotificationEnum.DEPLOYMENT_VERSION))
-                                    .thenReturn(archived);
+                                            NotificationEnum.DEPLOYMENT_VERSION));
                         }))
                         .thenReturn(true))
                 .defaultIfEmpty(false);
