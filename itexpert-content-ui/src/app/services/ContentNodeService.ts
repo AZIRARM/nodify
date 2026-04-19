@@ -1,8 +1,8 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Service} from "./Service";
-import {ContentNode} from "../modeles/ContentNode";
-import {Node} from "../modeles/Node";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Service } from "./Service";
+import { ContentNode } from "../modeles/ContentNode";
+import { Node } from "../modeles/Node";
 
 @Injectable()
 export class ContentNodeService extends Service {
@@ -30,12 +30,12 @@ export class ContentNodeService extends Service {
 
 
   deleteVersionDefinitively(code: String, version: string) {
-    return super.remove("code/" + code+"/version/" + version + "/deleteDefinitively");
+    return super.remove("code/" + code + "/version/" + version + "/deleteDefinitively");
   }
 
 
   activate(code: String) {
-    return super.post("code/" + code+"/activate" , null);
+    return super.post("code/" + code + "/activate", null);
   }
 
   getAllByParentCodeAndStatus(code: string, status: string) {

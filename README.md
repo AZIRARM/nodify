@@ -53,7 +53,7 @@ You can explore a live demo of **Nodify Headless CMS** here:
 * Delivers content through APIs
 * Highly customizable and adaptable
 
-<img src="assets/pictures/headless-cms.png" width="50%"/>
+<img src="assets/pictures/headless-cms.png" width="50%" alt="Diagram explaining the Headless CMS concept - separation between content management backend and presentation frontend"/>
 
 ## Why Choose Nodify?
 
@@ -63,7 +63,7 @@ You can explore a live demo of **Nodify Headless CMS** here:
 * **Scalable:** Easily handle growing content volumes.
 * **Developer-friendly:** Robust APIs and integrations.
 
-<img src="assets/pictures/why-nodify.png" width="50%"/>
+<img src="assets/pictures/why-nodify.png" width="50%" alt="Infographic showing Nodify benefits: multilingual, multichannel, customizable, scalable, and developer-friendly"/>
 
 ## Deliver Content Anywhere, Anytime
 
@@ -73,7 +73,7 @@ You can explore a live demo of **Nodify Headless CMS** here:
 * Social media
 * Voice assistants
 
-<img src="assets/pictures/nodify-iot.png" width="50%"/>
+<img src="assets/pictures/nodify-iot.png" width="50%" alt="Illustration of Nodify content delivery channels: websites, mobile apps, IoT devices, social media, and voice assistants"/>
 
 ## Flexibility and Customization
 
@@ -81,7 +81,7 @@ You can explore a live demo of **Nodify Headless CMS** here:
 * **Flexible APIs:** Integrate with your existing tech stack.
 * **Extensible with plugins:** Add new features as needed.
 
-<img src="assets/pictures/nodify-flexibility.png" width="50%"/>
+<img src="assets/pictures/nodify-flexibility.png" width="50%" alt="Diagram showing Nodify flexibility with customizable content models, flexible APIs, and plugin extensibility"/>
 
 ## Create Global Content Experiences
 
@@ -89,7 +89,7 @@ You can explore a live demo of **Nodify Headless CMS** here:
 * **Regionalize content:** Target specific audiences.
 * **Handle complex multilingual requirements:** Support various writing systems and dialects.
 
-<img src="assets/pictures/nodify-experience.png" width="50%"/>
+<img src="assets/pictures/nodify-experience.png" width="50%" alt="Global content experience creation with Nodify - translation, regionalization, and advanced multilingual support"/>
 
 ## Empower Your Development Team
 
@@ -97,7 +97,7 @@ You can explore a live demo of **Nodify Headless CMS** here:
 * **Webhooks:** Trigger actions based on events.
 * **Version control:** Track changes and collaborate effectively.
 
-<img src="assets/pictures/nodify-api.png" width="50%"/>
+<img src="assets/pictures/nodify-api.png" width="50%" alt="Developer tools illustration for Nodify: RESTful APIs, webhooks, and version control"/>
 
 ## 🎯 Ready-to-Use Templates
 
@@ -230,13 +230,13 @@ volumes:
 ### Environment Variables
 
 | Variable | Description | Default |
-| :--- | :--- | :--- |
-| `MONGO_URL` | MongoDB connection string | `mongodb://mongodb:27017/nodify` |
-| `REDIS_URL` | Redis connection URL | `redis://redis:6379` |
-| `ADMIN_PWD` | Admin password | `Admin13579++` |
-| `API_URL` | Public API URL | `http://nodify-api:1080` |
-| `CORE_URL` | Core service URL | `http://nodify-core:8080` |
-| `JAVA_OPTS` | JVM options for Core and API | See above |
+| :-----------| :-----------------------------| :------------------------------- |
+| `MONGO_URL` | MongoDB connection string     | `mongodb://mongodb:27017/nodify` |
+| `REDIS_URL` | Redis connection URL          | `redis://redis:6379`             |
+| `ADMIN_PWD` | Admin password                | `Admin13579++`                   |
+| `API_URL`   | Public API URL                | `http://nodify-api:1080`         |
+| `CORE_URL`  | Core service URL              | `http://nodify-core:8080`        |
+| `JAVA_OPTS` | JVM options for Core and API  | See above                        |
 
 ## 🤝 Contributing
 
@@ -258,7 +258,7 @@ See the full license here: [https://creativecommons.org/licenses/by-nc/4.0/](htt
 
 ## 🌟 Support
 
-* 📧 **Email:** [support@azirar.ovh](mailto:support@azirar.ovh)
+* 📧 **Email:** [nodify.headless.cms@gmail.com](mailto:nodify.headless.cms@gmail.com)
 * 💬 **Issues:** [GitHub Issues](https://github.com/AZIRARM/nodify/issues)
 * 📚 **Documentation:** [Wiki](https://github.com/AZIRARM/nodify/wiki)
 
