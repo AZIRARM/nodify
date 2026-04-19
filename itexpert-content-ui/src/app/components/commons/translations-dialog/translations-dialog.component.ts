@@ -1,48 +1,50 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {MatTableDataSource} from "@angular/material/table";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {LanguageService} from "../../../services/LanguageService";
-import {Language} from "../../../modeles/Language";
-import {Translation} from "../../../modeles/Translation";
-import {UserAccessService} from "../../../services/UserAccessService";
+import { Component, Inject, OnDestroy, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import { MatTableDataSource } from "@angular/material/table";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { LanguageService } from "../../../services/LanguageService";
+import { Language } from "../../../modeles/Language";
+import { Translation } from "../../../modeles/Translation";
+import { UserAccessService } from "../../../services/UserAccessService";
 import { LockService } from 'src/app/services/LockService';
 import { LoggerService } from 'src/app/services/LoggerService';
 import { TranslateService } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
-import {AuthenticationService} from "../../../services/AuthenticationService";
+import { Subscription, of } from 'rxjs';
+import { AuthenticationService } from "../../../services/AuthenticationService";
+import { catchError, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-translations-dialog',
   templateUrl: './translations-dialog.component.html',
-  styleUrls: ['./translations-dialog.component.css']
+  styleUrls: ['./translations-dialog.component.css'],
+  standalone: false
 })
-export class TranslationsDialogComponent implements  OnInit, OnDestroy {
+export class TranslationsDialogComponent implements OnInit, OnDestroy {
   data: any;
-  workingTranslations: Translation[] = [];
-  current: any;
-  languages: Language[] = [];
+  workingTranslations: WritableSignal<Translation[]> = signal<Translation[]>([]);
+  current: WritableSignal<Translation> = signal<Translation>(new Translation());
+  languages: WritableSignal<Language[]> = signal<Language[]>([]);
   displayedColumns: string[] = ['Language', 'Key', 'Value', 'Actions'];
-  dataSource: MatTableDataSource<Translation>;
-  private lockCheckSub: Subscription;
-  editingItem: Translation | null = null;
+  dataSource: WritableSignal<MatTableDataSource<Translation>> = signal(new MatTableDataSource<Translation>([]));
+  editingItem: WritableSignal<Translation | null> = signal<Translation | null>(null);
   originalItemBackup: any = null;
+  private lockCheckSub?: Subscription;
 
-  constructor(
-    public dialogRef: MatDialogRef<TranslationsDialogComponent>,
-    public userAccessService: UserAccessService,
-    @Inject(MAT_DIALOG_DATA) public content: any,
-    private languageService: LanguageService,
-    private loggerService: LoggerService,
-    private lockService: LockService,
-    private authenticationService: AuthenticationService,
-    private translateService: TranslateService,
-  ) {
-    if (content) {
-      this.data = content;
+  private dialogRef = inject(MatDialogRef<TranslationsDialogComponent>);
+  public userAccessService = inject(UserAccessService);
+  private languageService = inject(LanguageService);
+  private loggerService = inject(LoggerService);
+  private lockService = inject(LockService);
+  private authenticationService = inject(AuthenticationService);
+  private translateService = inject(TranslateService);
+  private content = inject(MAT_DIALOG_DATA);
+
+  constructor() {
+    if (this.content) {
+      this.data = this.content;
       if (!this.data.translations) {
         this.data.translations = [];
       }
-      this.workingTranslations = this.data.translations.map((t: Translation) => ({...t}));
+      this.workingTranslations.set(this.data.translations.map((t: Translation) => ({ ...t })));
     }
   }
 
@@ -51,28 +53,27 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
 
     this.lockService.acquire(this.data.code).subscribe(acquired => {
       if (!acquired) {
-         this.translateService.get("RESOURCE_LOCKED")
-            .subscribe(translation => {
-              this.loggerService.warn(translation);
-            });
+        this.translateService.get("RESOURCE_LOCKED")
+          .subscribe(translation => {
+            this.loggerService.warn(translation);
+          });
         this.dialogRef.close();
       } else {
         this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-         this.translateService.get("RESOURCE_RELEASED")
+          this.translateService.get("RESOURCE_RELEASED")
             .subscribe(translation => {
               this.loggerService.warn(translation);
             });
           this.dialogRef.close();
         });
 
-       this.lockService.getLockInfoSocket(this.data.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
-         if (lockInfo.locked) {
-           this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
-             .subscribe(translation => this.loggerService.warn(translation));
-           this.dialogRef.close();
-         }
-       });
-
+        this.lockService.getLockInfoSocket(this.data.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
+          if (lockInfo.locked) {
+            this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
+              .subscribe(translation => this.loggerService.warn(translation));
+            this.dialogRef.close();
+          }
+        });
       }
     });
   }
@@ -89,52 +90,57 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   }
 
   validate() {
-    this.data.translations = this.workingTranslations;
-    this.dialogRef.close({data: this.data});
+    this.data.translations = this.workingTranslations();
+    this.dialogRef.close({ data: this.data });
   }
 
   init() {
-    this.languageService.getAll().subscribe(
-      (response: any) => {
-        if (response) {
-          this.languages = response;
-          this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
-          this.dataSource = new MatTableDataSource(this.workingTranslations);
-          this.current = new Translation();
-        }
-      },
-      error => {
+    this.languageService.getAll().pipe(
+      catchError(error => {
         console.error(error);
+        return of([]);
+      })
+    ).subscribe((response: any) => {
+      if (response) {
+        this.languages.set(response);
+        const currentWorking = this.workingTranslations();
+        currentWorking.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+        this.dataSource.set(new MatTableDataSource(currentWorking));
+        this.current.set(new Translation());
       }
-    );
+    });
   }
 
   delete(translation: Translation) {
     if (translation) {
-      this.workingTranslations = this.workingTranslations
-        .filter((v: Translation) => !(v.key == translation.key && v.language == translation.language));
-      this.dataSource = new MatTableDataSource(this.workingTranslations);
-      this.current = new Translation();
+      const currentWorking = this.workingTranslations();
+      const filtered = currentWorking.filter((v: Translation) => !(v.key == translation.key && v.language == translation.language));
+      this.workingTranslations.set(filtered);
+      this.dataSource.set(new MatTableDataSource(filtered));
+      this.current.set(new Translation());
     }
   }
 
   create() {
-    if (this.current?.language && this.current?.key && this.current?.value) {
-      this.workingTranslations = this.workingTranslations?.filter(
+    const currentTranslation = this.current();
+    if (currentTranslation?.language && currentTranslation?.key && currentTranslation?.value) {
+      let currentWorking = this.workingTranslations();
+      currentWorking = currentWorking?.filter(
         (trans: Translation) =>
-          !(trans.language === this.current.language && trans.key === this.current.key)
+          !(trans.language === currentTranslation.language && trans.key === currentTranslation.key)
       ) || [];
 
-      this.workingTranslations.push(this.current);
-      this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+      currentWorking.push(currentTranslation);
+      currentWorking.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
 
-      this.dataSource = new MatTableDataSource(this.workingTranslations);
-      this.current = new Translation();
+      this.workingTranslations.set(currentWorking);
+      this.dataSource.set(new MatTableDataSource(currentWorking));
+      this.current.set(new Translation());
     }
   }
 
   startEdit(element: Translation) {
-    if (this.editingItem) {
+    if (this.editingItem()) {
       this.cancelEdit();
     }
     this.originalItemBackup = {
@@ -142,7 +148,7 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
       key: element.key,
       value: element.value
     };
-    this.editingItem = element;
+    this.editingItem.set(element);
   }
 
   saveEdit(element: Translation) {
@@ -153,7 +159,8 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
       return;
     }
 
-    const exists = this.workingTranslations.some(t =>
+    const currentWorking = this.workingTranslations();
+    const exists = currentWorking.some(t =>
       t !== element && t.language === element.language && t.key === element.key
     );
 
@@ -164,24 +171,26 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
       return;
     }
 
-    const index = this.workingTranslations.findIndex(t => t === element);
+    const index = currentWorking.findIndex(t => t === element);
     if (index !== -1) {
-      this.workingTranslations[index] = element;
-      this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
-      this.dataSource = new MatTableDataSource(this.workingTranslations);
+      currentWorking[index] = element;
+      currentWorking.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+      this.workingTranslations.set(currentWorking);
+      this.dataSource.set(new MatTableDataSource(currentWorking));
     }
 
-    this.editingItem = null;
+    this.editingItem.set(null);
     this.originalItemBackup = null;
   }
 
   cancelEdit() {
-    if (this.editingItem && this.originalItemBackup) {
-      this.editingItem.language = this.originalItemBackup.language;
-      this.editingItem.key = this.originalItemBackup.key;
-      this.editingItem.value = this.originalItemBackup.value;
+    const editingItemValue = this.editingItem();
+    if (editingItemValue && this.originalItemBackup) {
+      editingItemValue.language = this.originalItemBackup.language;
+      editingItemValue.key = this.originalItemBackup.key;
+      editingItemValue.value = this.originalItemBackup.value;
     }
-    this.editingItem = null;
+    this.editingItem.set(null);
     this.originalItemBackup = null;
   }
 
@@ -190,17 +199,19 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
     newTranslation.language = '';
     newTranslation.key = '';
     newTranslation.value = '';
-    this.workingTranslations.push(newTranslation);
-    this.workingTranslations.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
-    this.dataSource = new MatTableDataSource(this.workingTranslations);
+    const currentWorking = this.workingTranslations();
+    currentWorking.push(newTranslation);
+    currentWorking.sort((a: Translation, b: Translation) => a.language.localeCompare(b.language));
+    this.workingTranslations.set(currentWorking);
+    this.dataSource.set(new MatTableDataSource(currentWorking));
     this.startEdit(newTranslation);
   }
 
   hasChanges(): boolean {
-    if (this.editingItem !== null) return true;
+    if (this.editingItem() !== null) return true;
 
     const originalTranslations = this.data.translations || [];
-    const currentTranslations = this.workingTranslations || [];
+    const currentTranslations = this.workingTranslations() || [];
 
     if (originalTranslations.length !== currentTranslations.length) return true;
 
@@ -209,8 +220,8 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
       const current = currentTranslations[i];
       if (!original || !current) return true;
       if (current.language !== original.language ||
-          current.key !== original.key ||
-          current.value !== original.value) {
+        current.key !== original.key ||
+        current.value !== original.value) {
         return true;
       }
     }
@@ -219,6 +230,7 @@ export class TranslationsDialogComponent implements  OnInit, OnDestroy {
   }
 
   isFormValid(): boolean {
-    return !!(this.current.language && this.current.key && this.current.value);
+    const currentTranslation = this.current();
+    return !!(currentTranslation.language && currentTranslation.key && currentTranslation.value);
   }
 }

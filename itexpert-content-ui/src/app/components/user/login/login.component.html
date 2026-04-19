@@ -24,9 +24,17 @@
   <!-- Contenu principal (avec espace pour le footer) -->
   <div class="login-content">
 
-    <!-- Carte de connexion -->
-    <div class="login-card">
+    <!-- Indicateur de chargement -->
+    @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>{{ 'LOADING' | translate }}</p>
+    </div>
+    }
 
+    <!-- Carte de connexion -->
+    @if (!isLoading()) {
+    <div class="login-card">
       <!-- Logo -->
       <div class="logo-container">
         <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'LOGIN' | translate }}">
@@ -34,11 +42,10 @@
 
       <!-- Formulaire -->
       <div class="form-container">
-
         <!-- Champ Email -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ "EMAIL" | translate }}</mat-label>
-          <input matInput type="email" [(ngModel)]="userLogin.email" placeholder="{{ 'EMAIL' | translate }}" required
+          <input matInput type="email" [(ngModel)]="userLogin().email" [placeholder]="'EMAIL' | translate" required
             (keydown.enter)="login()">
           <mat-icon matSuffix>email</mat-icon>
         </mat-form-field>
@@ -46,11 +53,12 @@
         <!-- Champ Mot de passe -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
-          <input matInput type="password" [(ngModel)]="userLogin.password"
-            placeholder="{{ 'USER_PASSWORD' | translate }}" required (keydown.enter)="login()">
-          <mat-icon matSuffix>lock</mat-icon>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="userLogin().password"
+            [placeholder]="'USER_PASSWORD' | translate" required (keydown.enter)="login()">
+          <mat-icon matSuffix (click)="hidePassword = !hidePassword" style="cursor: pointer">
+            {{hidePassword ? 'visibility_off' : 'visibility'}}
+          </mat-icon>
         </mat-form-field>
-
       </div>
 
       <!-- Actions -->
@@ -60,12 +68,12 @@
           {{ "CANCEL" | translate }}
         </button>
         <button mat-flat-button class="login-btn" (click)="login()"
-          [disabled]="!userLogin.email || !userLogin.password">
+          [disabled]="!userLogin().email || !userLogin().password || isLoading()">
           <mat-icon>login</mat-icon>
           {{ "LOGIN" | translate }}
         </button>
       </div>
-
     </div>
+    }
   </div>
 </div>

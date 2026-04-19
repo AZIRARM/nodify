@@ -1,97 +1,96 @@
-import {Component, OnInit} from '@angular/core';
-import {User} from "../../../modeles/User";
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
-import {MatTableDataSource} from "@angular/material/table";
-import {TranslateService} from "@ngx-translate/core";
-import {ToastrService} from "ngx-toastr";
-import {LoggerService} from "../../../services/LoggerService";
-import {PluginDialogComponent} from "../plugin-dialog/plugin-dialog.component";
-import {Plugin} from "../../../modeles/Plugin";
-import {PluginService} from "../../../services/PluginService";
-import {UserAccessService} from "../../../services/UserAccessService";
-import {DeletedPluginsDialogComponent} from "../deleted-plugins-dialog/deleted-plugins-dialog.component";
-import {PluginFilesDialogComponent} from "../plugin-files-dialog/plugin-files-dialog.component";
+import { Component, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import { User } from "../../../modeles/User";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
+import { MatTableDataSource } from "@angular/material/table";
+import { TranslateService } from "@ngx-translate/core";
+import { ToastrService } from "ngx-toastr";
+import { LoggerService } from "../../../services/LoggerService";
+import { PluginDialogComponent } from "../plugin-dialog/plugin-dialog.component";
+import { Plugin } from "../../../modeles/Plugin";
+import { PluginService } from "../../../services/PluginService";
+import { UserAccessService } from "../../../services/UserAccessService";
+import { DeletedPluginsDialogComponent } from "../deleted-plugins-dialog/deleted-plugins-dialog.component";
+import { PluginFilesDialogComponent } from "../plugin-files-dialog/plugin-files-dialog.component";
+import { of } from "rxjs";
+import { catchError, finalize, switchMap } from "rxjs/operators";
 
 @Component({
   selector: 'app-plugin',
   templateUrl: './plugin.component.html',
-  styleUrl: './plugin.component.css'
+  styleUrl: './plugin.component.css',
+  standalone: false
 })
 export class PluginComponent implements OnInit {
-  user: User;
-
+  user: WritableSignal<User> = signal<User>({} as User);
   dialogRefPlugin: MatDialogRef<PluginDialogComponent>;
   dialogRefValidation: MatDialogRef<ValidationDialogComponent>;
   dialogRefDeleted: MatDialogRef<DeletedPluginsDialogComponent>;
   dialogRefFiles: MatDialogRef<PluginFilesDialogComponent>;
-
   displayedColumns: string[] = ['Status', 'Name', 'Description', 'ModifiedBy', 'CreationDate', 'ModificationDate', 'Actions'];
+  dataSource: WritableSignal<MatTableDataSource<Plugin>> = signal(new MatTableDataSource<Plugin>([]));
+  totalDeleteds: WritableSignal<number> = signal(0);
+  isLoading: WritableSignal<boolean> = signal(false);
 
-  dataSource: MatTableDataSource<Plugin>;
+  private translate = inject(TranslateService);
+  private toast = inject(ToastrService);
+  private loggerService = inject(LoggerService);
+  public userAccessService = inject(UserAccessService);
+  public pluginService = inject(PluginService);
+  private dialog = inject(MatDialog);
 
-  totalDeleteds: number = 0;
-
-  constructor(private translate: TranslateService,
-              private toast: ToastrService,
-              private loggerService: LoggerService,
-              public userAccessService: UserAccessService,
-              public pluginService: PluginService,
-              private dialog: MatDialog
-  ) {
-    this.dataSource = new MatTableDataSource<Plugin>([]);
+  constructor() {
+    this.dataSource.set(new MatTableDataSource<Plugin>([]));
   }
 
   ngOnInit() {
-    this.user = this.userAccessService.getCurrentUser();
+    this.user.set(this.userAccessService.getCurrentUser());
     this.init();
   }
 
   init() {
-    this.pluginService.getNotDeleted().subscribe(
-      (response: any) => {
-        this.dataSource.data = response || [];
-      },
-      (error) => {                              //error() callback
-        this.toast.error('Request failed with error');
-      });
+    this.isLoading.set(true);
 
-      this.pluginService.getDeleted().subscribe(
-          (response: any) => {
-            if (response) {
-              this.totalDeleteds = response.length;
-            }
-          },
-          error => {
-            console.error(error);
-          }
-        );
+    this.pluginService.getNotDeleted().pipe(
+      catchError((error) => {
+        this.toast.error('Request failed with error');
+        return of([]);
+      }),
+      finalize(() => this.isLoading.set(false))
+    ).subscribe((response: any) => {
+      this.dataSource.set(new MatTableDataSource(response || []));
+    });
+
+    this.pluginService.getDeleted().pipe(
+      catchError((error) => {
+        console.error(error);
+        return of([]);
+      })
+    ).subscribe((response: any) => {
+      if (response) {
+        this.totalDeleteds.set(response.length);
+      }
+    });
   }
 
   status(plugin: Plugin) {
-    if (!plugin.enabled) {
-      this.pluginService.enable(plugin.id).subscribe(
-        (response: any) => {
-          //next() callback
-          this.init();
-        },
-        (error) => {                              //error() callback
-          this.toast.error('Request failed with error');
-        });
-    } else {
-      this.pluginService.disable(plugin.id).subscribe(
-        (response: any) => {
-          //next() callback
-          this.init();
-        },
-        (error) => {                              //error() callback
-          this.toast.error('Request failed with error');
-        });
-    }
-    this.save(plugin);
+    this.isLoading.set(true);
+    const action$ = !plugin.enabled
+      ? this.pluginService.enable(plugin.id)
+      : this.pluginService.disable(plugin.id);
+
+    action$.pipe(
+      catchError((error) => {
+        this.toast.error('Request failed with error');
+        return of(null);
+      }),
+      finalize(() => this.isLoading.set(false))
+    ).subscribe(() => {
+      this.init();
+      this.save(plugin);
+    });
   }
 
-  // ✅ Méthode ajoutée pour le tooltip
   getStatusTooltip(element: Plugin): string {
     return element.enabled ? "DISABLE" : "ENABLE";
   }
@@ -105,7 +104,7 @@ export class PluginComponent implements OnInit {
     this.dialogRefPlugin = this.dialog.open(PluginDialogComponent, {
       data: {
         plugin: plugin,
-        user: this.user
+        user: this.user()
       },
       height: '100%',
       width: '90vw',
@@ -129,38 +128,49 @@ export class PluginComponent implements OnInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogRefValidation.afterClosed()
-      .subscribe(result => {
+
+    this.dialogRefValidation.afterClosed().pipe(
+      switchMap((result: any) => {
         if (result && result.data !== 'canceled') {
-          this.pluginService.delete(plugin.id).subscribe(
-            response => {
-              this.translate.get("DELETE_SUCCESS").subscribe(trad => {
-                this.loggerService.success(trad);
-                this.init();
-              });
-            },
-            error => {
-              this.translate.get("DELETE_ERROR").subscribe(trad => {
-                this.loggerService.error(trad);
-              });
-            });
+          return this.pluginService.delete(plugin.id).pipe(
+            switchMap(() => this.translate.get("DELETE_SUCCESS")),
+            catchError((error: any) => {
+              return this.translate.get("DELETE_ERROR").pipe(
+                switchMap((trad: string) => {
+                  this.loggerService.error(trad);
+                  throw error;
+                })
+              );
+            })
+          );
         }
-      });
+        return of(null);
+      })
+    ).subscribe((trad: string | null) => {
+      if (trad) {
+        this.loggerService.success(trad);
+        this.init();
+      }
+    });
   }
 
   private save(plugin: Plugin) {
-    this.pluginService.save(plugin).subscribe(
-      (response: any) => {
-        this.translate.get("SAVE_SUCCESS").subscribe(trad => {
-          this.loggerService.success(trad);
-          this.init();
-        });
-      },
-      error => {
-        this.translate.get("SAVE_ERROR").subscribe(trad => {
-          this.loggerService.error(trad);
-        });
-      });
+    this.isLoading.set(true);
+    this.pluginService.save(plugin).pipe(
+      switchMap(() => this.translate.get("SAVE_SUCCESS")),
+      catchError((error: any) => {
+        return this.translate.get("SAVE_ERROR").pipe(
+          switchMap((trad: string) => {
+            this.loggerService.error(trad);
+            throw error;
+          })
+        );
+      }),
+      finalize(() => this.isLoading.set(false))
+    ).subscribe((trad: string) => {
+      this.loggerService.success(trad);
+      this.init();
+    });
   }
 
   getPublishedIcon(element: Plugin) {
@@ -172,27 +182,27 @@ export class PluginComponent implements OnInit {
 
   deleteds() {
     this.dialogRefDeleted = this.dialog.open(DeletedPluginsDialogComponent, {
-        height: '80vh',
-        width: '80vw',
-        disableClose: true
-      }
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    }
     );
     this.dialogRefDeleted.afterClosed()
-      .subscribe(result => {
+      .subscribe(() => {
         this.init();
       });
   }
 
   assets(element: Plugin) {
     this.dialogRefFiles = this.dialog.open(PluginFilesDialogComponent, {
-        data: element,
-        height: '80vh',
-        width: '80vw',
-        disableClose: true
-      }
+      data: element,
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    }
     );
     this.dialogRefFiles.afterClosed()
-      .subscribe(result => {
+      .subscribe(() => {
         this.init();
       });
   }
@@ -223,8 +233,8 @@ export class PluginComponent implements OnInit {
           console.log('Plugin to import:', plugin);
 
           this.pluginService.import(plugin).subscribe({
-            next: (res) => {
-              console.log('Plugin successfully imported:', res);
+            next: () => {
+              console.log('Plugin successfully imported');
               this.init();
             },
             error: (err) => {

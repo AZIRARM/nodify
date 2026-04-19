@@ -1,277 +1,240 @@
-import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  inject,
+  signal,
+  DestroyRef
+} from '@angular/core';
+
 import { MatTableDataSource } from "@angular/material/table";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatDialog } from "@angular/material/dialog";
 import { MatPaginator } from "@angular/material/paginator";
 import { MatSlideToggle } from '@angular/material/slide-toggle';
+
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
 import { NotificationService } from "../../../services/NotificationService";
 import { Notification } from "../../../modeles/Notification";
 import { UserAccessService } from "../../../services/UserAccessService";
 import { AuthenticationService } from 'src/app/services/AuthenticationService';
-import { Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-notifications',
   templateUrl: './notifications.component.html',
-  styleUrls: ['./notifications.component.css']
+  styleUrls: ['./notifications.component.css'],
+  standalone: false
 })
-export class NotificationsComponent implements OnInit, OnDestroy {
+export class NotificationsComponent implements OnInit {
 
-  // Propriétés utilisateur
-  user: any;
+  private notificationService = inject(NotificationService);
+  private userAccessService = inject(UserAccessService);
+  private authenticationService = inject(AuthenticationService);
+  private translate = inject(TranslateService);
+  private dialog = inject(MatDialog);
+  private destroyRef = inject(DestroyRef);
 
-  // Configuration du tableau
-  displayedColumns: string[] = ['Date', 'Type', 'Code', 'Message', 'Version', 'By', 'Actions'];
-  dataSource: MatTableDataSource<Notification> = new MatTableDataSource<Notification>([]);
+  user = signal<any>(null);
 
-  // Références
-  dialogRef: MatDialogRef<ValidationDialogComponent>;
+  displayedColumns: string[] = [
+    'Date',
+    'Type',
+    'Code',
+    'Message',
+    'Version',
+    'By',
+    'Actions'
+  ];
+
+  dataSource = new MatTableDataSource<Notification>([]);
 
   @ViewChild(MatPaginator)
   paginator!: MatPaginator;
 
-  // Pagination
-  total: number = 0;
-  pageSize: number = 10;
-  pageIndex: number = 0;
-  pageSizeOptions: number[] = [5, 10, 20, 50];
+  @ViewChild('markReadToggle')
+  markReadToggle!: MatSlideToggle;
 
-  // Statistiques
-  unreadCount: number = 0;
+  total = signal(0);
+  pageSize = signal(10);
+  pageIndex = signal(0);
 
-  // Filtres
-  filterType: string = 'all';
-  searchText: string = '';
+  pageSizeOptions = [5, 10, 20, 50];
 
-  // WebSocket
-  private wsSubscription: Subscription | null = null;
+  unreadCount = signal(0);
 
-  @ViewChild('markReadToggle') markReadToggle: MatSlideToggle;
-
-  constructor(
-    private notificationService: NotificationService,
-    private userAccessService: UserAccessService,
-    private authenticationService: AuthenticationService,
-    private translate: TranslateService,
-    private dialog: MatDialog
-  ) {}
+  filterType = signal('all');
+  searchText = signal('');
 
   ngOnInit() {
-    this.user = this.userAccessService.getCurrentUser();
+    this.user.set(this.userAccessService.getCurrentUser());
     this.loadNotifications();
   }
 
-  ngOnDestroy() {
-    this.closeWebSocket();
-  }
-
-  /**
-   * Ferme la connexion WebSocket
-   */
-  closeWebSocket() {
-    if (this.wsSubscription) {
-      this.wsSubscription.unsubscribe();
-      this.wsSubscription = null;
-    }
-  }
-
-  /**
-   * Charge les notifications depuis le WebSocket
-   */
   loadNotifications() {
+
     if (!this.authenticationService.isAuthenticated()) {
       return;
     }
 
-    // Fermer l'ancienne connexion WebSocket
-    this.closeWebSocket();
-
-    console.log(`Chargement notifications - page: ${this.pageIndex}, size: ${this.pageSize}, filter: ${this.filterType}`);
-
-    this.wsSubscription = this.notificationService.connectWebSocket(
+    this.notificationService.connectWebSocket(
       this.authenticationService.getAccessToken(),
-      this.pageIndex,
-      this.pageSize
-    ).subscribe({
-      next: (data: any) => {
-        console.log('Données reçues:', data);
-        this.total = data.count || 0;
-        this.dataSource.data = data.unread || [];
+      this.pageIndex(),
+      this.pageSize()
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
 
-        // Note: Si la propriété 'read' n'existe pas, on utilise une autre logique
-        // ou on considère que toutes les notifications sont non lues par défaut
-        this.unreadCount = this.dataSource.data.length;
+        next: (data: any) => {
 
-        // Mettre à jour le paginator après réception des données
-        if (this.paginator) {
-          this.paginator.length = this.total;
-          this.paginator.pageIndex = this.pageIndex;
-          this.paginator.pageSize = this.pageSize;
+          this.total.set(data.count || 0);
+          this.dataSource.data = data.unread || [];
+          this.unreadCount.set(this.dataSource.data.length);
+
+          if (this.paginator) {
+            this.paginator.length = this.total();
+            this.paginator.pageIndex = this.pageIndex();
+            this.paginator.pageSize = this.pageSize();
+          }
+
+          if (this.filterType() !== 'all') {
+            this.applyFilter();
+          }
+
+        },
+
+        error: () => {
+          this.dataSource.data = [];
+          this.total.set(0);
+          this.unreadCount.set(0);
         }
 
-        // Appliquer le filtre si nécessaire
-        if (this.filterType !== 'all') {
-          this.applyFilter();
-        }
-      },
-      error: (err: any) => {
-        console.error("Erreur WebSocket:", err);
-        this.dataSource.data = [];
-        this.total = 0;
-        this.unreadCount = 0;
-      },
-      complete: () => {
-        console.log("WebSocket fermé");
-        this.wsSubscription = null;
-      }
-    });
+      });
+
   }
 
-  /**
-   * Gère le changement de page
-   */
   onPageChange(event: any) {
-    console.log('Changement de page:', event);
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
     this.loadNotifications();
   }
 
-  /**
-   * Marque une notification comme lue
-   */
   markAsReaded(element: Notification) {
-    this.notificationService.markAsReaded(element.id).subscribe({
-      next: () => {
-        console.log('Notification marquée comme lue');
-        // Retirer l'élément du tableau ou le marquer comme lu
-        this.dataSource.data = this.dataSource.data.filter(n => n.id !== element.id);
-        this.unreadCount = this.dataSource.data.length;
-        this.loadNotifications(); // Recharger après modification
-      },
-      error: (error: any) => {
-        console.error('Erreur marquage lu:', error);
-        this.showErrorMessage('ERROR_MARK_READ');
-      }
-    });
+
+    this.notificationService.markAsReaded(element.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+
+        next: () => {
+
+          this.dataSource.data =
+            this.dataSource.data.filter(n => n.id !== element.id);
+
+          this.unreadCount.set(this.dataSource.data.length);
+
+          this.loadNotifications();
+
+        }
+
+      });
+
   }
 
-  /**
-   * Marque toutes les notifications comme lues
-   */
   markAllAsReaded(event: any) {
+
     event.source.checked = false;
 
-    if (this.dataSource.data.length === 0) {
-      return;
-    }
+    if (!this.dataSource.data.length) return;
 
-    this.translate.get("MARK_ALL_READ_CONFIRM_TITLE").subscribe(title => {
-      this.translate.get("MARK_ALL_READ_CONFIRM_MESSAGE").subscribe(message => {
-        const dialogRef = this.dialog.open(ValidationDialogComponent, {
-          data: {
-            title: title,
-            message: message,
-          },
-          disableClose: true
-        });
+    this.translate.get("MARK_ALL_READ_CONFIRM_TITLE")
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(title => {
 
-        dialogRef.afterClosed().subscribe(result => {
-          if (result?.data === 'validated') {
-            this.notificationService.markAllReaded().subscribe({
-              next: () => {
-                this.dataSource.data = [];
-                this.unreadCount = 0;
-                this.loadNotifications();
-                this.showSuccessMessage('ALL_MARKED_READ_SUCCESS');
-                setTimeout(() => {
-                  event.source.checked = true;
-                });
-              },
-              error: (error: any) => {
-                console.error('Erreur marquage tout lu:', error);
-                this.showErrorMessage('ERROR_MARK_ALL_READ');
-                setTimeout(() => {
-                  event.source.checked = false;
-                });
-              }
+        this.translate.get("MARK_ALL_READ_CONFIRM_MESSAGE")
+          .subscribe(message => {
+
+            const dialogRef = this.dialog.open(ValidationDialogComponent, {
+              data: { title, message },
+              disableClose: true
             });
-          } else {
-            setTimeout(() => {
-              event.source.checked = false;
-            });
-          }
-        });
+
+            dialogRef.afterClosed()
+              .subscribe(result => {
+
+                if (result?.data === 'validated') {
+
+                  this.notificationService.markAllReaded()
+                    .subscribe(() => {
+
+                      this.dataSource.data = [];
+                      this.unreadCount.set(0);
+
+                      this.loadNotifications();
+
+                    });
+
+                }
+
+              });
+
+          });
+
       });
-    });
+
   }
 
-  /**
-   * Recharge les notifications (première page)
-   */
   allreadyReaded() {
-    this.pageIndex = 0;
-    this.pageSize = 10;
-    this.filterType = 'all';
-    this.searchText = '';
+    this.pageIndex.set(0);
+    this.pageSize.set(10);
+    this.filterType.set('all');
+    this.searchText.set('');
     this.loadNotifications();
   }
 
-  /**
-   * Rafraîchit les notifications
-   */
   refreshNotifications() {
     this.loadNotifications();
   }
 
-  /**
-   * Filtre les notifications par type
-   */
   filterBy(type: string) {
-    this.filterType = type;
-    this.pageIndex = 0; // Retour à la première page
+    this.filterType.set(type);
+    this.pageIndex.set(0);
     this.applyFilter();
   }
 
-  /**
-   * Applique le filtre actuel
-   */
   applyFilter() {
-    if (this.filterType === 'unread') {
-      // Si 'read' n'existe pas, on garde toutes les notifications
-      // ou on implémente une autre logique
-      console.log('Filtre unread appliqué');
-    } else if (this.filterType !== 'all') {
-      this.dataSource.data = this.dataSource.data.filter(n =>
-        n.type?.toLowerCase() === this.filterType.toLowerCase()
-      );
+
+    if (this.filterType() !== 'all') {
+
+      this.dataSource.data =
+        this.dataSource.data.filter(n =>
+          n.type?.toLowerCase() === this.filterType().toLowerCase()
+        );
+
     }
 
-    // Appliquer aussi la recherche si elle existe
-    if (this.searchText) {
-      this.dataSource.filter = this.searchText.trim().toLowerCase();
+    if (this.searchText()) {
+      this.dataSource.filter =
+        this.searchText().trim().toLowerCase();
     }
+
   }
 
-  /**
-   * Recherche dans les notifications
-   */
   onSearch(event: any) {
-    this.searchText = event.target.value;
+    this.searchText.set(event.target.value);
     this.applyFilter();
   }
 
-  /**
-   * Affiche les détails d'une notification
-   */
-    viewDetails(element: Notification) {
-      this.translate.get("NOTIFICATION_DETAILS_TITLE").subscribe(title => {
-        // Traduire les valeurs si ce sont des clés
+  viewDetails(element: Notification) {
+
+    this.translate.get("NOTIFICATION_DETAILS_TITLE")
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(title => {
+
         const typeValue = element.type ? this.translate.instant(element.type) : '';
         const codeValue = element.code ? this.translate.instant(element.code) : '';
 
-        let message = `
+        const message = `
           <strong>${this.translate.instant('TYPE')}:</strong> ${typeValue}<br>
           <strong>${this.translate.instant('CODE')}:</strong> ${element.typeCode || ''}<br>
           <strong>${this.translate.instant('DESCRIPTION')}:</strong> ${codeValue}<br>
@@ -281,128 +244,111 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
         const dialogRef = this.dialog.open(ValidationDialogComponent, {
           data: {
-            title: title,
-            message: message,
+            title,
+            message,
             isHtml: true
           },
-          width: '500px',
-          disableClose: false
+          width: '500px'
         });
 
+        dialogRef.afterClosed()
+          .subscribe(result => {
 
-        dialogRef.afterClosed().subscribe(result => {
-          if (result?.data === 'validated') {
-            this.markAsReaded(element);
-          }
-        });
+            if (result?.data === 'validated') {
+              this.markAsReaded(element);
+            }
+
+          });
 
       });
-    }
 
-  /**
-   * Supprime une notification
-   */
+  }
+
   deleteNotification(element: Notification) {
-    this.translate.get("DELETE_NOTIFICATION_TITLE").subscribe(title => {
-      this.translate.get("DELETE_NOTIFICATION_CONFIRM").subscribe(message => {
-        const dialogRef = this.dialog.open(ValidationDialogComponent, {
-          data: {
-            title: title,
-            message: message,
-          },
-          disableClose: true
-        });
 
-        dialogRef.afterClosed().subscribe(result => {
-          if (result?.data === 'validated') {
-            // Note: Si la méthode deleteNotification n'existe pas, utiliser markAsReaded ou une autre méthode
-            this.notificationService.markAsReaded(element.id).subscribe({
-              next: () => {
-                console.log('Notification supprimée/marquée comme lue');
-                this.loadNotifications();
-                this.showSuccessMessage('NOTIFICATION_DELETED_SUCCESS');
-              },
-              error: (error: any) => {
-                console.error('Erreur suppression:', error);
-                this.showErrorMessage('ERROR_DELETE_NOTIFICATION');
-              }
+    this.translate.get("DELETE_NOTIFICATION_TITLE")
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(title => {
+
+        this.translate.get("DELETE_NOTIFICATION_CONFIRM")
+          .subscribe(message => {
+
+            const dialogRef = this.dialog.open(ValidationDialogComponent, {
+              data: { title, message },
+              disableClose: true
             });
-          }
-        });
+
+            dialogRef.afterClosed()
+              .subscribe(result => {
+
+                if (result?.data === 'validated') {
+
+                  this.notificationService.markAsReaded(element.id)
+                    .subscribe(() => {
+
+                      this.loadNotifications();
+
+                    });
+
+                }
+
+              });
+
+          });
+
       });
-    });
+
   }
 
-  /**
-   * Affiche un message de succès
-   */
-  private showSuccessMessage(key: string) {
-    this.translate.get(key).subscribe(message => {
-      // Vous pouvez implémenter votre propre système de toast ici
-      console.log('Success:', message);
-    });
-  }
-
-  /**
-   * Affiche un message d'erreur
-   */
-  private showErrorMessage(key: string) {
-    this.translate.get(key).subscribe(message => {
-      // Vous pouvez implémenter votre propre système de toast ici
-      console.error('Error:', message);
-    });
-  }
-
-  // ========== MÉTHODES POUR LE REDESIGN ==========
-
-  /**
-   * Retourne la classe CSS pour le type de notification
-   */
   getTypeClass(type: string): string {
+
     const typeMap: any = {
-      'INFO': 'info',
-      'WARNING': 'warning',
-      'SUCCESS': 'success',
-      'ERROR': 'error'
+      INFO: 'info',
+      WARNING: 'warning',
+      SUCCESS: 'success',
+      ERROR: 'error'
     };
+
     return typeMap[type] || 'info';
+
   }
 
-  /**
-   * Retourne l'icône pour le type de notification
-   */
   getTypeIcon(type: string): string {
+
     const iconMap: any = {
-      'INFO': 'info',
-      'WARNING': 'warning',
-      'SUCCESS': 'check_circle',
-      'ERROR': 'error'
+      INFO: 'info',
+      WARNING: 'warning',
+      SUCCESS: 'check_circle',
+      ERROR: 'error'
     };
+
     return iconMap[type] || 'notifications';
+
   }
 
-  /**
-   * Retourne les initiales d'un nom
-   */
   getInitials(name: string): string {
+
     if (!name) return '?';
+
     return name.split(' ')
       .map((n: string) => n[0])
       .join('')
       .toUpperCase()
       .substring(0, 2);
+
   }
 
-  /**
-   * Obtient la couleur de fond pour le type
-   */
   getTypeColor(type: string): string {
+
     const colorMap: any = {
-      'INFO': '#2196f3',
-      'SUCCESS': '#4caf50',
-      'WARNING': '#ff9800',
-      'ERROR': '#f44336'
+      INFO: '#2196f3',
+      SUCCESS: '#4caf50',
+      WARNING: '#ff9800',
+      ERROR: '#f44336'
     };
+
     return colorMap[type] || '#9e9e9e';
+
   }
+
 }

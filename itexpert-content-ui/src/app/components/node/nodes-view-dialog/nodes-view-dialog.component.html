@@ -8,7 +8,9 @@
       </div>
       <div class="header-title">
         <span class="title-main">{{ "NODES_VIEW" | translate }}</span>
-        <span class="title-code" *ngIf="node?.name">({{ node.name }})</span>
+        @if (node.name) {
+        <span class="title-code">({{ node.name }})</span>
+        }
       </div>
     </div>
     <button mat-icon-button class="close-btn" mat-dialog-close>
@@ -20,10 +22,7 @@
   <div mat-dialog-content class="dialog-content">
 
     <!-- Graphique -->
-    <echarts
-      [options]="options | async"
-      class="echart-container"
-      (chartInit)="onChartInit($event)">
+    <echarts [options]="options | async" class="echart-container" (chartInit)="onChartInit($event)">
     </echarts>
 
   </div>

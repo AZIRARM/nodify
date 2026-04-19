@@ -1,22 +1,21 @@
-import {Component, OnInit} from "@angular/core";
-import {EChartsOption} from "echarts";
-import {ChartService} from "../../../services/ChartService";
-import {TranslateService} from "@ngx-translate/core";
-import {forkJoin, Observable, of, switchMap} from "rxjs";
-import {map} from "rxjs/operators";
+import { Component, OnInit, inject, signal } from "@angular/core";
+import { EChartsOption } from "echarts";
+import { ChartService } from "../../../services/ChartService";
+import { TranslateService } from "@ngx-translate/core";
+import { forkJoin, Observable, of, switchMap } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Component({
   selector: 'app-content-charts',
   templateUrl: './content-charts.component.html',
-  styleUrls: ['./content-charts.component.css']
+  styleUrls: ['./content-charts.component.css'],
+  standalone: false
 })
 export class ContentChartsComponent implements OnInit {
+  private chartService = inject(ChartService);
+  private translateService = inject(TranslateService);
 
-  chartOptions: EChartsOption = {};
-
-  constructor(
-    private chartService: ChartService,
-    private translateService: TranslateService) {}
+  chartOptions = signal<EChartsOption>({});
 
   ngOnInit(): void {
     this.loadChartData();
@@ -24,10 +23,10 @@ export class ContentChartsComponent implements OnInit {
 
   loadChartData() {
     this.chartService.getCharts().subscribe((treeData: any) => {
-      treeData = this.sortTreeByCode([treeData]);
+      const sortedData = this.sortTreeByCode([treeData]);
 
-      this.cleanTreeData(treeData).subscribe((cleaned: any) => {
-        this.chartOptions = {
+      this.cleanTreeData(sortedData).subscribe((cleaned: any) => {
+        this.chartOptions.set({
           tooltip: {
             trigger: 'item',
             triggerOn: 'mousemove'
@@ -90,7 +89,7 @@ export class ContentChartsComponent implements OnInit {
               animationDurationUpdate: 750
             }
           ]
-        };
+        });
       });
     });
   }
@@ -172,50 +171,28 @@ export class ContentChartsComponent implements OnInit {
     }
 
     switch (node.type) {
-      case 'XML':
-        return 'image://assets/icons/xml.svg';
-      case 'JSON':
-        return 'image://assets/icons/json.svg';
-      case 'HTML':
-        return 'image://assets/icons/html.svg';
-      case 'PICTURE':
-        return 'image://assets/icons/picture.svg';
-      case 'SCRIPT':
-        return 'image://assets/icons/programming.svg';
-      case 'STYLE':
-        return 'image://assets/icons/css.svg';
-      case 'FILE':
-        return 'image://assets/icons/file.svg';
-      case 'URLS':
-        return 'image://assets/icons/url.svg';
-      case 'FEEDBACK':
-        return 'image://assets/icons/feedback.svg';
-      case 'FEEDBACK_ALL':
-        return 'image://assets/icons/all.svg';
-      case 'FEEDBACK_VERIFIED':
-        return 'image://assets/icons/verified.svg';
-      case 'FEEDBACK_NOT_VERIFIED':
-        return 'image://assets/icons/not_verified.svg';
-      case 'DISPLAYED':
-        return 'image://assets/icons/display.svg';
-      case 'CLICKED':
-        return 'image://assets/icons/click.svg';
-      case '0':
-        return 'image://assets/icons/0.svg';
-      case '1':
-        return 'image://assets/icons/1.svg';
-      case '2':
-        return 'image://assets/icons/2.svg';
-      case '3':
-        return 'image://assets/icons/3.svg';
-      case '4':
-        return 'image://assets/icons/4.svg';
-      case '5':
-        return 'image://assets/icons/5.svg';
-      case 'NODIFY':
-        return 'image://assets/icons/nodify_ai.png';
-      default:
-        return 'image://assets/icons/node.svg';
+      case 'XML': return 'image://assets/icons/xml.svg';
+      case 'JSON': return 'image://assets/icons/json.svg';
+      case 'HTML': return 'image://assets/icons/html.svg';
+      case 'PICTURE': return 'image://assets/icons/picture.svg';
+      case 'SCRIPT': return 'image://assets/icons/programming.svg';
+      case 'STYLE': return 'image://assets/icons/css.svg';
+      case 'FILE': return 'image://assets/icons/file.svg';
+      case 'URLS': return 'image://assets/icons/url.svg';
+      case 'FEEDBACK': return 'image://assets/icons/feedback.svg';
+      case 'FEEDBACK_ALL': return 'image://assets/icons/all.svg';
+      case 'FEEDBACK_VERIFIED': return 'image://assets/icons/verified.svg';
+      case 'FEEDBACK_NOT_VERIFIED': return 'image://assets/icons/not_verified.svg';
+      case 'DISPLAYED': return 'image://assets/icons/display.svg';
+      case 'CLICKED': return 'image://assets/icons/click.svg';
+      case '0': return 'image://assets/icons/0.svg';
+      case '1': return 'image://assets/icons/1.svg';
+      case '2': return 'image://assets/icons/2.svg';
+      case '3': return 'image://assets/icons/3.svg';
+      case '4': return 'image://assets/icons/4.svg';
+      case '5': return 'image://assets/icons/5.svg';
+      case 'NODIFY': return 'image://assets/icons/nodify_ai.png';
+      default: return 'image://assets/icons/node.svg';
     }
   }
 }

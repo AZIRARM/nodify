@@ -1,5 +1,5 @@
-<div class="content-code-html" *ngIf="contentNode?.type ==='HTML'">
-
+<div class="content-code-html">
+  @if (contentNode.type === 'HTML') {
   <div class="title-row">
     <app-content-code-title [title]="'HTML'" [dialogRef]="dialogRef"></app-content-code-title>
   </div>
@@ -10,67 +10,61 @@
 
   <div class="code-toolbar">
     <div class="toggle-buttons">
-      <button
-        mat-icon-button
-        class="toggle-btn"
-        [class.active]="code"
-        (click)="setCodeEdition(false)"
-        *ngIf="code"
-        matTooltip="{{ 'CODE' | translate }}">
+      @if (code()) {
+      <button mat-icon-button class="toggle-btn" [class.active]="code()" (click)="setCodeEdition(false)"
+        [matTooltip]="'CODE' | translate">
         <mat-icon>code</mat-icon>
       </button>
-      <button
-        mat-icon-button
-        class="toggle-btn"
-        [class.active]="!code"
-        (click)="setCodeEdition(true)"
-        *ngIf="!code"
-        matTooltip="{{ 'HTML' | translate }}">
+      }
+      @if (!code()) {
+      <button mat-icon-button class="toggle-btn" [class.active]="!code()" (click)="setCodeEdition(true)"
+        [matTooltip]="'HTML' | translate">
         <mat-icon>html</mat-icon>
       </button>
+      }
     </div>
 
     <div class="spacer"></div>
 
-    <button
-      class="fullscreen-btn"
-      (click)="toggleFullscreen()"
-      [matTooltip]="(isFullscreen ? 'QUITTER' : 'PLEIN ÉCRAN') | translate">
-      <mat-icon>{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+    <button class="fullscreen-btn" (click)="toggleFullscreen()"
+      [matTooltip]="(isFullscreen() ? 'QUITTER' : 'PLEIN ÉCRAN') | translate">
+      <mat-icon>{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
     </button>
   </div>
 
-  <div class="code-editor-wrapper" [class.fullscreen]="isFullscreen">
+  <div class="code-editor-wrapper" [class.fullscreen]="isFullscreen()">
 
-    <button
-      class="fullscreen-close-btn"
-      *ngIf="isFullscreen"
-      (click)="toggleFullscreen()"
-      [matTooltip]="'QUITTER' | translate">
+    @if (isFullscreen()) {
+    <button class="fullscreen-close-btn" (click)="toggleFullscreen()" [matTooltip]="'QUITTER' | translate">
       <mat-icon>close</mat-icon>
     </button>
+    }
 
-    <ngx-codemirror
-      *ngIf="code"
-      #codeMirror
-      class="code-editor"
-      [(ngModel)]="contentNode.content"
-      [options]="{
-        lineNumbers: true,
-        theme: 'material',
-        mode: 'htmlmixed',
-        autoRefresh: true,
-        lineWrapping: true,
-        scrollbarStyle: 'native'
-      }">
+    @if (code()) {
+    <ngx-codemirror #codeMirror class="code-editor" [(ngModel)]="contentNode.content" [options]="{
+            lineNumbers: true,
+            theme: 'material',
+            mode: 'htmlmixed',
+            autoRefresh: true,
+            lineWrapping: true,
+            scrollbarStyle: 'native'
+          }">
     </ngx-codemirror>
+    }
 
-    <div
-      *ngIf="!code && contentFilled"
-      class="html-viewer"
-      [innerHTML]="contentFilled">
+    @if (!code() && contentFilled) {
+    <div class="html-viewer" [innerHTML]="contentFilled">
     </div>
+    }
 
   </div>
 
+  <!-- Indicateur de chargement pour la vue HTML -->
+  @if (!code() && isLoading()) {
+  <div class="loading-viewer">
+    <mat-spinner diameter="30"></mat-spinner>
+    <p>{{ 'LOADING' | translate }}</p>
+  </div>
+  }
+  }
 </div>

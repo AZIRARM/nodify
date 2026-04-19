@@ -1,44 +1,49 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, WritableSignal } from '@angular/core';
 import { UserLogin } from "../../../modeles/UserLogin";
 import { Router } from "@angular/router";
 import { AuthenticationService } from "../../../services/AuthenticationService";
 import { CookiesService } from 'src/app/services/CookiesService';
 import { LoggerService } from "../../../services/LoggerService";
 import { TranslateService } from "@ngx-translate/core";
+import { switchMap } from "rxjs/operators";
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  standalone: false
 })
 export class LoginComponent {
-  userLogin: UserLogin = new UserLogin();
+  userLogin: WritableSignal<UserLogin> = signal<UserLogin>(new UserLogin());
+  isLoading: WritableSignal<boolean> = signal(false);
 
-  constructor(
-    private authenticationService: AuthenticationService,
-    private cookiesService: CookiesService,
-    private loggerService: LoggerService,
-    private translate: TranslateService,
-    private router: Router
-  ) { }
+  private authenticationService = inject(AuthenticationService);
+  private cookiesService = inject(CookiesService);
+  private loggerService = inject(LoggerService);
+  private translate = inject(TranslateService);
+  private router = inject(Router);
+
+  hidePassword = true;
 
   login() {
-    if (this.userLogin.email && this.userLogin.password) {
-      this.authenticationService.signin(this.userLogin).subscribe({
-        next: (response) => {
+    const credentials = this.userLogin();
+    if (credentials.email && credentials.password) {
+      this.isLoading.set(true);
+      this.authenticationService.signin(credentials).pipe(
+        switchMap((response) => {
           this.cookiesService.setCookie("userToken", JSON.stringify(response), 1);
-          this.authenticationService.loadUser().subscribe({
-            next: () => this.router.navigateByUrl('/nodes'),
-            error: (err) => {
-              this.loggerService.error("Erreur lors du chargement de l'utilisateur");
-              console.error(err);
-            }
-          });
+          return this.authenticationService.loadUser();
+        })
+      ).subscribe({
+        next: () => {
+          this.router.navigateByUrl('/nodes');
+          this.isLoading.set(false);
         },
         error: () => {
           this.translate.get("LOGIN_ERROR").subscribe(trad => {
             this.loggerService.error(trad);
           });
+          this.isLoading.set(false);
         }
       });
     }
@@ -50,6 +55,6 @@ export class LoginComponent {
   }
 
   subscribe() {
-    this.router.navigateByUrl("/subscribe")
+    this.router.navigateByUrl("/subscribe");
   }
 }

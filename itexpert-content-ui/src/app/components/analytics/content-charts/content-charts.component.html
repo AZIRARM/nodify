@@ -1,6 +1,5 @@
 <div class="analytics-dialog">
 
-  <!-- En-tête -->
   <div class="dialog-header">
     <div class="header-content">
       <div class="header-icon">
@@ -12,10 +11,9 @@
     </div>
   </div>
 
-  <!-- Contenu -->
   <div class="dialog-content">
 
-    <!-- Carte du graphique -->
+    @if (chartOptions().series) {
     <div class="chart-card">
 
       <div class="chart-header">
@@ -23,19 +21,20 @@
         <h3>{{ "CONTENT_TREE" | translate }}</h3>
       </div>
 
-      <!-- Conteneur ECharts -->
       <div class="chart-container">
-        <div echarts [options]="chartOptions" class="echarts-instance" [style.width]="'100%'" [style.height]="'100%'">
+        <div echarts [options]="chartOptions()" class="echarts-instance" [style.width]="'100%'" [style.height]="'100%'">
         </div>
       </div>
 
     </div>
+    }
 
-    <!-- Message si aucune donnée -->
-    <div class="empty-state" *ngIf="!chartOptions || !chartOptions.series">
+    @if (!chartOptions() || !chartOptions().series) {
+    <div class="empty-state">
       <mat-icon>insert_chart_outlined</mat-icon>
       <p>{{ "NO_CHART_DATA" | translate }}</p>
     </div>
+    }
 
   </div>
 </div>

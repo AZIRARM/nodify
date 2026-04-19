@@ -1,63 +1,70 @@
-import {Component, OnInit} from '@angular/core';
-import {MatDialogRef} from "@angular/material/dialog";
-import {TranslateService} from "@ngx-translate/core";
-import {LoggerService} from "../../../services/LoggerService";
-import {User} from "../../../modeles/User";
-import {UserService} from "../../../services/UserService";
-import {UserAccessService} from "../../../services/UserAccessService";
+import { Component, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import { MatDialogRef } from "@angular/material/dialog";
+import { TranslateService } from "@ngx-translate/core";
+import { LoggerService } from "../../../services/LoggerService";
+import { User } from "../../../modeles/User";
+import { UserService } from "../../../services/UserService";
+import { UserAccessService } from "../../../services/UserAccessService";
+import { switchMap } from "rxjs/operators";
 
 @Component({
   selector: 'app-password-dialog',
   templateUrl: './password-dialog.component.html',
-  styleUrls: ['./password-dialog.component.css']
+  styleUrls: ['./password-dialog.component.css'],
+  standalone: false
 })
 export class PasswordDialogComponent implements OnInit {
 
-  password: string = '';
-  newPassword: string = '';
-  confirmNewPassword: string = '';
-  user: User;
+  password: WritableSignal<string> = signal('');
+  newPassword: WritableSignal<string> = signal('');
+  confirmNewPassword: WritableSignal<string> = signal('');
+  user: WritableSignal<User> = signal<User>({} as User);
+  isLoading: WritableSignal<boolean> = signal(false);
 
-  constructor(
-    public dialogRef: MatDialogRef<PasswordDialogComponent>,
-    private translate: TranslateService,
-    private loggerService: LoggerService,
-    private userAccessService: UserAccessService,
-    private userService: UserService
-  ) {}
+  public dialogRef = inject(MatDialogRef<PasswordDialogComponent>);
+  private translate = inject(TranslateService);
+  private loggerService = inject(LoggerService);
+  private userAccessService = inject(UserAccessService);
+  private userService = inject(UserService);
 
   ngOnInit() {
-    this.user = this.userAccessService.getCurrentUser();
+    this.user.set(this.userAccessService.getCurrentUser());
   }
 
   isFormValid(): boolean {
-    return !!(this.password &&
-             this.newPassword &&
-             this.confirmNewPassword &&
-             this.newPassword === this.confirmNewPassword &&
-             this.user?.id);
+    return !!(this.password() &&
+      this.newPassword() &&
+      this.confirmNewPassword() &&
+      this.newPassword() === this.confirmNewPassword() &&
+      this.user()?.id);
   }
 
   validate() {
     if (this.isFormValid()) {
+      this.isLoading.set(true);
       this.userService.changePassword({
-        'password': this.password,
-        'newPassword': this.newPassword,
-        'userId': this.user?.id,
-      }).subscribe({
-        next: (data: any) => {
+        'password': this.password(),
+        'newPassword': this.newPassword(),
+        'userId': this.user()?.id,
+      }).pipe(
+        switchMap((data: any) => {
           if (data) {
-            this.translate.get("SAVE_SUCCESS").subscribe(trad => {
-              this.loggerService.success(trad);
-              this.dialogRef.close();
-              window.localStorage.removeItem("userToken");
-              window.location.reload();
-            });
+            return this.translate.get("SAVE_SUCCESS");
           }
+          throw new Error('No data');
+        })
+      ).subscribe({
+        next: (trad: string) => {
+          this.loggerService.success(trad);
+          this.dialogRef.close();
+          window.localStorage.removeItem("userToken");
+          window.location.reload();
+          this.isLoading.set(false);
         },
-        error: (error) => {
+        error: () => {
           this.translate.get("SAVE_ERROR").subscribe(trad => {
             this.loggerService.error(trad);
+            this.isLoading.set(false);
           });
         }
       });

@@ -40,7 +40,7 @@
     color: white;
 
     .header-content mat-icon {
-      color: rgba(255,255,255,0.9);
+      color: rgba(255, 255, 255, 0.9);
     }
   }
 
@@ -72,12 +72,21 @@
   align-items: center;
   justify-content: center;
 
-  &.green { color: #4caf50; }
-  &.red { color: #f44336; }
-  &.disabled { color: #ccc; }
+  &.green {
+    color: #4caf50;
+  }
+
+  &.red {
+    color: #f44336;
+  }
+
+  &.disabled {
+    color: #ccc;
+  }
 }
 
-.date-cell, .user-cell {
+.date-cell,
+.user-cell {
   font-size: 0.7rem;
 }
 
@@ -89,4 +98,40 @@
   display: inline-block;
 }
 
-/* SUPPRIMÉ : .action-icon-btn et .actions-cell (déjà dans commons) */
+.published-row {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.archived-row {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.snapshot-row {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.status-icon.green {
+  color: #4caf50;
+}
+
+.status-icon.orange {
+  color: #ff9800;
+}
+
+.status-icon.blue {
+  color: #2196f3;
+}
+
+.status-with-description {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .status-description {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.87);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

@@ -1,14 +1,15 @@
-import {AfterViewInit, Component, Input, Output, ViewChild} from '@angular/core';
-import {MatDialogRef} from '@angular/material/dialog';
-import {ContentNode} from "../../../../modeles/ContentNode";
-import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
+import { AfterViewInit, Component, Input, Output, ViewChild, signal, WritableSignal } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+import { ContentNode } from "../../../../modeles/ContentNode";
+import { CodemirrorComponent } from "@ctrl/ngx-codemirror";
 
 @Component({
   selector: 'app-content-code-xml',
   templateUrl: './content-code-xml.component.html',
-  styleUrl: './content-code-xml.component.css'
+  styleUrl: './content-code-xml.component.css',
+  standalone: false
 })
-export class ContentCodeXmlComponent implements AfterViewInit{
+export class ContentCodeXmlComponent implements AfterViewInit {
 
   @Output()
   @Input()
@@ -18,7 +19,7 @@ export class ContentCodeXmlComponent implements AfterViewInit{
 
   @ViewChild(CodemirrorComponent) codeMirrorComponent!: CodemirrorComponent;
 
-  isFullscreen: boolean = false;
+  isFullscreen: WritableSignal<boolean> = signal(false);
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -29,7 +30,7 @@ export class ContentCodeXmlComponent implements AfterViewInit{
   }
 
   toggleFullscreen() {
-    this.isFullscreen = !this.isFullscreen;
+    this.isFullscreen.set(!this.isFullscreen());
 
     setTimeout(() => {
       if (this.codeMirrorComponent?.codeMirror) {

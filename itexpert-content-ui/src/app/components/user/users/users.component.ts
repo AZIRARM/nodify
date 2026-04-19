@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal, WritableSignal } from '@angular/core';
 import { MatTableDataSource } from "@angular/material/table";
 import { User } from "../../../modeles/User";
 import { TranslateService } from "@ngx-translate/core";
@@ -8,41 +8,48 @@ import { UserService } from "../../../services/UserService";
 import { UserDialogComponent } from "../user-dialog/user-dialog.component";
 import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
 import { UserAccessService } from "../../../services/UserAccessService";
+import { of } from "rxjs";
+import { catchError, finalize, switchMap } from "rxjs/operators";
 
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
-  styleUrls: ['./users.component.css']
+  styleUrls: ['./users.component.css'],
+  standalone: false
 })
 export class UsersComponent implements OnInit {
   displayedColumns: string[] = ['Firstname', 'Lastname', 'Email', 'Role', 'Actions'];
-  dataSource: MatTableDataSource<User>;
+  dataSource: WritableSignal<MatTableDataSource<User>> = signal(new MatTableDataSource<User>([]));
   dialogRef: MatDialogRef<UserDialogComponent>;
-  user: User;
-
+  user: WritableSignal<User> = signal<User>({} as User);
   dialogValidationRef: MatDialogRef<ValidationDialogComponent>;
+  isLoading: WritableSignal<boolean> = signal(false);
 
-  constructor(private translate: TranslateService,
-    private loggerService: LoggerService,
-    private userService: UserService,
-    public userAccessService: UserAccessService,
-    private dialog: MatDialog) {
-  }
+  private translate = inject(TranslateService);
+  private loggerService = inject(LoggerService);
+  private userService = inject(UserService);
+  public userAccessService = inject(UserAccessService);
+  private dialog = inject(MatDialog);
 
   ngOnInit() {
-    this.user = this.userAccessService.getCurrentUser()
+    this.user.set(this.userAccessService.getCurrentUser());
     this.init();
   }
 
   init() {
-    this.userService.getAll().subscribe(
-      (response: any) => {
-        response = response.sort((a: any, b: any) => a.lastname.localeCompare(b.lastname));
-        this.dataSource = new MatTableDataSource(response);
-      },
-      (error) => {
+    this.isLoading.set(true);
+    this.userService.getAll().pipe(
+      catchError((error) => {
         console.error('Request failed with error');
-      });
+        return of([]);
+      }),
+      finalize(() => this.isLoading.set(false))
+    ).subscribe((response: any) => {
+      if (response) {
+        response = response.sort((a: any, b: any) => a.lastname.localeCompare(b.lastname));
+        this.dataSource.set(new MatTableDataSource(response));
+      }
+    });
   }
 
   create() {
@@ -52,8 +59,7 @@ export class UsersComponent implements OnInit {
       height: '80vh',
       width: '80vw',
       disableClose: true
-    }
-    );
+    });
     this.dialogRef.afterClosed()
       .subscribe(result => {
         if (result && result.data) {
@@ -69,8 +75,7 @@ export class UsersComponent implements OnInit {
       height: '80vh',
       width: '80vw',
       disableClose: true
-    }
-    );
+    });
     this.dialogRef.afterClosed()
       .subscribe(result => {
         if (result && result.data) {
@@ -86,26 +91,41 @@ export class UsersComponent implements OnInit {
   }
 
   save(user: User) {
-    this.userService.save(user).subscribe(
-      response => {
+    this.isLoading.set(true);
+    this.userService.save(user).pipe(
+      switchMap((response) => {
         if (!response) {
-          this.translate.get("SAVE_ERROR").subscribe(trad => {
-            this.loggerService.warn(trad);
-          });
+          return this.translate.get("SAVE_ERROR").pipe(
+            switchMap((trad: string) => {
+              this.loggerService.warn(trad);
+              throw new Error(trad);
+            })
+          );
         } else {
-          this.translate.get("SAVE_SUCCESS").subscribe(trad => {
-            this.loggerService.success(trad);
-            this.init();
-          });
+          return this.translate.get("SAVE_SUCCESS");
         }
-      },
-      error => {
-        this.translate.get("SAVE_ERROR").subscribe(trad1 => {
-          this.translate.get("CHANGE_USER_CODE_MESSAGE").subscribe(trad2 => {
-            this.loggerService.error(trad1 + ",  " + trad2);
+      }),
+      catchError((error) => {
+        if (error.message?.includes("SAVE_ERROR")) {
+          return this.translate.get("CHANGE_USER_CODE_MESSAGE").pipe(
+            switchMap((trad2: string) => {
+              this.loggerService.error(error.message + ",  " + trad2);
+              throw error;
+            })
+          );
+        }
+        return this.translate.get("SAVE_ERROR").pipe(
+          switchMap((trad: string) => {
+            this.loggerService.error(trad);
+            throw error;
           })
-        })
-      });
+        );
+      }),
+      finalize(() => this.isLoading.set(false))
+    ).subscribe((trad: string) => {
+      this.loggerService.success(trad);
+      this.init();
+    });
   }
 
   delete(user: User) {
@@ -118,27 +138,29 @@ export class UsersComponent implements OnInit {
       width: '80vw',
       disableClose: true
     });
-    this.dialogValidationRef.afterClosed()
-      .subscribe((result: any) => {
+
+    this.dialogValidationRef.afterClosed().pipe(
+      switchMap((result: any) => {
         if (result && result.data && result.data === "validated") {
-
-
-          this.userService.delete(user.id).subscribe(
-            response => {
-              this.translate.get("DELETE_SUCCESS").subscribe(trad => {
-                this.loggerService.success(trad);
-                this.init();
-              });
-            },
-            error => {
-              this.translate.get("DELETE_ERROR").subscribe(trad => {
-                this.loggerService.error(trad);
-              })
-            });
-
+          return this.userService.delete(user.id).pipe(
+            switchMap(() => this.translate.get("DELETE_SUCCESS")),
+            catchError((error: any) => {
+              return this.translate.get("DELETE_ERROR").pipe(
+                switchMap((trad: string) => {
+                  this.loggerService.error(trad);
+                  throw error;
+                })
+              );
+            })
+          );
         }
-      });
-
+        return of(null);
+      })
+    ).subscribe((trad: string | null) => {
+      if (trad) {
+        this.loggerService.success(trad);
+        this.init();
+      }
+    });
   }
-
 }

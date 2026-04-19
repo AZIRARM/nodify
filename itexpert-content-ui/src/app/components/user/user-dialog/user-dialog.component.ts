@@ -1,76 +1,75 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {NodeService} from "../../../services/NodeService";
-import {User} from "../../../modeles/User";
-import {RoleService} from "../../../services/RoleService";
-import {StatusEnum} from "../../../modeles/StatusEnum";
-import {UserAccessService} from "../../../services/UserAccessService";
+import { Component, Inject, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { NodeService } from "../../../services/NodeService";
+import { User } from "../../../modeles/User";
+import { RoleService } from "../../../services/RoleService";
+import { StatusEnum } from "../../../modeles/StatusEnum";
+import { UserAccessService } from "../../../services/UserAccessService";
+import { of } from "rxjs";
+import { catchError } from "rxjs/operators";
 
 @Component({
   selector: 'app-user-dialog',
   templateUrl: './user-dialog.component.html',
-  styleUrls: ['./user-dialog.component.css']
+  styleUrls: ['./user-dialog.component.css'],
+  standalone: false
 })
 export class UserDialogComponent implements OnInit {
 
   user: User;
-  connectedUser: User;
-  roles: any[] = [];
-  projects: any[] = [];
+  connectedUser: WritableSignal<User> = signal<User>({} as User);
+  roles: WritableSignal<any[]> = signal<any[]>([]);
+  projects: WritableSignal<any[]> = signal<any[]>([]);
 
-  constructor(
-    public dialogRef: MatDialogRef<UserDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) private currentUser: User,
-    public userAccessService: UserAccessService,
-    private nodeService: NodeService,
-    private roleService: RoleService,
-  ) {
-    if (currentUser) {
-      this.user = currentUser;
+  public dialogRef = inject(MatDialogRef<UserDialogComponent>);
+  public userAccessService = inject(UserAccessService);
+  private nodeService = inject(NodeService);
+  private roleService = inject(RoleService);
+  private currentUser = inject(MAT_DIALOG_DATA);
+
+  constructor() {
+    if (this.currentUser) {
+      this.user = this.currentUser;
     } else {
       this.user = new User();
     }
   }
 
   ngOnInit() {
-    this.connectedUser = this.userAccessService.getCurrentUser();
+    this.connectedUser.set(this.userAccessService.getCurrentUser());
     this.init();
   }
 
   init() {
-    this.roleService.getAll().subscribe(
-      (data: any) => {
-        if (data && Array.isArray(data)) {
-          this.roles = data;
-        } else if (data) {
-          // Si data n'est pas un tableau mais un objet, on le convertit
-          this.roles = Object.values(data);
-        } else {
-          this.roles = [];
-        }
-      },
-      error => {
+    this.roleService.getAll().pipe(
+      catchError(error => {
         console.error('Erreur chargement rôles', error);
-        this.roles = [];
+        return of([]);
+      })
+    ).subscribe((data: any) => {
+      if (data && Array.isArray(data)) {
+        this.roles.set(data);
+      } else if (data) {
+        this.roles.set(Object.values(data));
+      } else {
+        this.roles.set([]);
       }
-    );
+    });
 
-    this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).subscribe(
-      (data: any) => {
-        if (data && Array.isArray(data)) {
-          this.projects = data;
-        } else if (data) {
-          // Si data n'est pas un tableau mais un objet, on le convertit
-          this.projects = Object.values(data);
-        } else {
-          this.projects = [];
-        }
-      },
-      error => {
+    this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).pipe(
+      catchError(error => {
         console.error('Erreur chargement projets', error);
-        this.projects = [];
+        return of([]);
+      })
+    ).subscribe((data: any) => {
+      if (data && Array.isArray(data)) {
+        this.projects.set(data);
+      } else if (data) {
+        this.projects.set(Object.values(data));
+      } else {
+        this.projects.set([]);
       }
-    );
+    });
   }
 
   get selectedRole(): string {
@@ -82,7 +81,7 @@ export class UserDialogComponent implements OnInit {
   }
 
   connectedUserIsAdmin(): boolean {
-    return this.connectedUser?.roles?.includes("ADMIN") || false;
+    return this.connectedUser()?.roles?.includes("ADMIN") || false;
   }
 
   userIsAdmin(): boolean {
@@ -91,11 +90,11 @@ export class UserDialogComponent implements OnInit {
 
   isFormValid(): boolean {
     return !!(this.user &&
-             this.user.email &&
-             this.user.firstname &&
-             this.user.lastname &&
-             this.user.roles &&
-             this.user.roles.length > 0);
+      this.user.email &&
+      this.user.firstname &&
+      this.user.lastname &&
+      this.user.roles &&
+      this.user.roles.length > 0);
   }
 
   getSelectedProjectsDisplay(): string {
@@ -104,11 +103,11 @@ export class UserDialogComponent implements OnInit {
     }
 
     if (this.user.projects.length === 1) {
-      const project = this.projects.find(p => p.code === this.user.projects[0]);
+      const project = this.projects().find(p => p.code === this.user.projects[0]);
       return project?.name || this.user.projects[0];
     }
 
-    const firstProject = this.projects.find(p => p.code === this.user.projects[0]);
+    const firstProject = this.projects().find(p => p.code === this.user.projects[0]);
     const count = this.user.projects.length - 1;
 
     return `${firstProject?.name || this.user.projects[0]} +${count}`;
@@ -126,6 +125,6 @@ export class UserDialogComponent implements OnInit {
         this.user.roles.push(role);
       }
     }
-    this.dialogRef.close({data: this.user});
+    this.dialogRef.close({ data: this.user });
   }
 }

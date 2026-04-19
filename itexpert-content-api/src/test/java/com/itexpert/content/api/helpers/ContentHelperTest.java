@@ -27,81 +27,81 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ContentHelperTest {
 
-    @Mock
-    private ContentNodeMapper contentNodeMapper;
-    @Mock
-    private ContentDisplayHandler contentDisplayHandler;
-    @Mock
-    private ContentNodeRepository contentNodeRepository;
-    @Mock
-    private NodeRepository nodeRepository;
-    @Mock
-    private PluginRepository pluginRepository;
-    @Mock
-    private PluginHelper pluginHelper;
+        @Mock
+        private ContentNodeMapper contentNodeMapper;
+        @Mock
+        private ContentDisplayHandler contentDisplayHandler;
+        @Mock
+        private ContentNodeRepository contentNodeRepository;
+        @Mock
+        private NodeRepository nodeRepository;
+        @Mock
+        private PluginRepository pluginRepository;
+        @Mock
+        private PluginHelper pluginHelper;
 
-    @InjectMocks
-    private ContentHelper contentHelper;
+        @InjectMocks
+        private ContentHelper contentHelper;
 
-    private ContentNode mockEntity;
-    private com.itexpert.content.lib.models.ContentNode mockModel;
-    private MockedStatic<RulesUtils> rulesUtilsMockedStatic;
+        private ContentNode mockEntity;
+        private com.itexpert.content.lib.models.ContentNode mockModel;
+        private MockedStatic<RulesUtils> rulesUtilsMockedStatic;
 
-    @BeforeEach
-    void setUp() {
-        mockEntity = new ContentNode();
-        mockEntity.setCode("CONTENT-1");
-        mockEntity.setContent("A simple text content");
+        @BeforeEach
+        void setUp() {
+                mockEntity = new ContentNode();
+                mockEntity.setCode("CONTENT-1");
+                mockEntity.setContent("A simple text content");
 
-        mockModel = new com.itexpert.content.lib.models.ContentNode();
-        mockModel.setCode("CONTENT-1");
+                mockModel = new com.itexpert.content.lib.models.ContentNode();
+                mockModel.setCode("CONTENT-1");
 
-        rulesUtilsMockedStatic = Mockito.mockStatic(RulesUtils.class);
-    }
+                rulesUtilsMockedStatic = Mockito.mockStatic(RulesUtils.class);
+        }
 
-    @AfterEach
-    void tearDown() {
-        rulesUtilsMockedStatic.close();
-    }
+        @AfterEach
+        void tearDown() {
+                rulesUtilsMockedStatic.close();
+        }
 
-    @Test
-    void testFindByCodeAndStatus_Success() {
-        when(contentNodeRepository.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED.name()))
-                .thenReturn(Mono.just(mockEntity));
-        when(contentNodeMapper.fromEntity(mockEntity)).thenReturn(mockModel);
-        
-        rulesUtilsMockedStatic.when(() -> RulesUtils.evaluateContentNode(mockModel))
-                .thenReturn(Mono.just(true));
+        @Test
+        void testFindByCodeAndStatus_Success() {
+                when(contentNodeRepository.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED.name()))
+                                .thenReturn(Mono.just(mockEntity));
+                when(contentNodeMapper.fromEntity(mockEntity)).thenReturn(mockModel);
 
-        StepVerifier.create(contentHelper.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED))
-                .expectNext(mockModel)
-                .verifyComplete();
-    }
+                rulesUtilsMockedStatic.when(() -> RulesUtils.evaluateContentNode(mockModel))
+                                .thenReturn(Mono.just(true));
 
-    @Test
-    void testFindByCodeAndStatus_FailsEvaluation() {
-        when(contentNodeRepository.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED.name()))
-                .thenReturn(Mono.just(mockEntity));
-        when(contentNodeMapper.fromEntity(mockEntity)).thenReturn(mockModel);
-        
-        rulesUtilsMockedStatic.when(() -> RulesUtils.evaluateContentNode(mockModel))
-                .thenReturn(Mono.just(false));
+                StepVerifier.create(contentHelper.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED))
+                                .expectNext(mockModel)
+                                .verifyComplete();
+        }
 
-        StepVerifier.create(contentHelper.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED))
-                .verifyComplete();
-    }
+        @Test
+        void testFindByCodeAndStatus_FailsEvaluation() {
+                when(contentNodeRepository.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED.name()))
+                                .thenReturn(Mono.just(mockEntity));
+                when(contentNodeMapper.fromEntity(mockEntity)).thenReturn(mockModel);
 
-    @Test
-    void testFillContents_SimpleContent() {
-        // When content has no codes 
-        when(pluginHelper.fillPlugin(mockEntity)).thenReturn(Mono.just(mockEntity));
-        when(contentNodeMapper.fromEntity(mockEntity)).thenReturn(mockModel);
-        
-        rulesUtilsMockedStatic.when(() -> RulesUtils.evaluateContentNode(mockModel))
-                .thenReturn(Mono.just(true));
+                rulesUtilsMockedStatic.when(() -> RulesUtils.evaluateContentNode(mockModel))
+                                .thenReturn(Mono.just(false));
 
-        StepVerifier.create(contentHelper.fillContents(mockEntity, StatusEnum.PUBLISHED, "fr"))
-                .expectNext(mockEntity)
-                .verifyComplete();
-    }
+                StepVerifier.create(contentHelper.findByCodeAndStatus("CONTENT-1", StatusEnum.PUBLISHED))
+                                .verifyComplete();
+        }
+
+        @Test
+        void testFillContents_SimpleContent() {
+                // When content has no codes
+                when(pluginHelper.fillPlugin(mockEntity)).thenReturn(Mono.just(mockEntity));
+                when(contentNodeMapper.fromEntity(mockEntity)).thenReturn(mockModel);
+
+                rulesUtilsMockedStatic.when(() -> RulesUtils.evaluateContentNode(mockModel))
+                                .thenReturn(Mono.just(true));
+
+                StepVerifier.create(contentHelper.fillContents(mockEntity, StatusEnum.PUBLISHED, "fr"))
+                                .expectNext(mockEntity)
+                                .verifyComplete();
+        }
 }

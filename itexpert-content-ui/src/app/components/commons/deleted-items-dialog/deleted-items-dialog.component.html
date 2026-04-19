@@ -18,9 +18,18 @@
   <!-- Contenu -->
   <div mat-dialog-content class="dialog-content">
 
+    <!-- Indicateur de chargement -->
+    @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>{{ 'LOADING' | translate }}</p>
+    </div>
+    }
+
     <!-- Tableau des éléments supprimés -->
+    @if (!isLoading()) {
     <div class="table-wrapper">
-      <table mat-table [dataSource]="dataSource" class="deleted-table">
+      <table mat-table [dataSource]="dataSource()" class="deleted-table">
 
         <!-- Colonne Nom -->
         <ng-container matColumnDef="Name">
@@ -49,7 +58,8 @@
         </ng-container>
 
         <!-- Colonne Type (optionnelle) -->
-        <ng-container matColumnDef="Type" *ngIf="displayTypeColumn">
+        @if (displayTypeColumn) {
+        <ng-container matColumnDef="Type">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
               <mat-icon class="header-icon">category</mat-icon>
@@ -60,6 +70,7 @@
             <span class="type-badge">{{ element.type }}</span>
           </td>
         </ng-container>
+        }
 
         <!-- Colonne Dernière modification -->
         <ng-container matColumnDef="Last Modification">
@@ -99,16 +110,14 @@
             <div class="actions-cell">
 
               <!-- Restaurer -->
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="activate(element)"
-                      [matTooltip]="'ACTIVATE' | translate">
+              <button mat-icon-button class="action-icon-btn" (click)="activate(element)"
+                [matTooltip]="'ACTIVATE' | translate">
                 <mat-icon class="text-primary">restore_from_trash</mat-icon>
               </button>
 
               <!-- Supprimer définitivement -->
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="delete(element)"
-                      [matTooltip]="'DELETE' | translate">
+              <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
+                [matTooltip]="'DELETE' | translate">
                 <mat-icon class="text-danger">delete</mat-icon>
               </button>
             </div>
@@ -116,17 +125,19 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            [class.granted-row]="row.IsGranted"
-            class="deleted-row"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.granted-row]="row.IsGranted"
+          class="deleted-row"></tr>
       </table>
 
       <!-- Message si aucune donnée -->
-      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+      @if (dataSource().data.length === 0) {
+      <div class="empty-state">
         <mat-icon>inbox</mat-icon>
         <p>{{ 'NO_DELETED_ITEMS' | translate }}</p>
       </div>
+      }
     </div>
+    }
   </div>
 
   <!-- Actions -->

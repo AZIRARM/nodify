@@ -1,87 +1,84 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {Node} from "../../../modeles/Node";
-import {Language} from "../../../modeles/Language";
-import {NodeService} from "../../../services/NodeService";
-import {LanguageService} from "../../../services/LanguageService";
-import {LoggerService} from "../../../services/LoggerService";
-import {TranslateService} from "@ngx-translate/core";
+import { Component, Inject, OnDestroy, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { Node } from "../../../modeles/Node";
+import { Language } from "../../../modeles/Language";
+import { NodeService } from "../../../services/NodeService";
+import { LanguageService } from "../../../services/LanguageService";
+import { LoggerService } from "../../../services/LoggerService";
+import { TranslateService } from "@ngx-translate/core";
 import { SlugService } from 'src/app/services/SlugService';
-import { toArray, map } from 'rxjs/operators';
-import { interval, Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { interval, Observable, Subscription, of } from 'rxjs';
 import { LockService } from 'src/app/services/LockService';
-import {AuthenticationService} from "../../../services/AuthenticationService";
-import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
+import { AuthenticationService } from "../../../services/AuthenticationService";
+import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
+import { catchError, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-node-dialog',
   templateUrl: './node-dialog.component.html',
-  styleUrls: ['./node-dialog.component.css']
+  styleUrls: ['./node-dialog.component.css'],
+  standalone: false
 })
-export class NodeDialogComponent implements OnInit, OnDestroy  {
+export class NodeDialogComponent implements OnInit, OnDestroy {
 
   node: Node;
   isProject: boolean;
   isCreation: boolean;
 
-  parents: Node[] = [];
-  childreens: Node[] = [];
-  languages: Language[] = [];
+  parents: WritableSignal<Node[]> = signal<Node[]>([]);
+  childreens: WritableSignal<Node[]> = signal<Node[]>([]);
+  languages: WritableSignal<Language[]> = signal<Language[]>([]);
 
-  currentSlug: string  | null = null;
-  slugAvailable: boolean | null = true;
+  currentSlug: WritableSignal<string | null> = signal<string | null>(null);
+  slugAvailable: WritableSignal<boolean | null> = signal<boolean | null>(true);
+  isLoading: WritableSignal<boolean> = signal(false);
 
-  private lockCheckSub: Subscription;
-
+  private lockCheckSub?: Subscription;
   validationModal: MatDialogRef<ValidationDialogComponent>;
 
-  constructor(
-    public dialogRef: MatDialogRef<NodeDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public content: Node,
-    private nodeService: NodeService,
-    private languageService: LanguageService,
-    private translateService: TranslateService,
-    private loggerService: LoggerService,
-    private slugService: SlugService,
-    private authenticationService: AuthenticationService,
-    private lockService: LockService,
-    private dialog: MatDialog
-  ) {
-    if (content) {
-      this.node = content;
+  public dialogRef = inject(MatDialogRef<NodeDialogComponent>);
+  private nodeService = inject(NodeService);
+  private languageService = inject(LanguageService);
+  private translateService = inject(TranslateService);
+  private loggerService = inject(LoggerService);
+  private slugService = inject(SlugService);
+  private authenticationService = inject(AuthenticationService);
+  private lockService = inject(LockService);
+  private dialog = inject(MatDialog);
+  private content = inject(MAT_DIALOG_DATA);
+
+  constructor() {
+    if (this.content) {
+      this.node = this.content;
       this.isProject = !this.node.parentCode;
       this.isCreation = !this.node.id;
-      this.currentSlug = this.node.slug;
+      this.currentSlug.set(this.node.slug);
     }
   }
 
   ngOnInit(): void {
     this.init();
 
-    // 🔒 Tente d’acquérir le lock en entrant dans l’édition
-    if(this.node && this.node.code) {
+    if (this.node && this.node.code) {
       this.lockService.acquire(this.node.code).subscribe(acquired => {
         if (!acquired) {
           this.translateService.get("RESOURCE_LOCKED")
-              .subscribe(translation => {
-                this.loggerService.warn(translation);
-              });
+            .subscribe(translation => {
+              this.loggerService.warn(translation);
+            });
           this.dialogRef.close();
         } else {
-          // Si acquis → démarre la surveillance d’inactivité à 30 min
           this.lockService.startInactivityWatcher(30 * 60 * 1000, () => {
-
-          this.translateService.get("RESOURCE_RELEASED")
+            this.translateService.get("RESOURCE_RELEASED")
               .subscribe(translation => {
                 this.loggerService.warn(translation);
               });
             this.dialogRef.close();
           });
 
-
-          // 🔄 Vérifie le lock toutes les 10s
           this.lockCheckSub = interval(10000).subscribe(() => {
-            this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo:any) => {
+            this.lockService.getLockInfoSocket(this.node.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
               if (lockInfo.locked) {
                 this.translateService.get("RESOURCE_LOCKED_BY_OTHER")
                   .subscribe(translation => this.loggerService.warn(translation));
@@ -89,88 +86,98 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
               }
             });
           });
-
         }
       });
     }
   }
 
-   ngOnDestroy(): void {
+  ngOnDestroy(): void {
     if (this.lockCheckSub) {
       this.lockCheckSub.unsubscribe();
     }
     this.lockService.release();
-   }
+  }
 
   cancel() {
     this.dialogRef.close();
   }
 
   validate() {
+    this.isLoading.set(true);
     this.nodeService.slugExists(this.node.code, this.node.slug)
+      .pipe(
+        catchError((error) => {
+          this.translateService.get('SLUG_ALREADY_EXISTS')
+            .subscribe(translation => {
+              this.loggerService.error(translation);
+            });
+          return of(null);
+        })
+      )
       .subscribe((exists: any) => {
         if (exists) {
-          this.translateService.get('SLUG ALREADY EXISTS')
+          this.translateService.get('SLUG_ALREADY_EXISTS')
             .subscribe(translation => {
               this.loggerService.error(translation);
             });
         } else {
-          this.dialogRef.close({data: this.node});
+          this.dialogRef.close({ data: this.node });
         }
+        this.isLoading.set(false);
       });
   }
 
-
   init() {
-    this.nodeService.getAllNodes().subscribe(
-      data => {
-        if (data) {
-          this.parents = <Array<Node>>data;
-          this.childreens = <Array<Node>>data;
-          let tabChildreens: Node[] = new Array();
-          this.childreens.map(child => {
-            if (child.id !== this.node.id && child.id !== this.node.parentCode && this.node.id !== child.id) {
-              tabChildreens.push(child);
-            }
-          });
-          this.childreens = tabChildreens;
-        }
-      },
-      error => {
+    this.isLoading.set(true);
+    this.nodeService.getAllNodes().pipe(
+      catchError(error => {
         console.error(error);
+        return of([]);
+      })
+    ).subscribe(data => {
+      if (data) {
+        this.parents.set(data as Node[]);
+        let tabChildreens: Node[] = [];
+        (data as Node[]).map(child => {
+          if (child.id !== this.node.id && child.id !== this.node.parentCode && this.node.id !== child.id) {
+            tabChildreens.push(child);
+          }
+        });
+        this.childreens.set(tabChildreens);
       }
-    );
+      this.isLoading.set(false);
+    });
 
-    this.languageService.getAll().subscribe(
-      data => {
-        if (data) {
-          this.languages = <Array<Language>>data;
-        }
-      },
-      error => {
+    this.languageService.getAll().pipe(
+      catchError(error => {
         console.error(error);
+        return of([]);
+      })
+    ).subscribe(data => {
+      if (data) {
+        this.languages.set(data as Language[]);
       }
-    );
+    });
   }
 
   generateCode() {
     if (this.node && !this.node.id) {
       this.node.code = this.node.name.replace(/[\W_]+/g, "_").toUpperCase() + '-' +
-        (this.isProject ? '' : this.node.parentCodeOrigin.split("-")[0] + '-') +
+        (this.isProject ? '' : this.node.parentCodeOrigin?.split("-")[0] + '-') +
         (new Date()).getTime();
     }
   }
 
-    onSlugChange(slug: string) {
+  onSlugChange(slug: string) {
     if (!slug) {
-      this.slugAvailable = null;
+      this.slugAvailable.set(null);
       return;
     }
 
     (this.slugService.exists(slug) as Observable<string[]>)
       .pipe(
         map((codes: (string | null)[]) => {
-          const filtered = codes.filter(c => c != null); // supprime null / undefined
+          const filtered = codes.filter(c => c != null);
           return (
             filtered.length === 0 ||
             (filtered.length === 1 && filtered[0] === this.node.code)
@@ -178,56 +185,52 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
         })
       )
       .subscribe((available: boolean) => {
-        this.slugAvailable = available;
+        this.slugAvailable.set(available);
         if (available) {
           this.node.slug = slug;
         }
       });
-    }
+  }
 
   forcePropagation() {
-     this.validationModal = this.dialog.open(ValidationDialogComponent, {
-          data: {
-            title: "PROPAGATION_MAX_HISTORY_TITLE",
-            message: "PROPAGATION_MAX_HISTORY_MESSAGE"
-          },
-          height: '80vh',
-          width: '80vw',
-          disableClose: true
-        });
-        this.validationModal.afterClosed()
-          .subscribe(result => {
-            if (result && result.data !== 'canceled') {
-              let isSnapshot: boolean = true;
-
-              this.nodeService.propagateMaxHistoryToKeep(this.node.code).subscribe(
-                response => {
-                  this.translateService.get("PROPAGATION_MAX_HISTORY_SUCCESS").subscribe(trad => {
-                    this.loggerService.success(trad);
-                    this.init();
-                  })
-                },
-                error => {
-                  this.translateService.get("PROPAGATION_MAX_HISTORY_ERROR").subscribe(trad1 => {
-                      this.loggerService.error(trad1);
-                  })
-                });
-            }
+    this.validationModal = this.dialog.open(ValidationDialogComponent, {
+      data: {
+        title: "PROPAGATION_MAX_HISTORY_TITLE",
+        message: "PROPAGATION_MAX_HISTORY_MESSAGE"
+      },
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    });
+    this.validationModal.afterClosed()
+      .subscribe(result => {
+        if (result && result.data !== 'canceled') {
+          this.nodeService.propagateMaxHistoryToKeep(this.node.code).pipe(
+            switchMap(() => this.translateService.get("PROPAGATION_MAX_HISTORY_SUCCESS")),
+            catchError((error) => {
+              return this.translateService.get("PROPAGATION_MAX_HISTORY_ERROR").pipe(
+                switchMap((trad1: string) => {
+                  this.loggerService.error(trad1);
+                  throw error;
+                })
+              );
+            })
+          ).subscribe((trad: string) => {
+            this.loggerService.success(trad);
+            this.init();
           });
-    }
+        }
+      });
+  }
 
-  // Dans votre composant, ajoutez ces méthodes
-
-  // Vérification de la validité du formulaire
   isFormValid(): boolean {
     return !!(this.node.defaultLanguage
       && this.node.code
-      && this.slugAvailable === true
+      && this.slugAvailable() === true
       && this.node.name
       && this.node.name.trim().length >= 4);
   }
 
-  // Affichage des langues sélectionnées
   getSelectedLanguagesDisplay(): string {
     if (!this.node.languages || this.node.languages.length === 0) {
       return '';
@@ -237,10 +240,9 @@ export class NodeDialogComponent implements OnInit, OnDestroy  {
       return this.node.languages[0];
     }
 
-    const firstLang = this.languages.find(l => l.code === this.node.languages[0]);
+    const firstLang = this.languages().find(l => l.code === this.node.languages[0]);
     const count = this.node.languages.length - 1;
 
     return `${firstLang?.name || firstLang?.code || this.node.languages[0]} +${count}`;
   }
-
 }

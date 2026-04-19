@@ -12,19 +12,30 @@
     </div>
 
     <!-- Actions dans l'en-tête -->
-    <div class="header-actions" *ngIf="userAccessService.isAdmin()">
-      <button mat-fab class="create-fab" (click)="create()" matTooltip="{{ 'CREATE_USER' | translate }}">
+    @if (userAccessService.isAdmin()) {
+    <div class="header-actions">
+      <button mat-fab class="create-fab" (click)="create()" [matTooltip]="'CREATE_USER' | translate">
         <mat-icon>add</mat-icon>
       </button>
     </div>
+    }
   </div>
 
   <!-- Contenu -->
   <div class="dialog-content">
 
+    <!-- Indicateur de chargement -->
+    @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>{{ 'LOADING' | translate }}</p>
+    </div>
+    }
+
     <!-- Tableau des utilisateurs -->
+    @if (!isLoading()) {
     <div class="table-wrapper">
-      <table mat-table [dataSource]="dataSource" class="users-table">
+      <table mat-table [dataSource]="dataSource()" class="users-table">
 
         <!-- Colonne Prénom -->
         <ng-container matColumnDef="Firstname">
@@ -92,22 +103,23 @@
             <div class="actions-cell">
 
               <!-- Édition -->
-              @if(userAccessService.isAdmin()) {
+              @if (userAccessService.isAdmin()) {
               <button mat-icon-button class="action-icon-btn" (click)="update(element)"
-                matTooltip="{{ 'EDIT' | translate }}">
+                [matTooltip]="'EDIT' | translate">
                 <mat-icon class="text-primary">edit</mat-icon>
               </button>
               }
 
               <!-- Suppression (sauf admin) -->
-              @if(userAccessService.isAdmin() && !element.roles?.includes('ADMIN')) {
+              @if (userAccessService.isAdmin() && !element.roles?.includes('ADMIN')) {
               <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
-                matTooltip="{{ 'DELETE' | translate }}">
+                [matTooltip]="'DELETE' | translate">
                 <mat-icon class="text-danger">delete</mat-icon>
               </button>
               }
-              <!-- Suppression (sauf admin) -->
-              @if(userAccessService.isAdmin() && !element.roles?.includes('ADMIN')) {
+
+              <!-- Activation/Désactivation (sauf admin) -->
+              @if (userAccessService.isAdmin() && !element.roles?.includes('ADMIN')) {
               <mat-slide-toggle [checked]="element.validated" (change)="activate(element)"
                 [matTooltip]="(element.validated ? 'DEACTIVATE' : 'ACTIVATE') | translate" color="primary">
               </mat-slide-toggle>
@@ -122,10 +134,13 @@
       </table>
 
       <!-- Message si aucun utilisateur -->
-      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+      @if (dataSource().data.length === 0) {
+      <div class="empty-state">
         <mat-icon>people_outline</mat-icon>
         <p>{{ 'NO_USERS' | translate }}</p>
       </div>
+      }
     </div>
+    }
   </div>
 </div>

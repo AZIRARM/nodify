@@ -6,7 +6,8 @@
         <mat-icon>storage</mat-icon>
         {{ "DATAS" | translate }}
       </h2>
-      <div class="content-info" *ngIf="contentNode">
+      @if (contentNode) {
+      <div class="content-info">
         <span>
           <mat-icon>title</mat-icon>
           {{ contentNode.description || contentNode.code }}
@@ -16,10 +17,20 @@
           {{ contentNode.type }}
         </span>
       </div>
+      }
     </div>
 
+    <!-- Indicateur de chargement -->
+    @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>{{ 'LOADING' | translate }}</p>
+    </div>
+    }
+
+    @if (!isLoading()) {
     <div class="table-wrapper">
-      <table mat-table [dataSource]="dataSource" class="datas-table">
+      <table mat-table [dataSource]="dataSource()" class="datas-table">
         <ng-container matColumnDef="Content">
           <th mat-header-cell *matHeaderCellDef>{{ "CONTENT" | translate }}</th>
           <td mat-cell *matCellDef="let element">
@@ -77,10 +88,7 @@
         <ng-container matColumnDef="Actions">
           <th mat-header-cell *matHeaderCellDef class="actions-cell">{{ "ACTIONS" | translate }}</th>
           <td mat-cell *matCellDef="let element" class="actions-cell">
-            <mat-icon
-              class="action-icon delete"
-              (click)="deleteData(element.id)"
-              matTooltip="{{ 'DELETE' | translate }}"
+            <mat-icon class="action-icon delete" (click)="deleteData(element.id)" [matTooltip]="'DELETE' | translate"
               matTooltipPosition="above">
               delete
             </mat-icon>
@@ -92,17 +100,15 @@
       </table>
     </div>
 
-    <div class="pagination-container" *ngIf="total > 0">
-      <mat-paginator
-        [length]="total"
-        [pageSize]="currentPageSize"
-        [pageSizeOptions]="[5, 10, 25, 50]"
-        [pageIndex]="currentIndex"
-        (page)="gotoNextPage($event)"
-        [showFirstLastButtons]="true"
+    @if (total() > 0) {
+    <div class="pagination-container">
+      <mat-paginator [length]="total()" [pageSize]="currentPageSize()" [pageSizeOptions]="[5, 10, 25, 50]"
+        [pageIndex]="currentIndex()" (page)="gotoNextPage($event)" [showFirstLastButtons]="true"
         aria-label="Select page">
       </mat-paginator>
     </div>
+    }
+    }
 
     <div class="dialog-actions">
       <button mat-button mat-dialog-close color="primary" (click)="close()">

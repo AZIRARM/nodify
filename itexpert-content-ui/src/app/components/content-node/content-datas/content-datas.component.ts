@@ -1,58 +1,60 @@
-import {AfterViewInit, Component, Inject, ViewChild} from '@angular/core';
-import {TranslateService} from "@ngx-translate/core";
-import {LoggerService} from "../../../services/LoggerService";
-import {ContentNode} from "../../../modeles/ContentNode";
-import {DataService} from "../../../services/DataService";
-import {MatTableDataSource} from "@angular/material/table";
-import {Data} from "../../../modeles/Data";
-import {ToastrService} from "ngx-toastr";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {MatPaginator} from "@angular/material/paginator";
-import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
+import { AfterViewInit, Component, Inject, ViewChild, inject, signal, WritableSignal } from '@angular/core';
+import { TranslateService } from "@ngx-translate/core";
+import { LoggerService } from "../../../services/LoggerService";
+import { ContentNode } from "../../../modeles/ContentNode";
+import { DataService } from "../../../services/DataService";
+import { MatTableDataSource } from "@angular/material/table";
+import { Data } from "../../../modeles/Data";
+import { ToastrService } from "ngx-toastr";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatPaginator } from "@angular/material/paginator";
+import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
+import { catchError, finalize, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-content-datas',
   templateUrl: './content-datas.component.html',
-  styleUrl: './content-datas.component.css'
+  styleUrl: './content-datas.component.css',
+  standalone: false
 })
 export class ContentDatasComponent implements AfterViewInit {
 
   contentNode: ContentNode;
-  datas: Data[] = [];
-
-
+  datas: WritableSignal<Data[]> = signal<Data[]>([]);
   displayedColumns: string[] = ['Content', 'Type', 'Key', 'Creation', 'Modification', 'Data', 'Actions'];
 
   @ViewChild(MatPaginator)
   paginator!: MatPaginator;
-  dataSource: MatTableDataSource<Data>;
-  total: number;
-
-  currentIndex: number = 0;
-  currentPageSize: number = 5;
+  dataSource: WritableSignal<MatTableDataSource<Data>> = signal(new MatTableDataSource<Data>([]));
+  total: WritableSignal<number> = signal(0);
+  currentIndex: WritableSignal<number> = signal(0);
+  currentPageSize: WritableSignal<number> = signal(5);
+  isLoading: WritableSignal<boolean> = signal(false);
 
   dialogRefValidation: MatDialogRef<ValidationDialogComponent>;
 
+  private translate = inject(TranslateService);
+  private loggerService = inject(LoggerService);
+  private toast = inject(ToastrService);
+  private dataService = inject(DataService);
+  private dialog = inject(MatDialog);
+  public dialogRef = inject(MatDialogRef<ContentDatasComponent>);
+  public content = inject(MAT_DIALOG_DATA);
 
-  constructor(private translate: TranslateService,
-              private loggerService: LoggerService,
-              private toast: ToastrService,
-              private dataService: DataService,
-              private dialog: MatDialog,
-              @Inject(MAT_DIALOG_DATA) public content: ContentNode,
-              public dialogRef: MatDialogRef<ContentDatasComponent>,
-  ) {
-    this.contentNode = content
+  constructor() {
+    this.contentNode = this.content;
   }
 
   ngAfterViewInit() {
-    this.dataSource = new MatTableDataSource();
-    this.dataSource.paginator = this.paginator;
-    this.nextPage(this.currentIndex, this.currentPageSize);
+    this.dataSource.set(new MatTableDataSource());
+    const currentDataSource = this.dataSource();
+    currentDataSource.paginator = this.paginator;
+    this.dataSource.set(currentDataSource);
+    this.nextPage(this.currentIndex(), this.currentPageSize());
   }
 
   deleteData(id: string) {
-
     this.dialogRefValidation = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_CONTENT_NODE_TITLE",
@@ -64,43 +66,53 @@ export class ContentDatasComponent implements AfterViewInit {
     });
     this.dialogRefValidation.afterClosed()
       .subscribe(result => {
-        if (result.data === 'validated') {
-          this.dataService.delete(id).subscribe(
-            (response: any) => {
-              this.translate.get("DELETE_SUCCESS").subscribe(trad => {
-                this.loggerService.success(trad);
-                this.nextPage(this.currentIndex, this.currentPageSize);
-              });
-            });
+        if (result?.data === 'validated') {
+          this.isLoading.set(true);
+          this.dataService.delete(id).pipe(
+            switchMap(() => this.translate.get("DELETE_SUCCESS")),
+            catchError((error) => {
+              return of(null);
+            }),
+            finalize(() => this.isLoading.set(false))
+          ).subscribe((trad: string | null) => {
+            if (trad) {
+              this.loggerService.success(trad);
+              this.nextPage(this.currentIndex(), this.currentPageSize());
+            }
+          });
         }
       });
-
-
   }
 
   gotoNextPage(event: any) {
     this.nextPage(event.pageIndex, event.pageSize);
-    this.currentIndex = event.pageIndex;
-    this.currentPageSize = event.pageIndex;
+    this.currentIndex.set(event.pageIndex);
+    this.currentPageSize.set(event.pageIndex);
   }
 
   nextPage(nbPage: number, limit: number) {
-    this.dataService.countDatasByContentNodeCode(this.contentNode.code).subscribe(
-      (data: any) => {
-        this.total = data;
+    this.isLoading.set(true);
+    this.dataService.countDatasByContentNodeCode(this.contentNode.code).pipe(
+      catchError((error) => {
+        this.toast.error('Request failed with error');
+        return of(0);
+      })
+    ).subscribe((data: any) => {
+      this.total.set(data);
 
-        this.dataService.getByContentCode(this.contentNode.code, nbPage, limit).subscribe(
-          (response: any) => {
-            this.dataSource = new MatTableDataSource(response);
-          },
-          (error) => {                              //error() callback
-            this.toast.error('Request failed with error');
-          });
+      this.dataService.getByContentCode(this.contentNode.code, nbPage, limit).pipe(
+        catchError((error) => {
+          this.toast.error('Request failed with error');
+          return of([]);
+        }),
+        finalize(() => this.isLoading.set(false))
+      ).subscribe((response: any) => {
+        this.dataSource.set(new MatTableDataSource(response));
       });
+    });
   }
 
   close() {
     this.dialogRef.close();
   }
-
 }

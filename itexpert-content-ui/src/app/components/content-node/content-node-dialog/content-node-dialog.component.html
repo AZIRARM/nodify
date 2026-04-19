@@ -10,24 +10,22 @@
       </div>
     </div>
 
-    <div class="header-actions" *ngIf="userAccessService.canEdit()">
+    <div class="header-actions">
+      @if (userAccessService.canEdit()) {
       <div class="button-badge-container">
-        <!-- Badge placé au-dessus du conteneur -->
-        @if(totalDeleteds > 0) {
+        @if (totalDeleteds() > 0) {
         <div class="floating-badge">
-          <span class="badge-content">{{ totalDeleteds }}</span>
+          <span class="badge-content">{{ totalDeleteds() }}</span>
         </div>
         }
-
-        <!-- Bouton normal -->
         <button mat-mini-fab class="action-btn warn-btn" (click)="deleteds()"
-          matTooltip="{{ 'DELETED_CONTENTS' | translate }}">
+          [matTooltip]="'DELETED_CONTENTS' | translate">
           <mat-icon>delete_sweep</mat-icon>
         </button>
       </div>
 
       <button mat-mini-fab class="action-btn primary-btn" (click)="fileInput.click()"
-        matTooltip="{{ 'IMPORT' | translate }}">
+        [matTooltip]="'IMPORT' | translate">
         <mat-icon>cloud_upload</mat-icon>
       </button>
       <input hidden #fileInput type="file" id="file" (change)="import($event.target)">
@@ -46,9 +44,10 @@
         </mat-select>
       </mat-form-field>
 
-      <button mat-fab class="create-fab" (click)="create()" matTooltip="{{ 'ADD' | translate }}">
+      <button mat-fab class="create-fab" (click)="create()" [matTooltip]="'ADD' | translate">
         <mat-icon>add</mat-icon>
       </button>
+      }
     </div>
 
     <button mat-icon-button class="close-btn" mat-dialog-close>
@@ -57,9 +56,19 @@
   </div>
 
   <div mat-dialog-content class="dialog-content">
-    <div class="table-wrapper">
-      <table mat-table [dataSource]="dataSource" class="content-table">
+    <!-- Indicateur de chargement -->
+    @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>{{ 'LOADING' | translate }}</p>
+    </div>
+    }
 
+    @if (!isLoading()) {
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="dataSource()" class="content-table">
+
+        <!-- Colonne Status -->
         <ng-container matColumnDef="Status">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -68,17 +77,20 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            @if(userAccessService.canEdit() ) {
+            @if (userAccessService.canEdit()) {
+            @if (element.lockInfo && !element.lockInfo.locked) {
             <button mat-icon-button class="status-btn" (click)="gotoPublished(element)"
-              *ngIf="element.lockInfo && !element.lockInfo.locked" matTooltip="{{ 'PUBLICATION_STATUS' | translate }}">
+              [matTooltip]="'PUBLICATION_STATUS' | translate">
               <mat-icon [class]="'status-icon ' + getPublishedIcon(element)">fiber_manual_record</mat-icon>
             </button>
+            }
             } @else {
             <mat-icon [class]="'status-icon ' + getPublishedIcon(element)">fiber_manual_record</mat-icon>
             }
           </td>
         </ng-container>
 
+        <!-- Colonne Type -->
         <ng-container matColumnDef="Type">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -89,17 +101,22 @@
           <td mat-cell *matCellDef="let element">
             <div class="type-cell">
               <span class="type-badge">{{ element.type | translate }}</span>
-              <div class="type-description" *ngIf="element.description">
+              @if (element.description) {
+              <div class="type-description">
                 <i>{{ element.description | slice:0:30 }}</i>
               </div>
-              <div class="lock-info" *ngIf="element.lockInfo && element.lockInfo.locked">
+              }
+              @if (element.lockInfo && element.lockInfo.locked) {
+              <div class="lock-info">
                 <mat-icon class="lock-icon">lock</mat-icon>
                 <span>{{ 'LOCKED_BY' | translate }} {{ element.lockInfo.owner }}</span>
               </div>
+              }
             </div>
           </td>
         </ng-container>
 
+        <!-- Colonne Version -->
         <ng-container matColumnDef="Version">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -110,13 +127,14 @@
           <td mat-cell *matCellDef="let element">
             <div class="version-cell">
               <span class="version-badge">{{ element.version }}</span>
-              @if(element && element.file && element.file.data && element.type === 'PICTURE') {
+              @if (element && element.file && element.file.data && element.type === 'PICTURE') {
               <img src="{{element.file.data}}" class="content-thumbnail" />
               }
             </div>
           </td>
         </ng-container>
 
+        <!-- Colonne Dernière modification -->
         <ng-container matColumnDef="Last Modification">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -129,6 +147,7 @@
           </td>
         </ng-container>
 
+        <!-- Colonne Modifié par -->
         <ng-container matColumnDef="Modified by">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -141,6 +160,7 @@
           </td>
         </ng-container>
 
+        <!-- Colonne Traductions -->
         <ng-container matColumnDef="Translations">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -149,13 +169,16 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            <button mat-icon-button class="action-icon-btn" *ngIf="element.lockInfo && !element.lockInfo.locked"
-              (click)="translations(element)" matTooltip="{{ 'TRANSLATIONS' | translate }}">
+            @if (element.lockInfo && !element.lockInfo.locked) {
+            <button mat-icon-button class="action-icon-btn" (click)="translations(element)"
+              [matTooltip]="'TRANSLATIONS' | translate">
               <mat-icon [class.text-warning]="element.translations?.length > 0">flag</mat-icon>
             </button>
+            }
           </td>
         </ng-container>
 
+        <!-- Colonne Règles -->
         <ng-container matColumnDef="Rules">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -164,13 +187,15 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            <button mat-icon-button class="action-icon-btn" *ngIf="element.lockInfo && !element.lockInfo.locked"
-              (click)="rules(element)" matTooltip="{{ 'RULES' | translate }}">
+            @if (element.lockInfo && !element.lockInfo.locked) {
+            <button mat-icon-button class="action-icon-btn" (click)="rules(element)" [matTooltip]="'RULES' | translate">
               <mat-icon [class.text-warning]="element.rules?.length > 0">list</mat-icon>
             </button>
+            }
           </td>
         </ng-container>
 
+        <!-- Colonne Valeurs -->
         <ng-container matColumnDef="Values">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -179,13 +204,16 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            <button mat-icon-button class="action-icon-btn" *ngIf="element.lockInfo && !element.lockInfo.locked"
-              (click)="values(element)" matTooltip="{{ 'VALUES' | translate }}">
+            @if (element.lockInfo && !element.lockInfo.locked) {
+            <button mat-icon-button class="action-icon-btn" (click)="values(element)"
+              [matTooltip]="'VALUES' | translate">
               <mat-icon [class.text-warning]="element.values?.length > 0">payments</mat-icon>
             </button>
+            }
           </td>
         </ng-container>
 
+        <!-- Colonne Publication -->
         <ng-container matColumnDef="Publication">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -194,14 +222,16 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            <button mat-icon-button class="action-icon-btn success-btn"
-              *ngIf="userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked"
-              (click)="publish(element)" matTooltip="{{ 'DEPLOY_VERSION' | translate }}">
+            @if (userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked) {
+            <button mat-icon-button class="action-icon-btn success-btn" (click)="publish(element)"
+              [matTooltip]="'DEPLOY_VERSION' | translate">
               <mat-icon>play_arrow</mat-icon>
             </button>
+            }
           </td>
         </ng-container>
 
+        <!-- Colonne Actions -->
         <ng-container matColumnDef="Actions">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -211,54 +241,64 @@
           </th>
           <td mat-cell *matCellDef="let element">
             <div class="actions-cell">
-              <button mat-icon-button class="action-icon-btn" *ngIf="userAccessService.canEdit()"
-                (click)="view(element)" matTooltip="{{ 'VIEW' | translate }}">
+              @if (userAccessService.canEdit()) {
+              <button mat-icon-button class="action-icon-btn" (click)="view(element)" [matTooltip]="'VIEW' | translate">
                 <mat-icon class="text-info">visibility</mat-icon>
               </button>
+              }
 
-              <button mat-icon-button class="action-icon-btn"
-                *ngIf="userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked"
-                (click)="update(element)" matTooltip="{{ 'EDIT' | translate }}">
+              @if (userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked) {
+              <button mat-icon-button class="action-icon-btn" (click)="update(element)"
+                [matTooltip]="'EDIT' | translate">
                 <mat-icon class="text-primary">edit</mat-icon>
               </button>
+              }
 
-              <button mat-icon-button class="action-icon-btn"
-                *ngIf="userAccessService.canEdit() && haveDatas(element.code)" (click)="datas(element)"
-                matTooltip="{{ 'DATAS' | translate }}">
+              @if (userAccessService.canEdit() && haveDatas(element.code)) {
+              <button mat-icon-button class="action-icon-btn" (click)="datas(element)"
+                [matTooltip]="'DATAS' | translate">
                 <mat-icon class="text-accent">topic</mat-icon>
               </button>
+              }
 
-              <button mat-icon-button class="action-icon-btn" *ngIf="userAccessService.canEdit()"
-                (click)="export(element,'')" matTooltip="{{ 'EXPORT' | translate }}">
+              @if (userAccessService.canEdit()) {
+              <button mat-icon-button class="action-icon-btn" (click)="export(element,'')"
+                [matTooltip]="'EXPORT' | translate">
                 <mat-icon class="text-success">ios_share</mat-icon>
               </button>
+              }
 
-              <button mat-icon-button class="action-icon-btn"
-                *ngIf="userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked"
-                [matMenuTriggerFor]="deployNodeMenu" matTooltip="{{ 'DEPLOY_ENVIRONMENT' | translate }}">
+              @if (userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked) {
+              <button mat-icon-button class="action-icon-btn" [matMenuTriggerFor]="deployNodeMenu"
+                [matTooltip]="'DEPLOY_ENVIRONMENT' | translate">
                 <mat-icon class="text-warning">share</mat-icon>
               </button>
+              }
               <mat-menu #deployNodeMenu class="modern-menu" xPosition="before">
                 <div class="menu-header">{{ 'DEPLOY_ENVIRONMENT' | translate }}</div>
-                <button mat-menu-item *ngFor="let env of getEnvironments()" (click)="deploy(element, env.code)">
+                @for (env of getEnvironments(); track env.code) {
+                <button mat-menu-item (click)="deploy(element, env.code)">
                   <mat-icon>cloud_queue</mat-icon>
                   <span>{{ env.name }}</span>
                 </button>
+                }
               </mat-menu>
 
-              <button mat-icon-button class="action-icon-btn"
-                *ngIf="userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked"
-                (click)="delete(element)" matTooltip="{{ 'DELETE' | translate }}">
+              @if (userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked) {
+              <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
+                [matTooltip]="'DELETE' | translate">
                 <mat-icon class="text-danger">delete</mat-icon>
               </button>
+              }
 
-              <button mat-icon-button class="action-icon-btn"
-                *ngIf="userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked"
-                (click)="favorite(element)" matTooltip="{{ 'FAVORITE' | translate }}">
+              @if (userAccessService.canEdit() && element.lockInfo && !element.lockInfo.locked) {
+              <button mat-icon-button class="action-icon-btn" (click)="favorite(element)"
+                [matTooltip]="'FAVORITE' | translate">
                 <mat-icon [class.text-warning]="element.favorite" [class.text-disabled]="!element.favorite">
                   {{ element.favorite ? 'favorite' : 'favorite_border' }}
                 </mat-icon>
               </button>
+              }
             </div>
           </td>
         </ng-container>
@@ -267,10 +307,14 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.granted-row]="row.IsGranted"
           class="content-row"></tr>
       </table>
-      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+
+      @if (dataSource().data.length === 0) {
+      <div class="empty-state">
         <mat-icon>perm_media</mat-icon>
         <p>{{ "NO_CONTENTS" | translate }}</p>
       </div>
+      }
     </div>
+    }
   </div>
 </div>

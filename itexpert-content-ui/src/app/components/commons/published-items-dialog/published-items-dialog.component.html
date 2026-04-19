@@ -1,6 +1,4 @@
 <div class="publication-history-dialog">
-
-  <!-- En-tête -->
   <div class="dialog-header">
     <div class="header-content">
       <div class="header-icon">
@@ -15,21 +13,25 @@
     </button>
   </div>
 
-  <!-- Sous-titre avec le nom de l'élément -->
   <div class="item-info">
     <mat-icon>{{ itemIcon || 'description' }}</mat-icon>
     <span class="item-name">{{ itemName }}</span>
-    <span class="item-code" *ngIf="itemCode">({{ itemCode }})</span>
+    @if (itemCode) {
+    <span class="item-code">({{ itemCode }})</span>
+    }
   </div>
 
-  <!-- Contenu -->
   <div mat-dialog-content class="dialog-content">
+    @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>{{ 'LOADING' | translate }}</p>
+    </div>
+    }
 
-    <!-- Tableau d'historique -->
+    @if (!isLoading()) {
     <div class="table-wrapper">
-      <table mat-table [dataSource]="dataSource" class="history-table">
-
-        <!-- Colonne Status -->
+      <table mat-table [dataSource]="dataSource()" class="history-table">
         <ng-container matColumnDef="Status">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -38,15 +40,25 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            <button mat-icon-button class="status-btn" disabled>
-              <mat-icon *ngIf="isPublished(element)" class="status-icon green">fiber_manual_record</mat-icon>
-              <mat-icon *ngIf="isArchived(element)" class="status-icon disabled">fiber_manual_record</mat-icon>
-              <mat-icon *ngIf="isSnapshot(element)" class="status-icon red">fiber_manual_record</mat-icon>
-            </button>
+            <div class="status-with-description">
+              <button mat-icon-button class="status-btn" disabled>
+                @if (isPublished(element)) {
+                <mat-icon class="status-icon green">fiber_manual_record</mat-icon>
+                }
+                @if (isArchived(element)) {
+                <mat-icon class="status-icon orange">fiber_manual_record</mat-icon>
+                }
+                @if (isSnapshot(element)) {
+                <mat-icon class="status-icon blue">fiber_manual_record</mat-icon>
+                }
+              </button>
+              @if (element.description) {
+              <span class="status-description">{{ element.description }}</span>
+              }
+            </div>
           </td>
         </ng-container>
 
-        <!-- Colonne Version -->
         <ng-container matColumnDef="Version">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -54,12 +66,12 @@
               <span>{{ "VERSION" | translate }}</span>
             </div>
           </th>
-          <td mat-cell *matCellDef="let element">
+          <td mat-cell *matCellDef="let element" [class.published-row]="isPublished(element)"
+            [class.archived-row]="isArchived(element)" [class.snapshot-row]="isSnapshot(element)">
             <span class="version-badge">{{ element.version }}</span>
           </td>
         </ng-container>
 
-        <!-- Colonne Dernière modification -->
         <ng-container matColumnDef="Last Modification">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -67,12 +79,12 @@
               <span>{{ "MODIFICATION_DATE" | translate }}</span>
             </div>
           </th>
-          <td mat-cell *matCellDef="let element">
+          <td mat-cell *matCellDef="let element" [class.published-row]="isPublished(element)"
+            [class.archived-row]="isArchived(element)" [class.snapshot-row]="isSnapshot(element)">
             <span class="date-cell">{{ element.modificationDate | date :'dd/MM/YYYY HH:mm' }}</span>
           </td>
         </ng-container>
 
-        <!-- Colonne Modifié par -->
         <ng-container matColumnDef="Modified by">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -80,25 +92,27 @@
               <span>{{ "MODIFIED_BY" | translate }}</span>
             </div>
           </th>
-          <td mat-cell *matCellDef="let element">
+          <td mat-cell *matCellDef="let element" [class.published-row]="isPublished(element)"
+            [class.archived-row]="isArchived(element)" [class.snapshot-row]="isSnapshot(element)">
             <span class="user-cell">{{ element.modifiedBy }}</span>
           </td>
         </ng-container>
 
-        <!-- Colonne Type (optionnelle) -->
-        <ng-container matColumnDef="Type" *ngIf="displayTypeColumn">
+        @if (displayTypeColumn) {
+        <ng-container matColumnDef="Type">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
               <mat-icon class="header-icon">category</mat-icon>
               <span>{{ "TYPE" | translate }}</span>
             </div>
           </th>
-          <td mat-cell *matCellDef="let element">
+          <td mat-cell *matCellDef="let element" [class.published-row]="isPublished(element)"
+            [class.archived-row]="isArchived(element)" [class.snapshot-row]="isSnapshot(element)">
             <span class="type-badge">{{ element.type | translate }}</span>
           </td>
         </ng-container>
+        }
 
-        <!-- Colonne Actions -->
         <ng-container matColumnDef="Actions">
           <th mat-header-cell *matHeaderCellDef>
             <div class="header-content">
@@ -106,49 +120,43 @@
               <span>{{ "ACTIONS" | translate }}</span>
             </div>
           </th>
-          <td mat-cell *matCellDef="let element">
+          <td mat-cell *matCellDef="let element" [class.published-row]="isPublished(element)"
+            [class.archived-row]="isArchived(element)" [class.snapshot-row]="isSnapshot(element)">
             <div class="actions-cell">
-
-              <!-- Revert -->
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="revert(element)"
-                      [matTooltip]="'REVERT' | translate">
+              <button mat-icon-button class="action-icon-btn" (click)="revert(element)"
+                [matTooltip]="'REVERT' | translate">
                 <mat-icon class="text-warning">cloud_download</mat-icon>
               </button>
-
-              <!-- Deploy -->
-              <button mat-icon-button class="action-icon-btn"
-                      (click)="deploy(element)"
-                      [matTooltip]="'DEPLOY' | translate">
+              <button mat-icon-button class="action-icon-btn" (click)="deploy(element)"
+                [matTooltip]="'DEPLOY' | translate">
                 <mat-icon class="text-info">history</mat-icon>
               </button>
-
-              <!-- Delete (seulement pour ARCHIVE) -->
-              <button mat-icon-button class="action-icon-btn"
-                      *ngIf="element.status === 'ARCHIVE'"
-                      (click)="delete(element)"
-                      [matTooltip]="'DELETE' | translate">
+              @if (element.status === 'ARCHIVE') {
+              <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
+                [matTooltip]="'DELETE' | translate">
                 <mat-icon class="text-danger">delete</mat-icon>
               </button>
+              }
             </div>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            [class.granted-row]="row.IsGranted"
-            class="history-row"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.granted-row]="row.IsGranted"
+          [class.published-row]="isPublished(row)" [class.archived-row]="isArchived(row)"
+          [class.snapshot-row]="isSnapshot(row)" class="history-row"></tr>
       </table>
 
-      <!-- Message si aucune donnée -->
-      <div class="empty-state" *ngIf="dataSource.data.length === 0">
+      @if (dataSource().data.length === 0) {
+      <div class="empty-state">
         <mat-icon>history</mat-icon>
         <p>{{ 'NO_PUBLICATION_HISTORY' | translate }}</p>
       </div>
+      }
     </div>
+    }
   </div>
 
-  <!-- Actions -->
   <div mat-dialog-actions class="dialog-actions">
     <button mat-stroked-button class="cancel-btn" (click)="cancel()">
       <mat-icon>close</mat-icon>

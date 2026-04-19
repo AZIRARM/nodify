@@ -19,11 +19,13 @@
   <div mat-dialog-content class="dialog-content">
 
     <!-- Bouton d'ajout icone -->
-    <div class="add-button-container" *ngIf="userAccessService.canEdit()">
-      <button mat-icon-button color="primary" (click)="addNewRow()" matTooltip="{{ 'ADD_VALUE' | translate }}">
+    @if (userAccessService.canEdit()) {
+    <div class="add-button-container">
+      <button mat-icon-button color="primary" (click)="addNewRow()" [matTooltip]="'ADD_VALUE' | translate">
         <mat-icon>add_circle</mat-icon>
       </button>
     </div>
+    }
 
     <!-- Tableau des valeurs -->
     <div class="form-section">
@@ -33,8 +35,7 @@
       </h3>
 
       <div class="table-wrapper">
-        <!-- Le tableau existe toujours -->
-        <table mat-table [dataSource]="dataSource" class="values-table">
+        <table mat-table [dataSource]="dataSource()" class="values-table">
 
           <ng-container matColumnDef="Key">
             <th mat-header-cell *matHeaderCellDef>
@@ -44,20 +45,14 @@
               </div>
             </th>
             <td mat-cell *matCellDef="let element" class="key-cell">
-              <ng-container *ngIf="editingItem === element; else keyDisplay">
-                <mat-form-field appearance="outline" class="inline-edit-field">
-                  <mat-label>{{ "KEY" | translate }}</mat-label>
-                  <input
-                    matInput
-                    [(ngModel)]="element.key"
-                    placeholder="{{ 'KEY' | translate }}"
-                    required
-                  >
-                </mat-form-field>
-              </ng-container>
-              <ng-template #keyDisplay>
-                <span class="key-text" [title]="element.key">{{ element.key }}</span>
-              </ng-template>
+              @if (editingItem() === element) {
+              <mat-form-field appearance="outline" class="inline-edit-field">
+                <mat-label>{{ "KEY" | translate }}</mat-label>
+                <input matInput [(ngModel)]="element.key" [placeholder]="'KEY' | translate" required>
+              </mat-form-field>
+              } @else {
+              <span class="key-text" [title]="element.key">{{ element.key }}</span>
+              }
             </td>
           </ng-container>
 
@@ -69,20 +64,14 @@
               </div>
             </th>
             <td mat-cell *matCellDef="let element" class="value-cell">
-              <ng-container *ngIf="editingItem === element; else valueDisplay">
-                <mat-form-field appearance="outline" class="inline-edit-field">
-                  <mat-label>{{ "VALUE" | translate }}</mat-label>
-                  <input
-                    matInput
-                    [(ngModel)]="element.value"
-                    placeholder="{{ 'VALUE' | translate }}"
-                    required
-                  >
-                </mat-form-field>
-              </ng-container>
-              <ng-template #valueDisplay>
-                <span class="value-text" [title]="element.value">{{ element.value }}</span>
-              </ng-template>
+              @if (editingItem() === element) {
+              <mat-form-field appearance="outline" class="inline-edit-field">
+                <mat-label>{{ "VALUE" | translate }}</mat-label>
+                <input matInput [(ngModel)]="element.value" [placeholder]="'VALUE' | translate" required>
+              </mat-form-field>
+              } @else {
+              <span class="value-text" [title]="element.value">{{ element.value }}</span>
+              }
             </td>
           </ng-container>
 
@@ -95,60 +84,41 @@
             </th>
             <td mat-cell *matCellDef="let element">
               <div class="actions-cell">
-                <ng-container *ngIf="editingItem === element; else actionButtons">
-                  <button
-                    mat-icon-button
-                    class="save-btn"
-                    (click)="saveEdit(element)"
-                    matTooltip="{{ 'SAVE' | translate }}"
-                  >
-                    <mat-icon>check</mat-icon>
-                  </button>
-                  <button
-                    mat-icon-button
-                    class="cancel-btn"
-                    (click)="cancelEdit()"
-                    matTooltip="{{ 'CANCEL' | translate }}"
-                  >
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </ng-container>
-                <ng-template #actionButtons>
-                  <button
-                    mat-icon-button
-                    class="edit-btn"
-                    (click)="startEdit(element)"
-                    matTooltip="{{ 'EDIT' | translate }}"
-                    *ngIf="userAccessService.canEdit()"
-                  >
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button
-                    mat-icon-button
-                    class="delete-btn"
-                    (click)="remove(element.key)"
-                    matTooltip="{{ 'DELETE' | translate }}"
-                    *ngIf="userAccessService.canEdit()"
-                  >
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </ng-template>
+                @if (editingItem() === element) {
+                <button mat-icon-button class="save-btn" (click)="saveEdit(element)" [matTooltip]="'SAVE' | translate">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button class="cancel-btn" (click)="cancelEdit()" [matTooltip]="'CANCEL' | translate">
+                  <mat-icon>close</mat-icon>
+                </button>
+                } @else {
+                @if (userAccessService.canEdit()) {
+                <button mat-icon-button class="edit-btn" (click)="startEdit(element)" [matTooltip]="'EDIT' | translate">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button class="delete-btn" (click)="remove(element.key)"
+                  [matTooltip]="'DELETE' | translate">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                }
+                }
               </div>
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-              [class.granted-row]="row.IsGranted"
-              [class.editing-row]="editingItem === row"
-              class="table-row"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.granted-row]="row.IsGranted"
+            [class.editing-row]="editingItem() === row" class="table-row">
+          </tr>
         </table>
 
-        <!-- Message si aucune donnée (À L'EXTÉRIEUR du tableau, comme dans deleted-items) -->
-        <div class="empty-state" *ngIf="dataSource.data.length === 0">
+        <!-- Message si aucune donnée -->
+        @if (dataSource().data.length === 0) {
+        <div class="empty-state">
           <mat-icon>inbox</mat-icon>
           <p>{{ 'NO_VALUES' | translate }}</p>
         </div>
+        }
       </div>
     </div>
   </div>
@@ -159,14 +129,11 @@
       <mat-icon>close</mat-icon>
       {{ "CANCEL" | translate }}
     </button>
-    <button
-      mat-flat-button
-      class="save-btn"
-      (click)="validate()"
-      *ngIf="userAccessService.canEdit() && hasChanges()"
-    >
+    @if (userAccessService.canEdit() && hasChanges()) {
+    <button mat-flat-button class="save-btn" (click)="validate()">
       <mat-icon>save</mat-icon>
       <span>{{ "SAVE" | translate }}</span>
     </button>
+    }
   </div>
 </div>
