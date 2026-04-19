@@ -53,9 +53,11 @@
         <!-- Champ Mot de passe -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ "USER_PASSWORD" | translate }}</mat-label>
-          <input matInput type="password" [(ngModel)]="userLogin().password" [placeholder]="'USER_PASSWORD' | translate"
-            required (keydown.enter)="login()">
-          <mat-icon matSuffix>lock</mat-icon>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="userLogin().password"
+            [placeholder]="'USER_PASSWORD' | translate" required (keydown.enter)="login()">
+          <mat-icon matSuffix (click)="hidePassword = !hidePassword" style="cursor: pointer">
+            {{hidePassword ? 'visibility_off' : 'visibility'}}
+          </mat-icon>
         </mat-form-field>
       </div>
 

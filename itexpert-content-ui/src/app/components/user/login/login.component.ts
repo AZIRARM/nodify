@@ -23,6 +23,8 @@ export class LoginComponent {
   private translate = inject(TranslateService);
   private router = inject(Router);
 
+  hidePassword = true;
+
   login() {
     const credentials = this.userLogin();
     if (credentials.email && credentials.password) {

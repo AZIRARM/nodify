@@ -22,6 +22,7 @@ export class SubscribeComponent {
   private loggerService = inject(LoggerService);
   private router = inject(Router);
 
+  hidePassword = true;
   subscribe(): void {
     if (this.validateForm()) {
       this.isLoading.set(true);
