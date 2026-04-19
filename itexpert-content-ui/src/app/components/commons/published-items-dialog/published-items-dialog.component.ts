@@ -10,13 +10,14 @@ import { Observable, of } from "rxjs";
 import { catchError, finalize, switchMap } from "rxjs/operators";
 
 export interface PublicationService {
-  getPublicationHistory(itemCode: string): Observable<any>;
-  revertToVersion(version: string): Observable<any>;
-  deployToVersion(version: string): Observable<any>;
-  deleteVersionDefinitively(version: string): Observable<any>;
+  getPublicationHistory(code: string): Observable<any>;
+  revertToVersion(code: string, version: string): Observable<any>;
+  deployToVersion(code: string, version: string): Observable<any>;
+  deleteVersionDefinitively(code: string, version: string): Observable<any>;
 }
 
 export interface PublicationItem {
+  code: string;
   version: string;
   modificationDate: string;
   modifiedBy: string;
@@ -124,7 +125,7 @@ export class PublishedItemsDialogComponent implements OnInit {
     dialogValidationRef.afterClosed().pipe(
       switchMap((result: any) => {
         if (result && result.data && result.data === "validated") {
-          return this.publicationService.revertToVersion(element.version).pipe(
+          return this.publicationService.revertToVersion(element.code, element.version).pipe(
             switchMap(() => this.translate.get("REVERT_SUCCESS")),
             catchError((error: any) => {
               return this.translate.get("REVERT_ERROR").pipe(
@@ -162,7 +163,7 @@ export class PublishedItemsDialogComponent implements OnInit {
     dialogValidationRef.afterClosed().pipe(
       switchMap((result: any) => {
         if (result && result.data && result.data === "validated") {
-          return this.publicationService.deployToVersion(element.version).pipe(
+          return this.publicationService.deployToVersion(element.code, element.version).pipe(
             switchMap(() => this.translate.get("DEPLOY_SUCCESS")),
             catchError((error: any) => {
               return this.translate.get("DEPLOY_ERROR").pipe(
@@ -199,7 +200,7 @@ export class PublishedItemsDialogComponent implements OnInit {
     dialogValidationRef.afterClosed().pipe(
       switchMap((result: any) => {
         if (result && result.data && result.data === "validated") {
-          return this.publicationService.deleteVersionDefinitively(element.version).pipe(
+          return this.publicationService.deleteVersionDefinitively(element.code, element.version).pipe(
             switchMap(() => this.translate.get("DELETE_SUCCESS")),
             catchError((error: any) => {
               return this.translate.get("DELETE_ERROR").pipe(
