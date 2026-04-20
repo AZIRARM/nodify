@@ -1,5 +1,6 @@
-[![Licença Creative Commons BY-NC 4.0](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
-[![Java CI com Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
+[![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![✅ CI - Tests & SonarQube](https://github.com/AZIRARM/nodify/actions/workflows/ci.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/ci.yml)
+[![🚀 CD - Docker & Deploy](https://github.com/AZIRARM/nodify/actions/workflows/cd.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/cd.yml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/network/members)
 [![Docker Pulls](https://img.shields.io/docker/pulls/azirar/nodify-api)](https://hub.docker.com/r/azirar/nodify-api)
