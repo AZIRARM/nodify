@@ -1,13 +1,17 @@
 name: CD - Docker Hub & Deploy
 
 on:
-  push:
-    branches: [ "main" ]  # UNIQUEMENT main
-  # PAS de pull_request ici !
+  workflow_run:
+    workflows: ["Java CI with Maven"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
     - uses: actions/checkout@v4
