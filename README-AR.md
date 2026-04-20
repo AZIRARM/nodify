@@ -1,8 +1,9 @@
-[![رخصة المشاع الإبداعي BY-NC 4.0](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
-[![تكامل Java المستمر عبر Maven](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/maven.yml)
-[![نجوم المستودع](https://img.shields.io/github/stars/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/stargazers)
-[![تفرعات المستودع](https://img.shields.io/github/forks/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/network/members)
-[![عمليات سحب Docker](https://img.shields.io/docker/pulls/azirar/nodify-api)](https://hub.docker.com/r/azirar/nodify-api)
+[![رخصة المشاع الإبداعي BY-NC 4.0]([![Creative Commons BY-NC 4.0 License](assets/pictures/by-nc.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![✅ CI - Tests & SonarQube](https://github.com/AZIRARM/nodify/actions/workflows/ci.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/ci.yml)
+[![🚀 CD - Docker & Deploy](https://github.com/AZIRARM/nodify/actions/workflows/cd.yml/badge.svg)](https://github.com/AZIRARM/nodify/actions/workflows/cd.yml)
+[![GitHub Repo stars](https://img.shields.io/github/stars/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/AZIRARM/nodify?style=social)](https://github.com/AZIRARM/nodify/network/members)
+[![Docker Pulls](https://img.shields.io/docker/pulls/azirar/nodify-api)](https://hub.docker.com/r/azirar/nodify-api)
 
 # 🚀 Nodify: أقوى نظام إدارة محتوى (Headless CMS) مفتوح المصدر كخدمة محتوى حقيقية (CaaS)
 
