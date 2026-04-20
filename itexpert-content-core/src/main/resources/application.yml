@@ -59,7 +59,42 @@ server:
 logging:
   level:
     root: ERROR                              # niveau global
-    com.itexpert: DEBUG                      # ton package principal pour debug
+    com.itexpert: INFO                      # ton package principal pour debug
     org.springframework.data.redis: ERROR   # debug Redis (Spring Data Redis)
     io.lettuce.core: ERROR                  # debug Lettuce client (commandes Redis, timeout)
     reactor.netty: ERROR                     # réduire le bruit des logs Netty si trop verbeux
+    com.itexpert.content.core.config.SecurityContextRepository: INFO
+
+security:
+  auth:
+    mode: ${AUTH_MODE:internal} # internal, oauth2, openid
+
+  oauth2:
+    enabled: ${OAUTH2_ENABLED:false}
+    config:
+      authorization-uri: ${OAUTH2_AUTHORIZATION_URI}
+      token-uri: ${OAUTH2_TOKEN_URI}
+      user-info-uri: ${OAUTH2_USER_INFO_URI}
+      client-id: ${OAUTH2_CLIENT_ID}
+      client-secret: ${OAUTH2_CLIENT_SECRET}
+      scope: ${OAUTH2_SCOPE}
+      roles-claim: ${OAUTH2_ROLES_CLAIM}
+      user-name-claim: ${OAUTH2_USER_NAME_CLAIM}
+      frontend-target-url: ${OAUTH2_FRONTEND_TARGET_URL}
+      redirect-uri: ${OAUTH2_REDIRECT_URI}
+
+  openid:
+    enabled: ${OPENID_ENABLED:false}
+    config:
+      issuer-uri: ${OPENID_ISSUER_URI}
+      client-id: ${OPENID_CLIENT_ID}
+      client-secret: ${OPENID_CLIENT_SECRET}
+      jwk-set-uri: ${OPENID_JWK_SET_URI}
+      user-info-uri: ${OPENID_USER_INFO_URI}
+      authorization-uri: ${OPENID_AUTHORIZATION_URI}
+      token-uri: ${OPENID_TOKEN_URI}
+      logout-uri: ${OPENID_LOGOUT_URI}
+      roles-claim: ${OPENID_ROLES_CLAIM}
+      user-name-claim: ${OPENID_USER_NAME_CLAIM}
+      frontend-target-url: ${OPENID_FRONTEND_TARGET_URL}
+      redirect-uri: ${OPENID_REDIRECT_URI}

@@ -40,7 +40,8 @@
         <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'LOGIN' | translate }}">
       </div>
 
-      <!-- Formulaire -->
+      <!-- Mode Interne - Formulaire classique -->
+      @if (isInternalMode()) {
       <div class="form-container">
         <!-- Champ Email -->
         <mat-form-field appearance="outline" class="full-width">
@@ -73,6 +74,27 @@
           {{ "LOGIN" | translate }}
         </button>
       </div>
+      }
+
+      <!-- Mode OAuth2 -->
+      @if (isOAuth2Mode()) {
+      <div class="form-container">
+        <button mat-flat-button class="login-btn" (click)="login()">
+          <mat-icon>account_circle</mat-icon>
+          {{ 'LOGIN_WITH_OAUTH2' | translate }}
+        </button>
+      </div>
+      }
+
+      <!-- Mode OpenID -->
+      @if (isOpenIdMode()) {
+      <div class="form-container">
+        <button mat-flat-button class="login-btn" (click)="login()">
+          <mat-icon>badge</mat-icon>
+          {{ 'LOGIN_WITH_OPENID' | translate }}
+        </button>
+      </div>
+      }
     </div>
     }
   </div>

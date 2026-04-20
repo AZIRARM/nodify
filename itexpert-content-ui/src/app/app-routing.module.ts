@@ -14,6 +14,7 @@ import { AuthGuard } from "./services/AuthGuard";
 import { PluginComponent } from "./components/plugins/plugin/plugin.component";
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
 import { SubscribeComponent } from './components/user/subscribe/subscribe.component';
+import { OAuthCallbackComponent } from './components/oauth2/oauth-callback/oauth-callback.component';
 
 const routes: Routes =
   [
@@ -31,6 +32,9 @@ const routes: Routes =
       path: 'login',
       component: LoginComponent
     },
+
+    { path: 'oauth2/callback', component: OAuthCallbackComponent },
+    { path: 'openid/callback', component: OAuthCallbackComponent },
     {
       path: 'subscribe',
       component: SubscribeComponent
