@@ -21,6 +21,10 @@ export class PasswordDialogComponent implements OnInit {
   user: WritableSignal<User> = signal<User>({} as User);
   isLoading: WritableSignal<boolean> = signal(false);
 
+  hideCurrentPassword = true;
+  hideNewPassword = true;
+  hideConfirmPassword = true;
+
   public dialogRef = inject(MatDialogRef<PasswordDialogComponent>);
   private translate = inject(TranslateService);
   private loggerService = inject(LoggerService);

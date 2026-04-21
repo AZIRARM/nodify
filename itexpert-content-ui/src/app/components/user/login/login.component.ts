@@ -1,4 +1,4 @@
-import { Component, inject, signal, WritableSignal, OnInit } from '@angular/core';
+import { Component, inject, signal, WritableSignal, OnInit, OnDestroy } from '@angular/core';
 import { UserLogin } from "../../../modeles/UserLogin";
 import { Router } from "@angular/router";
 import { AuthenticationService } from "../../../services/AuthenticationService";
@@ -13,7 +13,7 @@ import { switchMap } from "rxjs/operators";
   styleUrls: ['./login.component.css'],
   standalone: false
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   userLogin: WritableSignal<UserLogin> = signal<UserLogin>(new UserLogin());
   isLoading: WritableSignal<boolean> = signal(false);
   authMode: WritableSignal<string> = signal('internal');
@@ -26,6 +26,8 @@ export class LoginComponent implements OnInit {
 
   hidePassword = true;
 
+  private autoLoginTimeout: any = null;
+
   ngOnInit() {
     this.authenticationService.getAuthModeObservable().subscribe({
       next: (response) => {
@@ -37,6 +39,18 @@ export class LoginComponent implements OnInit {
         this.authMode.set('internal');
       }
     });
+
+    if (this.isOAuth2Mode() || this.isOpenIdMode()) {
+      this.autoLoginTimeout = setTimeout(() => {
+        this.login();
+      }, 2000);
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.autoLoginTimeout) {
+      clearTimeout(this.autoLoginTimeout);
+    }
   }
 
   login() {
@@ -61,7 +75,7 @@ export class LoginComponent implements OnInit {
       this.isLoading.set(true);
       this.authenticationService.signin(credentials).pipe(
         switchMap((response) => {
-          this.authenticationService.setTokens(response.access_token, response.refresh_token);
+          this.authenticationService.setTokens(response.token, response.refresh_token);
           return this.authenticationService.loadUser();
         })
       ).subscribe({
