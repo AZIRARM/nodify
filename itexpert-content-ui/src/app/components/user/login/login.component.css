@@ -285,3 +285,24 @@
     }
   }
 }
+
+.login-image-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s;
+}
+
+.login-image-btn:hover {
+  transform: scale(1.05);
+}
+
+.login-image-btn img {
+  width: 200px;
+  height: auto;
+}
+
+.form-container {
+  text-align: center;
+}
