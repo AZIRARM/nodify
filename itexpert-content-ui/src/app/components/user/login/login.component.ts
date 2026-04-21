@@ -33,6 +33,11 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (response) => {
         console.log('Auth mode received:', response.mode);
         this.authMode.set(response.mode);
+        if (this.isOAuth2Mode() || this.isOpenIdMode()) {
+          this.autoLoginTimeout = setTimeout(() => {
+            this.login();
+          }, 3000);
+        }
       },
       error: () => {
         console.log('Auth mode error, defaulting to internal');
@@ -40,11 +45,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       }
     });
 
-    if (this.isOAuth2Mode() || this.isOpenIdMode()) {
-      this.autoLoginTimeout = setTimeout(() => {
-        this.login();
-      }, 2000);
-    }
   }
 
   ngOnDestroy() {
