@@ -357,43 +357,6 @@ public class AuthenticationEndPointTest {
     }
 
     @Test
-    public void testOAuth2TokenSuccess() {
-        String email = "test@example.com";
-        String accessToken = "oauth2-access-token";
-        String jwtToken = "jwt-token-123";
-
-        UserLogin userLogin = new UserLogin();
-        userLogin.setEmail(email);
-        userLogin.setPassword(accessToken);
-
-        AuthUserInfo authUserInfo = new AuthUserInfo();
-        authUserInfo.setEmail(email);
-        authUserInfo.setUsername(email);
-
-        UserPost userPost = new UserPost();
-        userPost.setEmail(email);
-
-        when(oauth2Service.validateAndGetUserInfo(accessToken)).thenReturn(Mono.just(authUserInfo));
-        when(userHandler.findByEmail(email)).thenReturn(Mono.just(userPost));
-        when(jwtUtil.generateToken(userPost)).thenReturn(jwtToken);
-
-        webTestClient.post()
-                .uri("/authentication/oauth2/token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(userLogin)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(AuthResponse.class)
-                .value(response -> {
-                    assert response.getToken().equals(jwtToken);
-                });
-
-        verify(oauth2Service, times(1)).validateAndGetUserInfo(accessToken);
-        verify(userHandler, times(1)).findByEmail(email);
-        verify(jwtUtil, times(1)).generateToken(userPost);
-    }
-
-    @Test
     public void testOAuth2TokenUserNotFound() {
         String email = "test@example.com";
         String accessToken = "oauth2-access-token";
@@ -462,6 +425,7 @@ public class AuthenticationEndPointTest {
 
         UserPost userPost = new UserPost();
         userPost.setEmail(email);
+        userPost.setValidated(true); // Ajouté
 
         when(openidService.validateAndGetUserInfo(accessToken)).thenReturn(Mono.just(authUserInfo));
         when(userHandler.findByEmail(email)).thenReturn(Mono.just(userPost));
@@ -479,6 +443,44 @@ public class AuthenticationEndPointTest {
                 });
 
         verify(openidService, times(1)).validateAndGetUserInfo(accessToken);
+        verify(userHandler, times(1)).findByEmail(email);
+        verify(jwtUtil, times(1)).generateToken(userPost);
+    }
+
+    @Test
+    public void testOAuth2TokenSuccess() {
+        String email = "test@example.com";
+        String accessToken = "oauth2-access-token";
+        String jwtToken = "jwt-token-123";
+
+        UserLogin userLogin = new UserLogin();
+        userLogin.setEmail(email);
+        userLogin.setPassword(accessToken);
+
+        AuthUserInfo authUserInfo = new AuthUserInfo();
+        authUserInfo.setEmail(email);
+        authUserInfo.setUsername(email);
+
+        UserPost userPost = new UserPost();
+        userPost.setEmail(email);
+        userPost.setValidated(true); // Ajouté
+
+        when(oauth2Service.validateAndGetUserInfo(accessToken)).thenReturn(Mono.just(authUserInfo));
+        when(userHandler.findByEmail(email)).thenReturn(Mono.just(userPost));
+        when(jwtUtil.generateToken(userPost)).thenReturn(jwtToken);
+
+        webTestClient.post()
+                .uri("/authentication/oauth2/token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(userLogin)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(AuthResponse.class)
+                .value(response -> {
+                    assert response.getToken().equals(jwtToken);
+                });
+
+        verify(oauth2Service, times(1)).validateAndGetUserInfo(accessToken);
         verify(userHandler, times(1)).findByEmail(email);
         verify(jwtUtil, times(1)).generateToken(userPost);
     }

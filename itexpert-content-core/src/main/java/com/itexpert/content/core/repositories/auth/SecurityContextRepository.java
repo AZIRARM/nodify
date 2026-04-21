@@ -1,5 +1,6 @@
 package com.itexpert.content.core.repositories.auth;
 
+import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.utils.auth.AuthenticationManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
     private final AuthenticationManager authenticationManager;
+    private final UserHandler userHandler;
 
     @Override
     public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
@@ -41,13 +43,29 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         Authentication auth = new UsernamePasswordAuthenticationToken(token, token);
 
         return this.authenticationManager.authenticate(auth)
-                .<SecurityContext>map(authentication -> {
+                .flatMap(authentication -> {
+                    Object principal = authentication.getPrincipal();
+                    if (principal instanceof String) {
+                        String email = (String) principal;
+                        return userHandler.findByEmail(email)
+                                .flatMap(user -> {
+                                    if (user.getValidated()) {
+                                        log.info("Authentication successful for validated user: {}", email);
+                                        return Mono.just((SecurityContext) new SecurityContextImpl(authentication));
+                                    } else {
+                                        log.warn("Authentication blocked - user not validated: {}", email);
+                                        return Mono.<SecurityContext>empty();
+                                    }
+                                })
+                                .switchIfEmpty(Mono.defer(() -> {
+                                    log.warn("User not found: {}", email);
+                                    return Mono.<SecurityContext>empty();
+                                }));
+                    }
                     log.info("Authentication successful for: {}", authentication.getPrincipal());
-                    return new SecurityContextImpl(authentication);
+                    return Mono.just((SecurityContext) new SecurityContextImpl(authentication));
                 })
-                .doOnError(error ->
-                        log.error("Authentication error: {}", error.getMessage())
-                )
+                .doOnError(error -> log.error("Authentication error: {}", error.getMessage()))
                 .switchIfEmpty(Mono.defer(() -> {
                     log.warn("Authentication failed - no authenticated user");
                     return Mono.empty();

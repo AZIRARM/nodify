@@ -137,6 +137,7 @@
   "LOGIN_ERROR": "Anmeldefehler",
   "LOCK_RELEASED_SUCCESS": "Entsperren erfolgreich",
   "LOCK_RELEASED_FAIL": "Entsperren fehlgeschlagen",
+  "LOAD_USER_FAILED": "Ihr Konto besteht, wurde aber noch nicht aktiviert. Bitte überprüfen Sie Ihre E-Mails oder kontaktieren Sie den Administrator.",
 
   "_DIALOGS": "=== DIALOGE ===",
   "DELETE_TITLE": "Löschen",

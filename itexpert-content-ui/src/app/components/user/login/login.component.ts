@@ -1,4 +1,4 @@
-import { Component, inject, signal, WritableSignal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, WritableSignal, OnInit } from '@angular/core';
 import { UserLogin } from "../../../modeles/UserLogin";
 import { Router } from "@angular/router";
 import { AuthenticationService } from "../../../services/AuthenticationService";
@@ -13,7 +13,7 @@ import { switchMap } from "rxjs/operators";
   styleUrls: ['./login.component.css'],
   standalone: false
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
   userLogin: WritableSignal<UserLogin> = signal<UserLogin>(new UserLogin());
   isLoading: WritableSignal<boolean> = signal(false);
   authMode: WritableSignal<string> = signal('internal');
@@ -33,11 +33,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (response) => {
         console.log('Auth mode received:', response.mode);
         this.authMode.set(response.mode);
-        if (this.isOAuth2Mode() || this.isOpenIdMode()) {
-          this.autoLoginTimeout = setTimeout(() => {
-            this.login();
-          }, 3000);
-        }
       },
       error: () => {
         console.log('Auth mode error, defaulting to internal');
@@ -45,12 +40,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       }
     });
 
-  }
-
-  ngOnDestroy() {
-    if (this.autoLoginTimeout) {
-      clearTimeout(this.autoLoginTimeout);
-    }
   }
 
   login() {

@@ -137,6 +137,7 @@
   "LOGIN_ERROR": "Login Error",
   "LOCK_RELEASED_SUCCESS": "Unlock Successful",
   "LOCK_RELEASED_FAIL": "Unlock Failed",
+  "LOAD_USER_FAILED": "Your account exists but has not been activated yet. Please check your email or contact the administrator.",
 
   "_DIALOGS": "=== DIALOGS ===",
   "DELETE_TITLE": "Delete",

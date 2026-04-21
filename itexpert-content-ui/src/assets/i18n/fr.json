@@ -137,6 +137,7 @@
   "LOGIN_ERROR": "Erreur de connexion",
   "LOCK_RELEASED_SUCCESS": "Déblocage réussi",
   "LOCK_RELEASED_FAIL": "Échec du déblocage",
+  "LOAD_USER_FAILED": "Votre compte existe mais n’est pas encore activé. Vérifiez votre email ou contactez l’administrateur.",
 
   "_DIALOGS": "=== BOÎTES DE DIALOGUE ===",
   "DELETE_TITLE": "Suppression",

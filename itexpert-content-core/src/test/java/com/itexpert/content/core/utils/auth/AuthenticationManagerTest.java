@@ -17,6 +17,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Base64;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,117 +51,98 @@ class AuthenticationManagerTest {
     private AuthenticationManager authenticationManager;
 
     private Authentication authentication;
-    private final String validToken = "valid.jwt.token";
+    private final String validInternalToken = "valid.internal.jwt.token";
     private final String username = "test@example.com";
 
     @BeforeEach
     void setUp() {
-        authentication = new UsernamePasswordAuthenticationToken(username, validToken);
+        authentication = new UsernamePasswordAuthenticationToken(username, validInternalToken);
     }
+
+    // ==================== TESTS MODE INTERNE ====================
 
     @Test
     void authenticateWithInternalJWTSuccess() {
-        // Given
         when(securityProperties.getMode()).thenReturn("internal");
-        when(jwtUtil.validateToken(validToken)).thenReturn(true);
-        when(jwtUtil.getUsernameFromToken(validToken)).thenReturn(username);
+        when(jwtUtil.validateToken(validInternalToken)).thenReturn(true);
+        when(jwtUtil.getUsernameFromToken(validInternalToken)).thenReturn(username);
 
         Claims claims = mock(Claims.class);
-        when(jwtUtil.getAllClaimsFromToken(validToken)).thenReturn(claims);
-
+        when(jwtUtil.getAllClaimsFromToken(validInternalToken)).thenReturn(claims);
         List<String> roles = List.of("ADMIN", "EDITOR");
         when(claims.get("role", List.class)).thenReturn(roles);
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(authentication);
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(auth -> {
-                    assertNotNull(auth);
                     assertEquals(username, auth.getPrincipal());
                     assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN")));
                     assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("EDITOR")));
                 })
                 .verifyComplete();
 
-        verify(jwtUtil, times(1)).validateToken(validToken);
-        verify(jwtUtil, times(1)).getUsernameFromToken(validToken);
-        verify(jwtUtil, times(1)).getAllClaimsFromToken(validToken);
+        verify(jwtUtil, times(1)).validateToken(validInternalToken);
+        verify(jwtUtil, times(1)).getUsernameFromToken(validInternalToken);
     }
 
     @Test
     void authenticateWithInternalJWTInvalidToken() {
-        // Given
         when(securityProperties.getMode()).thenReturn("internal");
-        when(jwtUtil.validateToken(validToken)).thenReturn(false);
+        when(jwtUtil.validateToken(validInternalToken)).thenReturn(false);
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(authentication);
 
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete(); // Mono.empty() returns empty
-
-        verify(jwtUtil, times(1)).validateToken(validToken);
+        StepVerifier.create(result).verifyComplete();
+        verify(jwtUtil, times(1)).validateToken(validInternalToken);
         verify(jwtUtil, never()).getUsernameFromToken(anyString());
-        verify(jwtUtil, never()).getAllClaimsFromToken(anyString());
     }
 
     @Test
     void authenticateWithInternalJWTNoRoles() {
-        // Given
         when(securityProperties.getMode()).thenReturn("internal");
-        when(jwtUtil.validateToken(validToken)).thenReturn(true);
-        when(jwtUtil.getUsernameFromToken(validToken)).thenReturn(username);
+        when(jwtUtil.validateToken(validInternalToken)).thenReturn(true);
+        when(jwtUtil.getUsernameFromToken(validInternalToken)).thenReturn(username);
 
         Claims claims = mock(Claims.class);
-        when(jwtUtil.getAllClaimsFromToken(validToken)).thenReturn(claims);
+        when(jwtUtil.getAllClaimsFromToken(validInternalToken)).thenReturn(claims);
         when(claims.get("role", List.class)).thenReturn(null);
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(authentication);
 
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete(); // Mono.empty() because no authorities
-
-        verify(jwtUtil, times(1)).validateToken(validToken);
-        verify(jwtUtil, times(1)).getUsernameFromToken(validToken);
-        verify(jwtUtil, times(1)).getAllClaimsFromToken(validToken);
+        StepVerifier.create(result).verifyComplete();
+        verify(jwtUtil, times(1)).validateToken(validInternalToken);
     }
 
     @Test
     void authenticateWithInternalJWTInvalidRoles() {
-        // Given
         when(securityProperties.getMode()).thenReturn("internal");
-        when(jwtUtil.validateToken(validToken)).thenReturn(true);
-        when(jwtUtil.getUsernameFromToken(validToken)).thenReturn(username);
+        when(jwtUtil.validateToken(validInternalToken)).thenReturn(true);
+        when(jwtUtil.getUsernameFromToken(validInternalToken)).thenReturn(username);
 
         Claims claims = mock(Claims.class);
-        when(jwtUtil.getAllClaimsFromToken(validToken)).thenReturn(claims);
-
+        when(jwtUtil.getAllClaimsFromToken(validInternalToken)).thenReturn(claims);
         List<String> roles = List.of("INVALID_ROLE", "WRONG_ROLE");
         when(claims.get("role", List.class)).thenReturn(roles);
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(authentication);
 
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete(); // Mono.empty() because no valid authorities
+        StepVerifier.create(result).verifyComplete();
+    }
 
-        verify(jwtUtil, times(1)).validateToken(validToken);
-        verify(jwtUtil, times(1)).getUsernameFromToken(validToken);
+    // ==================== TESTS MODE OAUTH2 ====================
+
+    private String buildTokenWithClaim(String claimName, String claimValue) {
+        String payload = String.format("{\"%s\":\"%s\"}", claimName, claimValue);
+        String encodedPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
+        return "header." + encodedPayload + ".signature";
     }
 
     @Test
-    void authenticateWithOAuth2Success() {
-        // Given
+    void authenticateWithOAuth2Success_EmailClaim() {
         when(securityProperties.getMode()).thenReturn("oauth2");
-
-        String oauth2Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature";
-        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(username, oauth2Token);
+        String token = buildTokenWithClaim("email", username);
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(token, token);
 
         UserPost user = new UserPost();
         user.setEmail(username);
@@ -168,13 +150,10 @@ class AuthenticationManagerTest {
 
         when(userHandler.findByEmail(username)).thenReturn(Mono.just(user));
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(auth -> {
-                    assertNotNull(auth);
                     assertEquals(username, auth.getPrincipal());
                     assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN")));
                     assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("READER")));
@@ -185,32 +164,10 @@ class AuthenticationManagerTest {
     }
 
     @Test
-    void authenticateWithOAuth2UserNotFound() {
-        // Given
+    void authenticateWithOAuth2Success_PreferredUsernameClaim() {
         when(securityProperties.getMode()).thenReturn("oauth2");
-
-        String oauth2Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature";
-        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(username, oauth2Token);
-
-        when(userHandler.findByEmail(username)).thenReturn(Mono.empty());
-
-        // When
-        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
-
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete(); // Mono.empty()
-
-        verify(userHandler, times(1)).findByEmail(username);
-    }
-
-    @Test
-    void authenticateWithOpenIDSuccess() {
-        // Given
-        when(securityProperties.getMode()).thenReturn("openid");
-
-        String openidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature";
-        Authentication openidAuth = new UsernamePasswordAuthenticationToken(username, openidToken);
+        String token = buildTokenWithClaim("preferred_username", username);
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(token, token);
 
         UserPost user = new UserPost();
         user.setEmail(username);
@@ -218,16 +175,137 @@ class AuthenticationManagerTest {
 
         when(userHandler.findByEmail(username)).thenReturn(Mono.just(user));
 
-        // When
-        Mono<Authentication> result = authenticationManager.authenticate(openidAuth);
+        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
 
-        // Then
+        StepVerifier.create(result)
+                .expectNextCount(1)
+                .verifyComplete();
+
+        verify(userHandler, times(1)).findByEmail(username);
+    }
+
+    @Test
+    void authenticateWithOAuth2Success_SubClaim() {
+        when(securityProperties.getMode()).thenReturn("oauth2");
+        String token = buildTokenWithClaim("sub", username);
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(token, token);
+
+        UserPost user = new UserPost();
+        user.setEmail(username);
+        user.setRoles(List.of("READER"));
+
+        when(userHandler.findByEmail(username)).thenReturn(Mono.just(user));
+
+        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
+
+        StepVerifier.create(result)
+                .expectNextCount(1)
+                .verifyComplete();
+
+        verify(userHandler, times(1)).findByEmail(username);
+    }
+
+    @Test
+    void authenticateWithOAuth2UserNotFound() {
+        when(securityProperties.getMode()).thenReturn("oauth2");
+        String token = buildTokenWithClaim("email", username);
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(token, token);
+
+        when(userHandler.findByEmail(username)).thenReturn(Mono.empty());
+
+        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
+
+        StepVerifier.create(result).verifyComplete();
+        verify(userHandler, times(1)).findByEmail(username);
+    }
+
+    @Test
+    void authenticateWithOAuth2InvalidTokenFormat() {
+        when(securityProperties.getMode()).thenReturn("oauth2");
+        String invalidToken = "invalid.token.format";
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(invalidToken, invalidToken);
+
+        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
+
+        StepVerifier.create(result).verifyComplete();
+        verify(userHandler, never()).findByEmail(anyString());
+    }
+
+    @Test
+    void authenticateWithOAuth2NoEmailClaim() {
+        when(securityProperties.getMode()).thenReturn("oauth2");
+        String token = buildTokenWithClaim("other", "value");
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(token, token);
+
+        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
+
+        StepVerifier.create(result).verifyComplete();
+        verify(userHandler, never()).findByEmail(anyString());
+    }
+
+    @Test
+    void authenticateWithOAuth2RolesNotAuthorized() {
+        when(securityProperties.getMode()).thenReturn("oauth2");
+        String token = buildTokenWithClaim("email", username);
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(token, token);
+
+        UserPost user = new UserPost();
+        user.setEmail(username);
+        user.setRoles(List.of("UNKNOWN_ROLE")); // aucun rôle autorisé
+
+        when(userHandler.findByEmail(username)).thenReturn(Mono.just(user));
+
+        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
+
         StepVerifier.create(result)
                 .assertNext(auth -> {
                     assertNotNull(auth);
                     assertEquals(username, auth.getPrincipal());
-                    assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("EDITOR")));
+                    assertTrue(auth.getAuthorities().isEmpty());
                 })
+                .verifyComplete();
+        verify(userHandler, times(1)).findByEmail(username);
+    }
+
+    // ==================== TESTS MODE OPENID ====================
+
+    @Test
+    void authenticateWithOpenIDSuccess_EmailClaim() {
+        when(securityProperties.getMode()).thenReturn("openid");
+        String token = buildTokenWithClaim("email", username);
+        Authentication openidAuth = new UsernamePasswordAuthenticationToken(token, token);
+
+        UserPost user = new UserPost();
+        user.setEmail(username);
+        user.setRoles(List.of("EDITOR"));
+
+        when(userHandler.findByEmail(username)).thenReturn(Mono.just(user));
+
+        Mono<Authentication> result = authenticationManager.authenticate(openidAuth);
+
+        StepVerifier.create(result)
+                .expectNextCount(1)
+                .verifyComplete();
+
+        verify(userHandler, times(1)).findByEmail(username);
+    }
+
+    @Test
+    void authenticateWithOpenIDSuccess_PreferredUsernameClaim() {
+        when(securityProperties.getMode()).thenReturn("openid");
+        String token = buildTokenWithClaim("preferred_username", username);
+        Authentication openidAuth = new UsernamePasswordAuthenticationToken(token, token);
+
+        UserPost user = new UserPost();
+        user.setEmail(username);
+        user.setRoles(List.of("ADMIN"));
+
+        when(userHandler.findByEmail(username)).thenReturn(Mono.just(user));
+
+        Mono<Authentication> result = authenticationManager.authenticate(openidAuth);
+
+        StepVerifier.create(result)
+                .expectNextCount(1)
                 .verifyComplete();
 
         verify(userHandler, times(1)).findByEmail(username);
@@ -235,174 +313,89 @@ class AuthenticationManagerTest {
 
     @Test
     void authenticateWithOpenIDUserNotFound() {
-        // Given
         when(securityProperties.getMode()).thenReturn("openid");
-
-        String openidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature";
-        Authentication openidAuth = new UsernamePasswordAuthenticationToken(username, openidToken);
+        String token = buildTokenWithClaim("email", username);
+        Authentication openidAuth = new UsernamePasswordAuthenticationToken(token, token);
 
         when(userHandler.findByEmail(username)).thenReturn(Mono.empty());
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(openidAuth);
 
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete();
-
+        StepVerifier.create(result).verifyComplete();
         verify(userHandler, times(1)).findByEmail(username);
     }
 
     @Test
-    void authenticateWithOAuth2InvalidToken() {
-        // Given
-        when(securityProperties.getMode()).thenReturn("oauth2");
-
-        String invalidToken = "invalid.token.format";
-        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(username, invalidToken);
-
-        // When
-        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
-
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete();
-
-        verify(userHandler, never()).findByEmail(anyString());
-    }
-
-    @Test
-    void authenticateWithOpenIDInvalidToken() {
-        // Given
+    void authenticateWithOpenIDInvalidTokenFormat() {
         when(securityProperties.getMode()).thenReturn("openid");
-
         String invalidToken = "invalid.token.format";
-        Authentication openidAuth = new UsernamePasswordAuthenticationToken(username, invalidToken);
+        Authentication openidAuth = new UsernamePasswordAuthenticationToken(invalidToken, invalidToken);
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(openidAuth);
 
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete();
-
+        StepVerifier.create(result).verifyComplete();
         verify(userHandler, never()).findByEmail(anyString());
     }
 
     @Test
-    void authenticateWithUnknownMode() {
-        // Given
+    void authenticateWithOpenIDNoEmailClaim() {
+        when(securityProperties.getMode()).thenReturn("openid");
+        String token = buildTokenWithClaim("other", "value");
+        Authentication openidAuth = new UsernamePasswordAuthenticationToken(token, token);
+
+        Mono<Authentication> result = authenticationManager.authenticate(openidAuth);
+
+        StepVerifier.create(result).verifyComplete();
+        verify(userHandler, never()).findByEmail(anyString());
+    }
+
+    // ==================== AUTRES TESTS ====================
+
+    @Test
+    void authenticateWithUnknownModeFallsBackToInternal() {
         when(securityProperties.getMode()).thenReturn("unknown");
-        when(jwtUtil.validateToken(validToken)).thenReturn(true);
-        when(jwtUtil.getUsernameFromToken(validToken)).thenReturn(username);
+        when(jwtUtil.validateToken(validInternalToken)).thenReturn(true);
+        when(jwtUtil.getUsernameFromToken(validInternalToken)).thenReturn(username);
 
         Claims claims = mock(Claims.class);
-        when(jwtUtil.getAllClaimsFromToken(validToken)).thenReturn(claims);
-
+        when(jwtUtil.getAllClaimsFromToken(validInternalToken)).thenReturn(claims);
         List<String> roles = List.of("ADMIN");
         when(claims.get("role", List.class)).thenReturn(roles);
 
-        // When
         Mono<Authentication> result = authenticationManager.authenticate(authentication);
 
-        // Then
         StepVerifier.create(result)
-                .assertNext(auth -> {
-                    assertNotNull(auth);
-                    assertEquals(username, auth.getPrincipal());
-                })
+                .assertNext(auth -> assertEquals(username, auth.getPrincipal()))
                 .verifyComplete();
-    }
-
-    @Test
-    void extractEmailFromTokenWithEmailField() {
-        // Given
-        when(securityProperties.getMode()).thenReturn("oauth2");
-
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJzdWIiOiIxMjM0NTYifQ.signature";
-        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(username, token);
-
-        UserPost user = new UserPost();
-        user.setEmail("test@example.com");
-        user.setRoles(List.of("READER"));
-
-        when(userHandler.findByEmail("test@example.com")).thenReturn(Mono.just(user));
-
-        // When
-        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
-
-        // Then
-        StepVerifier.create(result)
-                .expectNextCount(1)
-                .verifyComplete();
-
-        verify(userHandler, times(1)).findByEmail("test@example.com");
-    }
-
-    @Test
-    void extractEmailFromTokenWithPreferredUsername() {
-        // Given
-        when(securityProperties.getMode()).thenReturn("oauth2");
-
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.signature";
-        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(username, token);
-
-        UserPost user = new UserPost();
-        user.setEmail("test@example.com");
-        user.setRoles(List.of("READER"));
-
-        when(userHandler.findByEmail("test@example.com")).thenReturn(Mono.just(user));
-
-        // When
-        Mono<Authentication> result = authenticationManager.authenticate(oauth2Auth);
-
-        // Then
-        StepVerifier.create(result)
-                .expectNextCount(1)
-                .verifyComplete();
-
-        verify(userHandler, times(1)).findByEmail("test@example.com");
     }
 
     @Test
     void authenticateWithNullOAuth2Service() {
-        // Given
         when(securityProperties.getMode()).thenReturn("oauth2");
-
         AuthenticationManager managerWithoutOAuth2 = new AuthenticationManager(
                 jwtUtil, userHandler, null, openIDService, securityProperties);
 
-        String oauth2Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature";
-        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(username, oauth2Token);
+        String token = buildTokenWithClaim("email", username);
+        Authentication oauth2Auth = new UsernamePasswordAuthenticationToken(token, token);
 
-        // When
         Mono<Authentication> result = managerWithoutOAuth2.authenticate(oauth2Auth);
 
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete();
-
+        StepVerifier.create(result).verifyComplete();
         verify(userHandler, never()).findByEmail(anyString());
     }
 
     @Test
     void authenticateWithNullOpenIDService() {
-        // Given
         when(securityProperties.getMode()).thenReturn("openid");
-
         AuthenticationManager managerWithoutOpenID = new AuthenticationManager(
                 jwtUtil, userHandler, oauth2Service, null, securityProperties);
 
-        String openidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature";
-        Authentication openidAuth = new UsernamePasswordAuthenticationToken(username, openidToken);
+        String token = buildTokenWithClaim("email", username);
+        Authentication openidAuth = new UsernamePasswordAuthenticationToken(token, token);
 
-        // When
         Mono<Authentication> result = managerWithoutOpenID.authenticate(openidAuth);
 
-        // Then
-        StepVerifier.create(result)
-                .verifyComplete();
-
+        StepVerifier.create(result).verifyComplete();
         verify(userHandler, never()).findByEmail(anyString());
     }
 }

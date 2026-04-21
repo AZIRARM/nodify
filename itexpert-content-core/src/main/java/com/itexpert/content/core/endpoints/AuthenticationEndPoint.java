@@ -8,12 +8,10 @@ import com.itexpert.content.core.handlers.oauth2.OAuth2Service;
 import com.itexpert.content.core.handlers.openid.OpenIDService;
 import com.itexpert.content.core.models.auth.AuthResponse;
 import com.itexpert.content.core.models.auth.RoleEnum;
-import com.itexpert.content.core.models.oauth.AuthUserInfo;
 import com.itexpert.content.core.utils.auth.JWTUtil;
 import com.itexpert.content.core.utils.auth.PBKDF2Encoder;
 import com.itexpert.content.lib.models.UserLogin;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,6 @@ import org.springframework.web.server.ServerWebExchange;
 
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -88,18 +85,24 @@ public class AuthenticationEndPoint {
                             : authUserInfo.getUsername();
                     return userHandler.findByEmail(email)
                             .flatMap(user -> {
-                                String token = jwtUtil.generateToken(user);
-                                AuthResponse response = new AuthResponse(token);
-                                return Mono.just(ResponseEntity.ok(response));
+                                if (user.getValidated()) {
+                                    String token = jwtUtil.generateToken(user);
+                                    AuthResponse response = new AuthResponse(token);
+                                    return Mono.just(ResponseEntity.ok(response));
+                                } else {
+                                    log.warn("User not validated in database: {}", email);
+                                    return Mono
+                                            .just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).<AuthResponse>build());
+                                }
                             })
                             .switchIfEmpty(Mono.defer(() -> {
                                 log.warn("User not found in database: {}", email);
-                                return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+                                return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).<AuthResponse>build());
                             }));
                 })
                 .onErrorResume(error -> {
                     log.error("OAuth2 authentication failed: {}", error.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+                    return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).<AuthResponse>build());
                 });
     }
 
@@ -113,18 +116,26 @@ public class AuthenticationEndPoint {
                             : authUserInfo.getUsername();
                     return userHandler.findByEmail(email)
                             .flatMap(user -> {
-                                String token = jwtUtil.generateToken(user);
-                                AuthResponse response = new AuthResponse(token);
-                                return Mono.just(ResponseEntity.ok(response));
+                                if (user.getValidated()) {
+                                    String token = jwtUtil.generateToken(user);
+                                    AuthResponse response = new AuthResponse(token);
+                                    return Mono.just(ResponseEntity.ok(response));
+                                } else {
+                                    log.warn("User not validated in database: {}", email);
+                                    return Mono.<ResponseEntity<AuthResponse>>just(
+                                            ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+                                }
                             })
                             .switchIfEmpty(Mono.defer(() -> {
                                 log.warn("User not found in database: {}", email);
-                                return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+                                return Mono.<ResponseEntity<AuthResponse>>just(
+                                        ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
                             }));
                 })
                 .onErrorResume(error -> {
                     log.error("OpenID authentication failed: {}", error.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+                    return Mono
+                            .<ResponseEntity<AuthResponse>>just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
                 });
     }
 

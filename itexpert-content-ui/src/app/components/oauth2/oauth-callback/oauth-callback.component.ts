@@ -1,5 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { ToastrService } from 'ngx-toastr';
 import { AuthenticationService } from 'src/app/services/AuthenticationService';
 import { CookiesService } from 'src/app/services/CookiesService';
 
@@ -10,13 +12,15 @@ import { CookiesService } from 'src/app/services/CookiesService';
   styleUrl: './oauth-callback.component.css'
 })
 export class OAuthCallbackComponent implements OnInit {
-  isLoading = signal(true);
   errorMessage = signal<string | null>(null);
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthenticationService);
   private cookiesService = inject(CookiesService);
+
+  private translate = inject(TranslateService);
+  private toast = inject(ToastrService);
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -26,7 +30,6 @@ export class OAuthCallbackComponent implements OnInit {
       if (error) {
         console.error('OAuth error:', error);
         this.errorMessage.set(error);
-        this.isLoading.set(false);
         this.router.navigateByUrl('/login?error=' + error);
         return;
       }
@@ -34,24 +37,25 @@ export class OAuthCallbackComponent implements OnInit {
       if (token) {
         console.log('Token received, storing...');
         this.authService.setTokens(token);
-        this.cookiesService.setCookie("userInfos", "", -1); // Effacer en mettant une expiration négative
+        this.cookiesService.setCookie("userInfos", "", -1);
 
         this.authService.loadUser().subscribe({
           next: () => {
             console.log('User loaded, redirecting to nodes');
-            this.isLoading.set(false);
             this.router.navigateByUrl('/nodes');
           },
           error: (err) => {
             console.error('Failed to load user:', err);
             this.errorMessage.set('load_user_failed');
-            this.isLoading.set(false);
+            this.translate.get("LOAD_USER_FAILED").subscribe((translation: string) => {
+              this.toast.error(translation);
+            });
+
             this.router.navigateByUrl('/login?error=load_user_failed');
           }
         });
       } else {
         console.error('No token in callback');
-        this.isLoading.set(false);
         this.router.navigateByUrl('/login?error=no_token');
       }
     });

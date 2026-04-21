@@ -137,6 +137,7 @@
   "LOGIN_ERROR": "Error de inicio de sesión",
   "LOCK_RELEASED_SUCCESS": "Desbloqueo exitoso",
   "LOCK_RELEASED_FAIL": "Error al desbloquear",
+  "LOAD_USER_FAILED": "Tu cuenta existe pero aún no ha sido activada. Revisa tu correo electrónico o contacta al administrador.",
 
   "_DIALOGS": "=== DIÁLOGOS ===",
   "DELETE_TITLE": "Eliminar",
