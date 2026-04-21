@@ -238,6 +238,36 @@ volumes:
 | `CORE_URL`  | Core service URL              | `http://nodify-core:8080`        |
 | `JAVA_OPTS` | JVM options for Core and API  | See above                        |
 
+
+## 🔐 Authentication
+
+Nodify supports three authentication modes:
+
+| Mode | Description | Configuration Required |
+| :--- | :--- | :--- |
+| **Internal** | Built-in email/password authentication | ❌ No configuration needed (default) |
+| **OAuth2** | OAuth2 protocol authentication | ✅ Yes |
+| **OpenID Connect** | OpenID Connect protocol authentication | ✅ Yes |
+
+> 📖 **For detailed configuration instructions, see [Authentications.md](Authentications.md)**
+
+### Default Behavior
+
+By default, Nodify uses **Internal Authentication** with email and password. No additional configuration is required.
+
+### External Providers (OAuth2 / OpenID)
+
+To enable OAuth2 or OpenID Connect, you need to:
+1. Configure your provider (e.g., Keycloak, Google, Auth0)
+2. Set the required environment variables
+3. Switch the authentication mode
+
+Refer to the [Authentication Guide](Authentications.md) for:
+- Complete environment variables list
+- Provider configuration examples (Keycloak)
+- Step-by-step setup instructions
+```
+
 ## 🤝 Contributing
 
 We welcome contributions! Please check our contribution guidelines before submitting pull requests.
