@@ -3,7 +3,6 @@ package com.itexpert.content.core.handlers.websockets;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itexpert.content.core.handlers.RedisHandler;
-import com.itexpert.content.core.utils.auth.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,26 +17,24 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.time.Duration;
 
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisSocketHandler implements WebSocketHandler {
 
     private final RedisHandler redisHandler;
-    private final JWTUtil jwtUtil;
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
         String token = WebSocketAuthUtil.extractToken(session.getHandshakeInfo().getUri());
+
         if (!WebSocketAuthUtil.authenticate(session, token)) {
             log.warn("WebSocket connection rejected - authentication failed");
             return session.close(CloseStatus.POLICY_VIOLATION);
         }
 
         URI uri = session.getHandshakeInfo().getUri();
-        MultiValueMap<String, String> queryParams =
-                UriComponentsBuilder.fromUri(uri).build().getQueryParams();
+        MultiValueMap<String, String> queryParams = UriComponentsBuilder.fromUri(uri).build().getQueryParams();
 
         String resourceCode = queryParams.getFirst("code");
 
@@ -45,25 +42,19 @@ public class RedisSocketHandler implements WebSocketHandler {
             return session.close();
         }
 
-        String authentication = jwtUtil.getUsernameFromToken(token);
+        String email = WebSocketAuthUtil.extractEmailFromToken(token);
 
-        Flux<String> lockInfoFlux =
-                Flux.interval(Duration.ofSeconds(2))
-                        .flatMap(tick ->
-                                redisHandler.getLockInfo(resourceCode, authentication)
-                        )
-                        .map(lockInfo -> {
-                            try {
-                                return new ObjectMapper().writeValueAsString(lockInfo);
-                            } catch (JsonProcessingException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+        Flux<String> lockInfoFlux = Flux.interval(Duration.ofSeconds(2))
+                .flatMap(tick -> redisHandler.getLockInfo(resourceCode, email))
+                .map(lockInfo -> {
+                    try {
+                        return new ObjectMapper().writeValueAsString(lockInfo);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 
         return session.send(
-                lockInfoFlux.map(session::textMessage)
-        );
+                lockInfoFlux.map(session::textMessage));
     }
-
-
 }

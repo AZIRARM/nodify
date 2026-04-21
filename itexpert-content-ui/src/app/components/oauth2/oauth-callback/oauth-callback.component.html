@@ -1,1 +1,14 @@
-<p>oauth-callback works!</p>
+<div class="callback-container">
+    @if (isLoading()) {
+    <div class="loading">
+        <div class="spinner"></div>
+        <p>Connexion en cours...</p>
+    </div>
+    }
+
+    @if (errorMessage()) {
+    <div class="error">
+        <p>Erreur: {{ errorMessage() }}</p>
+    </div>
+    }
+</div>

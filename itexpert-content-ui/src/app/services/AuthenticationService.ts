@@ -84,14 +84,20 @@ export class AuthenticationService {
   }
 
   loadUser() {
-    const decoded = this.decodeJwt(this.getAccessToken());
+    const token = this.getAccessToken();
+    console.log('Token used for loadUser:', token ? token.substring(0, 100) : 'null');
+
+    const decoded = this.decodeJwt(token);
+    console.log('Decoded token:', decoded);
 
     if (decoded) {
       const email = decoded.email || decoded.preferred_username || decoded.sub;
+      console.log('Email extracted from token:', email);
 
       if (email) {
         return this.userService.getByEmail(email).pipe(
           tap((userInfos: any) => {
+            console.log('User loaded from DB:', userInfos);
             this.cookiesService.setCookie("userInfos", JSON.stringify(userInfos), 1);
           })
         );
@@ -110,23 +116,23 @@ export class AuthenticationService {
 
   logout(): void {
     if (this.authMode === 'internal') {
-      this.cookiesService.eraseCookie(this.TOKEN_COOKIE);
+      this.cookiesService.eraseAllCookies();
     } else if (this.authMode === 'oauth2') {
       this.httpClient.post(`${this.baseUrl}/oauth2/logout`, {}).subscribe({
         next: () => {
-          this.cookiesService.eraseCookie(this.TOKEN_COOKIE);
+          this.cookiesService.eraseAllCookies();
         },
         error: () => {
-          this.cookiesService.eraseCookie(this.TOKEN_COOKIE);
+          this.cookiesService.eraseAllCookies();
         }
       });
     } else if (this.authMode === 'openid') {
       this.httpClient.post(`${this.baseUrl}/openid/logout`, {}).subscribe({
         next: () => {
-          this.cookiesService.eraseCookie(this.TOKEN_COOKIE);
+          this.cookiesService.eraseAllCookies();
         },
         error: () => {
-          this.cookiesService.eraseCookie(this.TOKEN_COOKIE);
+          this.cookiesService.eraseAllCookies();
         }
       });
     }

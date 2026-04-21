@@ -1,9 +1,9 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, of} from 'rxjs';
-import {Router} from '@angular/router';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Router } from '@angular/router';
 import { CookiesService } from './CookiesService';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class UserAccessService {
   private userSubject = new BehaviorSubject<any | null>(null);
   constructor(
@@ -19,7 +19,7 @@ export class UserAccessService {
   }
 
   canEdit(): boolean {
-    const user:any = this.getCurrentUser();
+    const user: any = this.getCurrentUser();
 
     if (!user) {
       return false;
@@ -29,7 +29,7 @@ export class UserAccessService {
   }
 
   isAdmin(): boolean {
-    const user:any = this.getCurrentUser();
+    const user: any = this.getCurrentUser();
     if (!user) {
       return false;
     }
@@ -38,7 +38,6 @@ export class UserAccessService {
   }
 
   clearUser(): void {
-    this.cookiesService.eraseCookie("userToken");
-    this.cookiesService.eraseCookie("userInfos");
+    this.cookiesService.eraseAllCookies();
   }
 }

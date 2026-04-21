@@ -4,7 +4,6 @@ import com.itexpert.content.core.config.SecurityProperties;
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.handlers.oauth2.OAuth2Service;
 import com.itexpert.content.core.handlers.openid.OpenIDService;
-import com.itexpert.content.core.models.oauth.AuthUserInfo;
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,16 +79,53 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     }
 
     private Mono<Authentication> authenticateWithOAuth2(String authToken) {
-        // Email fixe pour tester (à enlever après)
-        String email = "azirarm@gmail.com";
+        if (oauth2Service == null) {
+            log.error("OAuth2Service is not available");
+            return Mono.empty();
+        }
+
+        String email = extractEmailFromToken(authToken);
+
+        if (email == null) {
+            log.error("No email found in OAuth2 token");
+            return Mono.empty();
+        }
+
+        log.info("OAuth2 authentication for email: {}", email);
 
         return userHandler.findByEmail(email)
-                .flatMap(user -> {
+                .<Authentication>flatMap(user -> {
                     Collection<GrantedAuthority> authorities = extractAuthorities(user.getRoles());
                     log.info("OAuth2 authentication successful for: {}", email);
                     return Mono.just(new UsernamePasswordAuthenticationToken(email, null, authorities));
                 })
-                .cast(Authentication.class)
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.error("User not found: {}", email);
+                    return Mono.empty();
+                }));
+    }
+
+    private Mono<Authentication> authenticateWithOpenID(String authToken) {
+        if (openIDService == null) {
+            log.error("OpenIDService is not available");
+            return Mono.empty();
+        }
+
+        String email = extractEmailFromToken(authToken);
+
+        if (email == null) {
+            log.error("No email found in OpenID token");
+            return Mono.empty();
+        }
+
+        log.info("OpenID authentication for email: {}", email);
+
+        return userHandler.findByEmail(email)
+                .<Authentication>flatMap(user -> {
+                    Collection<GrantedAuthority> authorities = extractAuthorities(user.getRoles());
+                    log.info("OAuth2 authentication successful for: {}", email);
+                    return Mono.just(new UsernamePasswordAuthenticationToken(email, null, authorities));
+                })
                 .switchIfEmpty(Mono.defer(() -> {
                     log.error("User not found: {}", email);
                     return Mono.empty();
@@ -100,74 +136,28 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
         try {
             String[] parts = token.split("\\.");
             String payload = parts[1];
-            String decoded = new String(java.util.Base64.getDecoder().decode(payload));
+            byte[] decodedBytes = java.util.Base64.getDecoder().decode(payload);
+            String decoded = new String(decodedBytes, java.nio.charset.StandardCharsets.UTF_8);
 
-            // Extraire l'email avec des regex simples
+            // Utiliser Jackson pour parser le JSON
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode json = mapper.readTree(decoded);
+
             String email = null;
-            if (decoded.contains("\"email\"")) {
-                int start = decoded.indexOf("\"email\"") + 9;
-                start = decoded.indexOf("\"", start) + 1;
-                int end = decoded.indexOf("\"", start);
-                email = decoded.substring(start, end);
-            } else if (decoded.contains("\"preferred_username\"")) {
-                int start = decoded.indexOf("\"preferred_username\"") + 21;
-                start = decoded.indexOf("\"", start) + 1;
-                int end = decoded.indexOf("\"", start);
-                email = decoded.substring(start, end);
+            if (json.has("email")) {
+                email = json.get("email").asText();
+            } else if (json.has("preferred_username")) {
+                email = json.get("preferred_username").asText();
+            } else if (json.has("sub")) {
+                email = json.get("sub").asText();
             }
 
             log.info("Email extracted from token: {}", email);
             return email;
         } catch (Exception e) {
-            log.error("Failed to extract email: {}", e.getMessage());
+            log.error("Failed to extract email from token: {}", e.getMessage());
             return null;
         }
-    }
-
-    private Mono<Authentication> authenticateWithOpenID(String authToken) {
-        if (openIDService == null) {
-            log.error("OpenIDService is not available");
-            return Mono.empty();
-        }
-
-        return openIDService.validateAndGetUserInfo(authToken)
-                .flatMap(this::enrichWithProjects)
-                .flatMap(this::createAuthentication)
-                .onErrorResume(error -> {
-                    log.error("OpenID authentication failed: {}", error.getMessage());
-                    return Mono.empty();
-                });
-    }
-
-    private Mono<AuthUserInfo> enrichWithProjects(AuthUserInfo userInfo) {
-        String email = userInfo.getEmail() != null ? userInfo.getEmail() : userInfo.getUsername();
-
-        return userHandler.findByEmail(email)
-                .map(user -> {
-                    userInfo.setProjects(user.getProjects());
-                    log.debug("Enriched user {} with projects: {}", userInfo.getUsername(), user.getProjects());
-                    return userInfo;
-                })
-                .switchIfEmpty(Mono.defer(() -> {
-                    log.debug("User not found in database for email: {}", email);
-                    userInfo.setProjects(new ArrayList<>());
-                    return Mono.just(userInfo);
-                }));
-    }
-
-    private Mono<Authentication> createAuthentication(AuthUserInfo userInfo) {
-        Collection<GrantedAuthority> authorities = extractAuthorities(userInfo.getRoles());
-
-        if (authorities.isEmpty()) {
-            log.debug("No valid roles found for {} with auth type {}",
-                    userInfo.getUsername(), userInfo.getAuthType());
-            return Mono.empty();
-        }
-
-        log.debug("{} authentication successful for {} with roles: {}",
-                userInfo.getAuthType().toUpperCase(), userInfo.getUsername(), authorities);
-
-        return Mono.just(new UsernamePasswordAuthenticationToken(userInfo.getUsername(), null, authorities));
     }
 
     private Collection<GrantedAuthority> extractAuthorities(List<String> roles) {
