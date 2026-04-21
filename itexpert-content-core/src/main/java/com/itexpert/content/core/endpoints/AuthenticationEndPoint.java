@@ -187,7 +187,7 @@ public class AuthenticationEndPoint {
         return oauth2Service.exchangeCodeForToken(code)
                 .flatMap(tokenResponse -> {
                     String accessToken = tokenResponse.getAccess_token();
-                    String redirectUri = oauth2Properties.getConfig().getFrontendTargetUrl() + "?token=" + accessToken;
+                    String redirectUri = oauth2Properties.getConfig().getStudioUri() + "?token=" + accessToken;
                     exchange.getResponse().setStatusCode(HttpStatus.FOUND);
                     exchange.getResponse().getHeaders().setLocation(URI.create(redirectUri));
                     return exchange.getResponse().setComplete();
@@ -208,7 +208,7 @@ public class AuthenticationEndPoint {
         return openidService.exchangeCodeForToken(code)
                 .flatMap(tokenResponse -> {
                     String accessToken = tokenResponse.getAccess_token();
-                    String redirectUri = openidProperties.getConfig().getFrontendTargetUrl() + "?token=" + accessToken;
+                    String redirectUri = openidProperties.getConfig().getStudioUri() + "?token=" + accessToken;
                     exchange.getResponse().setStatusCode(HttpStatus.FOUND);
                     exchange.getResponse().getHeaders().setLocation(URI.create(redirectUri));
                     return exchange.getResponse().setComplete();

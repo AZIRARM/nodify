@@ -17,7 +17,7 @@ public class OAuth2Properties {
         private String userInfoUri;
         private String authorizationUri;
         private String redirectUri;
-        private String frontendTargetUrl;
+        private String studioUri;
         private String clientId;
         private String clientSecret;
         private String scope;

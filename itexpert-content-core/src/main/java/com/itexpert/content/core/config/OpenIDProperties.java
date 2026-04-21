@@ -19,7 +19,7 @@ public class OpenIDProperties {
         private String jwkSetUri;
         private String userInfoUri;
         private String authorizationUri;
-        private String frontendTargetUrl;
+        private String studioUri;
         private String tokenUri;
         private String logoutUri;
         private String redirectUri;

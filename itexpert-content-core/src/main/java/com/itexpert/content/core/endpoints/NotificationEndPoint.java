@@ -4,8 +4,6 @@ import com.itexpert.content.core.handlers.NotificationHandler;
 import com.itexpert.content.lib.models.Notification;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

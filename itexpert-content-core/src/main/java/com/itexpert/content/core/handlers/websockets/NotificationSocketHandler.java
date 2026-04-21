@@ -3,7 +3,6 @@ package com.itexpert.content.core.handlers.websockets;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itexpert.content.core.handlers.NotificationHandler;
-import com.itexpert.content.core.utils.auth.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,14 +18,12 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotificationSocketHandler implements WebSocketHandler {
 
     private final NotificationHandler notificationHandler;
-    private final JWTUtil jwtUtil;
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
@@ -39,20 +36,17 @@ public class NotificationSocketHandler implements WebSocketHandler {
         URI uri = session.getHandshakeInfo().getUri();
         MultiValueMap<String, String> queryParams = UriComponentsBuilder.fromUri(uri).build().getQueryParams();
 
-        String userId = jwtUtil.getUsernameFromToken(token);
+        String userId = WebSocketAuthUtil.extractEmailFromToken(token);
 
         int page = queryParams.getFirst("page") != null ? Integer.parseInt(queryParams.getFirst("page")) : 0;
         int limit = queryParams.getFirst("limit") != null ? Integer.parseInt(queryParams.getFirst("limit")) : 50;
 
         Flux<String> notifFlux = Flux.interval(Duration.ofSeconds(5))
-                .flatMap(tick ->
-                        notificationHandler.countUnreaded(userId)
-                                .zipWith(notificationHandler.unreadedByUser(userId, page, limit).collectList())
-                                .map(tuple -> Map.of(
-                                        "count", tuple.getT1(),
-                                        "unread", tuple.getT2()
-                                ))
-                )
+                .flatMap(tick -> notificationHandler.countUnreaded(userId)
+                        .zipWith(notificationHandler.unreadedByUser(userId, page, limit).collectList())
+                        .map(tuple -> Map.of(
+                                "count", tuple.getT1(),
+                                "unread", tuple.getT2())))
                 .map(obj -> {
                     try {
                         return new ObjectMapper().writeValueAsString(obj);
