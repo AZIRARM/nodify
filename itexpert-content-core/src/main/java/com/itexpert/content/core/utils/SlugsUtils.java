@@ -1,21 +1,7 @@
 package com.itexpert.content.core.utils;
 
-import com.itexpert.content.lib.enums.OperatorEnum;
-import com.itexpert.content.lib.enums.TypeEnum;
-import com.itexpert.content.lib.models.ContentNode;
-import com.itexpert.content.lib.models.Node;
-import com.itexpert.content.lib.models.Rule;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.List;
 
 @Slf4j
 public class SlugsUtils {

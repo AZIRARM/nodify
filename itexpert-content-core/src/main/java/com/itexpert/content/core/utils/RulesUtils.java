@@ -13,14 +13,12 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 
 @Slf4j
 public class RulesUtils {
-
 
     public static Mono<Boolean> evaluateContentNode(ContentNode contentNode) {
         if (ObjectUtils.isNotEmpty(contentNode.getRules())) {
@@ -81,10 +79,9 @@ public class RulesUtils {
                 }
             }
 
-            evaluation = ruleCondition.getBehavior() ?
-                    !(evaluation && ruleCondition.getEnable() && ruleCondition.getBehavior())
-                    :
-                    evaluation && ruleCondition.getEnable() && !ruleCondition.getBehavior();
+            evaluation = ruleCondition.getBehavior()
+                    ? !(evaluation && ruleCondition.getEnable() && ruleCondition.getBehavior())
+                    : evaluation && ruleCondition.getEnable() && !ruleCondition.getBehavior();
         }
         return evaluation;
     }
@@ -98,7 +95,6 @@ public class RulesUtils {
         ruleMaintenance.setEnable(Boolean.FALSE);
         ruleMaintenance.setEditable(false);
         ruleMaintenance.setErasable(false);
-
 
         Rule activationDate = new Rule();
         activationDate.setName("ACTIVATION_DATE");
