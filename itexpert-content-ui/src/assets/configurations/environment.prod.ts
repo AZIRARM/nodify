@@ -1,8 +1,9 @@
-export class  Env  {
-  public static EXPERT_CONTENT_CORE_URL:string = "./core";
-  public static EXPERT_CONTENT_API_URL:string = "_API_URL_";
-  public static EXPERT_CONTENT_CORE_WEBSOCKET:string = "./ws";
-  public static EXPERT_CONTENT_AUTHENTICATION_URL:string = "./authentication";
+export class Env {
+  public static EXPERT_CONTENT_CORE_URL: string = "./core";
+  public static EXPERT_CONTENT_API_URL: string = "_API_URL_";
+  public static EXPERT_CONTENT_CORE_WEBSOCKET: string = "./ws";
+  public static EXPERT_CONTENT_AUTHENTICATION_URL: string = "./authentication";
+  public static SUBSCRIBE_ENABLED: string = "_SUBSCRIBE_ENABLED_";
 
   public static isProd() {
     return false;

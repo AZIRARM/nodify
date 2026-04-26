@@ -12,12 +12,14 @@
         </div>
       </div>
 
+      @if (subscribeEnabled()) {
       <div class="header-right-section">
         <button mat-stroked-button class="subscribe-btn" (click)="subscribe()">
           <mat-icon>person_add</mat-icon>
           {{ "SUBSCRIBE" | translate }}
         </button>
       </div>
+      }
     </div>
   </div>
 

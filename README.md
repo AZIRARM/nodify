@@ -217,6 +217,7 @@ services:
     environment:
       CORE_URL: "http://nodify-core:8080"
       API_URL: "http://nodify-api:1080"
+      SUBSCRIBE_ENABLED: "true" //optional default false
     depends_on:
       - nodify-core
       - nodify-api
@@ -229,14 +230,15 @@ volumes:
 
 ### Environment Variables
 
-| Variable | Description | Default |
-| :-----------| :-----------------------------| :------------------------------- |
-| `MONGO_URL` | MongoDB connection string     | `mongodb://mongodb:27017/nodify` |
-| `REDIS_URL` | Redis connection URL          | `redis://redis:6379`             |
-| `ADMIN_PWD` | Admin password                | `Admin13579++`                   |
-| `API_URL`   | Public API URL                | `http://nodify-api:1080`         |
-| `CORE_URL`  | Core service URL              | `http://nodify-core:8080`        |
-| `JAVA_OPTS` | JVM options for Core and API  | See above                        |
+| Variable             | Description                            | Default                              |
+| :--------------------| :--------------------------------------| :----------------------------------- |
+| `MONGO_URL`          | MongoDB connection string              | `mongodb://mongodb:27017/nodify`     |
+| `REDIS_URL`          | Redis connection URL                   | `redis://redis:6379`                 |
+| `ADMIN_PWD`          | Admin password                         | `Admin13579++`                       |
+| `API_URL`            | Public API URL                         | `http://nodify-api:1080`             |
+| `CORE_URL`           | Core service URL                       | `http://nodify-core:8080`            |
+| `JAVA_OPTS`          | JVM options for Core and API           | See above                            |
+| `SUBSCRIBE_ENABLED`  | Enable subscription feature            | `false`                              |
 
 
 ## 🔐 Authentication

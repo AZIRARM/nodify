@@ -6,6 +6,7 @@ import { CookiesService } from 'src/app/services/CookiesService';
 import { LoggerService } from "../../../services/LoggerService";
 import { TranslateService } from "@ngx-translate/core";
 import { switchMap } from "rxjs/operators";
+import { Env } from "../../../../assets/configurations/environment";
 
 @Component({
   selector: 'app-login',
@@ -100,5 +101,9 @@ export class LoginComponent implements OnInit {
 
   isOpenIdMode(): boolean {
     return this.authMode() === 'openid';
+  }
+
+  subscribeEnabled(): boolean {
+    return Env.SUBSCRIBE_ENABLED === 'true';
   }
 }
