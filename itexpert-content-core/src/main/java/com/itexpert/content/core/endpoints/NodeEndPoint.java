@@ -164,7 +164,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -193,7 +193,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -217,7 +217,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -241,7 +241,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -270,7 +270,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -360,7 +360,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -390,7 +390,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(node.getCode())
+                                    return SecurityUtils.hasProjectAccess(node.getCode(), node.getParentCode())
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -425,7 +425,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
@@ -534,7 +534,7 @@ public class NodeEndPoint {
                     return SecurityUtils.hasRole(RoleEnum.EDITOR.name())
                             .flatMap(isEditor -> {
                                 if (isEditor) {
-                                    return SecurityUtils.hasProjectAccess(code)
+                                    return SecurityUtils.hasProjectAccess(code, null)
                                             .flatMap(hasAccess -> {
                                                 if (!hasAccess) {
                                                     return Mono.just(new ResponseEntity<>(HttpStatus.FORBIDDEN));
