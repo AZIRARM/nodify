@@ -11,7 +11,7 @@
     </div>
 
     <div class="header-actions">
-      @if (userAccessService.canEdit()) {
+      @if (userAccessService.isAdmin()) {
       <div style="position: relative; display: inline-block;">
         <button mat-mini-fab class="action-btn warn-btn" (click)="deleteds()"
           [matTooltip]="'DELETED_PLUGINS' | translate">
@@ -38,16 +38,7 @@
 
   <!-- Contenu -->
   <div class="dialog-content">
-    <!-- Indicateur de chargement -->
-    @if (isLoading()) {
-    <div class="loading-state">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>{{ 'LOADING' | translate }}</p>
-    </div>
-    }
-
     <!-- Tableau des plugins -->
-    @if (!isLoading()) {
     <div class="table-wrapper">
       <table mat-table [dataSource]="dataSource()" class="plugins-table">
 
@@ -60,13 +51,13 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let element">
-            <button mat-icon-button class="status-btn" (click)="status(element)"
-              [disabled]="!userAccessService.canEdit()"
+            <button mat-icon-button class="status-btn" (click)="changeStatus(element)"
+              [disabled]="!userAccessService.isAdmin()"
               [matTooltip]="(element.enabled ? 'DISABLE' : 'ENABLE') | translate">
               <mat-icon [ngClass]="{
                   'status-icon': true,
-                  'green': element.enabled,
-                  'red': !element.enabled
+                  'green': element.enabled === true,
+                  'red': element.enabled === false
                 }">fiber_manual_record</mat-icon>
             </button>
           </td>
@@ -155,20 +146,22 @@
                 <mat-icon class="text-accent">post_add</mat-icon>
               </button>
               }
-
-              @if (userAccessService.canEdit()) {
+              @if (userAccessService.isAdmin()) {
               <button mat-icon-button class="action-icon-btn" (click)="update(element)"
                 [matTooltip]="'EDIT' | translate">
                 <mat-icon class="text-primary">edit</mat-icon>
               </button>
+              } @else {
+              <button mat-icon-button class="action-icon-btn" (click)="update(element)"
+                [matTooltip]="'VIEW' | translate">
+                <mat-icon class="text-primary">visibility</mat-icon>
+              </button>
               }
 
-              @if (userAccessService.canEdit()) {
               <button mat-icon-button class="action-icon-btn" (click)="export(element)"
                 [matTooltip]="'EXPORT' | translate">
                 <mat-icon class="text-success">ios_share</mat-icon>
               </button>
-              }
 
               @if (userAccessService.isAdmin()) {
               <button mat-icon-button class="action-icon-btn" (click)="delete(element)"
@@ -196,6 +189,5 @@
       </div>
       }
     </div>
-    }
   </div>
 </div>

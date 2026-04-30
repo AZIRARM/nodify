@@ -27,7 +27,7 @@ export class PluginFilesDialogComponent implements OnInit {
   dialogRefValidation: MatDialogRef<ValidationDialogComponent>;
   currentPluginFile: WritableSignal<PluginFile> = signal<PluginFile>(new PluginFile());
   selectedFileName: WritableSignal<string> = signal<string>('');
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private data = inject(MAT_DIALOG_DATA);
   public dialogRef = inject(MatDialogRef<PluginFilesDialogComponent>);
@@ -61,14 +61,14 @@ export class PluginFilesDialogComponent implements OnInit {
   init() {
     if (!this.plugin?.id) return;
 
-    this.isLoading.set(true);
+
     this.pluginFileService.getPluginAssets(this.plugin.id).pipe(
       catchError((error) => {
         console.error('Erreur chargement assets', error);
         this.toast.error('Request failed with error');
         return of([]);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((response: any) => {
       this.dataSource.set(new MatTableDataSource(response || []));
     });
@@ -83,7 +83,7 @@ export class PluginFilesDialogComponent implements OnInit {
   }
 
   delete(pluginFile: PluginFile) {
-    this.isLoading.set(true);
+
     this.dialogRefValidation = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_PlUGIN_FILE_TITLE",
@@ -111,7 +111,7 @@ export class PluginFilesDialogComponent implements OnInit {
         }
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string | null) => {
       if (trad) {
         this.loggerService.success(trad);
@@ -121,7 +121,7 @@ export class PluginFilesDialogComponent implements OnInit {
   }
 
   save() {
-    this.isLoading.set(true);
+
     this.pluginFileService.save(this.currentPluginFile()).pipe(
       switchMap(() => this.translate.get("SAVE_SUCCESS")),
       catchError((error: any) => {
@@ -132,7 +132,7 @@ export class PluginFilesDialogComponent implements OnInit {
           })
         );
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string) => {
       this.loggerService.success(trad);
       this.resetCurrentPluginFile();

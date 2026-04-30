@@ -20,15 +20,6 @@
       }
     </div>
 
-    <!-- Indicateur de chargement -->
-    @if (isLoading()) {
-    <div class="loading-state">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>{{ 'LOADING' | translate }}</p>
-    </div>
-    }
-
-    @if (!isLoading()) {
     <div class="table-wrapper">
       <table mat-table [dataSource]="dataSource()" class="datas-table">
         <ng-container matColumnDef="Content">
@@ -107,7 +98,6 @@
         aria-label="Select page">
       </mat-paginator>
     </div>
-    }
     }
 
     <div class="dialog-actions">

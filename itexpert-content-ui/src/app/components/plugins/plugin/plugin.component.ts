@@ -30,7 +30,6 @@ export class PluginComponent implements OnInit {
   displayedColumns: string[] = ['Status', 'Name', 'Description', 'ModifiedBy', 'CreationDate', 'ModificationDate', 'Actions'];
   dataSource: WritableSignal<MatTableDataSource<Plugin>> = signal(new MatTableDataSource<Plugin>([]));
   totalDeleteds: WritableSignal<number> = signal(0);
-  isLoading: WritableSignal<boolean> = signal(false);
 
   private translate = inject(TranslateService);
   private toast = inject(ToastrService);
@@ -49,14 +48,11 @@ export class PluginComponent implements OnInit {
   }
 
   init() {
-    this.isLoading.set(true);
-
     this.pluginService.getNotDeleted().pipe(
       catchError((error) => {
         this.toast.error('Request failed with error');
         return of([]);
-      }),
-      finalize(() => this.isLoading.set(false))
+      })
     ).subscribe((response: any) => {
       this.dataSource.set(new MatTableDataSource(response || []));
     });
@@ -73,8 +69,7 @@ export class PluginComponent implements OnInit {
     });
   }
 
-  status(plugin: Plugin) {
-    this.isLoading.set(true);
+  changeStatus(plugin: Plugin) {
     const action$ = !plugin.enabled
       ? this.pluginService.enable(plugin.id)
       : this.pluginService.disable(plugin.id);
@@ -84,7 +79,6 @@ export class PluginComponent implements OnInit {
         this.toast.error('Request failed with error');
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
     ).subscribe(() => {
       this.init();
       this.save(plugin);
@@ -155,7 +149,7 @@ export class PluginComponent implements OnInit {
   }
 
   private save(plugin: Plugin) {
-    this.isLoading.set(true);
+
     this.pluginService.save(plugin).pipe(
       switchMap(() => this.translate.get("SAVE_SUCCESS")),
       catchError((error: any) => {
@@ -166,7 +160,7 @@ export class PluginComponent implements OnInit {
           })
         );
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string) => {
       this.loggerService.success(trad);
       this.init();
@@ -250,4 +244,9 @@ export class PluginComponent implements OnInit {
       console.warn('No file selected or input is invalid.');
     }
   }
+
+  status(element: Plugin) {
+    element.enabled = !element.enabled;
+  }
+
 }

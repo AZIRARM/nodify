@@ -17,17 +17,7 @@
 
   <!-- Contenu -->
   <div mat-dialog-content class="dialog-content">
-
-    <!-- Indicateur de chargement -->
-    @if (isLoading()) {
-    <div class="loading-state">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>{{ 'LOADING' | translate }}</p>
-    </div>
-    }
-
     <!-- Tableau des éléments supprimés -->
-    @if (!isLoading()) {
     <div class="table-wrapper">
       <table mat-table [dataSource]="dataSource()" class="deleted-table">
 
@@ -137,7 +127,6 @@
       </div>
       }
     </div>
-    }
   </div>
 
   <!-- Actions -->

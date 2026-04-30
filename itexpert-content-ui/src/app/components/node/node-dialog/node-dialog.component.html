@@ -36,15 +36,6 @@
 <!-- ===== CONTENU PRINCIPAL AVEC SCROLL CONTROLÉ ===== -->
 <div mat-dialog-content class="dialog-content">
 
-  <!-- Indicateur de chargement -->
-  @if (isLoading()) {
-  <div class="loading-state">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>{{ 'LOADING' | translate }}</p>
-  </div>
-  }
-
-  @if (!isLoading()) {
   <!-- Section Informations de base -->
   <div class="form-section compact">
     <h3 class="section-title">
@@ -173,7 +164,6 @@
       </mat-form-field>
     </div>
   </div>
-  }
 </div>
 
 <!-- ===== ACTIONS COMPACTES ===== -->
@@ -183,8 +173,7 @@
     {{ "CANCEL" | translate }}
   </button>
 
-  <button mat-flat-button class="save-btn compact" color="primary" [disabled]="!isFormValid() || isLoading()"
-    (click)="validate()">
+  <button mat-flat-button class="save-btn compact" color="primary" [disabled]="!isFormValid()" (click)="validate()">
     <mat-icon>save</mat-icon>
     {{ "SAVE" | translate }}
   </button>

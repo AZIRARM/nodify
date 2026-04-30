@@ -24,7 +24,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
   displayedColumns: string[] = ['Name', 'CreationDate', 'ModificationDate', 'ModifiedBy', 'Actions'];
   dataSource: WritableSignal<MatTableDataSource<Plugin>> = signal(new MatTableDataSource<Plugin>([]));
   dialogValidationRef: MatDialogRef<ValidationDialogComponent>;
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   public dialogRef = inject(MatDialogRef<DeletedPluginsDialogComponent>);
   private translate = inject(TranslateService);
@@ -40,13 +40,13 @@ export class DeletedPluginsDialogComponent implements OnInit {
   }
 
   init() {
-    this.isLoading.set(true);
+
     this.pluginService.getDeleted().pipe(
       catchError(error => {
         console.error(error);
         return of([]);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((response: any) => {
       if (response) {
         response = response.sort((a: any, b: any) => a.code.localeCompare(b.code));
@@ -56,7 +56,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
   }
 
   activate(element: Plugin) {
-    this.isLoading.set(true);
+
     this.dialogValidationRef = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "ACTIVATE_DELETE_PLUGIN_TITLE",
@@ -84,7 +84,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
         }
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string | null) => {
       if (trad) {
         this.loggerService.success(trad);
@@ -94,7 +94,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
   }
 
   delete(element: Plugin) {
-    this.isLoading.set(true);
+
     this.dialogValidationRef = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_PlUGIN_TITLE",
@@ -122,7 +122,7 @@ export class DeletedPluginsDialogComponent implements OnInit {
         }
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string | null) => {
       if (trad) {
         this.loggerService.success(trad);

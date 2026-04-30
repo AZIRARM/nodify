@@ -15,7 +15,7 @@ import { switchMap } from 'rxjs/operators';
 export class SubscribeComponent {
 
   userSubscribe: WritableSignal<User> = signal<User>(new User());
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private userService = inject(UserService);
   private translate = inject(TranslateService);
@@ -25,7 +25,7 @@ export class SubscribeComponent {
   hidePassword = true;
   subscribe(): void {
     if (this.validateForm()) {
-      this.isLoading.set(true);
+
       this.userService.subscribe(this.userSubscribe())
         .pipe(
           switchMap(() => this.translate.get("SUBSCRIBE_SUCCESS"))
@@ -34,12 +34,12 @@ export class SubscribeComponent {
           next: (trad) => {
             this.loggerService.success(trad);
             this.router.navigateByUrl("/login");
-            this.isLoading.set(false);
+
           },
           error: () => {
             this.translate.get("SUBSCRIBE_ERROR").subscribe(trad => {
               this.loggerService.error(trad);
-              this.isLoading.set(false);
+
             });
           }
         });

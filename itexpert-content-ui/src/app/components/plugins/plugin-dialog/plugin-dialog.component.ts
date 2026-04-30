@@ -4,6 +4,7 @@ import { Plugin } from "../../../modeles/Plugin";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { TranslateService } from '@ngx-translate/core';
 import { LoggerService } from 'src/app/services/LoggerService';
+import { UserAccessService } from 'src/app/services/UserAccessService';
 
 @Component({
   selector: 'app-plugin-dialog',
@@ -21,6 +22,7 @@ export class PluginDialogComponent implements AfterViewInit {
   public dialogRef = inject(MatDialogRef<PluginDialogComponent>);
   private translate = inject(TranslateService);
   private loggerService = inject(LoggerService);
+  public userAccessService = inject(UserAccessService);
 
   constructor() {
     if (this.data && this.data.plugin) {

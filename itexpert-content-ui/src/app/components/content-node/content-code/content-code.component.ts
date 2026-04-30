@@ -24,7 +24,7 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
   @Input() @Output() type: string;
   @Input() @Output() user: User;
   @Input() @Output() hasChanged: WritableSignal<boolean> = signal(false);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private lockCheckSub?: Subscription;
 
@@ -87,7 +87,7 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
   }
 
   validate() {
-    this.isLoading.set(true);
+
     this.contentNode.modifiedBy = this.user!.id;
     this.contentNode.parentCode = this.node.code;
     this.contentNode.parentCodeOrigin = this.node.parentCodeOrigin;
@@ -100,14 +100,13 @@ export class ContentCodeComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (trad: string) => {
         this.loggerService.success(trad);
-        this.isLoading.set(false);
         this.close(true);
       },
       error: () => {
         this.translateService.get("SAVE_ERROR").subscribe(trad1 => {
           this.translateService.get("CHANGE_PROJECT_CODE_MESSAGE").subscribe(trad2 => {
             this.loggerService.error(trad1 + ",  " + trad2);
-            this.isLoading.set(false);
+
           });
         });
       }

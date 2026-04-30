@@ -98,7 +98,8 @@
                 {{ element.name }}
               </span>
               @if(element.code !== element.name) {
-              <span class="node-code">({{ element.code }})</span>
+              <span class="node-code" (click)="copyToClipboard(element.code); $event.stopPropagation()">{{ element.code
+                }}</span>
               }
             </div>
             @if(element.lockInfo && !element.lockInfo.locked) {

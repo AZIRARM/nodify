@@ -19,7 +19,7 @@ export class PasswordDialogComponent implements OnInit {
   newPassword: WritableSignal<string> = signal('');
   confirmNewPassword: WritableSignal<string> = signal('');
   user: WritableSignal<User> = signal<User>({} as User);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   hideCurrentPassword = true;
   hideNewPassword = true;
@@ -45,7 +45,7 @@ export class PasswordDialogComponent implements OnInit {
 
   validate() {
     if (this.isFormValid()) {
-      this.isLoading.set(true);
+
       this.userService.changePassword({
         'password': this.password(),
         'newPassword': this.newPassword(),
@@ -63,12 +63,12 @@ export class PasswordDialogComponent implements OnInit {
           this.dialogRef.close();
           window.localStorage.removeItem("userToken");
           window.location.reload();
-          this.isLoading.set(false);
+
         },
         error: () => {
           this.translate.get("SAVE_ERROR").subscribe(trad => {
             this.loggerService.error(trad);
-            this.isLoading.set(false);
+
           });
         }
       });

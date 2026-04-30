@@ -28,16 +28,7 @@
                 <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'SUBSCRIBE' | translate }}">
             </div>
 
-            <!-- Indicateur de chargement -->
-            @if (isLoading()) {
-            <div class="loading-container">
-                <mat-spinner diameter="40"></mat-spinner>
-                <p>{{ 'LOADING' | translate }}</p>
-            </div>
-            }
-
             <!-- Formulaire -->
-            @if (!isLoading()) {
             <div class="form-container">
                 <mat-form-field appearance="outline" class="full-width">
                     <mat-label>{{ "USER_FIRSTNAME" | translate }}</mat-label>
@@ -81,7 +72,6 @@
                     {{ "REGISTER" | translate }}
                 </button>
             </div>
-            }
         </div>
     </div>
 </div>

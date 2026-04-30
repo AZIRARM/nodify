@@ -26,16 +26,7 @@
   <!-- Contenu principal (avec espace pour le footer) -->
   <div class="login-content">
 
-    <!-- Indicateur de chargement -->
-    @if (isLoading()) {
-    <div class="loading-container">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>{{ 'LOADING' | translate }}</p>
-    </div>
-    }
-
     <!-- Carte de connexion -->
-    @if (!isLoading()) {
     <div class="login-card">
       <!-- Logo -->
       <div class="logo-container">
@@ -71,7 +62,7 @@
           {{ "CANCEL" | translate }}
         </button>
         <button mat-flat-button class="login-btn" (click)="login()"
-          [disabled]="!userLogin().email || !userLogin().password || isLoading()">
+          [disabled]="!userLogin().email || !userLogin().password">
           <mat-icon>login</mat-icon>
           {{ "LOGIN" | translate }}
         </button>
@@ -96,6 +87,5 @@
       </div>
       }
     </div>
-    }
   </div>
 </div>

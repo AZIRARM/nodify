@@ -1,0 +1,13 @@
+<div class="unauthorized-container">
+    <div class="unauthorized-card">
+        <div class="icon">
+            🚫
+        </div>
+        <h1>{{ 'UNAUTHORIZED_TITLE' | translate}} </h1>
+        <p>{{ 'UNAUTHORIZED_MESSAGE' | translate }}</p>
+        <div class="buttons">
+            <button class="btn-home" (click)="goHome()">{{ 'WORKSPACE' | translate }}</button>
+            <button class="btn-logout" (click)="logout()">{{ 'LOGOUT' | translate }}</button>
+        </div>
+    </div>
+</div>

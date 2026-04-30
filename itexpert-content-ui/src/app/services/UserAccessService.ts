@@ -18,6 +18,10 @@ export class UserAccessService {
     return userStr ? JSON.parse(userStr) : null;
   }
 
+  setCurrentUser(user: any): void {
+    this.cookiesService.setCookie("userInfos", JSON.stringify(user), 1);
+  }
+
   canEdit(): boolean {
     const user: any = this.getCurrentUser();
 

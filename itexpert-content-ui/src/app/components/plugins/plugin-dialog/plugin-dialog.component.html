@@ -43,10 +43,12 @@
       <!-- Barre d'outils au-dessus du code -->
       <div class="code-toolbar">
         <!-- Bouton Enregistrer à gauche (icône seulement) -->
+        @if(userAccessService.isAdmin()) {
         <button class="toolbar-btn save-icon-btn" (click)="validate()"
           [disabled]="!plugin.name || plugin.name.trim().length === 0" [matTooltip]="'SAVE' | translate">
           <mat-icon>save</mat-icon>
         </button>
+        }
 
         <!-- Bouton Agrandir à droite -->
         <button class="toolbar-btn fullscreen-btn" (click)="toggleFullscreen()"
@@ -64,7 +66,8 @@
             autoRefresh: true,
             lineWrapping: true,
             tabSize: 2,
-            indentUnit: 2
+            indentUnit: 2,
+            readOnly: !userAccessService.isAdmin()
           }">
         </ngx-codemirror>
       </div>

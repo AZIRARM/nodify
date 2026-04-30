@@ -11,6 +11,8 @@
   "PUBLISH_PROJECT_TITLE": "Publicar proyecto",
   "PUBLISH_PROJECT_MESSAGE": "¿Deseas publicar este proyecto?",
   "CHANGE_PROJECT_CODE_MESSAGE": "El código del proyecto puede que ya exista",
+  "COPY_SUCCESS": "Copiado al portapapeles",
+  "COPY_ERROR": "Error al copiar",
 
   "_NODES": "=== NODOS ===",
   "NODES": "Nodos/Proyectos",
@@ -219,6 +221,8 @@
   "PASSWORD_CHANGE": "Has cambiado tu contraseña",
   "LOGOUT": "Cerrar sesión",
   "MY_ACCOUNT": "Mi cuenta",
+  "UNAUTHORIZED_TITLE": "Acceso no autorizado",
+  "UNAUTHORIZED_MESSAGE": "No tienes los permisos necesarios para acceder a esta página.",
 
   "_SUBSCRIBE": "=== AUTENTICACIÓN ===",
   "SUBSCRIBE": "Inscripción",

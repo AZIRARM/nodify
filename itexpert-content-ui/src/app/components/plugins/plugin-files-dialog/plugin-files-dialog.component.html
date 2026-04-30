@@ -21,17 +21,8 @@
   <!-- Contenu -->
   <div mat-dialog-content class="dialog-content">
 
-    <!-- Indicateur de chargement -->
-    @if (isLoading()) {
-    <div class="loading-state">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>{{ 'LOADING' | translate }}</p>
-    </div>
-    }
-
-    @if (!isLoading()) {
     <!-- Formulaire d'ajout/modification -->
-    @if (userAccessService.canEdit()) {
+    @if (userAccessService.isAdmin()) {
     <div class="form-section">
       <h3 class="section-title">
         <mat-icon>{{ currentPluginFile().id ? 'edit' : 'add_circle' }}</mat-icon>
@@ -151,7 +142,7 @@
             </th>
             <td mat-cell *matCellDef="let element">
               <div class="actions-cell">
-                @if(userAccessService.canEdit()) {
+                @if(userAccessService.isAdmin()) {
                 <button mat-icon-button class="action-icon-btn" (click)="edit(element)"
                   [matTooltip]="'EDIT' | translate">
                   <mat-icon class="text-primary">edit</mat-icon>
@@ -179,7 +170,6 @@
         }
       </div>
     </div>
-    }
   </div>
 
   <!-- Actions -->

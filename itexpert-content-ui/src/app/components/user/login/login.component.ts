@@ -2,7 +2,6 @@ import { Component, inject, signal, WritableSignal, OnInit } from '@angular/core
 import { UserLogin } from "../../../modeles/UserLogin";
 import { Router } from "@angular/router";
 import { AuthenticationService } from "../../../services/AuthenticationService";
-import { CookiesService } from 'src/app/services/CookiesService';
 import { LoggerService } from "../../../services/LoggerService";
 import { TranslateService } from "@ngx-translate/core";
 import { switchMap } from "rxjs/operators";
@@ -16,11 +15,10 @@ import { Env } from "../../../../assets/configurations/environment";
 })
 export class LoginComponent implements OnInit {
   userLogin: WritableSignal<UserLogin> = signal<UserLogin>(new UserLogin());
-  isLoading: WritableSignal<boolean> = signal(false);
+
   authMode: WritableSignal<string> = signal('internal');
 
   private authenticationService = inject(AuthenticationService);
-  private cookiesService = inject(CookiesService);
   private loggerService = inject(LoggerService);
   private translate = inject(TranslateService);
   private router = inject(Router);
@@ -62,7 +60,7 @@ export class LoginComponent implements OnInit {
     console.log('Login internal with:', credentials.email);
 
     if (credentials.email && credentials.password) {
-      this.isLoading.set(true);
+
       this.authenticationService.signin(credentials).pipe(
         switchMap((response) => {
           this.authenticationService.setTokens(response.token, response.refresh_token);
@@ -71,13 +69,13 @@ export class LoginComponent implements OnInit {
       ).subscribe({
         next: () => {
           this.router.navigateByUrl('/nodes');
-          this.isLoading.set(false);
+
         },
         error: () => {
           this.translate.get("LOGIN_ERROR").subscribe(trad => {
             this.loggerService.error(trad);
           });
-          this.isLoading.set(false);
+
         }
       });
     }

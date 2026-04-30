@@ -1,6 +1,5 @@
 <div class="user-infos-dialog">
 
-  <!-- En-tête -->
   <div class="dialog-header">
     <div class="header-content">
       <div class="header-icon">
@@ -12,38 +11,43 @@
     </div>
   </div>
 
-  <!-- Contenu -->
   <div class="dialog-content">
 
-    <!-- Carte d'informations utilisateur -->
     @if (user()) {
     <div class="user-info-card">
-      <!-- Avatar / Icône -->
       <div class="user-avatar">
         <mat-icon>person</mat-icon>
       </div>
 
-      <!-- Informations -->
       <div class="user-details">
-        <!-- Prénom -->
         <div class="info-row">
           <div class="info-label">
             <mat-icon>badge</mat-icon>
             <span>{{ "USER_FIRSTNAME" | translate }}</span>
           </div>
+          @if (isEditing()) {
+          <div class="info-value">
+            <input matInput [(ngModel)]="editedUser.firstname" class="edit-input">
+          </div>
+          } @else {
           <div class="info-value">{{ user().firstname }}</div>
+          }
         </div>
 
-        <!-- Nom -->
         <div class="info-row">
           <div class="info-label">
             <mat-icon>badge</mat-icon>
             <span>{{ "USER_LASTNAME" | translate }}</span>
           </div>
+          @if (isEditing()) {
+          <div class="info-value">
+            <input matInput [(ngModel)]="editedUser.lastname" class="edit-input">
+          </div>
+          } @else {
           <div class="info-value">{{ user().lastname }}</div>
+          }
         </div>
 
-        <!-- Email -->
         <div class="info-row">
           <div class="info-label">
             <mat-icon>email</mat-icon>
@@ -52,7 +56,6 @@
           <div class="info-value">{{ user().email }}</div>
         </div>
 
-        <!-- Rôles -->
         <div class="info-row">
           <div class="info-label">
             <mat-icon>security</mat-icon>
@@ -68,17 +71,30 @@
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="user-actions">
+        @if (isEditing()) {
+        <button mat-flat-button class="save-btn" (click)="save()">
+          <mat-icon>save</mat-icon>
+          {{ "SAVE" | translate }}
+        </button>
+        <button mat-stroked-button class="cancel-btn" (click)="cancel()">
+          <mat-icon>close</mat-icon>
+          {{ "CANCEL" | translate }}
+        </button>
+        } @else {
+        <button mat-flat-button class="edit-btn" (click)="edit()">
+          <mat-icon>edit</mat-icon>
+          {{ "EDIT" | translate }}
+        </button>
         <button mat-flat-button class="change-password-btn" (click)="changePassword()">
           <mat-icon>lock</mat-icon>
           {{ "CHANGE_PASSWORD" | translate }}
         </button>
+        }
       </div>
     </div>
     }
 
-    <!-- Message si utilisateur non trouvé -->
     @if (!user()) {
     <div class="empty-state">
       <mat-icon>person_off</mat-icon>

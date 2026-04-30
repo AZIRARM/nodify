@@ -30,7 +30,7 @@ export class ContentDatasComponent implements AfterViewInit {
   total: WritableSignal<number> = signal(0);
   currentIndex: WritableSignal<number> = signal(0);
   currentPageSize: WritableSignal<number> = signal(5);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   dialogRefValidation: MatDialogRef<ValidationDialogComponent>;
 
@@ -67,13 +67,13 @@ export class ContentDatasComponent implements AfterViewInit {
     this.dialogRefValidation.afterClosed()
       .subscribe(result => {
         if (result?.data === 'validated') {
-          this.isLoading.set(true);
+
           this.dataService.delete(id).pipe(
             switchMap(() => this.translate.get("DELETE_SUCCESS")),
             catchError((error) => {
               return of(null);
             }),
-            finalize(() => this.isLoading.set(false))
+
           ).subscribe((trad: string | null) => {
             if (trad) {
               this.loggerService.success(trad);
@@ -91,7 +91,7 @@ export class ContentDatasComponent implements AfterViewInit {
   }
 
   nextPage(nbPage: number, limit: number) {
-    this.isLoading.set(true);
+
     this.dataService.countDatasByContentNodeCode(this.contentNode.code).pipe(
       catchError((error) => {
         this.toast.error('Request failed with error');
@@ -105,7 +105,7 @@ export class ContentDatasComponent implements AfterViewInit {
           this.toast.error('Request failed with error');
           return of([]);
         }),
-        finalize(() => this.isLoading.set(false))
+
       ).subscribe((response: any) => {
         this.dataSource.set(new MatTableDataSource(response));
       });

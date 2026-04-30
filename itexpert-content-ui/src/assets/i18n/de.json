@@ -11,6 +11,8 @@
   "PUBLISH_PROJECT_TITLE": "Projekt veröffentlichen",
   "PUBLISH_PROJECT_MESSAGE": "Möchten Sie dieses Projekt veröffentlichen?",
   "CHANGE_PROJECT_CODE_MESSAGE": "Der Projektcode existiert möglicherweise bereits",
+  "COPY_SUCCESS": "In die Zwischenablage kopiert",
+  "COPY_ERROR": "Fehler beim Kopieren",
 
   "_NODES": "=== KNOTEN ===",
   "NODES": "Knoten/Projekte",
@@ -219,6 +221,8 @@
   "PASSWORD_CHANGE": "Sie haben Ihr Passwort geändert",
   "LOGOUT": "Abmelden",
   "MY_ACCOUNT": "Mein Konto",
+  "UNAUTHORIZED_TITLE": "Zugriff nicht autorisiert",
+  "UNAUTHORIZED_MESSAGE": "Sie verfügen nicht über die erforderlichen Berechtigungen, um auf diese Seite zuzugreifen.",
 
   "_SUBSCRIBE": "=== AUTHENTIFIZIERUNG ===",
   "SUBSCRIBE": "Anmeldung",

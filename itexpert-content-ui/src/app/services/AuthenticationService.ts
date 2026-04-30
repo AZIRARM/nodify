@@ -32,7 +32,6 @@ export class AuthenticationService {
         this.authMode = config.mode;
       },
       error: (error) => {
-        console.error('Failed to load auth mode', error);
         this.authMode = 'internal';
       }
     });
@@ -170,5 +169,11 @@ export class AuthenticationService {
 
   isOAuthMode(): boolean {
     return this.authMode === 'oauth2' || this.authMode === 'openid';
+  }
+
+  getUserRoles(): string[] {
+    const userInfos = this.cookiesService.getCookie("userInfos");
+    if (!userInfos) return [];
+    return JSON.parse(userInfos).roles;
   }
 }

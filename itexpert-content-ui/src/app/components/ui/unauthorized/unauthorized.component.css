@@ -1,0 +1,186 @@
+:host {
+    display: block;
+    height: 100%;
+    min-height: 100vh;
+}
+
+.unauthorized-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+}
+
+.unauthorized-card {
+    background: white;
+    border-radius: 16px;
+    padding: 48px 32px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 450px;
+    width: 100%;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: shake 0.5s ease-in-out;
+}
+
+h1 {
+    color: #dc2626;
+    font-size: 28px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+p {
+    color: #4b5563;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.contact {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 32px;
+}
+
+.buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-home {
+    background: linear-gradient(135deg, var(--table-primary) 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(63, 81, 181, 0.4);
+}
+
+.btn-logout {
+    background-color: #ef4444;
+    color: white;
+}
+
+.btn-logout:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-5px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(5px);
+    }
+}
+
+@media (max-width: 480px) {
+    .unauthorized-card {
+        padding: 32px 20px;
+    }
+
+    .icon {
+        font-size: 60px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    p {
+        font-size: 14px;
+    }
+
+    .buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+:host-context(.dark-theme) {
+    .unauthorized-container {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .unauthorized-card {
+        background: #2d2d2d;
+    }
+
+    h1 {
+        color: #f87171;
+    }
+
+    p {
+        color: #cbd5e1;
+    }
+
+    .contact {
+        color: #94a3b8;
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%);
+    }
+
+    .btn-logout {
+        background-color: #991b1b;
+    }
+
+    .btn-logout:hover {
+        background-color: #7f1d1d;
+    }
+}

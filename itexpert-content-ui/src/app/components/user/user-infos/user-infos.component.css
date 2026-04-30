@@ -1,4 +1,3 @@
-/* ===== STYLES DE BASE ===== */
 :host {
   display: block;
   height: 100%;
@@ -6,9 +5,6 @@
   background-color: #f5f7fa;
 }
 
-/* ===== EN-TÊTE - Utilise la classe globale .dialog-header ===== */
-
-/* ===== CONTENU PRINCIPAL ===== */
 .dialog-content {
   height: calc(100vh - 100px);
   overflow-y: auto;
@@ -19,20 +15,22 @@
   &::-webkit-scrollbar {
     width: 6px;
   }
+
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
   }
+
   &::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 3px;
+
     &:hover {
       background: #a8a8a8;
     }
   }
 }
 
-/* ===== CARTE UTILISATEUR ===== */
 .user-info-card {
   max-width: 600px;
   margin: 20px auto;
@@ -54,7 +52,7 @@
       width: 80px;
       height: 80px;
       color: white;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
     }
   }
 
@@ -106,6 +104,67 @@
   .user-actions {
     padding: 20px 30px 30px;
     text-align: center;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    .edit-btn {
+      background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+      color: white;
+      padding: 12px 32px;
+      font-size: 1rem;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+      transition: all 0.3s ease;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(33, 150, 243, 0.5);
+      }
+    }
+
+    .save-btn {
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+      padding: 12px 32px;
+      font-size: 1rem;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+      transition: all 0.3s ease;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+      }
+    }
+
+    .cancel-btn {
+      background: transparent;
+      color: #757575;
+      border: 2px solid #e0e0e0;
+      padding: 12px 32px;
+      font-size: 1rem;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+
+      &:hover {
+        background: #f5f5f5;
+        border-color: #bdbdbd;
+      }
+    }
 
     .change-password-btn {
       background: linear-gradient(135deg, var(--table-primary) 0%, #764ba2 100%);
@@ -128,7 +187,23 @@
   }
 }
 
-/* ===== BADGES RÔLES ===== */
+.edit-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 2px solid var(--table-border-light);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: white;
+  color: var(--table-text-primary);
+
+  &:focus {
+    outline: none;
+    border-color: var(--table-primary);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+  }
+}
+
 .roles-container {
   display: flex;
   flex-wrap: wrap;
@@ -145,7 +220,6 @@
   display: inline-block;
 }
 
-/* ===== ÉTAT VIDE ===== */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -173,19 +247,18 @@
   }
 }
 
-/* ===== ANIMATIONS ===== */
 @keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .user-info-card {
     margin: 10px;
@@ -217,7 +290,6 @@
   }
 }
 
-/* ===== THÈME SOMBRE ===== */
 :host-context(.dark-theme) {
   background-color: #1a1a1a;
 
@@ -243,6 +315,16 @@
     }
   }
 
+  .edit-input {
+    background: #3d3d3d;
+    border-color: #505050;
+    color: #e0e0e0;
+
+    &:focus {
+      border-color: var(--table-primary);
+    }
+  }
+
   .role-badge {
     background: #1e3a5f;
     color: #90caf9;
@@ -257,6 +339,16 @@
 
     p {
       color: #777;
+    }
+  }
+
+  .cancel-btn {
+    color: #aaa;
+    border-color: #505050;
+
+    &:hover {
+      background: #404040;
+      border-color: #606060;
     }
   }
 }

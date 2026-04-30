@@ -123,6 +123,7 @@ import { LockService } from './services/LockService';
 
 // Interceptors
 import { TokenInterceptor } from "./interceptors/TokenInterceptor";
+import { UnauthorizedComponent } from './components/ui/unauthorized/unauthorized.component';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -186,7 +187,8 @@ export function defaultLanguage() {
     PluginFilesDialogComponent,
     NodesViewDialogComponent,
     LoaderComponent,
-    ReleaseLocksComponent
+    ReleaseLocksComponent,
+    UnauthorizedComponent
   ],
   imports: [
     BrowserModule,

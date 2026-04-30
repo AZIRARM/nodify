@@ -181,8 +181,9 @@
 .name-cell {
   .name-content {
     display: flex;
-    align-items: center;
-    gap: 6px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 
     .node-name {
       font-weight: 500;
@@ -196,6 +197,9 @@
       background: var(--table-bg-row-hover);
       padding: 2px 4px;
       border-radius: 3px;
+      font-weight: bold;
+      color: var(--table-primary-dark);
+      cursor: pointer;
     }
   }
 
@@ -225,7 +229,8 @@
   }
 }
 
-.date-cell, .user-cell {
+.date-cell,
+.user-cell {
   font-size: 0.75rem;
 }
 
@@ -318,9 +323,17 @@
 
 /* ===== ICÔNES DE STATUT ===== */
 .status-icon {
-  &.green { color: var(--table-success); }
-  &.yellow { color: var(--table-warning); }
-  &.red { color: var(--table-danger); }
+  &.green {
+    color: var(--table-success);
+  }
+
+  &.yellow {
+    color: var(--table-warning);
+  }
+
+  &.red {
+    color: var(--table-danger);
+  }
 }
 
 /* ===== UTILITAIRES ===== */
@@ -348,10 +361,19 @@
     border-color: var(--table-border);
 
     .breadcrumb {
-      .breadcrumb-icon { color: var(--table-accent-light); }
+      .breadcrumb-icon {
+        color: var(--table-accent-light);
+      }
+
       .breadcrumb-text {
-        &.no-parent { color: var(--table-accent-light); }
-        .breadcrumb-label { color: #999; }
+        &.no-parent {
+          color: var(--table-accent-light);
+        }
+
+        .breadcrumb-label {
+          color: #999;
+        }
+
         .breadcrumb-value {
           color: var(--table-accent-light);
           background: rgba(92, 107, 192, 0.15);
@@ -361,12 +383,18 @@
   }
 
   .name-cell {
-    .node-name { color: var(--table-text-primary); }
+    .node-name {
+      color: var(--table-text-primary);
+    }
+
     .node-code {
       background: var(--table-bg-row-hover);
       color: var(--table-text-secondary);
     }
-    .node-description { color: #aaa; }
+
+    .node-description {
+      color: #aaa;
+    }
   }
 
   .lock-info {
@@ -454,10 +482,9 @@
   align-items: center;
   justify-content: center;
   padding: 0 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   border: 2px solid white;
   pointer-events: none;
   opacity: 1 !important;
   visibility: visible !important;
 }
-
