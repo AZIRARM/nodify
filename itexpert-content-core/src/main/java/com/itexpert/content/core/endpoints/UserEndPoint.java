@@ -72,7 +72,7 @@ public class UserEndPoint {
 
     @PostMapping("/subscribe")
     public Mono<ResponseEntity<Boolean>> subscribe(@RequestBody(required = true) UserPost userPost) {
-        return this.userHandler.subscribe(userPost)
+        return this.userHandler.subscribe(userPost, Boolean.FALSE)
                 .map(result -> true)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.CONFLICT).body(false));

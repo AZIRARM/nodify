@@ -21,6 +21,8 @@ import java.util.Base64;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -318,6 +320,7 @@ class AuthenticationManagerTest {
         Authentication openidAuth = new UsernamePasswordAuthenticationToken(token, token);
 
         when(userHandler.findByEmail(username)).thenReturn(Mono.empty());
+        when(userHandler.subscribe(any(), anyBoolean())).thenReturn(Mono.empty());
 
         Mono<Authentication> result = authenticationManager.authenticate(openidAuth);
 
