@@ -137,8 +137,9 @@ public class UserHandler {
         });
     }
 
-    public Mono<UserPost> subscribe(UserPost userPost) {
-        userPost.setValidated(Boolean.FALSE);
+    public Mono<UserPost> subscribe(UserPost userPost, Boolean validated) {
+        userPost.setValidated(
+                ObjectUtils.isNotEmpty(validated) && validated.equals(Boolean.TRUE) ? Boolean.TRUE : Boolean.FALSE);
         userPost.setRoles(List.of(RoleEnum.EDITOR.name()));
         return this.findByEmail(userPost.getEmail())
                 .flatMap(existingUser -> Mono.<UserPost>error(new RuntimeException("User already exists")))

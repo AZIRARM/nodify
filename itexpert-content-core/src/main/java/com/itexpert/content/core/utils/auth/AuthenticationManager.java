@@ -1,9 +1,14 @@
 package com.itexpert.content.core.utils.auth;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itexpert.content.core.config.SecurityProperties;
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.handlers.oauth2.OAuth2Service;
 import com.itexpert.content.core.handlers.openid.OpenIDService;
+import com.itexpert.content.core.models.auth.RoleEnum;
+import com.itexpert.content.lib.models.UserPost;
+
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +22,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -123,12 +129,26 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
         return userHandler.findByEmail(email)
                 .<Authentication>flatMap(user -> {
                     Collection<GrantedAuthority> authorities = extractAuthorities(user.getRoles());
-                    log.info("OAuth2 authentication successful for: {}", email);
+                    log.info("OpenID authentication successful for: {}", email);
                     return Mono.just(new UsernamePasswordAuthenticationToken(email, null, authorities));
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    log.error("User not found: {}", email);
-                    return Mono.empty();
+                    log.info("User not found, creating new user: {}", email);
+
+                    UserPost newUser = new UserPost();
+                    newUser.setEmail(email);
+                    newUser.setRoles(List.of(RoleEnum.EDITOR.name()));
+                    newUser.setPassword("password");
+                    return userHandler.subscribe(newUser, true)
+                            .<Authentication>flatMap(savedUser -> {
+                                Collection<GrantedAuthority> authorities = extractAuthorities(savedUser.getRoles());
+                                log.info("User created and authenticated: {}", email);
+                                return Mono.just(new UsernamePasswordAuthenticationToken(email, null, authorities));
+                            })
+                            .onErrorResume(error -> {
+                                log.error("Failed to create user: {}", error.getMessage());
+                                return Mono.empty();
+                            });
                 }));
     }
 
@@ -137,11 +157,10 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             String[] parts = token.split("\\.");
             String payload = parts[1];
             byte[] decodedBytes = java.util.Base64.getDecoder().decode(payload);
-            String decoded = new String(decodedBytes, java.nio.charset.StandardCharsets.UTF_8);
+            String decoded = new String(decodedBytes, StandardCharsets.UTF_8);
 
-            // Utiliser Jackson pour parser le JSON
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            com.fasterxml.jackson.databind.JsonNode json = mapper.readTree(decoded);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode json = mapper.readTree(decoded);
 
             String email = null;
             if (json.has("email")) {

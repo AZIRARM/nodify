@@ -120,7 +120,7 @@ public class UserHandlerTest {
         when(nodeHandler.save(any(Node.class))).thenReturn(Mono.just(node));
         when(passwordEncoder.encode(any())).thenReturn("encoded_password");
 
-        StepVerifier.create(userHandler.subscribe(userPost))
+        StepVerifier.create(userHandler.subscribe(userPost, Boolean.FALSE))
                 .expectNextMatches(savedUser -> savedUser.getEmail().equals(userPost.getEmail()))
                 .verifyComplete();
 
@@ -140,7 +140,7 @@ public class UserHandlerTest {
         when(userRepository.findAll()).thenReturn(Flux.just(entity));
         when(userRepository.findByEmail(userPost.getEmail())).thenReturn(Mono.just(entity));
 
-        StepVerifier.create(userHandler.subscribe(userPost))
+        StepVerifier.create(userHandler.subscribe(userPost, Boolean.FALSE))
                 .expectError(RuntimeException.class)
                 .verify();
 
