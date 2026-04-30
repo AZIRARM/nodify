@@ -44,7 +44,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['Status', 'Type', 'Version', 'Last Modification', 'Modified by', 'Translations', 'Rules', 'Values', 'Publication', 'Actions'];
   dataSource: WritableSignal<MatTableDataSource<ContentNode>> = signal(new MatTableDataSource<ContentNode>([]));
   totalDeleteds: WritableSignal<number> = signal(0);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   dialogRefPublish: MatDialogRef<ValidationDialogComponent>;
   dialogRefValues: MatDialogRef<ValuesDialogComponent>;
@@ -101,7 +101,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   init() {
-    this.isLoading.set(true);
+
     this.currentContent = null as any;
     this.mapDatas.set(new Map());
 
@@ -110,7 +110,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         this.toast.error('Request failed with error');
         return of([]);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((response: any) => {
       this.fetchDatas(response);
       this.initLocks(response);
@@ -324,7 +324,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   private save(content: ContentNode) {
-    this.isLoading.set(true);
+
     content.modifiedBy = this.user().id;
     content.parentCode = this.node.code;
     content.parentCodeOrigin = this.node.parentCodeOrigin;
@@ -346,7 +346,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
           })
         );
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string) => {
       this.loggerService.success(trad);
       this.init();
@@ -541,5 +541,18 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   favorite(element: ContentNode) {
     element.favorite = !element.favorite;
     this.save(element);
+  }
+
+
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      this.translate.get("COPY_SUCCESS").subscribe((translation: string) => {
+        this.loggerService.success(translation);
+      });
+    }).catch(err => {
+      this.translate.get("COPY_ERROR").subscribe((translation: string) => {
+        this.loggerService.error(translation);
+      });
+    });
   }
 }

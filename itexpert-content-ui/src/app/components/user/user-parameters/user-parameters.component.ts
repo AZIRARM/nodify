@@ -19,7 +19,7 @@ export class UserParametersComponent implements OnInit {
   parameters: WritableSignal<Parameters> = signal<Parameters>(new Parameters());
   user: WritableSignal<User> = signal<User>({} as User);
   darkMode: WritableSignal<boolean> = signal(false);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private translate = inject(TranslateService);
   private themeService = inject(ThemeService);
@@ -33,13 +33,13 @@ export class UserParametersComponent implements OnInit {
   }
 
   loadParameters() {
-    this.isLoading.set(true);
+
     this.parametersService.getByUserId(this.user().id).pipe(
       catchError((error) => {
         console.error('Erreur chargement paramètres', error);
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((data: any) => {
       if (data) {
         this.parameters.set(data);
@@ -49,7 +49,7 @@ export class UserParametersComponent implements OnInit {
   }
 
   save() {
-    this.isLoading.set(true);
+
     this.parametersService.save(this.parameters()).pipe(
       switchMap((data: any) => {
         this.themeService.toggleTheme(this.parameters().theme);
@@ -66,7 +66,7 @@ export class UserParametersComponent implements OnInit {
           })
         );
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string | null) => {
       if (trad) {
         this.loggerService.success(trad);

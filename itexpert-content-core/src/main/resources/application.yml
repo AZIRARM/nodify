@@ -41,9 +41,11 @@ management:
 
 app:
   defaultLanguages: EN;FR;ES
-  admin-user: admin
+  admin-user: [EMAIL_ADDRESS]
   admin-password: ${ADMIN_PWD}
   api-url: ${API_URL}
+  core-url: ${CORE_URL}
+  studio-url: ${STUDIO_URL}
 
 springbootwebfluxjjwt:
   jjwt:
@@ -59,7 +61,42 @@ server:
 logging:
   level:
     root: ERROR                              # niveau global
-    com.itexpert: DEBUG                      # ton package principal pour debug
+    com.itexpert: INFO                      # ton package principal pour debug
     org.springframework.data.redis: ERROR   # debug Redis (Spring Data Redis)
     io.lettuce.core: ERROR                  # debug Lettuce client (commandes Redis, timeout)
     reactor.netty: ERROR                     # réduire le bruit des logs Netty si trop verbeux
+    com.itexpert.content.core.config.SecurityContextRepository: INFO
+
+security:
+  auth:
+    mode: ${AUTH_MODE:internal}
+
+  oauth2:
+    enabled: ${OAUTH2_ENABLED:false}
+    config:
+      authorization-uri: ${OAUTH2_AUTHORIZATION_URI:}
+      token-uri: ${OAUTH2_TOKEN_URI:}
+      user-info-uri: ${OAUTH2_USER_INFO_URI:}
+      client-id: ${OAUTH2_CLIENT_ID:}
+      client-secret: ${OAUTH2_CLIENT_SECRET:}
+      scope: ${OAUTH2_SCOPE:openid profile email}
+      roles-claim: ${OAUTH2_ROLES_CLAIM:roles}
+      user-name-claim: ${OAUTH2_USER_NAME_CLAIM:preferred_username}
+      redirect-uri: ${CORE_URL:http://localhost:8080}/authentication/oauth2/callback
+      studio-uri: ${STUDIO_URL:http://localhost:4200}/oauth2/callback
+
+  openid:
+    enabled: ${OPENID_ENABLED:false}
+    config:
+      issuer-uri: ${OPENID_ISSUER_URI:}
+      client-id: ${OPENID_CLIENT_ID:}
+      client-secret: ${OPENID_CLIENT_SECRET:}
+      jwk-set-uri: ${OPENID_JWK_SET_URI:}
+      user-info-uri: ${OPENID_USER_INFO_URI:}
+      authorization-uri: ${OPENID_AUTHORIZATION_URI:}
+      token-uri: ${OPENID_TOKEN_URI:}
+      logout-uri: ${OPENID_LOGOUT_URI:}
+      roles-claim: ${OPENID_ROLES_CLAIM:realm_access.roles}
+      user-name-claim: ${OPENID_USER_NAME_CLAIM:preferred_username}
+      redirect-uri: ${CORE_URL:http://localhost:8080}/authentication/openid/callback
+      studio-uri: ${STUDIO_URL:http://localhost:4200}/openid/callback

@@ -32,7 +32,7 @@ export class NodeDialogComponent implements OnInit, OnDestroy {
 
   currentSlug: WritableSignal<string | null> = signal<string | null>(null);
   slugAvailable: WritableSignal<boolean | null> = signal<boolean | null>(true);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private lockCheckSub?: Subscription;
   validationModal: MatDialogRef<ValidationDialogComponent>;
@@ -103,7 +103,7 @@ export class NodeDialogComponent implements OnInit, OnDestroy {
   }
 
   validate() {
-    this.isLoading.set(true);
+
     this.nodeService.slugExists(this.node.code, this.node.slug)
       .pipe(
         catchError((error) => {
@@ -123,12 +123,12 @@ export class NodeDialogComponent implements OnInit, OnDestroy {
         } else {
           this.dialogRef.close({ data: this.node });
         }
-        this.isLoading.set(false);
+
       });
   }
 
   init() {
-    this.isLoading.set(true);
+
     this.nodeService.getAllNodes().pipe(
       catchError(error => {
         console.error(error);
@@ -145,7 +145,7 @@ export class NodeDialogComponent implements OnInit, OnDestroy {
         });
         this.childreens.set(tabChildreens);
       }
-      this.isLoading.set(false);
+
     });
 
     this.languageService.getAll().pipe(

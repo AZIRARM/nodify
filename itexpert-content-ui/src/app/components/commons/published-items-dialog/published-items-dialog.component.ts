@@ -42,7 +42,7 @@ export class PublishedItemsDialogComponent implements OnInit {
   itemCode: string = '';
   publicationService: PublicationService;
   itemIcon: string = 'description';
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   displayedColumns: string[] = ['Status', 'Version', 'Last Modification', 'Modified by', 'Actions'];
   dataSource: WritableSignal<MatTableDataSource<PublicationItem>> = signal(new MatTableDataSource<PublicationItem>([]));
@@ -80,13 +80,13 @@ export class PublishedItemsDialogComponent implements OnInit {
       return;
     }
 
-    this.isLoading.set(true);
+
     this.publicationService.getPublicationHistory(this.itemCode).pipe(
       catchError((error: any) => {
         console.error('Erreur chargement historique', error);
         return of([]);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((response: any) => {
       if (response) {
         let filtred: any[] = response
@@ -111,7 +111,7 @@ export class PublishedItemsDialogComponent implements OnInit {
   }
 
   revert(element: PublicationItem) {
-    this.isLoading.set(true);
+
     const dialogValidationRef = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "REVERT_VERSION_TITLE",
@@ -139,7 +139,7 @@ export class PublishedItemsDialogComponent implements OnInit {
         }
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string | null) => {
       if (trad) {
         this.loggerService.success(trad);
@@ -149,7 +149,7 @@ export class PublishedItemsDialogComponent implements OnInit {
   }
 
   deploy(element: PublicationItem) {
-    this.isLoading.set(true);
+
     const dialogValidationRef = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DEPLOY_VERSION_TITLE",
@@ -177,7 +177,7 @@ export class PublishedItemsDialogComponent implements OnInit {
         }
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string | null) => {
       if (trad) {
         this.loggerService.success(trad);
@@ -186,7 +186,7 @@ export class PublishedItemsDialogComponent implements OnInit {
   }
 
   delete(element: PublicationItem) {
-    this.isLoading.set(true);
+
     const dialogValidationRef = this.dialog.open(ValidationDialogComponent, {
       data: {
         title: "DELETE_VERSION_TITLE",
@@ -214,7 +214,7 @@ export class PublishedItemsDialogComponent implements OnInit {
         }
         return of(null);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string | null) => {
       if (trad) {
         this.loggerService.success(trad);

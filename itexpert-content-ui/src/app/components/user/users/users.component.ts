@@ -23,7 +23,7 @@ export class UsersComponent implements OnInit {
   dialogRef: MatDialogRef<UserDialogComponent>;
   user: WritableSignal<User> = signal<User>({} as User);
   dialogValidationRef: MatDialogRef<ValidationDialogComponent>;
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private translate = inject(TranslateService);
   private loggerService = inject(LoggerService);
@@ -37,16 +37,20 @@ export class UsersComponent implements OnInit {
   }
 
   init() {
-    this.isLoading.set(true);
+
     this.userService.getAll().pipe(
       catchError((error) => {
         console.error('Request failed with error');
         return of([]);
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((response: any) => {
       if (response) {
-        response = response.sort((a: any, b: any) => a.lastname.localeCompare(b.lastname));
+        response = response.sort((a: any, b: any) => {
+          const lastNameA = a.lastname || '';
+          const lastNameB = b.lastname || '';
+          return lastNameA.localeCompare(lastNameB);
+        });
         this.dataSource.set(new MatTableDataSource(response));
       }
     });
@@ -91,7 +95,7 @@ export class UsersComponent implements OnInit {
   }
 
   save(user: User) {
-    this.isLoading.set(true);
+
     this.userService.save(user).pipe(
       switchMap((response) => {
         if (!response) {
@@ -121,7 +125,7 @@ export class UsersComponent implements OnInit {
           })
         );
       }),
-      finalize(() => this.isLoading.set(false))
+
     ).subscribe((trad: string) => {
       this.loggerService.success(trad);
       this.init();

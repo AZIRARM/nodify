@@ -112,7 +112,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.dialogRef.afterClosed().subscribe(result => {
 
           if (result?.data === 'validated') {
-            this.cookiesService.eraseCookie("userToken");
+            this.cookiesService.eraseAllCookies();
             this.router.navigate(["/login"]);
             window.location.reload();
           }

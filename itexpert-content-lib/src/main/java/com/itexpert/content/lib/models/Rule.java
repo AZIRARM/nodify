@@ -1,16 +1,13 @@
 package com.itexpert.content.lib.models;
 
-import com.itexpert.content.lib.enums.BehaviorEnum;
 import com.itexpert.content.lib.enums.OperatorEnum;
 import com.itexpert.content.lib.enums.TypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 @Data
 public class Rule implements Serializable, Cloneable {
-
 
     private TypeEnum type;
     private String name;

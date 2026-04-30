@@ -12,35 +12,29 @@
         </div>
       </div>
 
+      @if (subscribeEnabled()) {
       <div class="header-right-section">
         <button mat-stroked-button class="subscribe-btn" (click)="subscribe()">
           <mat-icon>person_add</mat-icon>
           {{ "SUBSCRIBE" | translate }}
         </button>
       </div>
+      }
     </div>
   </div>
 
   <!-- Contenu principal (avec espace pour le footer) -->
   <div class="login-content">
 
-    <!-- Indicateur de chargement -->
-    @if (isLoading()) {
-    <div class="loading-container">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>{{ 'LOADING' | translate }}</p>
-    </div>
-    }
-
     <!-- Carte de connexion -->
-    @if (!isLoading()) {
     <div class="login-card">
       <!-- Logo -->
       <div class="logo-container">
         <img src="assets/pictures/logos/nodify_transparent.png" alt="{{ 'LOGIN' | translate }}">
       </div>
 
-      <!-- Formulaire -->
+      <!-- Mode Interne - Formulaire classique -->
+      @if (isInternalMode()) {
       <div class="form-container">
         <!-- Champ Email -->
         <mat-form-field appearance="outline" class="full-width">
@@ -68,12 +62,30 @@
           {{ "CANCEL" | translate }}
         </button>
         <button mat-flat-button class="login-btn" (click)="login()"
-          [disabled]="!userLogin().email || !userLogin().password || isLoading()">
+          [disabled]="!userLogin().email || !userLogin().password">
           <mat-icon>login</mat-icon>
           {{ "LOGIN" | translate }}
         </button>
       </div>
+      }
+
+      <!-- Mode OAuth2 -->
+      @if (isOAuth2Mode()) {
+      <div class="form-container">
+        <button class="login-image-btn" (click)="login()">
+          <img src="assets/pictures/icons/oauth2.png" alt="OAuth2" width="200" height="auto">
+        </button>
+      </div>
+      }
+
+      <!-- Mode OpenID -->
+      @if (isOpenIdMode()) {
+      <div class="form-container">
+        <button class="login-image-btn" (click)="login()">
+          <img src="assets/pictures/icons/openid.png" alt="OpenID" width="200" height="auto">
+        </button>
+      </div>
+      }
     </div>
-    }
   </div>
 </div>

@@ -53,7 +53,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   user: WritableSignal<any> = signal(null);
   environments: WritableSignal<Node[]> = signal([]);
   totalDeleteds: WritableSignal<number> = signal(0);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   dialogRef: MatDialogRef<NodeDialogComponent>;
   validationModal: MatDialogRef<ValidationDialogComponent>;
@@ -117,7 +117,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   init() {
-    this.isLoading.set(true);
+
     let requestSub: Subscription;
 
     if (this.parentNode()) {
@@ -129,7 +129,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
       ).subscribe((response: any) => {
         this.initLocks(response);
         this.processNodes(response);
-        this.isLoading.set(false);
+
       });
     } else {
       requestSub = this.nodeService.getParentsNodes(StatusEnum.SNAPSHOT).pipe(
@@ -149,7 +149,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         }
         this.initLocks(response);
         this.processNodes(response);
-        this.isLoading.set(false);
+
       });
     }
     this.subscriptions.push(requestSub);
@@ -220,7 +220,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   save(node: Node) {
-    this.isLoading.set(true);
+
     node.modifiedBy = this.user().id;
     const saveSub = this.nodeService.save(node).pipe(
       switchMap(() => this.translate.get("SAVE_SUCCESS")),
@@ -235,7 +235,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     ).subscribe((trad: string) => {
       this.loggerService.success(trad);
       this.init();
-      this.isLoading.set(false);
+
     });
     this.subscriptions.push(saveSub);
   }
@@ -629,5 +629,17 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   canEdit(node: Node): boolean {
     return node.lockInfo && !node.lockInfo.locked;
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      this.translate.get("COPY_SUCCESS").subscribe((translation: string) => {
+        this.loggerService.success(translation);
+      });
+    }).catch(err => {
+      this.translate.get("COPY_ERROR").subscribe((translation: string) => {
+        this.loggerService.error(translation);
+      });
+    });
   }
 }

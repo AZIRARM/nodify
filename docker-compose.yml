@@ -17,7 +17,9 @@ services:
     environment:
       MONGO_URL: "${MONGO_URL:-mongodb://mongo:27017/nodify}"
       ADMIN_PWD: "${ADMIN_PWD:-Admin123}"
+      CORE_URL: "${CORE_URL:-http://localhost:8080}"
       API_URL: "${API_URL:-http://localhost:9080}"
+      STUDIO_URL: "${STUDIO_URL:-http://localhost:80}"
       TZ: "${TZ:-Europe/Paris}"
     expose:
       - "8080"

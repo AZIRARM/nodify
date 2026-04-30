@@ -1,31 +1,68 @@
 import { Injectable } from '@angular/core';
-import { Service } from "./Service";
 import { HttpClient } from "@angular/common/http";
 import { UserLogin } from "../modeles/UserLogin";
 import { UserService } from "./UserService";
-import { Observable, switchMap, throwError, of, tap } from "rxjs";
+import { Observable, of, tap } from "rxjs";
 import { CookiesService } from './CookiesService';
+import { Env } from 'src/assets/configurations/environment';
 
-@Injectable({ providedIn: 'root' })
+export type AuthMode = 'internal' | 'oauth2' | 'openid';
+
 @Injectable({
   providedIn: 'root'
 })
-export class AuthenticationService extends Service {
+export class AuthenticationService {
 
   private readonly TOKEN_COOKIE = 'userToken';
+  private authMode: AuthMode = 'internal';
+  private baseUrl: string;
 
   constructor(
     private httpClient: HttpClient,
     private userService: UserService,
     private cookiesService: CookiesService
   ) {
-    super("authentication", httpClient);
+    this.baseUrl = Env.EXPERT_CONTENT_AUTHENTICATION_URL;
+    this.loadAuthMode();
   }
 
-  signin(userLogin: UserLogin) {
-    return super.login(userLogin);
+  private loadAuthMode(): void {
+    this.httpClient.get<{ mode: AuthMode }>(`${this.baseUrl}/mode`).subscribe({
+      next: (config) => {
+        this.authMode = config.mode;
+      },
+      error: (error) => {
+        this.authMode = 'internal';
+      }
+    });
   }
 
+  getAuthMode(): AuthMode {
+    return this.authMode;
+  }
+
+  getAuthModeObservable(): Observable<{ mode: AuthMode }> {
+    return this.httpClient.get<{ mode: AuthMode }>(`${this.baseUrl}/mode`);
+  }
+
+  signin(userLogin: UserLogin): Observable<any> {
+    if (this.authMode === 'internal') {
+      return this.httpClient.post(`${this.baseUrl}/login`, userLogin);
+    } else if (this.authMode === 'oauth2') {
+      return this.httpClient.post(`${this.baseUrl}/oauth2/token`, userLogin);
+    } else if (this.authMode === 'openid') {
+      return this.httpClient.post(`${this.baseUrl}/openid/token`, userLogin);
+    }
+    return this.httpClient.post(`${this.baseUrl}/login`, userLogin);
+  }
+
+  loginWithOAuth2(): void {
+    window.location.href = Env.EXPERT_CONTENT_AUTHENTICATION_URL + '/oauth2/authorize';
+  }
+
+  loginWithOpenId(): void {
+    window.location.href = Env.EXPERT_CONTENT_AUTHENTICATION_URL + '/openid/authorize';
+  }
   isAuthenticated(): boolean {
     const jwtStr = this.cookiesService.getCookie(this.TOKEN_COOKIE);
     if (!jwtStr) return false;
@@ -46,28 +83,58 @@ export class AuthenticationService extends Service {
   }
 
   loadUser() {
-  const decoded = this.decodeJwt(this.getAccessToken());
+    const token = this.getAccessToken();
+    console.log('Token used for loadUser:', token ? token.substring(0, 100) : 'null');
 
-  if (decoded && decoded.sub) {
-    return this.userService.getByEmail(decoded.sub).pipe(
-      tap((userInfos: any) => {
-        this.cookiesService.setCookie("userInfos", JSON.stringify(userInfos), 1);
-      })
-    );
+    const decoded = this.decodeJwt(token);
+    console.log('Decoded token:', decoded);
+
+    if (decoded) {
+      const email = decoded.email || decoded.preferred_username || decoded.sub;
+      console.log('Email extracted from token:', email);
+
+      if (email) {
+        return this.userService.getByEmail(email).pipe(
+          tap((userInfos: any) => {
+            console.log('User loaded from DB:', userInfos);
+            this.cookiesService.setCookie("userInfos", JSON.stringify(userInfos), 1);
+          })
+        );
+      }
+    }
+    return of(null);
   }
-  return of(null); // si pas de token
-}
 
-  setTokens(accessToken: string, refreshToken: string): void {
+  setTokens(accessToken: string, refreshToken?: string): void {
     this.cookiesService.setCookie(
       this.TOKEN_COOKIE,
       JSON.stringify({ token: accessToken }),
-      1 // nombre de jours avant expiration
+      1
     );
   }
 
   logout(): void {
-    this.cookiesService.eraseCookie(this.TOKEN_COOKIE);
+    if (this.authMode === 'internal') {
+      this.cookiesService.eraseAllCookies();
+    } else if (this.authMode === 'oauth2') {
+      this.httpClient.post(`${this.baseUrl}/oauth2/logout`, {}).subscribe({
+        next: () => {
+          this.cookiesService.eraseAllCookies();
+        },
+        error: () => {
+          this.cookiesService.eraseAllCookies();
+        }
+      });
+    } else if (this.authMode === 'openid') {
+      this.httpClient.post(`${this.baseUrl}/openid/logout`, {}).subscribe({
+        next: () => {
+          this.cookiesService.eraseAllCookies();
+        },
+        error: () => {
+          this.cookiesService.eraseAllCookies();
+        }
+      });
+    }
   }
 
   decodeJwt(token: string): any {
@@ -86,5 +153,27 @@ export class AuthenticationService extends Service {
       console.error('Erreur de décodage du JWT :', error);
       return null;
     }
+  }
+
+  isInternalMode(): boolean {
+    return this.authMode === 'internal';
+  }
+
+  isOAuth2Mode(): boolean {
+    return this.authMode === 'oauth2';
+  }
+
+  isOpenIdMode(): boolean {
+    return this.authMode === 'openid';
+  }
+
+  isOAuthMode(): boolean {
+    return this.authMode === 'oauth2' || this.authMode === 'openid';
+  }
+
+  getUserRoles(): string[] {
+    const userInfos = this.cookiesService.getCookie("userInfos");
+    if (!userInfos) return [];
+    return JSON.parse(userInfos).roles;
   }
 }

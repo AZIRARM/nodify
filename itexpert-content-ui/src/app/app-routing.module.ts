@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AppComponent } from "./app.component";
 import { NodesComponent } from "./components/node/nodes/nodes.component";
 import { LanguagesComponent } from "./components/language/languages/languages.component";
 import { UsersComponent } from "./components/user/users/users.component";
@@ -14,22 +13,38 @@ import { AuthGuard } from "./services/AuthGuard";
 import { PluginComponent } from "./components/plugins/plugin/plugin.component";
 import { ReleaseLocksComponent } from './components/admin/release-locks/release-locks.component';
 import { SubscribeComponent } from './components/user/subscribe/subscribe.component';
+import { OAuthCallbackComponent } from './components/oauth2/oauth-callback/oauth-callback.component';
+import { UnauthorizedComponent } from './components/ui/unauthorized/unauthorized.component';
 
 const routes: Routes =
   [
     {
       path: '',
       component: NodesComponent,
-      canActivate: [AuthGuard]
+      canActivate: [AuthGuard],
+      data: { roles: ['EDITOR', 'READER', 'ADMIN'] }
     },
     {
       path: 'nodes',
       component: NodesComponent,
-      canActivate: [AuthGuard]
+      canActivate: [AuthGuard],
+      data: { roles: ['EDITOR', 'READER', 'ADMIN'] }
     },
     {
       path: 'login',
       component: LoginComponent
+    },
+    {
+      path: 'unauthorized',
+      component: UnauthorizedComponent
+    },
+    {
+      path: 'oauth2/callback',
+      component: OAuthCallbackComponent
+    },
+    {
+      path: 'openid/callback',
+      component: OAuthCallbackComponent
     },
     {
       path: 'subscribe',
@@ -38,44 +53,39 @@ const routes: Routes =
     {
       path: 'userInfos',
       component: UserInfosComponent,
-      canActivate: [AuthGuard]
+      canActivate: [AuthGuard],
+      data: { roles: ['EDITOR', 'ADMIN'] }
     },
     {
       path: 'helps',
-      component: HelpsComponent,
-      canActivate: [AuthGuard]
+      component: HelpsComponent
     },
     {
       path: 'parameters',
-      component: UserParametersComponent,
-      canActivate: [AuthGuard]
+      component: UserParametersComponent
     },
     {
       path: 'notifications',
-      component: NotificationsComponent,
-      canActivate: [AuthGuard]
+      component: NotificationsComponent
     },
     {
       path: 'charts',
       component: ContentChartsComponent,
-      canActivate: [AuthGuard]
     },
-
     {
       path: 'plugins',
-      component: PluginComponent,
-      canActivate: [AuthGuard]
+      component: PluginComponent
     },
     {
       path: 'admin',
       canActivate: [AuthGuard],
+      data: { roles: ['ADMIN'] },
       children: [
         { path: 'users', component: UsersComponent },
         { path: 'languages', component: LanguagesComponent },
         { path: 'unlock-resources', component: ReleaseLocksComponent }
       ]
     }
-
   ];
 
 @NgModule({
@@ -84,5 +94,4 @@ const routes: Routes =
   })],
   exports: [RouterModule]
 })
-export class AppRoutingModule {
-}
+export class AppRoutingModule { }

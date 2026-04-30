@@ -24,7 +24,7 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
   contentFilled!: string;
   code: WritableSignal<boolean> = signal(true);
   isFullscreen: WritableSignal<boolean> = signal(false);
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private contentService = inject(ContentNodeService);
 
@@ -47,7 +47,7 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
 
   toHtml(content: string) {
     if (content) {
-      this.isLoading.set(true);
+
       this.contentService.fillAllValuesByContentCodeStatusAndContent(
         {
           code: this.contentNode.code,
@@ -56,11 +56,9 @@ export class ContentCodeHtmlComponent implements AfterViewInit {
         }).subscribe(
           (response: any) => {
             this.contentFilled = response.content;
-            this.isLoading.set(false);
           },
           (error) => {
             console.error('Request failed with error');
-            this.isLoading.set(false);
           });
     }
   }

@@ -1,8 +1,8 @@
-import {Injectable} from '@angular/core';
-import {Service} from "./Service";
-import {HttpClient} from "@angular/common/http";
-import {Role} from "../modeles/Role";
-import {AccessRole} from "../modeles/AccessRole";
+import { Injectable } from '@angular/core';
+import { Service } from "./Service";
+import { HttpClient } from "@angular/common/http";
+import { Role } from "../modeles/Role";
+import { AccessRole } from "../modeles/AccessRole";
 
 @Injectable()
 export class AccessRoleService extends Service {

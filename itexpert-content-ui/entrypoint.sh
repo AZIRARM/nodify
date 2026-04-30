@@ -26,9 +26,11 @@ get_config() {
 
 api_url_key=$(get_config "API_URL" "")
 core_url_key=$(get_config "CORE_URL" "")
+subscribe_enabled=$(get_config "SUBSCRIBE_ENABLED" "")
 
 echo "CORE_URL : $core_url_key"
 echo "API_URL : $api_url_key"
+echo "SUBSCRIBE_ENABLED : $subscribe_enabled"
 
 if [ -z "$api_url_key" ]; then
     echo "Missing environment variable: API_URL!"
@@ -37,6 +39,11 @@ fi
 
 if [ -z "$core_url_key" ]; then
     echo "Missing environment variable: CORE_URL!"
+    exit 1
+fi
+
+if [ -z "$subscribe_enabled" ]; then
+    echo "Missing environment variable: SUBSCRIBE_ENABLED!"
     exit 1
 fi
 
@@ -62,6 +69,17 @@ find /usr/share/nginx/html -type f -name "*.js" | while read -r js_file; do
         echo "Replacing _API_URL_ in $js_file"
         cp -p "$js_file" "${js_file}.bak"
         sed -i 's@_API_URL_@'"${api_url_key}"'@g' "$js_file"
+    fi
+done
+
+
+# Replace _API_URL_ in JS files
+echo "Searching for _SUBSCRIBE_ENABLED_ in JS files..."
+find /usr/share/nginx/html -type f -name "*.js" | while read -r js_file; do
+    if grep -q "_SUBSCRIBE_ENABLED_" "$js_file"; then
+        echo "Replacing _SUBSCRIBE_ENABLED_ in $js_file"
+        cp -p "$js_file" "${js_file}.bak"
+        sed -i 's@_SUBSCRIBE_ENABLED_@'"${subscribe_enabled}"'@g' "$js_file"
     fi
 done
 

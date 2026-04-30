@@ -22,14 +22,6 @@
   </div>
 
   <div mat-dialog-content class="dialog-content">
-    @if (isLoading()) {
-    <div class="loading-state">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>{{ 'LOADING' | translate }}</p>
-    </div>
-    }
-
-    @if (!isLoading()) {
     <div class="table-wrapper">
       <table mat-table [dataSource]="dataSource()" class="history-table">
         <ng-container matColumnDef="Status">
@@ -154,7 +146,6 @@
       </div>
       }
     </div>
-    }
   </div>
 
   <div mat-dialog-actions class="dialog-actions">

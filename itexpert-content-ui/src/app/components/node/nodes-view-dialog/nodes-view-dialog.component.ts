@@ -23,7 +23,7 @@ export class NodesViewDialogComponent implements OnInit {
   options: Observable<EChartsCoreOption>;
   user: WritableSignal<User> = signal<User>({} as User);
   node: Node;
-  isLoading: WritableSignal<boolean> = signal(false);
+
 
   private nodeService = inject(NodeService);
   private contentNodeService = inject(ContentNodeService);
@@ -37,10 +37,10 @@ export class NodesViewDialogComponent implements OnInit {
 
   ngOnInit() {
     this.user.set(this.userAccessService.getCurrentUser());
-    this.isLoading.set(true);
+
     this.options = this.nodeService.getNodeView(this.node.code).pipe(
       map(treeNode => {
-        this.isLoading.set(false);
+
         return this.buildChartOptions(treeNode);
       })
     );

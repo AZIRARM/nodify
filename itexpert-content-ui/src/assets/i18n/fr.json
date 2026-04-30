@@ -11,6 +11,8 @@
   "PUBLISH_PROJECT_TITLE": "Publier le projet",
   "PUBLISH_PROJECT_MESSAGE": "Souhaitez vous publier ce projet",
   "CHANGE_PROJECT_CODE_MESSAGE": "Peut être que le code projet existe déjà",
+  "COPY_SUCCESS": "Copié dans le presse-papier",
+  "COPY_ERROR": "Erreur lors de la copie",
 
   "_NODES": "=== NOEUDS ===",
   "NODES": "Noeuds/Projets",
@@ -137,6 +139,7 @@
   "LOGIN_ERROR": "Erreur de connexion",
   "LOCK_RELEASED_SUCCESS": "Déblocage réussi",
   "LOCK_RELEASED_FAIL": "Échec du déblocage",
+  "LOAD_USER_FAILED": "Votre compte existe mais n’est pas encore activé. Vérifiez votre email ou contactez l’administrateur.",
 
   "_DIALOGS": "=== BOÎTES DE DIALOGUE ===",
   "DELETE_TITLE": "Suppression",
@@ -218,6 +221,8 @@
   "PASSWORD_CHANGE": "Vous avez changé votre mot de passe",
   "LOGOUT": "Se déconnecter",
   "MY_ACCOUNT": "Mon compte",
+  "UNAUTHORIZED_TITLE": "Accès non autorisé",
+  "UNAUTHORIZED_MESSAGE": "Vous n'avez pas les permissions nécessaires pour accéder à cette page.",
 
   "_SUBSCRIBE": "=== AUTHENTIFICATION ===",
   "SUBSCRIBE": "Inscription",

@@ -2,7 +2,6 @@ package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.models.LockInfo;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -78,8 +77,7 @@ public class RedisHandler {
                         .map(owner -> {
                             String resourceCode = key.replace("lock:node:", "");
                             return new LockInfo(owner, false, true, resourceCode);
-                        })
-                );
+                        }));
     }
 
     public Mono<Boolean> canModify(String resourceCode, String userId, Duration ttl) {
@@ -97,8 +95,7 @@ public class RedisHandler {
                 .switchIfEmpty(
                         // pas de lock → essayer d’acquérir
                         redisTemplate.opsForValue().setIfAbsent(key, userId, ttl)
-                                .defaultIfEmpty(false)
-                );
+                                .defaultIfEmpty(false));
     }
 
 }

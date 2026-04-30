@@ -11,6 +11,8 @@
   "PUBLISH_PROJECT_TITLE": "نشر المشروع",
   "PUBLISH_PROJECT_MESSAGE": "هل ترغب في نشر هذا المشروع؟",
   "CHANGE_PROJECT_CODE_MESSAGE": "رمز المشروع قد يكون موجوداً بالفعل",
+  "COPY_SUCCESS": "تم النسخ إلى الحافظة",
+  "COPY_ERROR": "خطأ في النسخ",
 
   "_NODES": "=== العقد ===",
   "NODES": "العقد/المشاريع",
@@ -137,6 +139,7 @@
   "LOGIN_ERROR": "خطأ في تسجيل الدخول",
   "LOCK_RELEASED_SUCCESS": "تم فتح القفل بنجاح",
   "LOCK_RELEASED_FAIL": "فشل فتح القفل",
+  "LOAD_USER_FAILED": "حسابك موجود ولكن لم يتم تفعيله بعد. يرجى التحقق من بريدك الإلكتروني أو الاتصال بالمسؤول.",
 
   "_DIALOGS": "=== مربعات الحوار ===",
   "DELETE_TITLE": "حذف",
@@ -218,6 +221,8 @@
   "PASSWORD_CHANGE": "لقد قمت بتغيير كلمة المرور الخاصة بك",
   "LOGOUT": "تسجيل الخروج",
   "MY_ACCOUNT": "حسابي",
+  "UNAUTHORIZED_TITLE": "الوصول غير مصرح به",
+  "UNAUTHORIZED_MESSAGE": "ليس لديك الأذونات اللازمة للوصول إلى هذه الصفحة.",
 
   "_SUBSCRIBE": "=== المصادقة ===",
   "SUBSCRIBE": "الاشتراك",

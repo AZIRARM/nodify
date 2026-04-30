@@ -11,6 +11,8 @@
   "PUBLISH_PROJECT_TITLE": "Publish Project",
   "PUBLISH_PROJECT_MESSAGE": "Do you want to publish this project?",
   "CHANGE_PROJECT_CODE_MESSAGE": "The project code may already exist",
+  "COPY_SUCCESS": "Copied to clipboard",
+  "COPY_ERROR": "Error copying to clipboard",
 
   "_NODES": "=== NODES ===",
   "NODES": "Nodes/Projects",
@@ -137,6 +139,7 @@
   "LOGIN_ERROR": "Login Error",
   "LOCK_RELEASED_SUCCESS": "Unlock Successful",
   "LOCK_RELEASED_FAIL": "Unlock Failed",
+  "LOAD_USER_FAILED": "Your account exists but has not been activated yet. Please check your email or contact the administrator.",
 
   "_DIALOGS": "=== DIALOGS ===",
   "DELETE_TITLE": "Delete",
@@ -217,7 +220,8 @@
   "CHANGE_PASSWORD": "Change My Password",
   "PASSWORD_CHANGE": "You have changed your password",
   "LOGOUT": "Logout",
-  "MY_ACCOUNT": "My Account",
+  "MY_ACCOUNT": "My Account","UNAUTHORIZED_TITLE": "Unauthorized Access",
+  "UNAUTHORIZED_MESSAGE": "You do not have the necessary permissions to access this page.",
 
   "_SUBSCRIBE": "=== AUTHENTICATION ===",
   "SUBSCRIBE": "Subscribe",

@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -27,8 +27,21 @@ export class CookiesService {
   }
 
   // ----- ERASE -----
-  eraseCookie(name: string): void {
-    document.cookie = `${name}=; Max-Age=-99999999; path=/`;
+  eraseAllCookies(): void {
+    const cookies = document.cookie.split(";");
+
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=";
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/v0";
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/authentication";
+    }
+
+    console.log("All cookies erased");
   }
 }
 
