@@ -1,8 +1,8 @@
-import {ContentUrl} from "./ContentUrl";
-import {Value} from "./Value";
-import {Rule} from "./Rule";
-import {ContentFile} from "./ContentFile";
-import {Translation} from "./Translation";
+import { ContentUrl } from "./ContentUrl";
+import { Value } from "./Value";
+import { Rule } from "./Rule";
+import { ContentFile } from "./ContentFile";
+import { Translation } from "./Translation";
 import { LockInfo } from "./LockInfo";
 
 export class ContentNode {
@@ -56,4 +56,7 @@ export class ContentNode {
   public userName: string;
 
   public lockInfo: LockInfo;
+
+  public triggerUrl: string;
+  public triggerSecret: string;
 }

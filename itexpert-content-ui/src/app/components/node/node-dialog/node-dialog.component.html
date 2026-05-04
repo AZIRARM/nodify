@@ -164,6 +164,28 @@
       </mat-form-field>
     </div>
   </div>
+
+  <!-- Section Trigger -->
+  <div class="form-section compact">
+    <h3 class="section-title">
+      <mat-icon>send</mat-icon>
+      {{ 'TRIGGER_CONFIGURATION' | translate }}
+    </h3>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field compact trigger-url-field">
+        <mat-label>{{ "TRIGGER_URL" | translate }}</mat-label>
+        <input matInput [(ngModel)]="node.triggerUrl" [placeholder]="'TRIGGER_URL' | translate">
+        <mat-icon matSuffix>link</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field compact trigger-secret-field">
+        <mat-label>{{ "TRIGGER_SECRET" | translate }}</mat-label>
+        <input matInput type="password" [(ngModel)]="node.triggerSecret" [placeholder]="'TRIGGER_SECRET' | translate">
+        <mat-icon matSuffix>vpn_key</mat-icon>
+      </mat-form-field>
+    </div>
+  </div>
 </div>
 
 <!-- ===== ACTIONS COMPACTES ===== -->

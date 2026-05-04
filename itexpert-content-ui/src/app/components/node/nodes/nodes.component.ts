@@ -294,6 +294,30 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
           ).subscribe((trad: string) => {
             this.loggerService.success(trad);
             this.init();
+
+            if (node.triggerUrl) {
+              this.translate.get("DEPLOY_TRIGGER_SUCCESS").subscribe((translation: string) => {
+                this.toast.success(translation);
+              });
+
+              const headers: any = { 'Content-Type': 'application/json' };
+
+              if (node.triggerSecret) {
+                headers['Authorization'] = `Bearer ${node.triggerSecret}`;
+              }
+
+              fetch(node.triggerUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                  event_type: "deploy.success",
+                  client_payload: {
+                    code: node.code,
+                    timestamp: new Date().toISOString()
+                  }
+                })
+              }).catch(err => console.error('Trigger error:', err));
+            }
           });
           this.subscriptions.push(publishSub);
         }

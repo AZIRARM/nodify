@@ -1,3 +1,4 @@
+```html
 <div class="content-infos">
 
   <!-- Formulaire en grille -->
@@ -27,6 +28,21 @@
       <mat-icon matSuffix>history</mat-icon>
     </mat-form-field>
 
+    <!-- Trigger URL -->
+    <mat-form-field appearance="outline" class="grid-item">
+      <mat-label>{{ "TRIGGER_URL" | translate }}</mat-label>
+      <input matInput [(ngModel)]="contentNode.triggerUrl" [placeholder]="'TRIGGER_URL' | translate">
+      <mat-icon matSuffix>send</mat-icon>
+    </mat-form-field>
+
+    <!-- Trigger Secret -->
+    <mat-form-field appearance="outline" class="grid-item">
+      <mat-label>{{ "TRIGGER_SECRET" | translate }}</mat-label>
+      <input matInput type="password" [(ngModel)]="contentNode.triggerSecret"
+        [placeholder]="'TRIGGER_SECRET' | translate">
+      <mat-icon matSuffix>vpn_key</mat-icon>
+    </mat-form-field>
+
     <!-- Description -->
     <mat-form-field appearance="outline" class="grid-item grid-full">
       <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
@@ -47,3 +63,4 @@
   }
 
 </div>
+```

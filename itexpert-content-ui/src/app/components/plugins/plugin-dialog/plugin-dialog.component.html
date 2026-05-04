@@ -27,12 +27,14 @@
       <div class="form-row">
         <div class="form-field">
           <label>{{ "NAME" | translate }} *</label>
-          <input [(ngModel)]="plugin.name" [placeholder]="'NAME' | translate" required>
+          <input [(ngModel)]="plugin.name" [placeholder]="'NAME' | translate" disabled="!userAccessService.isAdmin()"
+            required>
         </div>
 
         <div class="form-field">
           <label>{{ "DESCRIPTION" | translate }}</label>
-          <input [(ngModel)]="plugin.description" [placeholder]="'DESCRIPTION' | translate">
+          <input [(ngModel)]="plugin.description" [placeholder]="'DESCRIPTION' | translate"
+            disabled="!userAccessService.isAdmin()">
         </div>
       </div>
     </div>

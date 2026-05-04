@@ -62,6 +62,9 @@ public class ContentNode implements Serializable, Cloneable {
 
     private List<Translation> translations;
 
+    private String triggerUrl;
+    private String triggerSecret;
+
     public ContentNode clone() throws CloneNotSupportedException {
         return (ContentNode) super.clone();
     }
