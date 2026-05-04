@@ -26,11 +26,12 @@ public class ContentNodeView implements Serializable, Cloneable {
     private String redirectUrl;
     private String iconUrl;
     private String pictureUrl;
-    
+    private String folder;
+    private String fileName;
+
     private Object payload;
 
     private List<ContentUrl> urls;
-
 
     private ContentFile file;
 
@@ -38,14 +39,13 @@ public class ContentNodeView implements Serializable, Cloneable {
     private List<Value> values;
     private List<String> roles;
     private List<Rule> rules;
-    
+
     private List<Value> datas;
 
     private Long creationDate;
     private Long modificationDate;
 
     private Long publicationDate;
-
 
     private List<Translation> translations;
 
