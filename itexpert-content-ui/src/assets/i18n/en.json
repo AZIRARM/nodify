@@ -13,6 +13,9 @@
   "CHANGE_PROJECT_CODE_MESSAGE": "The project code may already exist",
   "COPY_SUCCESS": "Copied to clipboard",
   "COPY_ERROR": "Error copying to clipboard",
+  "FOLDER": "Folder",
+  "TRIGGER_URL": "Trigger URI (webhook)",
+  "TRIGGER_SECRET": "Trigger secret",
 
   "_NODES": "=== NODES ===",
   "NODES": "Nodes/Projects",

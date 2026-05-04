@@ -16,68 +16,66 @@ import java.util.UUID;
 
 @Document(collection = "content-nodes")
 @CompoundIndexes({
-        @CompoundIndex(
-                name = "uniq_code_snapshot",
-                def = "{'code': 1, 'status': 1}",
-                unique = true,
-                partialFilter = "{ 'status': 'SNAPSHOT' }"
-        ),
-        @CompoundIndex(
-                name = "uniq_code_published",
-                def = "{'code': 1, 'status': 1}",
-                unique = true,
-                partialFilter = "{ 'status': 'PUBLISHED' }"
-        )
+                @CompoundIndex(name = "uniq_code_snapshot", def = "{'code': 1, 'status': 1}", unique = true, partialFilter = "{ 'status': 'SNAPSHOT' }"),
+                @CompoundIndex(name = "uniq_code_published", def = "{'code': 1, 'status': 1}", unique = true, partialFilter = "{ 'status': 'PUBLISHED' }")
 })
 @Data
 public class ContentNode implements Serializable, Cloneable {
-    @Id
-    private UUID id;
+        @Id
+        private UUID id;
 
-    private String parentCode;
+        private String parentCode;
 
-    private String parentCodeOrigin;
+        private String parentCodeOrigin;
 
-    private String code;
+        private String code;
 
-    private String slug;
+        private String slug;
 
-    private String language;
+        private String language;
 
-    private ContentTypeEnum type;
+        private ContentTypeEnum type;
 
-    private String content;
-    private String title;
-    private String description;
+        private String content;
+        private String title;
+        private String description;
 
-    private String redirectUrl;
-    private String iconUrl;
-    private String pictureUrl;
+        private String redirectUrl;
+        private String iconUrl;
+        private String pictureUrl;
 
-    private List<ContentUrl> urls;
+        private List<ContentUrl> urls;
 
-    private ContentFile file;
+        private ContentFile file;
 
-    private List<String> tags;
-    private List<Value> values;
-    private List<String> roles;
-    private List<Rule> rules;
+        private List<String> tags;
+        private List<Value> values;
+        private List<String> roles;
+        private List<Rule> rules;
 
-    private String version;
-    private Long publicationDate;
-    private StatusEnum status;
+        private String version;
+        private Long publicationDate;
+        private StatusEnum status;
 
-    private boolean favorite;
+        private boolean favorite;
 
-    private Long creationDate;
-    private Long modificationDate;
-    private String modifiedBy;
+        private Long creationDate;
+        private Long modificationDate;
+        private String modifiedBy;
 
-    private Integer maxVersionsToKeep;
+        private Integer maxVersionsToKeep;
 
-    private List<Translation> translations;
+        private List<Translation> translations;
 
-    public ContentNode clone() throws CloneNotSupportedException {
-        return (ContentNode) super.clone();
-    }
+        private String triggerUrl;
+
+        private String triggerSecret;
+
+        private String folder;
+
+        private String fileName;
+
+        public ContentNode clone() throws CloneNotSupportedException {
+                return (ContentNode) super.clone();
+        }
 }

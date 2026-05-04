@@ -208,6 +208,35 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
           ).subscribe((trad: string) => {
             this.loggerService.success(trad);
             this.init();
+
+            if (content.triggerUrl) {
+              this.translate.get("DEPLOY_TRIGGER_SUCCESS").subscribe((translation: string) => {
+                this.toast.success(translation);
+              });
+
+              const headers: any = { 'Content-Type': 'application/json' };
+
+              if (content.triggerSecret) {
+                headers['Authorization'] = `Bearer ${content.triggerSecret}`;
+              }
+
+              fetch(content.triggerUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                  event_type: "deploy.success",
+                  client_payload: {
+                    contents: [
+                      {
+                        code: content.code,
+                        type: content.type,
+                        timestamp: new Date().toISOString()
+                      }
+                    ]
+                  }
+                })
+              }).catch(err => console.error('Trigger error:', err));
+            }
           });
           this.subscriptions.push(publishSub);
         }

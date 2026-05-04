@@ -1,7 +1,7 @@
-import {Value} from "./Value";
-import {Rule} from "./Rule";
-import {ContentNode} from "./ContentNode";
-import {Translation} from "./Translation";
+import { Value } from "./Value";
+import { Rule } from "./Rule";
+import { ContentNode } from "./ContentNode";
+import { Translation } from "./Translation";
 import { LockInfo } from "./LockInfo";
 
 export class Node {
@@ -42,5 +42,11 @@ export class Node {
   public userName: string;
 
   public lockInfo: LockInfo;
+
+  public triggerUrl: string;
+
+  public triggerSecret: string;
+
+  public folder: string;
 }
 

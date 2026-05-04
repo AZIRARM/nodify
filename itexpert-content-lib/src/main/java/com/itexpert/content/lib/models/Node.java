@@ -62,6 +62,12 @@ public class Node implements Serializable, Cloneable {
 
     private List<Translation> translations;
 
+    private String triggerUrl;
+
+    private String triggerSecret;
+
+    private String folder;
+
     public Node clone() throws CloneNotSupportedException {
         return (Node) super.clone();
     }

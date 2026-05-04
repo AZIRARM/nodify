@@ -13,6 +13,9 @@
   "CHANGE_PROJECT_CODE_MESSAGE": "رمز المشروع قد يكون موجوداً بالفعل",
   "COPY_SUCCESS": "تم النسخ إلى الحافظة",
   "COPY_ERROR": "خطأ في النسخ",
+  "FOLDER": "المجلد",
+  "TRIGGER_URL": "URI المشغل (webhook)",
+  "TRIGGER_SECRET": "سر المشغل",
 
   "_NODES": "=== العقد ===",
   "NODES": "العقد/المشاريع",

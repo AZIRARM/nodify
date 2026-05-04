@@ -13,6 +13,9 @@
   "CHANGE_PROJECT_CODE_MESSAGE": "O código do projeto pode já existir",
   "COPY_SUCCESS": "Copiado para a área de transferência",
   "COPY_ERROR": "Erro ao copiar",
+  "FOLDER": "Diretório",
+  "TRIGGER_URL": "URI do gatilho (webhook)",
+  "TRIGGER_SECRET": "Segredo do gatilho",
 
   "_NODES": "=== NÓS ===",
   "NODES": "Nós/Projetos",
