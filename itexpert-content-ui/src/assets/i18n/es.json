@@ -13,6 +13,9 @@
   "CHANGE_PROJECT_CODE_MESSAGE": "El código del proyecto puede que ya exista",
   "COPY_SUCCESS": "Copiado al portapapeles",
   "COPY_ERROR": "Error al copiar",
+  "FOLDER": "Directorio",
+  "TRIGGER_URL": "URI del desencadenador (webhook)",
+  "TRIGGER_SECRET": "Secreto del desencadenador",
 
   "_NODES": "=== NODOS ===",
   "NODES": "Nodos/Proyectos",

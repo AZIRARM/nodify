@@ -50,6 +50,20 @@
       <mat-icon matSuffix>description</mat-icon>
     </mat-form-field>
 
+    <!-- Folder Name -->
+    <mat-form-field appearance="outline" class="grid-item">
+      <mat-label>{{ "FOLDER" | translate }}</mat-label>
+      <input matInput [(ngModel)]="contentNode.folder" [placeholder]="'FOLDER' | translate">
+      <mat-icon matSuffix>folder</mat-icon>
+    </mat-form-field>
+
+    <!-- File Name -->
+    <mat-form-field appearance="outline" class="grid-item">
+      <mat-label>{{ "FILE_NAME" | translate }}</mat-label>
+      <input matInput [(ngModel)]="contentNode.fileName" [placeholder]="'FILE_NAME' | translate">
+      <mat-icon matSuffix>description</mat-icon>
+    </mat-form-field>
+
   </div>
 
   <!-- Message de validation du slug -->

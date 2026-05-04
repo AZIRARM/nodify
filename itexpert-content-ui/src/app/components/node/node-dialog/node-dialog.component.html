@@ -185,6 +185,14 @@
         <mat-icon matSuffix>vpn_key</mat-icon>
       </mat-form-field>
     </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field compact trigger-folder-field">
+        <mat-label>{{ "FOLDER" | translate }}</mat-label>
+        <input matInput [(ngModel)]="node.folder" [placeholder]="'FOLDER' | translate">
+        <mat-icon matSuffix>folder</mat-icon>
+      </mat-form-field>
+    </div>
   </div>
 </div>
 

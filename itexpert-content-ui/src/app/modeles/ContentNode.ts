@@ -58,5 +58,10 @@ export class ContentNode {
   public lockInfo: LockInfo;
 
   public triggerUrl: string;
+
   public triggerSecret: string;
+
+  public folder: string;
+
+  public fileName: string;
 }

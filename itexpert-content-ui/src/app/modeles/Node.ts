@@ -44,6 +44,9 @@ export class Node {
   public lockInfo: LockInfo;
 
   public triggerUrl: string;
+
   public triggerSecret: string;
+
+  public folder: string;
 }
 

@@ -13,6 +13,9 @@
   "CHANGE_PROJECT_CODE_MESSAGE": "Peut être que le code projet existe déjà",
   "COPY_SUCCESS": "Copié dans le presse-papier",
   "COPY_ERROR": "Erreur lors de la copie",
+  "FOLDER": "Répertoire",
+  "TRIGGER_URL": "URI du trigger(webhook)",
+  "TRIGGER_SECRET": "Le secret du trigger",
 
   "_NODES": "=== NOEUDS ===",
   "NODES": "Noeuds/Projets",
