@@ -1,1 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Nodify - The Most Powerful Open-Source Headless CMS as a True CaaS. Deliver seamless content experiences across all channels — natively multilingual, any content, any channel.">
+    <meta name="keywords" content="Headless CMS, Nodify, CMS open-source, API CMS, CaaS">
+    <meta name="author" content="Nodify Community">
+    <title>Nodify - Headless CMS | True Content as a Service</title>
+    
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+  <style>
+	/* ============================================
+   NODIFY LANDING PAGE - Complete Styles
+   ============================================ */
 
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --secondary: #8b5cf6;
+    --dark: #0f172a;
+    --gray-dark: #334155;
+    --gray: #64748b;
+    --gray-light: #94a3b8;
+    --light: #f8fafc;
+    --white: #ffffff;
+    --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --gradient-text: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--dark);
+    line-height: 1.5;
+    background: var(--white);
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ============================================
+   HEADER / NAVBAR
+   ============================================ */
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    z-index: 1000;
+    padding: 16px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: var(--shadow-md);
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-decoration: none;
+    color: var(--dark);
+}
+
+.logo i {
+    color: var(--primary);
+    font-size: 1.75rem;
+}
+
+.logo .badge {
+    font-size: 0.7rem;
+    background: var(--gradient);
+    padding: 2px 8px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 500;
+}
+
+.nav-menu ul {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: var(--gray);
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-menu a:hover {
+    color: var(--primary);
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-demo, .btn-start {
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-demo {
+    background: transparent;
+    color: var(--gray);
+    border: 1px solid #e2e8f0;
+}
+
+.btn-demo:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-start {
+    background: var(--gradient);
+    color: white;
+}
+
+.btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--dark);
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero {
+    padding: 140px 0 80px;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+}
+
+.hero .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+}
+
+.hero-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 24px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 24px;
+}
+
+.gradient-text {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-description {
+    font-size: 1.125rem;
+    color: var(--gray);
+    margin-bottom: 32px;
+    max-width: 90%;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 48px;
+}
+
+.btn-primary, .btn-outline {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--gradient);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+}
+
+.btn-outline {
+    border: 1px solid #cbd5e1;
+    color: var(--dark);
+    background: white;
+}
+
+.btn-outline:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.hero-stats {
+    display: flex;
+    gap: 48px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--gray);
+}
+
+/* Code Window */
+.hero-image {
+    position: relative;
+}
+
+.code-window {
+    background: #1e293b;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+}
+
+.code-header {
+    background: #334155;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.red { background: #ef4444; }
+.yellow { background: #f59e0b; }
+.green { background: #10b981; }
+
+.code-title {
+    margin-left: 8px;
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.code-body {
+    padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.code-body pre {
+    color: #e2e8f0;
+    font-family: 'Courier New', 'Fira Code', monospace;
+    font-size: 0.75rem;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ============================================
+   SECTIONS HEADER
+   ============================================ */
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-badge {
+    display: inline-block;
+    background: #eef2ff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.section-description {
+    color: var(--gray);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   FEATURES SECTION
+   ============================================ */
+
+.features, .why-nodify {
+    padding: 80px 0;
+    background: var(--white);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+}
+
+.feature-card {
+    background: var(--white);
+    padding: 32px;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    border: 1px solid #e2e8f0;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--gradient);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.feature-icon i {
+    font-size: 28px;
+    color: white;
+}
+
+.feature-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+}
+
+.feature-card p {
+    color: var(--gray);
+    line-height: 1.6;
+}
+
+/* ============================================
+   WHAT IS SECTION
+   ============================================ */
+
+.what-is {
+    padding: 80px 0;
+    background: var(--light);
+}
+
+.what-is-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.what-is-content h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.what-is-content p {
+    color: var(--gray);
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.feature-list {
+    list-style: none;
+}
+
+.feature-list li {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.feature-list i {
+    color: var(--primary);
+}
+
+.what-is-image img {
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: var(--shadow-xl);
+}
+
+/* ============================================
+   ANYWHERE SECTION
+   ============================================ */
+
+.anywhere {
+    padding: 80px 0;
+    background: var(--white);
+}
+
+.channels-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 32px;
+}
+
+.channel-card {
+    text-align: center;
+    padding: 24px;
+    background: var(--light);
+    border-radius: 16px;
+    min-width: 150px;
+    transition: all 0.3s;
+}
+
+.channel-card:hover {
+    transform: translateY(-5px);
+    background: var(--gradient);
+    color: white;
+}
+
+.channel-card i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    display: block;
+}
+
+/* ============================================
+   TEMPLATES SECTION
+   ============================================ */
+
+.templates {
+    padding: 80px 0;
+    background: var(--light);
+}
+
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 32px;
+}
+
+.template-card {
+    background: var(--white);
+    padding: 32px;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    border: 1px solid #e2e8f0;
+}
+
+.template-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
+}
+
+.template-card i {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.template-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+}
+
+.template-card p {
+    color: var(--gray);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 32px;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   BLOG SECTION
+   ============================================ */
+
+.blog {
+    padding: 80px 0;
+    background: var(--white);
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 32px;
+    margin-top: 20px;
+}
+
+.post-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-md);
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.post-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.post-content {
+    padding: 24px;
+}
+
+.post-category {
+    display: inline-block;
+    background: #eef2ff;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.post-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.post-title a {
+    text-decoration: none;
+    color: var(--dark);
+    transition: color 0.3s;
+}
+
+.post-title a:hover {
+    color: var(--primary);
+}
+
+.post-excerpt {
+    color: var(--gray);
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    color: var(--gray);
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.post-author i {
+    color: var(--primary);
+}
+
+.read-more {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    margin-top: 12px;
+}
+
+.read-more:hover {
+    text-decoration: underline;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 60px;
+    color: var(--gray);
+    font-size: 1.125rem;
+    grid-column: 1/-1;
+}
+
+.loading-spinner i {
+    margin-right: 10px;
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+/* ============================================
+   CTA SECTION
+   ============================================ */
+
+.cta {
+    padding: 80px 0;
+    background: var(--gradient);
+    color: white;
+    text-align: center;
+}
+
+.cta h2 {
+    font-size: 2rem;
+    margin-bottom: 16px;
+}
+
+.cta p {
+    margin-bottom: 32px;
+    opacity: 0.9;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.btn-outline-light {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid white;
+    color: white;
+    transition: all 0.3s;
+}
+
+.btn-outline-light:hover {
+    background: white;
+    color: var(--primary);
+}
+
+/* ============================================
+   GITHUB STATS
+   ============================================ */
+
+.github-stats {
+    padding: 60px 0;
+    background: var(--dark);
+    text-align: center;
+}
+
+.github-card {
+    background: #1e293b;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.github-card i {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.github-card h3 {
+    color: white;
+    margin-bottom: 8px;
+}
+
+.github-card p {
+    color: var(--gray-light);
+    margin-bottom: 20px;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.footer {
+    background: var(--dark);
+    color: #cbd5e1;
+    padding: 60px 0 30px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.footer-logo i {
+    color: var(--primary);
+}
+
+.footer-column p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.footer-social {
+    display: flex;
+    gap: 16px;
+}
+
+.footer-social a {
+    width: 36px;
+    height: 36px;
+    background: #334155;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+    transition: all 0.3s;
+}
+
+.footer-social a:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.footer-column h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.footer-column ul {
+    list-style: none;
+}
+
+.footer-column ul li {
+    margin-bottom: 12px;
+}
+
+.footer-column ul li a {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-column ul li a:hover {
+    color: var(--primary);
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.newsletter-form input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #334155;
+    background: #1e293b;
+    border-radius: 8px;
+    color: white;
+    outline: none;
+}
+
+.newsletter-form input:focus {
+    border-color: var(--primary);
+}
+
+.newsletter-form button {
+    background: var(--primary);
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.newsletter-form button:hover {
+    background: var(--primary-dark);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 30px;
+    border-top: 1px solid #334155;
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 968px) {
+    .hero .container {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .hero-description {
+        max-width: 100%;
+    }
+    
+    .hero-buttons {
+        justify-content: center;
+    }
+    
+    .hero-stats {
+        justify-content: center;
+    }
+    
+    .what-is-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .feature-list {
+        text-align: left;
+    }
+    
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-menu, .nav-buttons {
+        display: none;
+    }
+    
+    .mobile-menu-btn {
+        display: block;
+    }
+    
+    .nav-menu.active, .nav-buttons.active {
+        display: flex !important;
+        flex-direction: column;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 20px;
+        box-shadow: var(--shadow-lg);
+        border-radius: 0 0 16px 16px;
+    }
+    
+    .nav-menu.active ul {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .nav-buttons.active {
+        top: 280px;
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    .hero-title {
+        font-size: 2.25rem;
+    }
+    
+    .features-grid, .templates-grid, .posts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .footer-social {
+        justify-content: center;
+    }
+    
+    .newsletter-form {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .channels-grid {
+        gap: 16px;
+    }
+    
+    .channel-card {
+        min-width: 120px;
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.feature-card, .post-card, .template-card, .channel-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.2s; }
+.feature-card:nth-child(3) { animation-delay: 0.3s; }
+.feature-card:nth-child(4) { animation-delay: 0.4s; }
+.feature-card:nth-child(5) { animation-delay: 0.5s; }
+.feature-card:nth-child(6) { animation-delay: 0.6s; }
+
+.post-card:nth-child(1) { animation-delay: 0.1s; }
+.post-card:nth-child(2) { animation-delay: 0.2s; }
+.post-card:nth-child(3) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+    <div id="header">
+    	<header class="navbar">
+    <div class="container">
+        <a href="/" class="logo">
+            <i class="fas fa-code"></i>
+            <span>Nodify</span>
+            <span class="badge">Headless CMS</span>
+        </a>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#templates">Templates</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="https://azirarm.github.io/nodify-headless-cms" target="_blank">Docs</a></li>
+            </ul>
+        </nav>
+        <div class="nav-buttons">
+            <a href="https://nodify.azirar.ovh" target="_blank" class="btn-demo">Live Demo</a>
+            <a href="https://github.com/azirarm/nodify" target="_blank" class="btn-start">GitHub</a>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</header>
+    </div>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <span class="hero-badge">🚀 True CaaS Platform</span>
+                    <h1 class="hero-title">
+                        Manage Your Content <span class="gradient-text">Freely</span>
+                    </h1>
+                    <p class="hero-description">
+                        Nodify is an open-source Headless CMS as a True Content-as-a-Service platform. 
+                        Create, manage, and deliver your content across any channel via modern APIs.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="https://nodify.azirar.ovh" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i> Live Demo
+                        </a>
+                        <a href="https://github.com/azirarm/nodify" target="_blank" class="btn btn-outline">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">Open Source</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">REST+GraphQL</span>
+                            <span class="stat-label">Modern APIs</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">Self-Hosted</span>
+                            <span class="stat-label">Total Control</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="code-window">
+                        <div class="code-header">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                            <span class="code-title">Quick Start with Java</span>
+                        </div>
+                        <div class="code-body">
+                            <pre><code class="language-java">import io.github.azirarm.content.client.ReactiveNodifyClient;
+import io.github.azirarm.content.lib.enums.StatusEnum;
+import io.github.azirarm.content.lib.models.Node;
+
+public class QuickStart {
+    public static void main(String[] args) {
+        ReactiveNodifyClient client = ReactiveNodifyClient.create(
+            ReactiveNodifyClient.builder()
+                .withBaseUrl("https://nodify-core.azirar.ovh")
+                .build()
+        );
+        
+        client.login("admin", "Admin13579++")
+            .flatMap(auth -> {
+                Node node = new Node();
+                node.setName("My Website written with Java");
+                node.setCode("SITE-EN-JAVA");
+                node.setType("SITE");
+                node.setStatus(StatusEnum.SNAPSHOT);
+                return client.saveNode(node);
+            })
+            .subscribe(
+                saved -> System.out.println("Node created: " + saved.getCode()),
+                error -> System.err.println("Error: " + error)
+            );
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Nodify Section -->
+        <section class="why-nodify">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Why Nodify?</span>
+                    <h2 class="section-title">The Most Powerful Open-Source Headless CMS</h2>
+                    <p class="section-description">
+                        Delivering seamless content experiences across all channels
+                    </p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-globe"></i></div>
+                        <h3>🌍 Native Multilingual</h3>
+                        <p>Any content, any language, any channel. Built-in support for multiple languages and regionalization.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-code"></i></div>
+                        <h3>📦 Official SDKs</h3>
+                        <p>Python, PHP, Java/Kotlin, Node.js. Full-featured client libraries for all major languages.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-puzzle-piece"></i></div>
+                        <h3>🔌 Extensible</h3>
+                        <p>Plugins, webhooks, and custom APIs to extend functionality as needed.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fab fa-docker"></i></div>
+                        <h3>🐳 Docker-ready</h3>
+                        <p>One-command deployment with Docker Compose including MongoDB and Redis.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-palette"></i></div>
+                        <h3>🎨 Ready Templates</h3>
+                        <p>Tech Forum, News Platform, E-commerce, Stories Generator - production-ready templates.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h3>🔐 Multi-Auth</h3>
+                        <p>Internal, OAuth2, and OpenID Connect authentication modes supported.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section "What is Headless CMS?" -->
+        <section class="what-is">
+            <div class="container">
+                <div class="what-is-grid">
+                    <div class="what-is-content">
+                        <span class="section-badge">Understanding Headless CMS</span>
+                        <h2>Separates Frontend from Backend</h2>
+                        <p>Unlike traditional CMS, a Headless CMS separates the content management backend from the presentation frontend, delivering content through APIs to any device or platform.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check-circle"></i> Highly customizable and adaptable</li>
+                            <li><i class="fas fa-check-circle"></i> Delivers content through modern APIs</li>
+                            <li><i class="fas fa-check-circle"></i> Scalable for growing content volumes</li>
+                            <li><i class="fas fa-check-circle"></i> Developer-friendly with robust integrations</li>
+                        </ul>
+                    </div>
+                    <div class="what-is-image">
+                        <img src="https://picsum.photos/id/26/500/400" alt="Headless CMS Architecture" loading="lazy">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deliver Content Anywhere Section -->
+        <section class="anywhere">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Anywhere, Anytime</span>
+                    <h2 class="section-title">Deliver Content Anywhere</h2>
+                    <p class="section-description">One CMS, unlimited channels</p>
+                </div>
+                <div class="channels-grid">
+                    <div class="channel-card">
+                        <i class="fas fa-laptop-code"></i>
+                        <h4>Websites</h4>
+                    </div>
+                    <div class="channel-card">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h4>Mobile Apps</h4>
+                    </div>
+                    <div class="channel-card">
+                        <i class="fas fa-microchip"></i>
+                        <h4>IoT Devices</h4>
+                    </div>
+                    <div class="channel-card">
+                        <i class="fas fa-share-alt"></i>
+                        <h4>Social Media</h4>
+                    </div>
+                    <div class="channel-card">
+                        <i class="fas fa-microphone-alt"></i>
+                        <h4>Voice Assistants</h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Templates Section -->
+        <section class="templates">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Ready-to-Use</span>
+                    <h2 class="section-title">Production-Ready Templates</h2>
+                    <p class="section-description">Accelerate your development with pre-built templates</p>
+                </div>
+                <div class="templates-grid">
+                    <div class="template-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Tech Forum Template</h3>
+                        <p>Complete developer community platform</p>
+                    </div>
+                    <div class="template-card">
+                        <i class="fas fa-child"></i>
+                        <h3>Tiny Tales Stories</h3>
+                        <p>AI-powered children's stories generator</p>
+                    </div>
+                    <div class="template-card">
+                        <i class="fas fa-newspaper"></i>
+                        <h3>News Template</h3>
+                        <p>Modern news publishing platform</p>
+                    </div>
+                    <div class="template-card">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>E-commerce Template</h3>
+                        <p>Product catalog and shopping experience</p>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="https://github.com/azirarm/nodify-templates" target="_blank" class="btn btn-outline">
+                        <i class="fab fa-github"></i> Explore All Templates
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Section (Posts dynamiques) -->
+        <section class="blog">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Blog & News</span>
+                    <h2 class="section-title">Latest Articles</h2>
+                    <p class="section-description">
+                        Discover the latest updates and tutorials about Nodify
+                    </p>
+                </div>
+                <div class="posts-grid" id="posts-container">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> Loading articles...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Ready to Revolutionize Your Content Management?</h2>
+                    <p>Join the Nodify community and simplify your workflow today.</p>
+                    <div class="cta-buttons">
+                        <a href="https://nodify.azirar.ovh" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i> Try Live Demo
+                        </a>
+                        <a href="https://azirarm.github.io/nodify-headless-cms" target="_blank" class="btn btn-outline-light">
+                            <i class="fas fa-book"></i> Documentation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- GitHub Stats Section -->
+        <section class="github-stats">
+            <div class="container">
+                <div class="stats-wrapper">
+                    <div class="github-card">
+                        <i class="fab fa-github"></i>
+                        <div class="github-info">
+                            <h3>Star on GitHub</h3>
+                            <p>Help us grow the community</p>
+                            <a href="https://github.com/azirarm/nodify" target="_blank" class="btn btn-small">
+                                ⭐ Star Nodify
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <div id="footer">
+      <footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <div class="footer-logo">
+                    <i class="fas fa-code"></i>
+                    <span>Nodify</span>
+                </div>
+                <p>The Most Powerful Open-Source Headless CMS as a True CaaS. Delivering seamless content experiences across all channels.</p>
+                <div class="footer-social">
+                    <a href="https://github.com/azirarm/nodify" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#templates">Templates</a></li>
+                    <li><a href="https://nodify.azirar.ovh" target="_blank">Live Demo</a></li>
+                    <li><a href="https://github.com/azirarm/nodify" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://azirarm.github.io/nodify-headless-cms" target="_blank">Documentation</a></li>
+                    <li><a href="https://github.com/azirarm/nodify-templates" target="_blank">Templates</a></li>
+                    <li><a href="https://github.com/azirarm/nodify-plugins" target="_blank">Plugins</a></li>
+                    <li><a href="https://github.com/azirarm/nodify-clients" target="_blank">Client Libraries</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Newsletter</h4>
+                <p>Get updates about new features and releases</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email" required>
+                    <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Nodify - Headless CMS. Licensed under CC BY-NC 4.0.</p>
+            <p>Made with ❤️ by the Nodify Community</p>
+        </div>
+    </div>
+</footer>
+  	</div>
+
+
+    <!-- Scripts -->
+  <script>
+   // ============================================
+// NODIFY LANDING PAGE - Complete JavaScript
+// ============================================
+
+// Function to load header and footer components
+async function loadComponent(componentName, targetId) {
+    try {
+        const response = await fetch(`components/${componentName}.html`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const html = await response.text();
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            targetElement.innerHTML = html;
+        }
+        return true;
+    } catch (error) {
+        console.error(`Error loading ${componentName}:`, error);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            targetElement.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> Error loading ${componentName}
+                </div>
+            `;
+        }
+        return false;
+    }
+}
+
+// Format date to French/English format
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown date';
+    try {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    } catch (e) {
+        return dateString;
+    }
+}
+
+// Truncate text
+function truncateText(text, maxLength = 120) {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Display posts in the grid
+function displayPosts(posts) {
+    const container = document.getElementById('posts-container');
+    
+    if (!container) {
+        console.error('Posts container not found');
+        return;
+    }
+    
+    if (!posts || posts.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 60px; grid-column: 1/-1;">
+                <i class="fas fa-newspaper" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
+                <p style="color: #64748b;">No articles available at the moment.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = posts.map(post => `
+        <article class="post-card">
+            <img src="${post.image || 'https://picsum.photos/id/20/800/600'}" 
+                 alt="${escapeHtml(post.title)}" 
+                 class="post-image" 
+                 loading="lazy"
+                 onerror="this.src='https://picsum.photos/id/20/800/600'">
+            <div class="post-content">
+                <span class="post-category">${escapeHtml(post.category || 'Article')}</span>
+                <h3 class="post-title">
+                    <a href="${post.link || '#'}" target="_blank">${escapeHtml(post.title)}</a>
+                </h3>
+                <p class="post-excerpt">${escapeHtml(truncateText(post.excerpt, 120))}</p>
+                <div class="post-meta">
+                    <div class="post-author">
+                        <i class="fas fa-user-circle"></i>
+                        <span>${escapeHtml(post.author || 'Nodify')}</span>
+                    </div>
+                    <div class="post-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>${formatDate(post.date)}</span>
+                    </div>
+                </div>
+                <a href="${post.link || '#'}" class="read-more" target="_blank">
+                    Read more <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+    `).join('');
+}
+
+// Load posts from JSON file
+async function loadPosts() {
+    const container = document.getElementById('posts-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i> Loading articles...
+            </div>
+        `;
+    }
+    
+    try {
+        const response = await fetch('js/posts.json');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        const posts = data.posts || data || [];
+        displayPosts(posts);
+    } catch (error) {
+        console.error('Error loading posts:', error);
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px; grid-column: 1/-1;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px; display: block;"></i>
+                    <p style="color: #64748b;">Unable to load articles.</p>
+                    <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 20px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-sync-alt"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Mobile menu toggle
+function initMobileMenu() {
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    if (menuBtn) {
+        // Remove any existing event listeners
+        const newMenuBtn = menuBtn.cloneNode(true);
+        menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
+        
+        newMenuBtn.addEventListener('click', () => {
+            const navMenu = document.querySelector('.nav-menu');
+            const navButtons = document.querySelector('.nav-buttons');
+            if (navMenu && navButtons) {
+                navMenu.classList.toggle('active');
+                navButtons.classList.toggle('active');
+            }
+        });
+    }
+}
+
+// Header scroll effect
+function initHeaderScroll() {
+    const header = document.querySelector('.navbar');
+    if (!header) return;
+    
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+}
+
+// Smooth scroll for anchor links
+function initSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+            
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+}
+
+// Newsletter form handler
+function initNewsletterForm() {
+    const form = document.getElementById('newsletterForm');
+    if (!form) return;
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = form.querySelector('input[type="email"]');
+        const email = input?.value;
+        
+        if (!email || !email.includes('@')) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        
+        const button = form.querySelector('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.disabled = true;
+        
+        // Simulate API call
+        setTimeout(() => {
+            alert(`Thank you for subscribing! A confirmation email has been sent to ${email}`);
+            input.value = '';
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }, 1000);
+    });
+}
+
+// Animation on scroll with IntersectionObserver
+function initScrollAnimation() {
+    const animatedElements = document.querySelectorAll('.feature-card, .post-card, .template-card, .channel-card');
+    
+    if (animatedElements.length === 0) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    
+    animatedElements.forEach(el => observer.observe(el));
+}
+
+// Update GitHub stats (optional, can be replaced with real API call)
+async function updateGitHubStats() {
+    try {
+        const response = await fetch('https://api.github.com/repos/azirarm/nodify');
+        if (response.ok) {
+            const data = await response.json();
+            const starsElement = document.querySelector('.github-card h3');
+            if (starsElement && data.stargazers_count) {
+                starsElement.innerHTML = `⭐ ${data.stargazers_count.toLocaleString()} Stars on GitHub`;
+            }
+        }
+    } catch (error) {
+        console.log('GitHub stats not available');
+    }
+}
+
+// Initialize all components after DOM load
+document.addEventListener('DOMContentLoaded', async () => {    
+    // Load blog posts
+    await loadPosts();
+    
+    // Initialize all interactive features
+    setTimeout(() => {
+        initMobileMenu();
+        initHeaderScroll();
+        initSmoothScroll();
+        initNewsletterForm();
+        initScrollAnimation();
+        updateGitHubStats();
+    }, 100);
+});
+
+// Handle page cache (for back/forward navigation)
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+  </script>
+</body>
+</html>
