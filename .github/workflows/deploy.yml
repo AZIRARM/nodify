@@ -99,7 +99,6 @@ jobs:
                   final_name = code
                   print(f"Using code as name: {final_name}")
               
-              # Toujours dans le dossier pages
               target_dir = os.path.join("pages", folder if folder else "")
               print(f"Target dir: {target_dir}")
               
@@ -129,6 +128,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout headless-cms || git checkout -b headless-cms
+          git pull origin headless-cms --rebase
           git add pages/
           git status
           git diff --staged --quiet || git commit -m "Update contents from webhook"
