@@ -15,6 +15,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+          ref: headless-cms
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -126,14 +127,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout headless-cms || git checkout -b headless-cms
           git add .
           git status
           git diff --staged --quiet || git commit -m "Update contents from webhook"
-          git push
+          git push origin headless-cms --force
           echo "Push completed"
 
       - name: Verify files on repo
         run: |
           echo "=== Verifying files after push ==="
-          git pull
+          git pull origin headless-cms
           ls -la
