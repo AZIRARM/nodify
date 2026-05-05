@@ -1,0 +1,64 @@
+{
+  "posts": [
+    {
+      "id": 1.0,
+      "title": "Why Choose a Headless CMS in 2025?",
+      "excerpt": "Discover how headless CMS revolutionizes content management and why Nodify is the ideal solution for modern web projects.",
+      "image": "https://picsum.photos/id/26/800/600",
+      "author": "Sophia Martinez",
+      "date": "2025-01-15",
+      "category": "Blog",
+      "link": "https://azirarm.github.io/nodify-headless-cms/blog/headless-cms-2025"
+    },
+    {
+      "id": 2.0,
+      "title": "Nodify vs Strapi: A Complete Comparison",
+      "excerpt": "In-depth analysis of features, performance and use cases of Nodify compared to Strapi for modern content management.",
+      "image": "https://picsum.photos/id/0/800/600",
+      "author": "Thomas Dubois",
+      "date": "2025-01-10",
+      "category": "Comparison",
+      "link": "https://azirarm.github.io/nodify-headless-cms/blog/nodify-vs-strapi"
+    },
+    {
+      "id": 3.0,
+      "title": "How to Migrate Your Site to Nodify",
+      "excerpt": "Step-by-step guide to migrate your existing content to Nodify Headless CMS without breaking your current setup.",
+      "image": "https://picsum.photos/id/1/800/600",
+      "author": "Julie Lambert",
+      "date": "2025-01-05",
+      "category": "Tutorial",
+      "link": "https://azirarm.github.io/nodify-headless-cms/blog/migrate-to-nodify"
+    },
+    {
+      "id": 4.0,
+      "title": "REST and GraphQL APIs in Nodify",
+      "excerpt": "Learn how Nodify leverages modern APIs for optimal content management and delivery across any platform.",
+      "image": "https://picsum.photos/id/20/800/600",
+      "author": "Alexandre Moreau",
+      "date": "2024-12-28",
+      "category": "Technical",
+      "link": "https://azirarm.github.io/nodify-headless-cms/blog/apis-nodify"
+    },
+    {
+      "id": 5.0,
+      "title": "5 Hidden Features of Nodify You Should Know",
+      "excerpt": "Boost your productivity with these powerful yet lesser-known features of Nodify Headless CMS.",
+      "image": "https://picsum.photos/id/91/800/600",
+      "author": "Sophia Martinez",
+      "date": "2024-12-20",
+      "category": "Tips",
+      "link": "https://azirarm.github.io/nodify-headless-cms/blog/hidden-features-nodify"
+    },
+    {
+      "id": 6.0,
+      "title": "Nodify: The Open-Source Solution for Your Business",
+      "excerpt": "Why choosing an open-source CMS like Nodify is the right strategy for your content management needs.",
+      "image": "https://picsum.photos/id/24/800/600",
+      "author": "Thomas Dubois",
+      "date": "2024-12-15",
+      "category": "Business",
+      "link": "https://azirarm.github.io/nodify-headless-cms/blog/nodify-open-source"
+    }
+  ]
+}
