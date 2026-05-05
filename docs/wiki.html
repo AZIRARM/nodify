@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nodify Docs | Open Source Headless CMS</title>
+    <meta name="description" content="Nodify is an open-source headless CMS built with Java. Native i18n, REST API, and easy deployment. Perfect for developers and content teams.">
+    <meta name="keywords" content="headless CMS, nodify, open source CMS, Java CMS, API CMS, i18n, content management">
+    <meta name="author" content="Nodify Community">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Nodify Docs | Open Source Headless CMS">
+    <meta property="og:description" content="Simple, powerful, open-source headless CMS for modern content management.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nodify.azirar.ovh">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://nodify.azirar.ovh">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="https://nodify.azirar.ovh/favicon.ico">
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+   	<style>
+      /* ============================================
+   Nodify Documentation - Main Styles
+   ============================================ */
+
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+    --dark: #0f172a;
+    --gray: #64748b;
+    --gray-light: #e2e8f0;
+    --light: #f8fafc;
+    --white: #ffffff;
+    --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--dark);
+    background: var(--light);
+    line-height: 1.6;
+}
+
+/* Header / Navbar */
+.navbar {
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    padding: 16px 0;
+    z-index: 100;
+}
+
+.navbar .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--dark);
+}
+
+.logo i {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--gray);
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--primary);
+}
+
+.nav-links a.github-link {
+    background: var(--dark);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+.nav-links a.github-link:hover {
+    background: var(--primary);
+}
+
+/* Docs Layout */
+.docs-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: flex;
+    gap: 48px;
+}
+
+/* Sidebar */
+.docs-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+    height: fit-content;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+}
+
+.sidebar-nav li {
+    margin-bottom: 8px;
+}
+
+.sidebar-nav a {
+    display: block;
+    padding: 8px 12px;
+    color: var(--gray);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.sidebar-nav a:hover {
+    background: var(--gray-light);
+    color: var(--primary);
+}
+
+.sidebar-nav a.active {
+    background: var(--gradient);
+    color: white;
+}
+
+/* Main Content */
+.docs-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.doc-section {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.doc-section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--gray-light);
+}
+
+.doc-section h2 i {
+    color: var(--primary);
+    margin-right: 12px;
+}
+
+.doc-section h3 {
+    font-size: 1.25rem;
+    margin: 24px 0 16px 0;
+    color: var(--dark);
+}
+
+.doc-section p {
+    margin-bottom: 16px;
+    color: var(--gray);
+}
+
+/* Hero Section */
+.docs-hero {
+    background: var(--gradient);
+    color: white;
+    border-radius: 24px;
+    padding: 48px;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.docs-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+}
+
+.docs-hero p {
+    font-size: 1.125rem;
+    margin-bottom: 24px;
+    opacity: 0.9;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.btn-github, .btn-demo {
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-github {
+    background: var(--dark);
+    color: white;
+}
+
+.btn-github:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.btn-demo {
+    background: white;
+    color: var(--primary);
+}
+
+.btn-demo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.feature-item {
+    padding: 20px;
+    background: var(--light);
+    border-radius: 12px;
+    transition: transform 0.3s;
+}
+
+.feature-item:hover {
+    transform: translateY(-3px);
+}
+
+.feature-item i {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.feature-item h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.125rem;
+}
+
+.feature-item p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Code Blocks */
+.code-block {
+    background: #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 16px 0;
+}
+
+.code-header {
+    background: #334155;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.red { background: #ef4444; }
+.yellow { background: #f59e0b; }
+.green { background: #10b981; }
+
+.code-block pre {
+    padding: 20px;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.code-block code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    color: #e2e8f0;
+}
+
+/* Info Box */
+.info-box {
+    background: #eef2ff;
+    border-left: 4px solid var(--primary);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.info-box i {
+    color: var(--primary);
+    margin-right: 10px;
+}
+
+/* Comparison Cards */
+.comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 24px 0;
+}
+
+.card {
+    background: var(--light);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.card h3 {
+    margin-top: 0;
+}
+
+.card ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.card li {
+    padding: 8px 0;
+}
+
+/* Tables */
+.docs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+.docs-table th,
+.docs-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.docs-table th {
+    background: var(--light);
+    font-weight: 600;
+}
+
+.docs-table td code {
+    background: var(--light);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+/* SDK Grid */
+.sdk-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.sdk-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--light);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--dark);
+    transition: all 0.3s;
+}
+
+.sdk-card:hover {
+    background: var(--gradient);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.sdk-card i {
+    font-size: 1.5rem;
+}
+
+/* GitHub Links */
+.github-links {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--dark);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.github-btn:hover {
+    background: var(--primary);
+    transform: translateY(-2px);
+}
+
+.github-btn.secondary {
+    background: var(--gray);
+}
+
+/* Footer */
+.footer {
+    background: var(--dark);
+    color: #94a3b8;
+    text-align: center;
+    padding: 32px;
+    margin-top: 48px;
+}
+
+.footer a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .docs-container {
+        flex-direction: column;
+    }
+    
+    .docs-sidebar {
+        width: 100%;
+        position: static;
+        margin-bottom: 24px;
+    }
+    
+    .navbar .container {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .docs-hero h1 {
+        font-size: 1.75rem;
+    }
+    
+    .docs-table {
+        font-size: 0.8rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .github-links {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .docs-table th,
+    .docs-table td {
+        padding: 8px;
+    }
+    
+    .doc-section {
+        padding: 20px;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div id="header">
+      <header class="navbar">
+    <div class="container">
+        <a href="/" class="logo">
+            <i class="fas fa-code"></i>
+            <span>Nodify</span>
+        </a>
+        <nav class="nav-links">
+            <a href="https://nodify.azirar.ovh" target="_blank">Demo</a>
+            <a href="#features">Features</a>
+            <a href="#api">API</a>
+            <a href="https://github.com/azirarm/nodify" target="_blank" class="github-link">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </nav>
+    </div>
+</header>
+  </div>
+
+    <div class="docs-container">
+        <div id="sidebar">
+      	<aside class="docs-sidebar">
+    <nav class="sidebar-nav">
+        <ul>
+            <li><a href="#quick-start">Quick Start</a></li>
+            <li><a href="#what-is">What is Headless CMS?</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#content">Content Management</a></li>
+            <li><a href="#templates">Templating System</a></li>
+            <li><a href="#api">API Reference</a></li>
+            <li><a href="#sdk">SDKs</a></li>
+            <li><a href="#deployment">Deployment</a></li>
+            <li><a href="#github">Open Source</a></li>
+        </ul>
+    </nav>
+</aside>
+      </div>
+        <main class="docs-content">
+            <!-- Hero Section -->
+            <section class="docs-hero">
+                <h1>Nodify Documentation</h1>
+                <p>Simple, powerful, open-source headless CMS — built with Java, loved by developers.</p>
+                <div class="hero-buttons">
+                    <a href="https://github.com/azirarm/nodify" target="_blank" class="btn-github">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://nodify.azirar.ovh" target="_blank" class="btn-demo">
+                        <i class="fas fa-rocket"></i> Live Demo
+                    </a>
+                </div>
+            </section>
+
+            <!-- Quick Start Section -->
+            <section id="quick-start" class="doc-section">
+                <h2><i class="fas fa-bolt"></i> Quick Start</h2>
+                <p>Get Nodify running in under 5 minutes with Docker.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span>Terminal</span>
+                    </div>
+                    <pre><code>git clone https://github.com/AZIRARM/nodify.git
+cd nodify
+docker compose up -d</code></pre>
+                </div>
+
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Access Nodify Studio:</strong> 
+                    <a href="http://localhost">http://localhost</a><br>
+                    <strong>Login:</strong> admin@nodify.app / Admin13579++
+                </div>
+            </section>
+
+            <!-- What is Headless CMS Section -->
+            <section id="what-is" class="doc-section">
+                <h2><i class="fas fa-question-circle"></i> What is a Headless CMS?</h2>
+                <p>A <strong>Headless CMS</strong> separates content management from presentation. Content is delivered via API to any frontend — websites, mobile apps, IoT devices, or voice assistants.</p>
+                
+                <div class="comparison">
+                    <div class="card">
+                        <h3>Traditional CMS</h3>
+                        <ul>
+                            <li>❌ Frontend + Backend coupled</li>
+                            <li>❌ One presentation layer only</li>
+                            <li>❌ Themes and templates limited</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>Nodify Headless CMS</h3>
+                        <ul>
+                            <li>✅ Decoupled architecture</li>
+                            <li>✅ Any frontend framework</li>
+                            <li>✅ Pure API delivery</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Key Features Section -->
+            <section id="features" class="doc-section">
+                <h2><i class="fas fa-star"></i> Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-globe"></i>
+                        <h3>Native i18n</h3>
+                        <p>Unlimited languages, hierarchical translations, SEO-friendly URLs.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-code"></i>
+                        <h3>REST API</h3>
+                        <p>Full CRUD operations, webhooks, and real-time duplex communication.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fab fa-docker"></i>
+                        <h3>Docker Ready</h3>
+                        <p>One-command deployment with MongoDB and Redis included.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Built-in Analytics</h3>
+                        <p>Track impressions, clicks, and user feedback out of the box.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-plug"></i>
+                        <h3>Plugins</h3>
+                        <p>Extend with jQuery, Bootstrap, or custom plugins using $with().</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Flexible Auth</h3>
+                        <p>Internal, OAuth2, or OpenID Connect (SSO ready).</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content Management Section -->
+            <section id="content" class="doc-section">
+                <h2><i class="fas fa-folder-tree"></i> Content Management</h2>
+                
+                <h3>Nodes</h3>
+                <p>Nodes are containers for your content. Create a hierarchy like: <code>Blog > Articles > 2024</code></p>
+                
+                <div class="code-block">
+                    <pre><code>// Create a node via API
+POST /v0/nodes
+{
+  "name": "my-blog",
+  "language": "en"
+}</code></pre>
+                </div>
+
+                <h3>Content Types</h3>
+                <ul>
+                    <li><strong>HTML</strong> — Web pages, articles, blog posts</li>
+                    <li><strong>JSON</strong> — Structured data for APIs</li>
+                    <li><strong>CSS / JS</strong> — Stylesheets and scripts</li>
+                    <li><strong>Images / Files</strong> — Media assets</li>
+                </ul>
+
+                <h3>SNAPSHOT vs PUBLISHED</h3>
+                <div class="info-box">
+                    <i class="fas fa-pen-fancy"></i>
+                    <strong>SNAPSHOT</strong> — Draft mode (admin only)<br>
+                    <i class="fas fa-check-circle"></i>
+                    <strong>PUBLISHED</strong> — Live (public, tracked in analytics)
+                </div>
+            </section>
+
+            <!-- Templating System Section -->
+            <section id="templates" class="doc-section">
+                <h2><i class="fas fa-puzzle-piece"></i> Templating System</h2>
+                <p>Build dynamic pages by assembling independent content blocks.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span>HTML Template</span>
+                    </div>
+                    <pre><code>&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;$content(main-css)&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    $content(header)
+    $content(hero-section)
+    $content(footer)
+    &lt;script&gt;$content(main-js)&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                </div>
+
+                <h3>Placeholders</h3>
+                <table class="docs-table">
+                    <thead>
+                        <tr><th>Syntax</th><th>Description</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>$content(CODE)</code></td><td>Insert content from another node</td><td><code>$content(header)</code></td></tr>
+                        <tr><td><code>$value(KEY)</code></td><td>Insert a key-value pair</td><td><code>$value(SITE_NAME)</code></td></tr>
+                        <tr><td><code>$translate(KEY)</code></td><td>Insert multilingual text</td><td><code>$translate(WELCOME)</code></td></tr>
+                        <tr><td><code>$with(plugin)</code></td><td>Load a plugin</td><td><code>
+<script>
+function insertJQuery3_7_1Script(callback) {
+    const script = document.createElement('script');
+    const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    script.src = `${baseUrl}/plugins/name/jquery3.7.1/file/jquery-3.7.1.min.js`;
+
+    script.onload = function () {
+      console.log('✅ jQuery chargé');
+      if (typeof window.startApp === 'function') {
+        window.startApp();
+      } else {
+        console.warn('⚠️ startApp() not defined at load time');
+      }
+    };
+
+    document.head.appendChild(script);
+}
+
+insertJQuery3_7_1Script(function () {
+  console.log('Version de jQuery :', $.fn.jquery);
+});
+
+</script>
+</code></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- API Reference Section -->
+            <section id="api" class="doc-section">
+                <h2><i class="fas fa-plug"></i> API Reference</h2>
+                <p>All endpoints require an API key. Base URL: <code>https://your-nodify-instance.com</code></p>
+
+                <table class="docs-table">
+                    <thead>
+                        <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>GET</td><td><code>/v0/content/code/{code}</code></td><td>Get content by code</td></tr>
+                        <tr><td>GET</td><td><code>/v0/content/slug/{slug}</code></td><td>Get content by slug (SEO)</td></tr>
+                        <tr><td>GET</td><td><code>/v0/content/code/{code}?payloadOnly=true</code></td><td>Get raw content only</td></tr>
+                        <tr><td>GET</td><td><code>/v0/content/code/{code}?lang=fr</code></td><td>Get content in French</td></tr>
+                        <tr><td>PATCH</td><td><code>/v0/content-clicks/contentCode/{code}</code></td><td>Record a click</td></tr>
+                        <tr><td>POST</td><td><code>/v0/feedbacks</code></td><td>Submit user feedback</td></tr>
+                        <tr><td>GET</td><td><code>/v0/feedbacks/contentCode/{code}</code></td><td>Get feedback for content</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span>Example API Call</span>
+                    </div>
+                    <pre><code>curl -X GET "https://your-nodify.com/v0/content/slug/my-article?payloadOnly=true" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+                </div>
+            </section>
+
+            <!-- SDK Section -->
+            <section id="sdk" class="doc-section">
+                <h2><i class="fas fa-code-branch"></i> Official SDKs</h2>
+                <p>Nodify provides official client libraries for all major languages.</p>
+                
+                <div class="sdk-grid">
+                    <a href="https://github.com/azirarm/nodify-clients/tree/main/java" target="_blank" class="sdk-card">
+                        <i class="fab fa-java"></i>
+                        <span>Java / Kotlin</span>
+                    </a>
+                    <a href="https://github.com/azirarm/nodify-clients/tree/main/python" target="_blank" class="sdk-card">
+                        <i class="fab fa-python"></i>
+                        <span>Python</span>
+                    </a>
+                    <a href="https://github.com/azirarm/nodify-clients/tree/main/nodejs" target="_blank" class="sdk-card">
+                        <i class="fab fa-node-js"></i>
+                        <span>Node.js</span>
+                    </a>
+                    <a href="https://github.com/azirarm/nodify-php-client" target="_blank" class="sdk-card">
+                        <i class="fab fa-php"></i>
+                        <span>PHP</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Deployment Section -->
+            <section id="deployment" class="doc-section">
+                <h2><i class="fas fa-server"></i> Deployment</h2>
+                
+                <h3>Docker Compose (Recommended)</h3>
+                <div class="code-block">
+                    <pre><code>version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - mongodb_data:/data/db
+
+  nodify-core:
+    image: azirar/nodify-core:latest
+    environment:
+      MONGO_URL: "mongodb://mongodb:27017/nodify"
+      ADMIN_PWD: Admin13579++
+
+  nodify-api:
+    image: azirar/nodify-api:latest
+    environment:
+      MONGO_URL: "mongodb://mongodb:27017/nodify"
+
+  nodify-studio:
+    image: azirar/nodify-studio:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - nodify-core
+      - nodify-api
+
+volumes:
+  mongodb_data:</code></pre>
+                </div>
+
+                <h3>Environment Variables</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>MONGO_URL</code></td><td>mongodb://mongodb:27017/nodify</td><td>MongoDB connection</td></tr>
+                        <tr><td><code>ADMIN_PWD</code></td><td>Admin13579++</td><td>Admin password</td></tr>
+                        <tr><td><code>AUTH_MODE</code></td><td>internal</td><td>internal, oauth2, or openid</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- GitHub Section -->
+            <section id="github" class="doc-section">
+                <h2><i class="fab fa-github"></i> Open Source</h2>
+                <p>Nodify is licensed under <strong>CC BY-NC 4.0</strong>. Self-host, modify, and extend — no vendor lock-in.</p>
+                
+                <div class="github-links">
+                    <a href="https://github.com/azirarm/nodify" target="_blank" class="github-btn">
+                        <i class="fab fa-github"></i> Star on GitHub
+                    </a>
+                    <a href="https://github.com/azirarm/nodify/issues" target="_blank" class="github-btn secondary">
+                        <i class="fas fa-bug"></i> Report Issue
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="footer">
+      <footer class="footer">
+    <div class="container">
+        <p>
+            <i class="fab fa-github"></i> 
+            <a href="https://github.com/azirarm/nodify" target="_blank">Nodify on GitHub</a>
+            &nbsp;|&nbsp;
+            <i class="fas fa-book"></i> 
+            <a href="https://azirarm.github.io/nodify-headless-cms" target="_blank">Full Documentation</a>
+        </p>
+        <p>Made with ❤️ by the Nodify Community | Open Source under CC BY-NC 4.0</p>
+    </div>
+</footer>
+  </div>
+
+    <script>
+      // Load components
+async function loadComponent(name, targetId) {
+    try {
+        const response = await fetch(`components/${name}.html`);
+        const html = await response.text();
+        document.getElementById(targetId).innerHTML = html;
+    } catch (error) {
+        console.error(`Error loading ${name}:`, error);
+    }
+}
+
+// Active link highlighting
+function initActiveLinks() {
+    const sections = document.querySelectorAll('.doc-section');
+    const navLinks = document.querySelectorAll('.sidebar-nav a');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            const sectionBottom = sectionTop + section.offsetHeight;
+            if (scrollY >= sectionTop && scrollY < sectionBottom) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href').substring(1);
+            if (href === current) {
+                link.classList.add('active');
+            }
+        });
+    });
+}
+
+// Smooth scroll
+function initSmoothScroll() {
+    document.querySelectorAll('.sidebar-nav a, .nav-links a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    setTimeout(() => {
+        initActiveLinks();
+        initSmoothScroll();
+    }, 100);
+});
+  </script>
+</body>
+</html>
