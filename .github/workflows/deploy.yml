@@ -1,0 +1,139 @@
+name: Fetch and Process Contents
+on:
+  repository_dispatch:
+    types: [deploy.success]
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Process webhook payload
+        env:
+          API_URL: ${{ vars.NODIFY_API_URL }}
+          CONTENTS: ${{ toJson(github.event.client_payload.contents) }}
+        run: |
+          python3 << 'EOF'
+          import json
+          import os
+          import subprocess
+          
+          API_URL = os.environ.get('API_URL', '')
+          CONTENTS_STR = os.environ.get('CONTENTS', '')
+          
+          print("=== START ===")
+          print(f"API_URL: {API_URL}")
+          print(f"CONTENTS: {CONTENTS_STR}")
+          
+          if not API_URL:
+              print("ERROR: API_URL not set")
+              exit(1)
+          
+          if not CONTENTS_STR or CONTENTS_STR == 'null':
+              print("No contents")
+              exit(0)
+          
+          contents = json.loads(CONTENTS_STR)
+          print(f"Number of items: {len(contents)}")
+          
+          for item in contents:
+              code = item.get('code')
+              file_name = item.get('fileName')
+              folder = item.get('folder')
+              
+              print(f"\n=== Item ===")
+              print(f"code: {code}")
+              print(f"fileName: {file_name}")
+              print(f"folder: {folder}")
+              
+              if not code:
+                  print("SKIP: no code")
+                  continue
+              
+              url = f"{API_URL}/contents/code/{code}"
+              print(f"Calling: {url}")
+              
+              result = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
+              response = result.stdout
+              print(f"Response length: {len(response)}")
+              
+              if not response:
+                  print("ERROR: empty response")
+                  continue
+              
+              try:
+                  data = json.loads(response)
+                  payload = data.get('payload')
+                  api_file_name = data.get('fileName')
+                  print(f"payload exists: {payload is not None}")
+                  print(f"api fileName: {api_file_name}")
+              except:
+                  payload = response
+                  print("Response is not JSON, using raw")
+              
+              if not payload:
+                  print("ERROR: no payload")
+                  continue
+              
+              if file_name:
+                  final_name = file_name
+                  print(f"Using fileName from payload: {final_name}")
+              elif api_file_name:
+                  final_name = api_file_name
+                  print(f"Using fileName from API: {final_name}")
+              else:
+                  final_name = code
+                  print(f"Using code as name: {final_name}")
+              
+              target_dir = folder if folder else "."
+              print(f"Target dir: {target_dir}")
+              
+              os.makedirs(target_dir, exist_ok=True)
+              filepath = os.path.join(target_dir, final_name)
+              
+              if isinstance(payload, (dict, list)):
+                  with open(filepath, 'w', encoding='utf-8') as f:
+                      json.dump(payload, f, indent=2, ensure_ascii=False)
+              else:
+                  with open(filepath, 'w', encoding='utf-8') as f:
+                      f.write(str(payload))
+              
+              print(f"SAVED: {filepath}")
+          
+          print("=== END ===")
+          EOF
+
+      - name: List saved files
+        run: |
+          echo "=== Files saved ==="
+          find . -type f -not -path "./.git/*" -not -path "./.github/*" | head -20
+          ls -la
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git status
+          git diff --staged --quiet || git commit -m "Update contents from webhook"
+          git push
+          echo "Push completed"
+
+      - name: Verify files on repo
+        run: |
+          echo "=== Verifying files after push ==="
+          git pull
+          ls -la
