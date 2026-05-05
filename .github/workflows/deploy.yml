@@ -99,7 +99,7 @@ jobs:
                   final_name = code
                   print(f"Using code as name: {final_name}")
               
-              target_dir = os.path.join("pages", folder if folder else "")
+              target_dir = os.path.join("docs", folder if folder else "")
               print(f"Target dir: {target_dir}")
               
               os.makedirs(target_dir, exist_ok=True)
@@ -120,8 +120,8 @@ jobs:
       - name: List saved files
         run: |
           echo "=== Files saved ==="
-          find pages -type f 2>/dev/null || echo "No pages folder yet"
-          ls -la pages/ 2>/dev/null || echo "No pages folder"
+          find docs -type f 2>/dev/null || echo "No docs folder yet"
+          ls -la docs/ 2>/dev/null || echo "No docs folder"
 
       - name: Commit and push changes
         run: |
@@ -129,7 +129,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout headless-cms || git checkout -b headless-cms
           git pull origin headless-cms --rebase
-          git add pages/
+          git add docs/
           git status
           git diff --staged --quiet || git commit -m "Update contents from webhook"
           git push origin headless-cms
@@ -139,4 +139,4 @@ jobs:
         run: |
           echo "=== Verifying files after push ==="
           git pull origin headless-cms
-          ls -la pages/
+          ls -la docs/
