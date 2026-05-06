@@ -27,6 +27,7 @@ jobs:
           API_URL: ${{ vars.NODIFY_API_URL }}
           CONTENTS: ${{ toJson(github.event.client_payload.contents) }}
         run: |
+          python3 << 'EOF'
           import json
           import os
           import subprocess
@@ -114,6 +115,7 @@ jobs:
               print(f"SAVED: {filepath}")
           
           print("=== END ===")
+          EOF
 
       - name: List saved files
         run: |
