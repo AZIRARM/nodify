@@ -1499,7 +1499,7 @@ async function loadPosts() {
     }
     
     try {
-        const response = await fetch('posts.json');
+        const response = await fetch('datas.json');
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
