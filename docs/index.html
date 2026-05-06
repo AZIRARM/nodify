@@ -1040,7 +1040,7 @@ a {
                 <li><a href="#features">Features</a></li>
                 <li><a href="#templates">Templates</a></li>
                 <li><a href="#blog">Blog</a></li>
-                <li><a href="https://azirarm.github.io/nodify-headless-cms" target="_blank">Docs</a></li>
+                <li><a href="./wiki.html">Docs</a></li>
             </ul>
         </nav>
         <div class="nav-buttons">
@@ -1499,7 +1499,7 @@ async function loadPosts() {
     }
     
     try {
-        const response = await fetch('js/posts.json');
+        const response = await fetch('posts.json');
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
