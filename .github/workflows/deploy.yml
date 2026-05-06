@@ -27,7 +27,6 @@ jobs:
           API_URL: ${{ vars.NODIFY_API_URL }}
           CONTENTS: ${{ toJson(github.event.client_payload.contents) }}
         run: |
-          python3 << 'EOF'
           import json
           import os
           import subprocess
@@ -115,7 +114,6 @@ jobs:
               print(f"SAVED: {filepath}")
           
           print("=== END ===")
-          EOF
 
       - name: List saved files
         run: |
@@ -128,7 +126,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout headless-cms || git checkout -b headless-cms
+          git stash
           git pull origin headless-cms --rebase
+          git stash pop || true
           git add docs/
           git status
           git diff --staged --quiet || git commit -m "Update contents from webhook"
