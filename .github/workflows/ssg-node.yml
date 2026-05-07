@@ -50,6 +50,14 @@ jobs:
               print("No node code")
               exit(0)
           
+          # Dossier racine = docs
+          base_dir = "docs"
+          if ROOT_FOLDER:
+              base_dir = os.path.join("docs", ROOT_FOLDER)
+          
+          print(f"Base directory: {base_dir}")
+          os.makedirs(base_dir, exist_ok=True)
+          
           def fetch_url(url):
               result = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
               return result.stdout
@@ -92,6 +100,7 @@ jobs:
                   final_name = content_code
               
               filepath = os.path.join(output_dir, final_name)
+              os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
               
               if isinstance(payload, (dict, list)):
                   with open(filepath, 'w', encoding='utf-8') as f:
@@ -125,7 +134,7 @@ jobs:
               except json.JSONDecodeError as e:
                   print(f"Error parsing contents: {e}")
           
-          def process_node(node_code, current_folder):
+          def process_node(node_code, current_dir):
               print(f"\n--- Processing node: {node_code} ---")
               
               url = f"{API_URL}/nodes/parent/{node_code}"
@@ -134,7 +143,7 @@ jobs:
               response = fetch_url(url)
               if not response or response == 'null' or response == '[]':
                   print(f"No child nodes found for {node_code}")
-                  fetch_node_contents(node_code, current_folder)
+                  fetch_node_contents(node_code, current_dir)
                   return
               
               try:
@@ -153,9 +162,9 @@ jobs:
                           continue
                       
                       if child_folder:
-                          target_dir = os.path.join(current_folder, child_folder)
+                          target_dir = os.path.join(current_dir, child_folder)
                       else:
-                          target_dir = os.path.join(current_folder, node_name)
+                          target_dir = os.path.join(current_dir, node_name)
                       
                       print(f"  Child node: {node_name} ({child_code}) -> folder: {target_dir}")
                       os.makedirs(target_dir, exist_ok=True)
@@ -165,12 +174,7 @@ jobs:
                       
               except json.JSONDecodeError as e:
                   print(f"Error parsing nodes: {e}")
-                  fetch_node_contents(node_code, current_folder)
-          
-          # Déterminer le dossier racine
-          base_dir = ROOT_FOLDER if ROOT_FOLDER else "docs"
-          print(f"Base directory: {base_dir}")
-          os.makedirs(base_dir, exist_ok=True)
+                  fetch_node_contents(node_code, current_dir)
           
           # Récupérer les contenus du nœud racine
           print(f"\nFetching root node contents...")
@@ -185,17 +189,14 @@ jobs:
       - name: List saved files
         run: |
           echo "=== Files saved ==="
-          find docs -type f 2>/dev/null || echo "No docs folder yet"
-          find . -type f -name "*.html" -o -name "*.json" -o -name "*.css" -o -name "*.js" 2>/dev/null | head -30
+          find docs -type f 2>/dev/null | head -50
+          echo "Total files in docs: $(find docs -type f 2>/dev/null | wc -l)"
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout headless-cms || git checkout -b headless-cms
-          git stash
-          git pull origin headless-cms --rebase
-          git stash pop || true
           git add docs/
           git status
           git diff --staged --quiet || git commit -m "Update nodes contents from webhook"
