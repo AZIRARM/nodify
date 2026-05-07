@@ -1,7 +1,7 @@
 name: Fetch and Process Contents
 on:
   repository_dispatch:
-    types: [deploy.success]
+    types: [ssg-content]
 
 permissions:
   contents: write
