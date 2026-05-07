@@ -16,7 +16,8 @@
   "FOLDER": "Diretório",
   "TRIGGER_URL": "URI do gatilho (webhook)",
   "TRIGGER_SECRET": "Segredo do gatilho",
-
+  "SSG": "Ativar geração de páginas estáticas",
+  
   "_NODES": "=== NÓS ===",
   "NODES": "Nós/Projetos",
   "NODES_VIEW": "Visualização de nós",
@@ -314,6 +315,7 @@
   "PUBLICATION_STATUS": "Estado de publicação",
   "NODE_PUBLICATION_HOSTORY": "Histórico de versões de nós publicados",
   "NO_PUBLICATION_HISTORY": "Nenhum histórico de publicação disponível",
+  "DEPLOY_TRIGGER_SUCCESS": "Publicação acionada com sucesso via webhook/trigger",
 
   "_NOTIFICATIONS": "=== NOTIFICAÇÕES ===",
   "NOTIFICATIONS": "Notificações",

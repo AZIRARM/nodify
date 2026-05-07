@@ -16,6 +16,7 @@
   "FOLDER": "Verzeichnis",
   "TRIGGER_URL": "Trigger-URI (Webhook)",
   "TRIGGER_SECRET": "Trigger-Geheimnis",
+  "SSG": "Statische Seitengenerierung aktivieren",
 
   "_NODES": "=== KNOTEN ===",
   "NODES": "Knoten/Projekte",
@@ -314,6 +315,7 @@
   "PUBLICATION_STATUS": "Veröffentlichungsstatus",
   "NODE_PUBLICATION_HOSTORY": "Versionsverlauf veröffentlichter Knoten",
   "NO_PUBLICATION_HISTORY": "Kein Veröffentlichungsverlauf verfügbar",
+  "DEPLOY_TRIGGER_SUCCESS": "Veröffentlichung erfolgreich über Webhook/Trigger ausgelöst",
 
   "_NOTIFICATIONS": "=== BENACHRICHTIGUNGEN ===",
   "NOTIFICATIONS": "Benachrichtigungen",

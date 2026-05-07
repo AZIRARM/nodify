@@ -195,11 +195,9 @@
     </div>
 
     <!-- SSG -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "SSG" | translate }}</mat-label>
-      <input matInput [(ngModel)]="node.ssg" [placeholder]="'SSG' | translate">
-      <mat-icon matSuffix>description</mat-icon>
-    </mat-form-field>
+    <mat-slide-toggle class="grid-item" [(ngModel)]="node.ssg">
+      {{ "SSG" | translate }} : {{ (node.ssg ? 'YES' : 'NO') | translate }}
+    </mat-slide-toggle>
   </div>
 </div>
 
