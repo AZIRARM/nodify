@@ -1,0 +1,54 @@
+.custom-card {
+            border-radius: 15px;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .custom-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .custom-card-header {
+            color: black;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .custom-card-body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+
+        .custom-card-footer {
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+
+        .custom-card img {
+            border-radius: 15px;
+        }
+
+ body {
+        padding-bottom: 80px; /* Ajustez la valeur selon l'espace désiré */
+    }
+
+    /* Style du footer avec un padding */
+    footer {
+        padding-top: 20px;  /* Espace en haut du footer */
+        padding-bottom: 20px; /* Espace en bas du footer */
+        background-color: #343a40;
+        color: white;
+    }
+
+.limited-width {
+    width: 75%;  
+    max-width: 75vw; 
+    margin: 0 auto;
+}
