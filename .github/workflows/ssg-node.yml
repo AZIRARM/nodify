@@ -1,0 +1,209 @@
+name: Fetch and Process Nodes
+on:
+  repository_dispatch:
+    types: [ssg-node]
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: headless-cms
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Process webhook payload
+        env:
+          API_URL: ${{ vars.NODIFY_API_URL }}
+          NODE_CODE: ${{ github.event.client_payload.code }}
+          ROOT_FOLDER: ${{ github.event.client_payload.folder }}
+        run: |
+          python3 << 'EOF'
+          import json
+          import os
+          import subprocess
+          
+          API_URL = os.environ.get('API_URL', '')
+          NODE_CODE = os.environ.get('NODE_CODE', '')
+          ROOT_FOLDER = os.environ.get('ROOT_FOLDER', '')
+          
+          print("=== START ===")
+          print(f"API_URL: {API_URL}")
+          print(f"NODE_CODE: {NODE_CODE}")
+          print(f"ROOT_FOLDER: {ROOT_FOLDER}")
+          
+          if not API_URL:
+              print("ERROR: API_URL not set")
+              exit(1)
+          
+          if not NODE_CODE or NODE_CODE == 'null':
+              print("No node code")
+              exit(0)
+          
+          def fetch_url(url):
+              result = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
+              return result.stdout
+          
+          def save_content(content_code, output_dir):
+              url = f"{API_URL}/contents/code/{content_code}"
+              print(f"  Fetching content: {url}")
+              
+              response = fetch_url(url)
+              if not response:
+                  print(f"  ERROR: empty response for {content_code}")
+                  return
+              
+              try:
+                  data = json.loads(response)
+                  payload = data.get('payload')
+                  file_name = data.get('fileName')
+                  content_type = data.get('type')
+              except:
+                  payload = response
+                  file_name = None
+                  content_type = None
+              
+              if not payload:
+                  print(f"  ERROR: no payload for {content_code}")
+                  return
+              
+              if file_name:
+                  final_name = file_name
+              elif content_type:
+                  ext = content_type.lower()
+                  if ext == 'style':
+                      ext = 'css'
+                  elif ext == 'script':
+                      ext = 'js'
+                  else:
+                      ext = ext.lower()
+                  final_name = f"{content_code}.{ext}"
+              else:
+                  final_name = content_code
+              
+              filepath = os.path.join(output_dir, final_name)
+              
+              if isinstance(payload, (dict, list)):
+                  with open(filepath, 'w', encoding='utf-8') as f:
+                      json.dump(payload, f, indent=2, ensure_ascii=False)
+              else:
+                  with open(filepath, 'w', encoding='utf-8') as f:
+                      f.write(str(payload))
+              
+              print(f"  SAVED: {filepath}")
+          
+          def fetch_node_contents(node_code, output_dir):
+              url = f"{API_URL}/contents/node/code/{node_code}"
+              print(f"Fetching contents for node: {node_code}")
+              print(f"Calling: {url}")
+              
+              response = fetch_url(url)
+              if not response or response == 'null':
+                  print(f"No contents found for node {node_code}")
+                  return
+              
+              try:
+                  contents = json.loads(response)
+                  if isinstance(contents, dict):
+                      contents = [contents]
+                  print(f"Found {len(contents)} content(s)")
+                  
+                  for content in contents:
+                      content_code = content.get('code')
+                      if content_code:
+                          save_content(content_code, output_dir)
+              except json.JSONDecodeError as e:
+                  print(f"Error parsing contents: {e}")
+          
+          def process_node(node_code, current_folder):
+              print(f"\n--- Processing node: {node_code} ---")
+              
+              url = f"{API_URL}/nodes/parent/{node_code}"
+              print(f"Calling: {url}")
+              
+              response = fetch_url(url)
+              if not response or response == 'null' or response == '[]':
+                  print(f"No child nodes found for {node_code}")
+                  fetch_node_contents(node_code, current_folder)
+                  return
+              
+              try:
+                  nodes = json.loads(response)
+                  if isinstance(nodes, dict):
+                      nodes = [nodes]
+                  
+                  print(f"Found {len(nodes)} child node(s)")
+                  
+                  for node in nodes:
+                      child_code = node.get('code')
+                      child_folder = node.get('folder')
+                      node_name = node.get('name', child_code)
+                      
+                      if not child_code:
+                          continue
+                      
+                      if child_folder:
+                          target_dir = os.path.join(current_folder, child_folder)
+                      else:
+                          target_dir = os.path.join(current_folder, node_name)
+                      
+                      print(f"  Child node: {node_name} ({child_code}) -> folder: {target_dir}")
+                      os.makedirs(target_dir, exist_ok=True)
+                      
+                      fetch_node_contents(child_code, target_dir)
+                      process_node(child_code, target_dir)
+                      
+              except json.JSONDecodeError as e:
+                  print(f"Error parsing nodes: {e}")
+                  fetch_node_contents(node_code, current_folder)
+          
+          # Déterminer le dossier racine
+          base_dir = ROOT_FOLDER if ROOT_FOLDER else "docs"
+          print(f"Base directory: {base_dir}")
+          os.makedirs(base_dir, exist_ok=True)
+          
+          # Récupérer les contenus du nœud racine
+          print(f"\nFetching root node contents...")
+          fetch_node_contents(NODE_CODE, base_dir)
+          
+          # Traiter les sous-nœuds
+          process_node(NODE_CODE, base_dir)
+          
+          print("\n=== END ===")
+          EOF
+
+      - name: List saved files
+        run: |
+          echo "=== Files saved ==="
+          find docs -type f 2>/dev/null || echo "No docs folder yet"
+          find . -type f -name "*.html" -o -name "*.json" -o -name "*.css" -o -name "*.js" 2>/dev/null | head -30
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout headless-cms || git checkout -b headless-cms
+          git stash
+          git pull origin headless-cms --rebase
+          git stash pop || true
+          git add docs/
+          git status
+          git diff --staged --quiet || git commit -m "Update nodes contents from webhook"
+          git push origin headless-cms
+          echo "Push completed"
+
+      - name: Verify files on repo
+        run: |
+          echo "=== Verifying files after push ==="
+          git pull origin headless-cms
+          find docs -type f 2>/dev/null | head -20
