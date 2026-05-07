@@ -74,7 +74,7 @@ public class FeedbackHandler {
 
     public Mono<Boolean> delete(UUID uuid) {
         return feedbackRepository.deleteById(uuid)
-                .map(unused -> Boolean.TRUE)
+                .thenReturn(Boolean.TRUE)
                 .onErrorReturn(Boolean.FALSE);
     }
 
