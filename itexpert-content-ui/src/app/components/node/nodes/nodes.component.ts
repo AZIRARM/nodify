@@ -310,9 +310,10 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
-                  event_type: "deploy.success",
+                  event_type: "ssg-node",
                   client_payload: {
                     code: node.code,
+                    folder: node.folder,
                     timestamp: new Date().toISOString()
                   }
                 })

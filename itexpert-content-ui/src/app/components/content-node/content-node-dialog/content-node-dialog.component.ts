@@ -224,11 +224,12 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
-                  event_type: "deploy.success",
+                  event_type: "ssg-content",
                   client_payload: {
                     contents: [
                       {
                         code: content.code,
+                        folder: content.folder,
                         type: content.type,
                         timestamp: new Date().toISOString()
                       }
