@@ -314,6 +314,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
                   client_payload: {
                     code: node.code,
                     folder: node.folder,
+                    ssg: node.ssg,
                     timestamp: new Date().toISOString()
                   }
                 })

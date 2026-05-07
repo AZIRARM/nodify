@@ -70,6 +70,10 @@ public class ContentNode implements Serializable, Cloneable {
 
     private String fileName;
 
+    private boolean ssg;
+
+    private Object payload;
+
     public ContentNode clone() throws CloneNotSupportedException {
         return (ContentNode) super.clone();
     }

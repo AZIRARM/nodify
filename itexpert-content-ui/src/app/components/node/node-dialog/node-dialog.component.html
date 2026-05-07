@@ -193,6 +193,13 @@
         <mat-icon matSuffix>folder</mat-icon>
       </mat-form-field>
     </div>
+
+    <!-- SSG -->
+    <mat-form-field appearance="outline" class="grid-item">
+      <mat-label>{{ "SSG" | translate }}</mat-label>
+      <input matInput [(ngModel)]="node.ssg" [placeholder]="'SSG' | translate">
+      <mat-icon matSuffix>description</mat-icon>
+    </mat-form-field>
   </div>
 </div>
 

@@ -64,4 +64,6 @@ export class ContentNode {
   public folder: string;
 
   public fileName: string;
+
+  public ssg: boolean;
 }

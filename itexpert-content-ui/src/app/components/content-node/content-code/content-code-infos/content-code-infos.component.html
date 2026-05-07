@@ -64,6 +64,13 @@
       <mat-icon matSuffix>description</mat-icon>
     </mat-form-field>
 
+    <!-- SSG -->
+    <mat-form-field appearance="outline" class="grid-item">
+      <mat-label>{{ "SSG" | translate }}</mat-label>
+      <input matInput [(ngModel)]="contentNode.ssg" [placeholder]="'SSG' | translate">
+      <mat-icon matSuffix>description</mat-icon>
+    </mat-form-field>
+
   </div>
 
   <!-- Message de validation du slug -->

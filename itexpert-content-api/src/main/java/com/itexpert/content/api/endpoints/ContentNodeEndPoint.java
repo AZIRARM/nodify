@@ -30,27 +30,29 @@ public class ContentNodeEndPoint {
     @Operation(summary = "Retrieve all content nodes by node code")
     @GetMapping(value = "/node/code/{code}")
     public Flux<Object> findAllByNodeCode(@PathVariable String code,
-                                          @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
-                                          @RequestParam(required = false) String translation,
-                                          @RequestParam(required = false) boolean fillValues,
-                                          @RequestParam(required = false) boolean payloadOnly) {
+            @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
+            @RequestParam(required = false) String translation,
+            @RequestParam(required = false) boolean fillValues,
+            @RequestParam(required = false) boolean payloadOnly,
+            @RequestParam(required = false) boolean withFiles) {
 
         String cacheKey = "node:code:" + code + ":" + status + ":" + translation + ":" + fillValues + ":" + payloadOnly;
 
-        return contentNodeHandler.findAllByNodeCode(code, status, translation, fillValues)
+        return contentNodeHandler.findAllByNodeCode(code, status, translation, fillValues, withFiles)
                 .map(view -> payloadOnly ? view.getPayload() : view);
     }
 
     @Operation(summary = "Retrieve a content node by its unique code")
     @GetMapping(value = "/code/{code}")
     public Mono<ResponseEntity<Object>> findByCode(@PathVariable String code,
-                                                   @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
-                                                   @RequestParam(required = false) String translation,
-                                                   @RequestParam(required = false) boolean payloadOnly) {
+            @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
+            @RequestParam(required = false) String translation,
+            @RequestParam(required = false) boolean payloadOnly,
+            @RequestParam(required = false) boolean withFiles) {
 
         String cacheKey = "content:code:" + code + ":" + status + ":" + translation + ":" + payloadOnly;
 
-        return contentNodeHandler.findByCodeAndStatus(code, status, translation)
+        return contentNodeHandler.findByCodeAndStatus(code, status, translation, withFiles)
                 .map(view -> payloadOnly ? view.getPayload() : view)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -59,13 +61,14 @@ public class ContentNodeEndPoint {
     @Operation(summary = "Retrieve a content node by its unique slug")
     @GetMapping(value = "/{slug}")
     public Mono<ResponseEntity<Object>> findBySlug(@PathVariable String slug,
-                                                   @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
-                                                   @RequestParam(required = false) String translation,
-                                                   @RequestParam(required = false) boolean payloadOnly) {
+            @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status,
+            @RequestParam(required = false) String translation,
+            @RequestParam(required = false) boolean payloadOnly,
+            @RequestParam(required = false) boolean withFiles) {
 
         String cacheKey = "content:slug:" + slug + ":" + status + ":" + translation + ":" + payloadOnly;
 
-        return contentNodeHandler.findBySlugAndStatus(slug, status, translation)
+        return contentNodeHandler.findBySlugAndStatus(slug, status, translation, withFiles)
                 .map(view -> payloadOnly ? view.getPayload() : view)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -74,8 +77,7 @@ public class ContentNodeEndPoint {
     @GetMapping(value = "/code/{code}/file")
     public Mono<ResponseEntity<byte[]>> getContentAsFileDataFromCode(
             @PathVariable String code,
-            @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status
-    ) {
+            @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
         String cacheKey = "file:" + code + ":" + status;
 
         return contentNodeHandler.findResourceByCode(code, status)
@@ -89,7 +91,7 @@ public class ContentNodeEndPoint {
                         bytes = Base64.getDecoder().decode(contentFile.getData());
                     }
                     return ResponseEntity.ok()
-                                .contentLength(contentFile.getSize())
+                            .contentLength(contentFile.getSize())
                             .contentType(MediaType.APPLICATION_OCTET_STREAM)
                             .header("Content-Disposition", "attachment; filename=\"" + contentFile.getName() + "\"")
                             .body(bytes);
@@ -100,8 +102,7 @@ public class ContentNodeEndPoint {
     @GetMapping(value = "/{slug}/file")
     public Mono<ResponseEntity<byte[]>> getContentAsFileDataFromSlug(
             @PathVariable String slug,
-            @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status
-    ) {
+            @RequestParam(required = false, defaultValue = "PUBLISHED") StatusEnum status) {
         String cacheKey = "file:slug:" + slug + ":" + status;
 
         return contentNodeHandler.findResourceBySlug(slug, status)
