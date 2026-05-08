@@ -65,6 +65,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
 
   private hideTimer: any;
+  private websocketSubscription: any = null;
   dialogRef!: MatDialogRef<ValidationDialogComponent>;
 
   ngOnInit() {
@@ -82,6 +83,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.hideTimer) {
       clearTimeout(this.hideTimer);
+    }
+    if (this.websocketSubscription) {
+      this.websocketSubscription.unsubscribe();
     }
   }
 
@@ -129,7 +133,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     if (!this.authenticationService.isAuthenticated()) return;
 
-    this.notificationService
+    if (this.websocketSubscription) {
+      this.websocketSubscription.unsubscribe();
+    }
+
+    this.websocketSubscription = this.notificationService
       .connectWebSocket(this.authenticationService.getAccessToken())
       .subscribe({
 

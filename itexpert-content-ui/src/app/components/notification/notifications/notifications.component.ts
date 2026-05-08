@@ -4,7 +4,8 @@ import {
   ViewChild,
   inject,
   signal,
-  DestroyRef
+  DestroyRef,
+  OnDestroy
 } from '@angular/core';
 
 import { MatTableDataSource } from "@angular/material/table";
@@ -27,7 +28,7 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrls: ['./notifications.component.css'],
   standalone: false
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent implements OnInit, OnDestroy{
 
   private notificationService = inject(NotificationService);
   private userAccessService = inject(UserAccessService);
@@ -67,9 +68,17 @@ export class NotificationsComponent implements OnInit {
   filterType = signal('all');
   searchText = signal('');
 
+  private websocketSubscription: any = null;
+
   ngOnInit() {
     this.user.set(this.userAccessService.getCurrentUser());
     this.loadNotifications();
+  }
+
+  ngOnDestroy() {
+    if (this.websocketSubscription) {
+      this.websocketSubscription.unsubscribe();
+    }
   }
 
   loadNotifications() {
@@ -78,7 +87,11 @@ export class NotificationsComponent implements OnInit {
       return;
     }
 
-    this.notificationService.connectWebSocket(
+    if (this.websocketSubscription) {
+      this.websocketSubscription.unsubscribe();
+    }
+
+    this.websocketSubscription = this.notificationService.connectWebSocket(
       this.authenticationService.getAccessToken(),
       this.pageIndex(),
       this.pageSize()

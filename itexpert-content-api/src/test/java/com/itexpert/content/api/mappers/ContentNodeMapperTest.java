@@ -122,7 +122,7 @@ class ContentNodeMapperTest {
     }
 
     @Test
-    void shouldIgnoreSsg() {
+    void shouldNotIgnoreSsg() {
         ContentNode source = new ContentNode();
         source.setSsg(true);
         source.setType(ContentTypeEnum.HTML);
@@ -131,7 +131,7 @@ class ContentNodeMapperTest {
         com.itexpert.content.lib.models.ContentNode result = mapper.fromEntity(source);
 
         assertThat(result).isNotNull();
-        assertThat(result.isSsg()).isFalse();
+        assertThat(result.isSsg()).isTrue();
     }
 
     @Test

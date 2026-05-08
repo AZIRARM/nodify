@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
@@ -15,7 +15,7 @@ import { ContentNodeService } from 'src/app/services/ContentNodeService';
   styleUrls: ['./release-locks.component.css'],
   standalone: false
 })
-export class ReleaseLocksComponent implements OnInit {
+export class ReleaseLocksComponent implements OnInit, OnDestroy {
   private translate = inject(TranslateService);
   private toast = inject(ToastrService);
   private loggerService = inject(LoggerService);
@@ -30,13 +30,24 @@ export class ReleaseLocksComponent implements OnInit {
   dataSource = new MatTableDataSource<any>([]);
 
   locksList = signal<any[]>([]);
+  private locksSubscription: any = null;
 
   ngOnInit(): void {
     this.loadLocks();
   }
 
+  ngOnDestroy(): void {
+    if (this.locksSubscription) {
+      this.locksSubscription.unsubscribe();
+    }
+  }
+
   loadLocks(): void {
-    this.lockService.handleAllLocks().subscribe({
+    if (this.locksSubscription) {
+      this.locksSubscription.unsubscribe();
+    }
+
+    this.locksSubscription = this.lockService.handleAllLocks().subscribe({
       next: (locks: any) => {
         let data: any[] = [];
         if (Array.isArray(locks)) {
