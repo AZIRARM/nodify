@@ -72,91 +72,86 @@ jobs:
               
               print(f"  SAVED: {filepath}")
           
-          def fetch_node_contents(node_code, output_dir):
-              # Utiliser payloadOnly=false pour avoir les métadonnées
-              url = f"{API_URL}/contents/node/code/{node_code}?fillValues=true&withFiles=true"
-              print(f"Fetching contents for node: {node_code}")
-              print(f"Calling: {url}")
+          def process_node(node_code, output_dir):
+              print(f"\n=== Processing node: {node_code} ===")
+              print(f"Output directory: {output_dir}")
+              
+              # 1. Récupérer les contenus du nœud
+              url = f"{API_URL}/contents/node/code/{node_code}?fillValues=true&payloadOnly=true&withFiles=true"
+              print(f"Fetching contents: {url}")
               
               response = fetch_url(url)
               if not response or response == 'null':
                   print(f"No contents found")
-                  return
-              
-              try:
-                  contents = json.loads(response)
-                  if not isinstance(contents, list):
-                      contents = [contents]
-                  
-                  print(f"Found {len(contents)} content(s)")
-                  
-                  for item in contents:
-                      if not isinstance(item, dict):
-                          print(f"  SKIP: not a dict")
-                          continue
+              else:
+                  try:
+                      contents = json.loads(response)
+                      if not isinstance(contents, list):
+                          contents = [contents]
                       
-                      # Vérifier ssg
-                      ssg = item.get('ssg', True)
-                      if ssg is False or ssg == 'false':
-                          print(f"  SKIP: {item.get('code', 'unknown')} (ssg=false)")
-                          continue
+                      print(f"Found {len(contents)} content(s)")
                       
-                      content_type = item.get('type', '')
-                      payload = item.get('payload')
-                      file_name = item.get('fileName')
-                      code = item.get('code', '')
-                      
-                      if not payload:
-                          print(f"  SKIP: no payload for {code}")
-                          continue
-                      
-                      # Gestion des fichiers binaires (FILE, PICTURE)
-                      if content_type in ['FILE', 'PICTURE'] and isinstance(payload, str):
-                          try:
-                              file_data = base64.b64decode(payload)
-                              filename = file_name if file_name else f"{code}.bin"
-                              filepath = os.path.join(output_dir, filename)
-                              os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
-                              with open(filepath, 'wb') as f:
-                                  f.write(file_data)
-                              print(f"  SAVED FILE: {filepath}")
-                          except Exception as e:
-                              print(f"  ERROR decoding: {e}")
-                          continue
-                      
-                      # Déterminer le nom du fichier
-                      if file_name:
-                          filename = file_name
-                      else:
-                          ext = content_type.lower()
-                          if ext == 'style':
-                              ext = 'css'
-                          elif ext == 'script':
-                              ext = 'js'
+                      for item in contents:
+                          if isinstance(item, dict):
+                              ssg = item.get('ssg', True)
+                              if ssg is False or ssg == 'false':
+                                  print(f"  SKIP: {item.get('code', 'unknown')} (ssg=false)")
+                                  continue
+                              
+                              content_type = item.get('type', '')
+                              payload = item.get('payload')
+                              file_name = item.get('fileName')
+                              code = item.get('code', '')
+                              
+                              if not payload:
+                                  print(f"  SKIP: no payload for {code}")
+                                  continue
+                              
+                              # Fichiers binaires
+                              if content_type in ['FILE', 'PICTURE'] and isinstance(payload, str):
+                                  try:
+                                      file_data = base64.b64decode(payload)
+                                      filename = file_name if file_name else f"{code}.bin"
+                                      filepath = os.path.join(output_dir, filename)
+                                      os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
+                                      with open(filepath, 'wb') as f:
+                                          f.write(file_data)
+                                      print(f"  SAVED FILE: {filepath}")
+                                  except Exception as e:
+                                      print(f"  ERROR decoding: {e}")
+                                  continue
+                              
+                              # Nom du fichier
+                              if file_name:
+                                  filename = file_name
+                              else:
+                                  ext = content_type.lower()
+                                  if ext == 'style':
+                                      ext = 'css'
+                                  elif ext == 'script':
+                                      ext = 'js'
+                                  else:
+                                      ext = ext.lower()
+                                  filename = f"{code}.{ext}"
+                              
+                              save_content(payload, output_dir, filename)
                           else:
-                              ext = ext.lower()
-                          filename = f"{code}.{ext}"
-                      
-                      save_content(payload, output_dir, filename)
-                      
-              except json.JSONDecodeError as e:
-                  print(f"Error parsing contents: {e}")
-          
-          def process_node(node_code, current_dir):
-              print(f"\n--- Processing node: {node_code} ---")
+                              print(f"  SKIP: not a dict")
+                  except json.JSONDecodeError as e:
+                      print(f"Error parsing contents: {e}")
               
+              # 2. Récupérer les sous-nœuds
               url = f"{API_URL}/nodes/parent/{node_code}"
-              print(f"Calling: {url}")
+              print(f"Fetching child nodes: {url}")
               
               response = fetch_url(url)
               if not response or response == 'null' or response == '[]':
                   print(f"No child nodes found")
-                  fetch_node_contents(node_code, current_dir)
                   return
               
               try:
                   nodes = json.loads(response)
-                  if isinstance(nodes, dict):
+                  if not isinstance(nodes, list):
                       nodes = [nodes]
                   
                   print(f"Found {len(nodes)} child node(s)")
@@ -174,19 +169,15 @@ jobs:
                           print(f"  SKIP node: {node_name} ({child_code}) (ssg=false)")
                           continue
                       
-                      target_dir = os.path.join(current_dir, child_folder if child_folder else node_name)
+                      target_dir = os.path.join(output_dir, child_folder if child_folder else node_name)
                       print(f"  Child node: {node_name} ({child_code}) -> folder: {target_dir}")
-                      os.makedirs(target_dir, exist_ok=True)
                       
-                      fetch_node_contents(child_code, target_dir)
                       process_node(child_code, target_dir)
                       
               except json.JSONDecodeError as e:
                   print(f"Error parsing nodes: {e}")
-                  fetch_node_contents(node_code, current_dir)
           
-          print(f"\n=== Processing root node ===")
-          fetch_node_contents(NODE_CODE, base_dir)
+          # Démarrer le traitement
           process_node(NODE_CODE, base_dir)
           
           print("\n=== SSG GENERATION COMPLETED ===")
