@@ -45,7 +45,7 @@ class NodeMapperTest {
         assertThat(result.getContents()).isNull();
         assertThat(result.getTriggerSecret()).isNull();
         assertThat(result.getTriggerUrl()).isNull();
-        assertThat(result.isSsg()).isFalse();
+        assertThat(result.isSsg()).isTrue();
     }
 
     @Test
@@ -101,7 +101,7 @@ class NodeMapperTest {
         Node source = new Node();
         source.setTriggerSecret("my-secret");
         source.setTriggerUrl("my-url");
-        source.setSsg(true);
+        source.setSsg(false);
         source.setCreationDate(123L);
         source.setModificationDate(456L);
 

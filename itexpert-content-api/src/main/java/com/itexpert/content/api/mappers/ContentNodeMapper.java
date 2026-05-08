@@ -15,7 +15,6 @@ public interface ContentNodeMapper {
             @Mapping(target = "payload", source = ".", qualifiedByName = "mapPayload"),
             @Mapping(target = "triggerUrl", ignore = true),
             @Mapping(target = "triggerSecret", ignore = true),
-            @Mapping(target = "ssg", ignore = true)
     })
     ContentNode fromEntity(com.itexpert.content.lib.entities.ContentNode source);
 
