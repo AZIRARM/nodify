@@ -59,6 +59,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   private lockRefreshSub?: Subscription;
   private subscriptions: Subscription[] = [];
   private lockSubscriptions: Subscription[] = [];
+  private dataSubscriptions: Subscription[] = [];
 
   private translate = inject(TranslateService);
   private toast = inject(ToastrService);
@@ -88,6 +89,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.lockSubscriptions.forEach(sub => sub.unsubscribe());
+    this.dataSubscriptions.forEach(sub => sub.unsubscribe());
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
@@ -540,15 +542,23 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       });
     this.subscriptions.push(dialogSub);
   }
-
   fetchDatas(contents: any) {
-    this.fetchLocksFactory(contents);
+    this.dataSubscriptions.forEach(sub => sub.unsubscribe());
+    this.dataSubscriptions = [];
+
+    this.fetchDatasFactory(contents);
+
+    if (this.lockRefreshSub) {
+      this.lockRefreshSub.unsubscribe();
+    }
     this.lockRefreshSub = interval(10000).subscribe(() => {
-      this.fetchLocksFactory(contents);
+      this.dataSubscriptions.forEach(sub => sub.unsubscribe());
+      this.dataSubscriptions = [];
+      this.fetchDatasFactory(contents);
     });
   }
 
-  fetchLocksFactory(contents: any[]) {
+  fetchDatasFactory(contents: any[]) {
     contents.forEach((content: any) => {
       const dataSub = this.dataService
         .countDatasByContentNodeCodeWebSocket(content.code)
@@ -565,9 +575,10 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
             this.mapDatas.set(currentMap);
           }
         });
-      this.subscriptions.push(dataSub);
+      this.dataSubscriptions.push(dataSub);
     });
   }
+
 
   haveDatas(code: string): boolean {
     return this.mapDatas().get(code) ?? false;
