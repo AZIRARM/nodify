@@ -75,6 +75,8 @@ public class Node implements Serializable, Cloneable {
 
         private String folder;
 
+        private boolean ssg;
+
         public Node clone() throws CloneNotSupportedException {
                 return (Node) super.clone();
         }

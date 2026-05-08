@@ -48,5 +48,7 @@ export class Node {
   public triggerSecret: string;
 
   public folder: string;
+
+  public ssg: boolean;
 }
 

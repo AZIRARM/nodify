@@ -64,6 +64,13 @@
       <mat-icon matSuffix>description</mat-icon>
     </mat-form-field>
 
+    <!-- SSG -->
+    <div class="grid-item">
+      <mat-slide-toggle [(ngModel)]="contentNode.ssg">
+        {{ "SSG" | translate }} : {{ (contentNode.ssg ? 'YES' : 'NO') | translate }}
+      </mat-slide-toggle>
+    </div>
+
   </div>
 
   <!-- Message de validation du slug -->

@@ -16,6 +16,7 @@
   "FOLDER": "المجلد",
   "TRIGGER_URL": "URI المشغل (webhook)",
   "TRIGGER_SECRET": "سر المشغل",
+  "SSG": "تفعيل توليد الصفحات الثابتة",
 
   "_NODES": "=== العقد ===",
   "NODES": "العقد/المشاريع",
@@ -314,6 +315,7 @@
   "PUBLICATION_STATUS": "حالة النشر",
   "NODE_PUBLICATION_HOSTORY": "سجل إصدارات العقد المنشورة",
   "NO_PUBLICATION_HISTORY": "لا يتوفر سجل نشر",
+  "DEPLOY_TRIGGER_SUCCESS": "تم نشر المحتوى بنجاح عبر webhook/trigger",
 
   "_NOTIFICATIONS": "=== الإشعارات ===",
   "NOTIFICATIONS": "إشعارات",

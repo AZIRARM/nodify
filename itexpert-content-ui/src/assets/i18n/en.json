@@ -16,6 +16,7 @@
   "FOLDER": "Folder",
   "TRIGGER_URL": "Trigger URI (webhook)",
   "TRIGGER_SECRET": "Trigger secret",
+  "SSG": "Enable static page generation",
 
   "_NODES": "=== NODES ===",
   "NODES": "Nodes/Projects",
@@ -317,6 +318,7 @@
   "PUBLICATION_STATUS": "Publication Status",
   "NODE_PUBLICATION_HOSTORY": "Published Node Version History",
   "NO_PUBLICATION_HISTORY": "No publication history available",
+  "DEPLOY_TRIGGER_SUCCESS": "Publication triggered successfully via webhook/trigger",
 
   "_NOTIFICATIONS": "=== NOTIFICATIONS ===",
   "NOTIFICATIONS": "Notifications",

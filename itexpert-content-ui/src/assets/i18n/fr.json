@@ -1,5 +1,6 @@
 {
   "APP_NAME": "Nodify",
+  
   "_GENERAL": "=== GÉNÉRAL ===",
   "WORKSPACE": "Espace de travail",
   "PROJECTS": "Vos Projets",
@@ -15,6 +16,8 @@
   "FOLDER": "Répertoire",
   "TRIGGER_URL": "URI du trigger(webhook)",
   "TRIGGER_SECRET": "Le secret du trigger",
+  "SSG": "Activer la génération de pages statiques",
+
   "_NODES": "=== NOEUDS ===",
   "NODES": "Noeuds/Projets",
   "NODES_VIEW": "Visaulisation des noeuds",
@@ -45,6 +48,7 @@
   "NODE_PUBLICATION_HISTORY": "Historique des noeuds",
   "NO_NODES": "Pas de noeuds",
   "BACK_TO_PARENT_NODE": "Retour au noeud parent",
+
   "_CONTENT": "=== CONTENU ===",
   "CONTENTS": "Contenus",
   "CONTENT": "Contenu",
@@ -66,6 +70,7 @@
   "GENERATE_AI_CONTENT": "Générer le contenu avec l'IA",
   "CONTENT_PUBLICATION_HISTORY": "Historique des contenus",
   "NO_CONTENTS": "Pas de contenus",
+
   "_ACTIONS": "=== ACTIONS ===",
   "ACTIONS": "Actions",
   "ADD": "Ajouter",
@@ -92,6 +97,7 @@
   "UNLOCK": "Dévéroullez",
   "MARK_AS_READ": "Marquer comme lu(s)",
   "MARK_ALL_AS_READ": "Tout marquer comme lu",
+
   "_FORMS": "=== FORMULAIRES ===",
   "NEED_REQUIRED_FIELDS": "Merci de renseigner tous les champs obligatoires (*)",
   "ERROR_FIELDS": "Certains champs ne correspondent pas à ce qui attendu",
@@ -114,6 +120,7 @@
   "ADD_URL": "Ajouter une URL",
   "NO_URLS": "Aucune URL définie",
   "TARGET_URL": "URL de redirection",
+
   "_MESSAGES": "=== MESSAGES ===",
   "MESSAGE": "Message",
   "MESSAGES": "Messages",
@@ -137,6 +144,7 @@
   "LOCK_RELEASED_SUCCESS": "Déblocage réussi",
   "LOCK_RELEASED_FAIL": "Échec du déblocage",
   "LOAD_USER_FAILED": "Votre compte existe mais n’est pas encore activé. Vérifiez votre email ou contactez l’administrateur.",
+  
   "_DIALOGS": "=== BOÎTES DE DIALOGUE ===",
   "DELETE_TITLE": "Suppression",
   "DELETE_MESSAGE": "Confirmez vous la suppression de cette donnée ?",
@@ -166,6 +174,7 @@
   "PROPAGATION_MAX_HISTORY_MESSAGE": "Souhaitez vous forcer la propagation aux sous noeuds et à leurs contenus ?",
   "MARK_ALL_READ_CONFIRM_TITLE": "Tout marquer comme lu",
   "MARK_ALL_READ_CONFIRM_MESSAGE": "Voulez-vous marquer toutes les notifications comme lues ?",
+  
   "_LANGUAGES": "=== LANGUES ===",
   "LANGUAGE": "Langue",
   "LANGUAGES": "Langues",
@@ -186,6 +195,7 @@
   "Deutsch": "Allemand",
   "Português": "Portugais",
   "عربي": "Arabe",
+ 
   "_USERS": "=== UTILISATEURS ===",
   "USER": "Utilisateur",
   "USERS": "Utilisateurs",
@@ -201,6 +211,7 @@
   "USER_NOT_FOUND": "Utilisateur non trouvé",
   "CHANGE_USER_CODE_MESSAGE": "L'email du nouvel utilisateur est peut-être déjà utilisé",
   "ADMIN_USER_INFO": "Les informations d'un administrateur ne peuvent pas être modifiées",
+ 
   "_AUTH": "=== AUTHENTIFICATION ===",
   "LOGIN": "Connexion",
   "EMAIL": "Email",
@@ -216,9 +227,11 @@
   "MY_ACCOUNT": "Mon compte",
   "UNAUTHORIZED_TITLE": "Accès non autorisé",
   "UNAUTHORIZED_MESSAGE": "Vous n'avez pas les permissions nécessaires pour accéder à cette page.",
+  
   "_SUBSCRIBE": "=== AUTHENTIFICATION ===",
   "SUBSCRIBE": "Inscription",
   "REGISTER": "S'enregistrer",
+  
   "_ROLES": "=== RÔLES ===",
   "ROLE": "Rôle",
   "ROLES": "Rôles",
@@ -230,6 +243,7 @@
   "USER_ROLE": "Rôle utilisateur",
   "USER_ROLES": "Rôles utilisateurs",
   "USERS_ROLES": "Rôles utilisateurs",
+ 
   "_RULES": "=== RÈGLES ===",
   "RULE": "Règle",
   "RULES": "Règles",
@@ -243,6 +257,7 @@
   "ACTIVATE_RULE": "Activer la règle",
   "RULE_C0NDITION_ERROR_TITLE": "Erreur de saisie",
   "RULE_C0NDITION_ERROR_MESSAGE": "Erreur dans la saisie d'une ou plusieurs conditions",
+  
   "_CONDITIONS": "=== CONDITIONS ===",
   "ADD_CONDITION": "Ajouter une nouvelle condition",
   "OPERATOR": "Opérateur",
@@ -260,11 +275,13 @@
   "DATE": "Date",
   "BEHAVIOR": "Comportement",
   "BEHAVIOR_HELP": "Le comportement indique l'activation ou la désactivation du contenu/noeud courant selon les conditions",
+  
   "_TRANSLATIONS": "=== TRADUCTIONS ===",
   "TRANSLATION": "Traduction",
   "TRANSLATIONS": "Traductions",
   "TRANSLATIONS_LIST": "Liste des traductions",
   "ADD_TRANSLATION": "Ajouter une traduction",
+  
   "_PLUGINS": "=== PLUGINS ===",
   "PLUGIN": "Plugin",
   "PLUGINS": "Plugins",
@@ -285,6 +302,7 @@
   "NO_DELETED_PLUGINS": "Aucun plugin supprimé",
   "ACTIVATE_DELETE_PLUGIN_TITLE": "Activation du plugin supprimé",
   "ACTIVATE_DELETE_PLUGIN_MESSAGE": "Voulez vous ré-activer ce plugin ?",
+  
   "_VERSIONS": "=== VERSIONS ===",
   "VERSION": "Version",
   "MAX_VERSIONS": "Nombre maximum de versions",
@@ -297,6 +315,8 @@
   "PUBLICATION_STATUS": "Statut de publication",
   "NODE_PUBLICATION_HOSTORY": "Historique des versions des noeuds publiés",
   "NO_PUBLICATION_HISTORY": "Aucun historique de publication disponible",
+  "DEPLOY_TRIGGER_SUCCESS": "Publication déclenchée avec succès via webhook/trigger",
+
   "_NOTIFICATIONS": "=== NOTIFICATIONS ===",
   "NOTIFICATIONS": "Notifications",
   "NOTIFICATIONS_SUBTITLE": "Gérez vos alertes et mises à jour",
@@ -313,6 +333,7 @@
   "TOTAL": "Total",
   "ALREADY_READ": "Lue(s)",
   "NOT_READ": "Non lue(s)",
+  
   "_FEEDBACKS": "=== AVIS ===",
   "FEEDBACKS": "Avis",
   "FEEDBACK": "Retour",
@@ -321,12 +342,14 @@
   "FEEDBACK_NOT_VERIFIED": "Avis non vérifiés",
   "VERIFIED": "Vérifié(s)",
   "NOT_VERIFIED": "Non vérifié(s)",
+  
   "_STATISTICS": "=== STATISTIQUES ===",
   "ANALYTICS": "Statistiques",
   "CHARTS": "Analytics",
   "DISPLAYED": "Affichages",
   "CLICKED": "Clics",
   "NO_CHART_DATA": "Aucune donnée à afficher",
+  
   "_PARAMETERS": "=== PARAMÈTRES ===",
   "PARAMETERS": "Paramètres",
   "SETTINGS": "Paramètres",
@@ -347,12 +370,14 @@
   "START_DATE": "Date de début",
   "END_DATE": "Date de fin",
   "REACTIVATION": "Réactivation",
+  
   "_IA": "=== INTELLIGENCE ARTIFICIELLE ===",
   "AI_OPTION": "IA",
   "ENTER_PROMPT": "Entrer une requête précise et concise",
   "GENERATE_WITH_IA": "Générer avec l'IA",
   "CLEAN_UP_WITH_IA": "Nettoyer/Refactoriser avec l'IA",
   "ACTIVATE_AI": "Activer l'IA",
+  
   "_ENVIRONMENTS": "=== ENVIRONNEMENTS ===",
   "ENVIRONMENTS": "Environnements",
   "ENVIRONMENTS_MANAGEMENT": "Gestion des environnements",
@@ -360,6 +385,7 @@
   "EXPORT_AS_NEW_NODE": "Exporter comme nouveau noeud/projet",
   "EXPORT_AS_NEW_CONTENT_NODE": "Exporter comme nouveau contenu",
   "EXPORT_TO_UPDATE": "Exporter pour mise à jour",
+  
   "_LOCKS": "=== VERROUS ===",
   "LOCKED": "Verrouillé",
   "LOCKED_RESOURCES": "Ressources verrouillées",
@@ -373,6 +399,7 @@
   "RESOURCE_RELEASED": "La ressource a été relâchée après inactivité",
   "RESOURCE_LOCKED_BY_OTHER": "La ressource a été verrouillée par un autre utilisateur",
   "ADMIN_LOCK_MANAGEMENT": "Gestion des ressources verrouillées",
+  
   "_FILE_TYPES": "=== TYPES DE FICHIERS ===",
   "FILE": "Fichier",
   "CHOOSE_FILE": "Choisir un fichier",
@@ -387,22 +414,26 @@
   "API": "API (Bibliothèque)",
   "PAGE": "Page web",
   "CHOOSE_IMAGE": "Choisir une image",
+  
   "_FAVORITES": "=== FAVORIS ===",
   "FAVORITE": "Favori",
   "_PROPAGATION": "=== PROPAGATION ===",
   "PROPAGATION_MAX_HISTORY_TOOLTIP": "Forcer la propagation aux sous noeuds et à leurs contenus",
   "PROPAGATION_MAX_HISTORY_SUCCESS": "La propagation aux sous noeuds et à leurs contenus a bien été effectuée",
   "PROPAGATION_MAX_HISTORY_ERROR": "Erreur lors de la propagation aux sous noeuds et à leurs contenus",
+  
   "_HELP": "=== AIDE ===",
   "HELP": "Aide",
   "BOT.HEADER_TITLE": "Nodify Assistant",
   "BOT.INPUT_PLACEHOLDER": "Posez votre question...",
   "BOT.TOGGLE_MESSAGE": "Je suis là si vous avez besoin d'aide",
   "BOT.ERROR_MESSAGE": "Je suis désolé, une erreur est survenue",
+  
   "_DELETION": "=== SUPPRESSION ===",
   "DELETION": "Suppression",
   "DELETION_DEFINITIVELY": "Suppression définitive",
   "NO_DELETED_ITEMS": "Pas d'éléments en cours de suppression",
+  
   "_MISCELLANEOUS": "=== DIVERS ===",
   "ALL": "Tout",
   "DATA": "Données",

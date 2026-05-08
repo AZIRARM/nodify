@@ -16,6 +16,7 @@
   "FOLDER": "Directorio",
   "TRIGGER_URL": "URI del desencadenador (webhook)",
   "TRIGGER_SECRET": "Secreto del desencadenador",
+  "SSG": "Activar generación de páginas estáticas",
 
   "_NODES": "=== NODOS ===",
   "NODES": "Nodos/Proyectos",
@@ -314,6 +315,7 @@
   "PUBLICATION_STATUS": "Estado de publicación",
   "NODE_PUBLICATION_HOSTORY": "Historial de versiones de nodos publicados",
   "NO_PUBLICATION_HISTORY": "No hay historial de publicaciones disponible",
+  "DEPLOY_TRIGGER_SUCCESS": "Publicación activada con éxito vía webhook/trigger",
 
   "_NOTIFICATIONS": "=== NOTIFICACIONES ===",
   "NOTIFICATIONS": "Notificaciones",

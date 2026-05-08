@@ -58,6 +58,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   private lockRefreshSub?: Subscription;
   private subscriptions: Subscription[] = [];
+  private lockSubscriptions: Subscription[] = [];
 
   private translate = inject(TranslateService);
   private toast = inject(ToastrService);
@@ -86,17 +87,21 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.lockSubscriptions.forEach(sub => sub.unsubscribe());
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
   }
 
   private initLocks(contents: ContentNode[]) {
+    this.lockSubscriptions.forEach(sub => sub.unsubscribe());
+    this.lockSubscriptions = [];
+
     contents.forEach((content: ContentNode) => {
       const lockSub = this.lockService.getLockInfoSocket(content.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
         content.lockInfo = lockInfo;
       });
-      this.subscriptions.push(lockSub);
+      this.lockSubscriptions.push(lockSub);
     });
   }
 
@@ -572,7 +577,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     element.favorite = !element.favorite;
     this.save(element);
   }
-
 
   copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(() => {

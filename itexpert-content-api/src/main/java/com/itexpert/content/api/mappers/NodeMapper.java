@@ -6,14 +6,17 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface NodeMapper {
-    @Mapping(source="creationDate", target = "creationDate")
-    @Mapping(source="modificationDate", target = "modificationDate")
-    @Mapping(source="values", target = "values")
+    @Mapping(source = "creationDate", target = "creationDate")
+    @Mapping(source = "modificationDate", target = "modificationDate")
+    @Mapping(source = "values", target = "values")
     @Mapping(target = "contents", ignore = true)
+    @Mapping(target = "triggerSecret", ignore = true)
+    @Mapping(target = "triggerUrl", ignore = true)
+    @Mapping(target = "ssg", ignore = true)
     Node fromEntity(com.itexpert.content.lib.entities.Node source);
 
-    @Mapping(source="creationDate", target = "creationDate")
-    @Mapping(source="modificationDate", target = "modificationDate")
-    @Mapping(source="values", target = "values")
+    @Mapping(source = "creationDate", target = "creationDate")
+    @Mapping(source = "modificationDate", target = "modificationDate")
+    @Mapping(source = "values", target = "values")
     com.itexpert.content.lib.entities.Node fromModel(Node source);
 }

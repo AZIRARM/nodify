@@ -193,6 +193,11 @@
         <mat-icon matSuffix>folder</mat-icon>
       </mat-form-field>
     </div>
+
+    <!-- SSG -->
+    <mat-slide-toggle class="grid-item" [(ngModel)]="node.ssg">
+      {{ "SSG" | translate }} : {{ (node.ssg ? 'YES' : 'NO') | translate }}
+    </mat-slide-toggle>
   </div>
 </div>
 
