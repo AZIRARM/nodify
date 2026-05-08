@@ -73,7 +73,8 @@ jobs:
               print(f"  SAVED: {filepath}")
           
           def fetch_node_contents(node_code, output_dir):
-              url = f"{API_URL}/contents/node/code/{node_code}?fillValues=true&payloadOnly=true&withFiles=true"
+              # Utiliser payloadOnly=false pour avoir les métadonnées
+              url = f"{API_URL}/contents/node/code/{node_code}?fillValues=true&withFiles=true"
               print(f"Fetching contents for node: {node_code}")
               print(f"Calling: {url}")
               
@@ -90,49 +91,54 @@ jobs:
                   print(f"Found {len(contents)} content(s)")
                   
                   for item in contents:
-                      if isinstance(item, dict):
-                          ssg = item.get('ssg', True)
-                          if ssg is False or ssg == 'false':
-                              print(f"  SKIP: {item.get('code', 'unknown')} (ssg=false)")
-                              continue
-                          
-                          content_type = item.get('type', '')
-                          payload = item.get('payload')
-                          file_name = item.get('fileName')
-                          code = item.get('code', '')
-                          
-                          if not payload:
-                              print(f"  SKIP: no payload for {code}")
-                              continue
-                          
-                          if content_type in ['FILE', 'PICTURE'] and isinstance(payload, str):
-                              try:
-                                  file_data = base64.b64decode(payload)
-                                  filename = file_name if file_name else f"{code}.bin"
-                                  filepath = os.path.join(output_dir, filename)
-                                  os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
-                                  with open(filepath, 'wb') as f:
-                                      f.write(file_data)
-                                  print(f"  SAVED FILE: {filepath}")
-                              except Exception as e:
-                                  print(f"  ERROR decoding: {e}")
-                              continue
-                          
-                          if file_name:
-                              filename = file_name
-                          else:
-                              ext = content_type.lower()
-                              if ext == 'style':
-                                  ext = 'css'
-                              elif ext == 'script':
-                                  ext = 'js'
-                              else:
-                                  ext = ext.lower()
-                              filename = f"{code}.{ext}"
-                          
-                          save_content(payload, output_dir, filename)
+                      if not isinstance(item, dict):
+                          print(f"  SKIP: not a dict")
+                          continue
+                      
+                      # Vérifier ssg
+                      ssg = item.get('ssg', True)
+                      if ssg is False or ssg == 'false':
+                          print(f"  SKIP: {item.get('code', 'unknown')} (ssg=false)")
+                          continue
+                      
+                      content_type = item.get('type', '')
+                      payload = item.get('payload')
+                      file_name = item.get('fileName')
+                      code = item.get('code', '')
+                      
+                      if not payload:
+                          print(f"  SKIP: no payload for {code}")
+                          continue
+                      
+                      # Gestion des fichiers binaires (FILE, PICTURE)
+                      if content_type in ['FILE', 'PICTURE'] and isinstance(payload, str):
+                          try:
+                              file_data = base64.b64decode(payload)
+                              filename = file_name if file_name else f"{code}.bin"
+                              filepath = os.path.join(output_dir, filename)
+                              os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
+                              with open(filepath, 'wb') as f:
+                                  f.write(file_data)
+                              print(f"  SAVED FILE: {filepath}")
+                          except Exception as e:
+                              print(f"  ERROR decoding: {e}")
+                          continue
+                      
+                      # Déterminer le nom du fichier
+                      if file_name:
+                          filename = file_name
                       else:
-                          print(f"  SKIP: raw content not supported without metadata")
+                          ext = content_type.lower()
+                          if ext == 'style':
+                              ext = 'css'
+                          elif ext == 'script':
+                              ext = 'js'
+                          else:
+                              ext = ext.lower()
+                          filename = f"{code}.{ext}"
+                      
+                      save_content(payload, output_dir, filename)
+                      
               except json.JSONDecodeError as e:
                   print(f"Error parsing contents: {e}")
           
