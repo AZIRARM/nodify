@@ -1,0 +1,109 @@
+[
+  {
+    "title": "Sunset on the French Riviera",
+    "date": "2024-03-15",
+    "location": "Nice, France",
+    "gps": "43.7101728, 7.2619532",
+    "photos": "coucher_soleil.png",
+    "short_description": "When the Mediterranean Sea ignites with warm colors, capturing the essence of the French Riviera.",
+    "author": "Sophie Martin",
+    "content": "A series of shots taken during golden hour in Nice, where the Mediterranean light reveals its full magic.",
+    "categories": "landscape;sunset;sea;france"
+  },
+  null,
+  {
+    "title": "Mysteries of the Black Forest",
+    "date": "2024-03-10",
+    "location": "Black Forest, Germany",
+    "gps": "48.2973742, 8.2278901",
+    "photos": "foret_mystere.png",
+    "short_description": "In the heart of the legendary Black Forest, between morning mist and piercing sun rays.",
+    "author": "Thomas Dubois",
+    "content": "A photographic exploration of the enchanting landscapes of the German Black Forest.",
+    "categories": "forest;nature;germany;mist"
+  },
+  null,
+  {
+    "title": "Northern Lights in Lapland",
+    "date": "2024-02-28",
+    "location": "Lapland, Finland",
+    "gps": "68.932307, 26.404833",
+    "photos": "orores.png",
+    "short_description": "When the sky lights up with green, purple, and silver in an unforgettable celestial ballet.",
+    "author": "Marie Leroy",
+    "content": "Capturing the Northern Lights requires patience and passion. Here are my best shots from Lapland.",
+    "categories": "aurora;night;winter;finland;stars"
+  },
+  null,
+  {
+    "title": "Magical Canals of Venice",
+    "date": "2024-02-20",
+    "location": "Venice, Italy",
+    "gps": "45.4408474, 12.3155151",
+    "photos": "venise.png",
+    "short_description": "Venice in the morning mist, between centuries-old bridges and silent gondolas.",
+    "author": "Luca Bianchi",
+    "content": "Venice reveals its true soul at the first light of day, when tourists are still sleeping.",
+    "categories": "city;canals;italy;architecture;romantic"
+  },
+  null,
+  {
+    "title": "Sahara Desert Under the Stars",
+    "date": "2024-02-05",
+    "location": "Merzouga, Morocco",
+    "gps": "31.099337, -4.012695",
+    "photos": "voie_lactee.png",
+    "short_description": "A night in the desert, between infinite dunes and a starry celestial vault.",
+    "author": "Karim Benali",
+    "content": "The vastness of the Sahara offers an exceptional playground for night photography.",
+    "categories": "desert;night;stars;morocco;landscape"
+  },
+  null,
+  {
+    "title": "Japanese Cherry Blossoms",
+    "date": "2024-04-01",
+    "location": "Kyoto, Japan",
+    "gps": "35.0116363, 135.7680294",
+    "photos": "printemps.png",
+    "short_description": "Sakura season in Kyoto, when the city transforms into a pink and white dream.",
+    "author": "Yuki Tanaka",
+    "content": "Hanami (flower viewing) is a centuries-old Japanese tradition that celebrates the ephemeral beauty of cherry blossoms.",
+    "categories": "spring;cherry;japan;flowers;culture"
+  },
+  null,
+  {
+    "title": "New York City Lights",
+    "date": "2024-03-25",
+    "location": "New York, USA",
+    "gps": "40.712776, -74.005974",
+    "photos": "ville_nuit.png",
+    "short_description": "The city that never sleeps, captured in its most electric and vibrant moments.",
+    "author": "John Smith",
+    "content": "From Times Square to Brooklyn Bridge, New York offers endless photographic opportunities at night.",
+    "categories": "city;night;usa;architecture;urban"
+  },
+  null,
+  {
+    "title": "Icelandic Waterfalls",
+    "date": "2024-03-18",
+    "location": "Iceland",
+    "gps": "64.963051, -19.020835",
+    "photos": "cascades.png",
+    "short_description": "The raw power and ethereal beauty of Iceland's majestic waterfalls.",
+    "author": "Elena Volkov",
+    "content": "Gullfoss, Skógafoss, and Seljalandsfoss - each waterfall in Iceland has its own unique character and beauty.",
+    "categories": "waterfall;iceland;nature;landscape;adventure"
+  },
+  null,
+  {
+    "title": "African Wildlife Safari",
+    "date": "2024-02-15",
+    "location": "Serengeti, Tanzania",
+    "gps": "-2.333333, 34.833333",
+    "photos": "safari.png",
+    "short_description": "The circle of life captured in the heart of the Serengeti during the great migration.",
+    "author": "David Okonkwo",
+    "content": "Witnessing the great wildebeest migration is one of nature's most spectacular events. Here are my best wildlife shots.",
+    "categories": "wildlife;africa;safari;animals;nature"
+  }
+]

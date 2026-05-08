@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PixelVoyage - Blog Photo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #2c3e50;
+    --secondary: #34495e;
+    --accent: #e67e22;
+    --accent-light: #f39c12;
+    --light: #ecf0f1;
+    --dark: #1a1a2e;
+    --gray: #7f8c8d;
+    --white: #ffffff;
+    --shadow: 0 10px 30px rgba(0,0,0,0.1);
+    --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: var(--dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Curseur personnalisé */
+.cursor-follower {
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    transform: translate(-50%, -50%);
+}
+
+/* Navigation */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    color: var(--primary);
+}
+
+.logo i {
+    color: var(--accent);
+    margin-right: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--dark);
+    font-weight: 500;
+    transition: var(--transition);
+    position: relative;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: var(--transition);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+}
+
+.menu-toggle {
+    display: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Hero Section */
+.hero {
+    height: 100vh;
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.hero-content {
+    animation: fadeInUp 1s ease;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+}
+
+.hero-scroll {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
+    cursor: pointer;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+/* Category Filters */
+.category-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: white;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Posts Grid */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+/* Post Card */
+.post-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    cursor: pointer;
+    animation: fadeInUp 0.6s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+}
+
+.post-cover {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+.post-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.post-card:hover .post-cover img {
+    transform: scale(1.1);
+}
+
+.post-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    opacity: 0;
+    transition: var(--transition);
+    display: flex;
+    align-items: flex-end;
+    padding: 1rem;
+}
+
+.post-card:hover .post-overlay {
+    opacity: 1;
+}
+
+.photo-count {
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.post-info {
+    padding: 1.5rem;
+}
+
+.post-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+}
+
+.post-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 1rem;
+}
+
+.post-meta i {
+    margin-right: 0.25rem;
+}
+
+.post-description {
+    color: var(--secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.author-avatar {
+    width: 30px;
+    height: 30px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    z-index: 2000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    max-width: 1200px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-family: 'Playfair Display', serif;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-close:hover {
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.modal-gallery img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-gallery img:hover {
+    transform: scale(1.05);
+}
+
+.modal-details {
+    background: var(--light);
+    padding: 1.5rem;
+    border-radius: 10px;
+}
+
+/* Lightbox */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.98);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox.active {
+    display: flex;
+}
+
+.lightbox-img {
+    max-width: 90%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+    position: absolute;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover {
+    background: var(--accent);
+}
+
+.lightbox-close {
+    top: 20px;
+    right: 20px;
+}
+
+.lightbox-prev {
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.lightbox-next {
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.lightbox-caption {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: white;
+    background: rgba(0,0,0,0.7);
+    padding: 1rem;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    text-align: center;
+    padding: 4rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+/* Footer */
+.footer {
+    background: var(--dark);
+    color: white;
+    padding: 3rem 2rem 1rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.footer-info h3 {
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 0.5rem;
+}
+
+.footer-social a {
+    color: white;
+    font-size: 1.5rem;
+    margin-left: 1rem;
+    transition: var(--transition);
+}
+
+.footer-social a:hover {
+    color: var(--accent);
+    transform: translateY(-3px);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+    }
+    
+    .nav-links.active {
+        display: flex;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    .container {
+        padding: 2rem 1rem;
+    }
+    
+    .modal-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+  </style>
+</head>
+<body>
+    <div class="cursor-follower"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-camera-retro"></i>
+                <span>PixelVoyage</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active" data-category="all">Tous</a>
+            </div>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Explorer le monde<br>à travers mon objectif</h1>
+            <p class="hero-subtitle">Un voyage photographique entre lumière, émotions et instants précieux</p>
+            <div class="hero-scroll">
+                <span>Découvrir</span>
+                <i class="fas fa-arrow-down"></i>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="category-filters">
+            <button class="filter-btn active" data-category="all">Tous les articles</button>
+        </div>
+
+        <div class="posts-grid" id="postsGrid">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Chargement des merveilles...</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close">&times;</button>
+        <button class="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+        <img class="lightbox-img" src="" alt="">
+        <div class="lightbox-caption"></div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <h3>PixelVoyage</h3>
+                <p>Capturer l'essence du monde, un clic à la fois</p>
+            </div>
+            <div class="footer-social">
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-flickr"></i></a>
+                <a href="#"><i class="fab fa-500px"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 PixelVoyage - Tous droits réservés</p>
+        </div>
+    </footer>
+
+    <script>
+      // État global
+let allPosts = [];
+let currentCategories = new Set();
+let currentLightboxImages = [];
+let currentLightboxIndex = 0;
+
+// Attendre que le DOM soit chargé
+document.addEventListener('DOMContentLoaded', () => {
+    initCursor();
+    loadPosts();
+    initEventListeners();
+});
+
+// Curseur personnalisé
+function initCursor() {
+    const cursor = document.querySelector('.cursor-follower');
+    if (!cursor) return;
+    
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+    });
+    
+    document.addEventListener('mouseenter', () => {
+        cursor.style.opacity = '1';
+    });
+    
+    document.addEventListener('mouseleave', () => {
+        cursor.style.opacity = '0';
+    });
+}
+
+// Charger les posts depuis datas.json
+async function loadPosts() {
+    try {
+        const response = await fetch('datas.json');
+        if (!response.ok) throw new Error('Failed to load data');
+        allPosts = await response.json();
+        
+        // Extraire toutes les catégories uniques à partir du champ "categories"
+        allPosts.forEach(post => {
+            if (post.categories) {
+                const categoriesList = post.categories.split(';').map(cat => cat.trim().toLowerCase());
+                categoriesList.forEach(category => {
+                    currentCategories.add(category);
+                });
+            }
+        });
+        
+        // Trier les catégories alphabétiquement
+        const sortedCategories = Array.from(currentCategories).sort();
+        
+        updateCategoryFilters(sortedCategories);
+        displayPosts(allPosts);
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('postsGrid').innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading photos. Make sure datas.json exists and is valid.</p>
+            </div>
+        `;
+    }
+}
+
+// Mettre à jour les filtres de catégories
+function updateCategoryFilters(categories) {
+    const filtersContainer = document.querySelector('.category-filters');
+    const navLinksContainer = document.querySelector('.nav-links');
+    
+    // Vider les conteneurs existants (garder le bouton "All")
+    const existingBtns = filtersContainer.querySelectorAll('.filter-btn:not([data-category="all"])');
+    existingBtns.forEach(btn => btn.remove());
+    
+    const existingLinks = navLinksContainer.querySelectorAll('.nav-link:not([data-category="all"])');
+    existingLinks.forEach(link => link.remove());
+    
+    // Ajouter les catégories
+    categories.forEach(category => {
+        // Capitaliser la première lettre pour l'affichage
+        const displayName = category.charAt(0).toUpperCase() + category.slice(1);
+        
+        // Filtres principaux
+        const filterBtn = document.createElement('button');
+        filterBtn.className = 'filter-btn';
+        filterBtn.textContent = displayName;
+        filterBtn.dataset.category = category;
+        filterBtn.addEventListener('click', () => filterPosts(category));
+        filtersContainer.appendChild(filterBtn);
+        
+        // Navigation
+        const navLink = document.createElement('a');
+        navLink.href = '#';
+        navLink.className = 'nav-link';
+        navLink.textContent = displayName;
+        navLink.dataset.category = category;
+        navLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            filterPosts(category);
+            // Fermer le menu mobile si ouvert
+            const navLinks = document.querySelector('.nav-links');
+            if (navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+            }
+        });
+        navLinksContainer.appendChild(navLink);
+    });
+}
+
+// Filtrer les posts par catégorie
+function filterPosts(category) {
+    // Mettre à jour l'état actif des boutons
+    document.querySelectorAll('.filter-btn, .nav-link').forEach(btn => {
+        btn.classList.remove('active');
+        if ((category === 'all' && btn.dataset.category === 'all') || 
+            (btn.dataset.category === category)) {
+            btn.classList.add('active');
+        }
+    });
+    
+    let filteredPosts;
+    if (category === 'all') {
+        filteredPosts = allPosts;
+    } else {
+        filteredPosts = allPosts.filter(post => {
+            if (!post.categories) return false;
+            const postCategories = post.categories.split(';').map(cat => cat.trim().toLowerCase());
+            return postCategories.includes(category.toLowerCase());
+        });
+    }
+    
+    displayPosts(filteredPosts);
+    
+    // Scroll vers le haut
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Afficher les posts
+function displayPosts(posts) {
+    const grid = document.getElementById('postsGrid');
+    
+    if (posts.length === 0) {
+        grid.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-camera-slash"></i>
+                <p>No articles found in this category</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = posts.map((post, index) => {
+        const photos = post.photos ? post.photos.split(';').map(p => p.trim()) : [];
+        const coverPhoto = photos[0] || 'placeholder.jpg';
+        const dateFormatted = formatDate(post.date);
+        const authorInitial = post.author ? post.author.charAt(0).toUpperCase() : '?';
+        
+        // Récupérer les catégories pour les badges
+        const categories = post.categories ? post.categories.split(';').map(cat => cat.trim()) : [];
+        const categoryBadges = categories.slice(0, 2).map(cat => 
+            `<span class="post-category-badge">${cat}</span>`
+        ).join('');
+        
+        return `
+            <article class="post-card" data-post-index="${index}" data-original-index="${allPosts.findIndex(p => p === post)}">
+                <div class="post-cover">
+                    <img src="medias/${coverPhoto}" alt="${escapeHtml(post.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+not+found'">
+                    <div class="post-overlay">
+                        <span class="photo-count">
+                            <i class="fas fa-images"></i> ${photos.length} photo${photos.length > 1 ? 's' : ''}
+                        </span>
+                    </div>
+                </div>
+                <div class="post-info">
+                    <div class="post-categories">
+                        ${categoryBadges}
+                        ${categories.length > 2 ? `<span class="post-category-badge more">+${categories.length - 2}</span>` : ''}
+                    </div>
+                    <h2 class="post-title">${escapeHtml(post.title)}</h2>
+                    <div class="post-meta">
+                        <span><i class="far fa-calendar-alt"></i> ${dateFormatted}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(post.location)}</span>
+                        ${post.gps ? `<span><i class="fas fa-location-dot"></i> <a href="https://maps.google.com/?q=${post.gps}" target="_blank" class="gps-link">View on map</a></span>` : ''}
+                    </div>
+                    <p class="post-description">${escapeHtml(post.short_description || 'No description available')}</p>
+                    <div class="post-author">
+                        <div class="author-avatar">${authorInitial}</div>
+                        <span>${escapeHtml(post.author || 'Anonymous')}</span>
+                    </div>
+                </div>
+            </article>
+        `;
+    }).join('');
+    
+    // Ajouter les écouteurs d'événements pour les cartes
+    document.querySelectorAll('.post-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Éviter de déclencher si on clique sur le lien GPS
+            if (e.target.classList && e.target.classList.contains('gps-link')) return;
+            const originalIndex = parseInt(card.dataset.originalIndex);
+            if (!isNaN(originalIndex) && allPosts[originalIndex]) {
+                openPostModal(allPosts[originalIndex]);
+            }
+        });
+    });
+}
+
+// Ouvrir le modal du post
+function openPostModal(post) {
+    const photos = post.photos ? post.photos.split(';').map(p => p.trim()) : [];
+    const dateFormatted = formatDate(post.date);
+    const categories = post.categories ? post.categories.split(';').map(cat => cat.trim()) : [];
+    const categoryBadges = categories.map(cat => 
+        `<span class="modal-category-badge">${cat}</span>`
+    ).join('');
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>${escapeHtml(post.title)}</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-gallery">
+                    ${photos.map(photo => `
+                        <img src="medias/${photo}" alt="${post.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+not+found'">
+                    `).join('')}
+                </div>
+                <div class="modal-details">
+                    <div class="modal-details-section">
+                        <h3><i class="fas fa-info-circle"></i> Details</h3>
+                        <p><strong><i class="far fa-calendar-alt"></i> Date:</strong> ${dateFormatted}</p>
+                        <p><strong><i class="fas fa-map-marker-alt"></i> Location:</strong> ${escapeHtml(post.location)}</p>
+                        ${post.gps ? `<p><strong><i class="fas fa-location-dot"></i> GPS:</strong> <a href="https://maps.google.com/?q=${post.gps}" target="_blank">${post.gps}</a></p>` : ''}
+                        <p><strong><i class="fas fa-user"></i> Author:</strong> ${escapeHtml(post.author || 'Anonymous')}</p>
+                        <p><strong><i class="fas fa-tags"></i> Categories:</strong></p>
+                        <div class="modal-categories">
+                            ${categoryBadges}
+                        </div>
+                    </div>
+                    <div class="modal-details-section">
+                        <h3><i class="fas fa-file-alt"></i> Description</h3>
+                        <p>${escapeHtml(post.short_description || 'No description available')}</p>
+                        ${post.content ? `<p><strong>Full story:</strong> ${escapeHtml(post.content)}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+    
+    // Fermer le modal
+    const closeBtn = modal.querySelector('.modal-close');
+    closeBtn.addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    // Fermer en cliquant en dehors
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    
+    // Ajouter la lightbox aux images
+    const galleryImages = modal.querySelectorAll('.modal-gallery img');
+    galleryImages.forEach((img, idx) => {
+        img.addEventListener('click', () => {
+            openLightbox(photos, idx);
+        });
+    });
+}
+
+// Ouvrir la lightbox
+function openLightbox(images, startIndex) {
+    currentLightboxImages = images;
+    currentLightboxIndex = startIndex;
+    
+    const lightbox = document.getElementById('lightbox');
+    updateLightboxImage();
+    lightbox.classList.add('active');
+}
+
+function updateLightboxImage() {
+    const lightboxImg = document.querySelector('.lightbox-img');
+    const caption = document.querySelector('.lightbox-caption');
+    const currentImage = currentLightboxImages[currentLightboxIndex];
+    
+    if (lightboxImg && currentImage) {
+        lightboxImg.src = `medias/${currentImage}`;
+        caption.textContent = `Image ${currentLightboxIndex + 1} of ${currentLightboxImages.length}`;
+    }
+}
+
+// Initialiser les événements
+function initEventListeners() {
+    // Lightbox
+    const lightbox = document.getElementById('lightbox');
+    const closeLightbox = document.querySelector('.lightbox-close');
+    const prevBtn = document.querySelector('.lightbox-prev');
+    const nextBtn = document.querySelector('.lightbox-next');
+    
+    if (closeLightbox) {
+        closeLightbox.addEventListener('click', () => {
+            lightbox.classList.remove('active');
+        });
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxImages.length) % currentLightboxImages.length;
+            updateLightboxImage();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxImages.length;
+            updateLightboxImage();
+        });
+    }
+    
+    if (lightbox) {
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.classList.remove('active');
+            }
+        });
+    }
+    
+    // Menu mobile
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    }
+    
+    // Scroll hero
+    const heroScroll = document.querySelector('.hero-scroll');
+    if (heroScroll) {
+        heroScroll.addEventListener('click', () => {
+            document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    
+    // Keyboard navigation lightbox
+    document.addEventListener('keydown', (e) => {
+        if (lightbox && lightbox.classList.contains('active')) {
+            if (e.key === 'Escape') {
+                lightbox.classList.remove('active');
+            } else if (e.key === 'ArrowLeft') {
+                currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxImages.length) % currentLightboxImages.length;
+                updateLightboxImage();
+            } else if (e.key === 'ArrowRight') {
+                currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxImages.length;
+                updateLightboxImage();
+            }
+        }
+    });
+    
+    // Bouton "All" par défaut
+    const allBtn = document.querySelector('.filter-btn[data-category="all"]');
+    if (allBtn) {
+        allBtn.addEventListener('click', () => filterPosts('all'));
+    }
+    
+    const allLink = document.querySelector('.nav-link[data-category="all"]');
+    if (allLink) {
+        allLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            filterPosts('all');
+        });
+    }
+}
+
+// Utilitaires
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown date';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+    </script>
+</body>
+</html>
