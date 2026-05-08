@@ -9,7 +9,7 @@ function checkPosts(){
            if(post.title){
               $('#posts').append('<div class="container mt-5"><div class="custom-card"  style="margin-bottom: 50px;">'+ 
                   '<div class="custom-card-header">'+post.title+'</div>'+
-              '<img src="$value(BASE_URL)/contents/code/'+post.picture+'/file?status=PUBLISHED" class="card-img-top">'+
+              '<img src="$value(BASE_URL)/contents/code/'+post.picture+'/file" class="card-img-top">'+
               '<div class="custom-card-body">'+post.content+'</div></div></div>');
            }
        });

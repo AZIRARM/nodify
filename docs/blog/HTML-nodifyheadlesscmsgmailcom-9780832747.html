@@ -16,7 +16,7 @@ function checkPosts(){
            if(post.title){
               $('#posts').append('<div class="container mt-5"><div class="custom-card"  style="margin-bottom: 50px;">'+ 
                   '<div class="custom-card-header">'+post.title+'</div>'+
-              '<img src="$value(BASE_URL)/contents/code/'+post.picture+'/file?status=PUBLISHED" class="card-img-top">'+
+              '<img src="$value(BASE_URL)/contents/code/'+post.picture+'/file" class="card-img-top">'+
               '<div class="custom-card-body">'+post.content+'</div></div></div>');
            }
        });
@@ -118,7 +118,7 @@ window.addEventListener('load', function () {
 <header class="navbar navbar-dark bg-dark fixed-top">
     <div class="container-fluid text-center">
         <div class="d-flex justify-content-between align-items-center w-100">
-            <img src="$value(BASE_URL)/contents/code/PICTURE-nodifyheadlesscmsgmailcom-9168658581/file?status=PUBLISHED" alt="Logo" class="me-3" style="width: 5%;">
+            <img src="$value(BASE_URL)/contents/code/PICTURE-nodifyheadlesscmsgmailcom-9168658581/file" alt="Logo" class="me-3" style="width: 5%;">
             <h1 class="text-white mb-0 mx-auto">Un blog de photo</h1>
         </div>
         <p class="text-white mt-2">Chaque image raconte une histoire.</p>
@@ -126,7 +126,7 @@ window.addEventListener('load', function () {
 </header>
 
 <br>
-<img src="$value(BASE_URL)/contents/code/PICTURE-nodifyheadlesscmsgmailcom-4796791848/file?status=PUBLISHED" class="img-fluid">
+<img src="$value(BASE_URL)/contents/code/PICTURE-nodifyheadlesscmsgmailcom-4796791848/file" class="img-fluid">
 <div id="posts" name="posts" class="limited-width">
 </div>
 </div>
