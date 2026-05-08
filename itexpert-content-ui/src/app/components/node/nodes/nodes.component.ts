@@ -68,6 +68,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   private lockRefreshSub?: Subscription;
   private allNodes: Node[] = [];
   private subscriptions: Subscription[] = [];
+  private lockSubscriptions: Subscription[] = [];
 
   private translate = inject(TranslateService);
   private loggerService = inject(LoggerService);
@@ -102,17 +103,21 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.lockSubscriptions.forEach(sub => sub.unsubscribe());
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
   }
 
   private initLocks(nodes: Node[]) {
+    this.lockSubscriptions.forEach(sub => sub.unsubscribe());
+    this.lockSubscriptions = [];
+
     nodes.forEach((node: Node) => {
       const lockSub = this.lockService.getLockInfoSocket(node.code, this.authService.getAccessToken()).subscribe((lockInfo: any) => {
         node.lockInfo = lockInfo;
       });
-      this.subscriptions.push(lockSub);
+      this.lockSubscriptions.push(lockSub);
     });
   }
 
@@ -206,11 +211,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   update(node: Node) {
     this.dialogRef = this.dialog.open(NodeDialogComponent, {
-      data: node,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    }
+        data: node,
+        height: '80vh',
+        width: '80vw',
+        disableClose: true
+      }
     );
     const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
@@ -235,7 +240,6 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     ).subscribe((trad: string) => {
       this.loggerService.success(trad);
       this.init();
-
     });
     this.subscriptions.push(saveSub);
   }
@@ -248,11 +252,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     node.snapshot = true;
     this.dialogRef = this.dialog.open(NodeDialogComponent, {
-      data: node,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    }
+        data: node,
+        height: '80vh',
+        width: '80vw',
+        disableClose: true
+      }
     );
     const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
@@ -362,13 +366,13 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   contents(node: Node) {
     this.dialogRefContents = this.dialog.open(ContentNodeDialogComponent, {
-      data: node,
-      height: "calc(100%)",
-      width: "calc(100%)",
-      maxWidth: "100%",
-      maxHeight: "100%",
-      disableClose: true
-    }
+        data: node,
+        height: "calc(100%)",
+        width: "calc(100%)",
+        maxWidth: "100%",
+        maxHeight: "100%",
+        disableClose: true
+      }
     );
     const dialogSub = this.dialogRefContents.afterClosed()
       .subscribe(result => {
@@ -404,17 +408,17 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   deleteds() {
     this.dialogRefDeleteds = this.dialog.open(DeletedItemsDialogComponent, {
-      height: '80vh',
-      width: '80vw',
-      disableClose: true,
-      data: {
-        parentNode: this.parentNode(),
-        titleKey: 'DELETED_NODES',
-        icon: 'delete_sweep',
-        displayTypeColumn: true,
-        deleteService: this.nodeService
+        height: '80vh',
+        width: '80vw',
+        disableClose: true,
+        data: {
+          parentNode: this.parentNode(),
+          titleKey: 'DELETED_NODES',
+          icon: 'delete_sweep',
+          displayTypeColumn: true,
+          deleteService: this.nodeService
+        }
       }
-    }
     );
     const dialogSub = this.dialogRefDeleteds.afterClosed()
       .subscribe(() => {
@@ -640,11 +644,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   viewTreeNode(element: Node) {
     this.dialogRefTreeNode = this.dialog.open(NodesViewDialogComponent, {
-      height: '80vh',
-      width: '80vw',
-      disableClose: true,
-      data: element
-    }
+        height: '80vh',
+        width: '80vw',
+        disableClose: true,
+        data: element
+      }
     );
     const dialogSub = this.dialogRefTreeNode.afterClosed()
       .subscribe(() => {
