@@ -703,7 +703,7 @@ function initCursor() {
 // Charger les posts depuis datas.json
 async function loadPosts() {
     try {
-        const response = await fetch('datas.json');
+        const response = await fetch('./datas.json');
         if (!response.ok) throw new Error('Failed to load data');
         allPosts = await response.json();
         
