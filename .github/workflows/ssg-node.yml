@@ -1,4 +1,4 @@
-name: Fetch and Process Nodes
+name: SSG Node Generator
 on:
   repository_dispatch:
     types: [ssg-node]
@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  fetch:
+  generate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Process webhook payload
+      - name: Generate static site
         env:
           API_URL: ${{ vars.NODIFY_API_URL }}
           NODE_CODE: ${{ github.event.client_payload.code }}
@@ -33,13 +33,12 @@ jobs:
           import os
           import subprocess
           import base64
-          import re
           
           API_URL = os.environ.get('API_URL', '')
           NODE_CODE = os.environ.get('NODE_CODE', '')
           ROOT_FOLDER = os.environ.get('ROOT_FOLDER', '')
           
-          print("=== START SSG GENERATOR ===")
+          print("=== SSG NODE GENERATOR ===")
           print(f"API_URL: {API_URL}")
           print(f"NODE_CODE: {NODE_CODE}")
           print(f"ROOT_FOLDER: {ROOT_FOLDER}")
@@ -52,10 +51,7 @@ jobs:
               print("No node code")
               exit(0)
           
-          base_dir = "docs"
-          if ROOT_FOLDER:
-              base_dir = os.path.join("docs", ROOT_FOLDER)
-          
+          base_dir = os.path.join("docs", ROOT_FOLDER) if ROOT_FOLDER else "docs"
           print(f"Base directory: {base_dir}")
           os.makedirs(base_dir, exist_ok=True)
           
@@ -63,53 +59,13 @@ jobs:
               result = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
               return result.stdout
           
-          def detect_content_type(content):
-              if isinstance(content, dict):
-                  return 'json', content
-              
-              if not isinstance(content, str):
-                  return 'unknown', content
-              
-              content_stripped = content.strip()
-              
-              if content_stripped.startswith('<!DOCTYPE html>') or content_stripped.startswith('<html'):
-                  return 'html', content
-              if content_stripped.startswith('<'):
-                  return 'html', content
-              if content_stripped.startswith('function') or 'function' in content_stripped[:50]:
-                  return 'js', content
-              if 'window.addEventListener' in content_stripped:
-                  return 'js', content
-              if content_stripped.startswith('{') and content_stripped.endswith('}'):
-                  try:
-                      json.loads(content_stripped)
-                      return 'json', content
-                  except:
-                      pass
-              if '{' in content_stripped and '}' in content_stripped:
-                  return 'json', content
-              if content_stripped.startswith('.') or content_stripped.startswith('body') or 'css' in content_stripped[:100]:
-                  return 'css', content
-              
-              return 'unknown', content
+          def should_generate(item):
+              ssg = item.get('ssg')
+              if ssg is False or ssg == 'false':
+                  return False
+              return True
           
-          def save_content(content, output_dir, index, custom_name=None):
-              content_type, payload = detect_content_type(content)
-              
-              if custom_name:
-                  filename = custom_name
-              else:
-                  if content_type == 'html':
-                      filename = f"index.html" if index == 0 else f"page_{index}.html"
-                  elif content_type == 'css':
-                      filename = f"style_{index}.css"
-                  elif content_type == 'js':
-                      filename = f"script_{index}.js"
-                  elif content_type == 'json':
-                      filename = f"data_{index}.json"
-                  else:
-                      filename = f"content_{index}.txt"
-              
+          def save_content(payload, output_dir, filename):
               filepath = os.path.join(output_dir, filename)
               os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
               
@@ -120,8 +76,52 @@ jobs:
                   with open(filepath, 'w', encoding='utf-8') as f:
                       f.write(str(payload))
               
-              print(f"  SAVED: {filepath} (type: {content_type})")
-              return filename
+              print(f"  SAVED: {filepath}")
+          
+          def process_content(item, output_dir):
+              if not should_generate(item):
+                  print(f"  SKIP: {item.get('code', 'unknown')} (ssg=false)")
+                  return
+              
+              content_type = item.get('type', '')
+              payload = item.get('payload')
+              file_name = item.get('fileName')
+              
+              if not payload:
+                  print(f"  SKIP: no payload for {item.get('code', 'unknown')}")
+                  return
+              
+              # Déterminer le nom du fichier
+              if file_name:
+                  filename = file_name
+              elif content_type == 'HTML':
+                  filename = 'index.html'
+              elif content_type == 'STYLE':
+                  filename = 'style.css'
+              elif content_type == 'SCRIPT':
+                  filename = 'script.js'
+              elif content_type == 'JSON':
+                  filename = 'data.json'
+              elif content_type in ['FILE', 'PICTURE']:
+                  filename = file_name if file_name else f"{item.get('code', 'file')}.bin"
+              else:
+                  filename = f"{item.get('code', 'content')}.html"
+              
+              # Gérer les fichiers binaires (base64)
+              if content_type in ['FILE', 'PICTURE'] and isinstance(payload, str):
+                  try:
+                      file_data = base64.b64decode(payload)
+                      filepath = os.path.join(output_dir, filename)
+                      os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
+                      with open(filepath, 'wb') as f:
+                          f.write(file_data)
+                      print(f"  SAVED FILE: {filepath}")
+                      return
+                  except Exception as e:
+                      print(f"  ERROR decoding: {e}")
+                      return
+              
+              save_content(payload, output_dir, filename)
           
           def fetch_node_contents(node_code, output_dir):
               url = f"{API_URL}/contents/node/code/{node_code}?fillValues=true&payloadOnly=true&withFiles=true"
@@ -130,7 +130,7 @@ jobs:
               
               response = fetch_url(url)
               if not response or response == 'null':
-                  print(f"No contents found for node {node_code}")
+                  print(f"No contents found")
                   return
               
               try:
@@ -140,13 +140,8 @@ jobs:
                   
                   print(f"Found {len(contents)} content(s)")
                   
-                  for idx, content in enumerate(contents):
-                      # Vérifier si le contenu a un champ ssg=false
-                      if isinstance(content, dict) and content.get('ssg') == False:
-                          print(f"  SKIP: content {idx} (ssg=false)")
-                          continue
-                      
-                      save_content(content, output_dir, idx)
+                  for item in contents:
+                      process_content(item, output_dir)
                       
               except json.JSONDecodeError as e:
                   print(f"Error parsing contents: {e}")
@@ -159,7 +154,7 @@ jobs:
               
               response = fetch_url(url)
               if not response or response == 'null' or response == '[]':
-                  print(f"No child nodes found for {node_code}")
+                  print(f"No child nodes found")
                   fetch_node_contents(node_code, current_dir)
                   return
               
@@ -174,20 +169,15 @@ jobs:
                       child_code = node.get('code')
                       child_folder = node.get('folder')
                       node_name = node.get('name', child_code)
-                      node_ssg = node.get('ssg', True)
                       
                       if not child_code:
                           continue
                       
-                      if node_ssg is False or node_ssg == 'false':
+                      if not should_generate(node):
                           print(f"  SKIP node: {node_name} ({child_code}) (ssg=false)")
                           continue
                       
-                      if child_folder:
-                          target_dir = os.path.join(current_dir, child_folder)
-                      else:
-                          target_dir = os.path.join(current_dir, node_name)
-                      
+                      target_dir = os.path.join(current_dir, child_folder if child_folder else node_name)
                       print(f"  Child node: {node_name} ({child_code}) -> folder: {target_dir}")
                       os.makedirs(target_dir, exist_ok=True)
                       
@@ -198,33 +188,25 @@ jobs:
                   print(f"Error parsing nodes: {e}")
                   fetch_node_contents(node_code, current_dir)
           
-          print(f"\nFetching root node contents...")
+          print(f"\n=== Processing root node ===")
           fetch_node_contents(NODE_CODE, base_dir)
-          
           process_node(NODE_CODE, base_dir)
           
-          print("\n=== END SSG GENERATOR ===")
+          print("\n=== SSG GENERATION COMPLETED ===")
           EOF
 
-      - name: List saved files
+      - name: List generated files
         run: |
-          echo "=== Files saved ==="
+          echo "=== Generated files ==="
           find docs -type f 2>/dev/null | head -50
-          echo "Total files in docs: $(find docs -type f 2>/dev/null | wc -l)"
+          echo "Total: $(find docs -type f 2>/dev/null | wc -l) files"
 
-      - name: Commit and push changes
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout headless-cms || git checkout -b headless-cms
           git add docs/
-          git status
-          git diff --staged --quiet || git commit -m "Update nodes contents from webhook"
+          git diff --staged --quiet || git commit -m "SSG: update from node $NODE_CODE"
           git push origin headless-cms
           echo "Push completed"
-
-      - name: Verify files on repo
-        run: |
-          echo "=== Verifying files after push ==="
-          git pull origin headless-cms
-          find docs -type f 2>/dev/null | head -20
