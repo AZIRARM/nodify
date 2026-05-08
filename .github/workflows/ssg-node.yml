@@ -59,12 +59,6 @@ jobs:
               result = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
               return result.stdout
           
-          def should_generate(item):
-              ssg = item.get('ssg')
-              if ssg is False or ssg == 'false':
-                  return False
-              return True
-          
           def save_content(payload, output_dir, filename):
               filepath = os.path.join(output_dir, filename)
               os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
@@ -77,51 +71,6 @@ jobs:
                       f.write(str(payload))
               
               print(f"  SAVED: {filepath}")
-          
-          def process_content(item, output_dir):
-              if not should_generate(item):
-                  print(f"  SKIP: {item.get('code', 'unknown')} (ssg=false)")
-                  return
-              
-              content_type = item.get('type', '')
-              payload = item.get('payload')
-              file_name = item.get('fileName')
-              
-              if not payload:
-                  print(f"  SKIP: no payload for {item.get('code', 'unknown')}")
-                  return
-              
-              # Déterminer le nom du fichier
-              if file_name:
-                  filename = file_name
-              elif content_type == 'HTML':
-                  filename = 'index.html'
-              elif content_type == 'STYLE':
-                  filename = 'style.css'
-              elif content_type == 'SCRIPT':
-                  filename = 'script.js'
-              elif content_type == 'JSON':
-                  filename = 'data.json'
-              elif content_type in ['FILE', 'PICTURE']:
-                  filename = file_name if file_name else f"{item.get('code', 'file')}.bin"
-              else:
-                  filename = f"{item.get('code', 'content')}.html"
-              
-              # Gérer les fichiers binaires (base64)
-              if content_type in ['FILE', 'PICTURE'] and isinstance(payload, str):
-                  try:
-                      file_data = base64.b64decode(payload)
-                      filepath = os.path.join(output_dir, filename)
-                      os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
-                      with open(filepath, 'wb') as f:
-                          f.write(file_data)
-                      print(f"  SAVED FILE: {filepath}")
-                      return
-                  except Exception as e:
-                      print(f"  ERROR decoding: {e}")
-                      return
-              
-              save_content(payload, output_dir, filename)
           
           def fetch_node_contents(node_code, output_dir):
               url = f"{API_URL}/contents/node/code/{node_code}?fillValues=true&payloadOnly=true&withFiles=true"
@@ -141,8 +90,49 @@ jobs:
                   print(f"Found {len(contents)} content(s)")
                   
                   for item in contents:
-                      process_content(item, output_dir)
-                      
+                      if isinstance(item, dict):
+                          ssg = item.get('ssg', True)
+                          if ssg is False or ssg == 'false':
+                              print(f"  SKIP: {item.get('code', 'unknown')} (ssg=false)")
+                              continue
+                          
+                          content_type = item.get('type', '')
+                          payload = item.get('payload')
+                          file_name = item.get('fileName')
+                          code = item.get('code', '')
+                          
+                          if not payload:
+                              print(f"  SKIP: no payload for {code}")
+                              continue
+                          
+                          if content_type in ['FILE', 'PICTURE'] and isinstance(payload, str):
+                              try:
+                                  file_data = base64.b64decode(payload)
+                                  filename = file_name if file_name else f"{code}.bin"
+                                  filepath = os.path.join(output_dir, filename)
+                                  os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
+                                  with open(filepath, 'wb') as f:
+                                      f.write(file_data)
+                                  print(f"  SAVED FILE: {filepath}")
+                              except Exception as e:
+                                  print(f"  ERROR decoding: {e}")
+                              continue
+                          
+                          if file_name:
+                              filename = file_name
+                          else:
+                              ext = content_type.lower()
+                              if ext == 'style':
+                                  ext = 'css'
+                              elif ext == 'script':
+                                  ext = 'js'
+                              else:
+                                  ext = ext.lower()
+                              filename = f"{code}.{ext}"
+                          
+                          save_content(payload, output_dir, filename)
+                      else:
+                          print(f"  SKIP: raw content not supported without metadata")
               except json.JSONDecodeError as e:
                   print(f"Error parsing contents: {e}")
           
@@ -169,11 +159,12 @@ jobs:
                       child_code = node.get('code')
                       child_folder = node.get('folder')
                       node_name = node.get('name', child_code)
+                      node_ssg = node.get('ssg', True)
                       
                       if not child_code:
                           continue
                       
-                      if not should_generate(node):
+                      if node_ssg is False or node_ssg == 'false':
                           print(f"  SKIP node: {node_name} ({child_code}) (ssg=false)")
                           continue
                       
