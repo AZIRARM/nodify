@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Mon Blog</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+function checkPosts(){
+  const translationParam = getRequestParam("translation");
+  const url = "$value(BASE_URL)/contents/node/code/CONTENTS-nodifyheadlesscmsgmailcom-9340196424?payloadOnly=true"+(translationParam ? `&translation=${translationParam}` : "");
+  $.get(url, function(data, status){
+   console.log(data);
+   if(data && data.length > 0){
+      $('#posts').html("");
+       data.forEach(post=>{
+           if(post.title){
+              $('#posts').append('<div class="container mt-5"><div class="custom-card"  style="margin-bottom: 50px;">'+ 
+                  '<div class="custom-card-header">'+post.title+'</div>'+
+              '<img src="$value(BASE_URL)/contents/code/'+post.picture+'/file?status=PUBLISHED" class="card-img-top">'+
+              '<div class="custom-card-body">'+post.content+'</div></div></div>');
+           }
+       });
+   }
+  });
+}
+
+function getRequestParam(name) {
+  const match = new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)').exec(location.search);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+
+window.addEventListener('load', function () {
+  function waitForjQuery(callback) {
+    if (window.jQuery) {
+      callback();
+    } else {
+      setTimeout(() => waitForjQuery(callback), 50);
+    }
+  }
+
+  waitForjQuery(function () {
+    console.log('✅ Page et jQuery chargés');
+    
+    $(document).ready(function() {
+      setInterval(function() {
+        checkPosts();
+      }, 30000);
+    });
+
+    checkPosts();
+  });
+});
+</script>
+
+<style>
+.custom-card {
+            border-radius: 15px;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .custom-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .custom-card-header {
+            color: black;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .custom-card-body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+
+        .custom-card-footer {
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+
+        .custom-card img {
+            border-radius: 15px;
+        }
+
+ body {
+        padding-bottom: 80px; /* Ajustez la valeur selon l'espace désiré */
+    }
+
+    /* Style du footer avec un padding */
+    footer {
+        padding-top: 20px;  /* Espace en haut du footer */
+        padding-bottom: 20px; /* Espace en bas du footer */
+        background-color: #343a40;
+        color: white;
+    }
+
+.limited-width {
+    width: 75%;  
+    max-width: 75vw; 
+    margin: 0 auto;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="navbar navbar-dark bg-dark fixed-top">
+    <div class="container-fluid text-center">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <img src="$value(BASE_URL)/contents/code/PICTURE-nodifyheadlesscmsgmailcom-9168658581/file?status=PUBLISHED" alt="Logo" class="me-3" style="width: 5%;">
+            <h1 class="text-white mb-0 mx-auto">Un blog de photo</h1>
+        </div>
+        <p class="text-white mt-2">Chaque image raconte une histoire.</p>
+    </div>
+</header>
+
+<br>
+<img src="$value(BASE_URL)/contents/code/PICTURE-nodifyheadlesscmsgmailcom-4796791848/file?status=PUBLISHED" class="img-fluid">
+<div id="posts" name="posts" class="limited-width">
+</div>
+</div>
+
+<footer class="bg-dark text-white fixed-bottom">
+    <div class="container-fluid text-center py-3">
+        <p class="mb-0">Nodify 2025</p>
+        <div class="mt-2">
+            <!- Instagram ->
+            <a href="https://www.instagram.com" target="_blank" class="text-white me-3">
+                <i class="bi bi-instagram fa-2x"></i> Instagram
+            </a>
+            <!- X (anciennement Twitter) ->
+            <a href="https://www.x.com" target="_blank" class="text-white me-3">
+                <i class="bi bi-twitter fa-2x"></i> X
+            </a>
+            <!- Facebook ->
+            <a href="https://www.facebook.com" target="_blank" class="text-white me-3">
+                <i class="bi bi-facebook fa-2x"></i> Facebook
+            </a>
+        </div>
+    </div>
+</footer>
+   
+  
+
+<script>
+function insertJQuery3_7_1Script(callback) {
+    const script = document.createElement('script');
+    const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    script.src = `${baseUrl}/plugins/name/jquery3.7.1/file/jquery-3.7.1.min.js`;
+
+    script.onload = function () {
+      console.log('✅ jQuery chargé');
+      if (typeof window.startApp === 'function') {
+        window.startApp();
+      } else {
+        console.warn('⚠️ startApp() not defined at load time');
+      }
+    };
+
+    document.head.appendChild(script);
+}
+
+insertJQuery3_7_1Script(function () {
+  console.log('Version de jQuery :', $.fn.jquery);
+});
+
+</script>
+
+
+<script>
+function insertBootstap5_0_2CSS() {
+  
+  var baseUrl = `${window.location.protocol}//${window.location.host}`;
+  var url = baseUrl+'/plugins/name/bootstrap5.0.2/file/bootstrap.min.css';
+  
+  var lien = document.createElement('link');
+  lien.rel = 'stylesheet';
+  lien.type = 'text/css';
+  lien.media = 'all'
+  lien.href = url;
+  document.head.appendChild(lien);
+}
+
+function insertBootstrap5_0_2ScriptDefer() {
+  var baseUrl = `${window.location.protocol}//${window.location.host}`;
+  var url = baseUrl+'/plugins/name/bootstrap5.0.2/file/bootstrap.bundle.min.js';
+  
+  var script = document.createElement('script');
+  script.src = url;
+  script.defer = true;
+  document.head.appendChild(script);
+}
+
+insertBootstap5_0_2CSS();
+insertBootstrap5_0_2ScriptDefer();
+</script>
+
+
+</body>
+</html>
