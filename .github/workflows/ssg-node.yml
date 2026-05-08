@@ -1,4 +1,5 @@
 name: Fetch and Process Nodes
+
 on:
   repository_dispatch:
     types: [ssg-node]
@@ -9,6 +10,7 @@ permissions:
 jobs:
   fetch:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,182 +31,309 @@ jobs:
           ROOT_FOLDER: ${{ github.event.client_payload.folder }}
         run: |
           python3 << 'EOF'
+          import base64
           import json
           import os
           import subprocess
-          
+
           API_URL = os.environ.get('API_URL', '')
           NODE_CODE = os.environ.get('NODE_CODE', '')
           ROOT_FOLDER = os.environ.get('ROOT_FOLDER', '')
-          
+
           print("=== START ===")
           print(f"API_URL: {API_URL}")
           print(f"NODE_CODE: {NODE_CODE}")
           print(f"ROOT_FOLDER: {ROOT_FOLDER}")
-          
+
           if not API_URL:
               print("ERROR: API_URL not set")
               exit(1)
-          
+
           if not NODE_CODE or NODE_CODE == 'null':
               print("No node code")
               exit(0)
-          
-          # Dossier racine = docs
+
+          # Dossier racine
           base_dir = "docs"
+
           if ROOT_FOLDER:
               base_dir = os.path.join("docs", ROOT_FOLDER)
-          
+
           print(f"Base directory: {base_dir}")
+
           os.makedirs(base_dir, exist_ok=True)
-          
+
+
           def fetch_url(url):
-              result = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
+
+              result = subprocess.run(
+                  ['curl', '-s', url],
+                  capture_output=True,
+                  text=True
+              )
+
               return result.stdout
-          
-          def save_content(content_code, output_dir):
-              url = f"{API_URL}/contents/code/{content_code}"
-              print(f"  Fetching content: {url}")
-              
-              response = fetch_url(url)
-              if not response:
-                  print(f"  ERROR: empty response for {content_code}")
+
+
+          def save_content(content, output_dir):
+
+              # Vérifie si le contenu doit être généré
+              if not content.get('ssg', False):
+                  print(f"  SKIPPED content (ssg=false): {content.get('code')}")
                   return
-              
-              try:
-                  data = json.loads(response)
-                  payload = data.get('payload')
-                  file_name = data.get('fileName')
-                  content_type = data.get('type')
-              except:
-                  payload = response
-                  file_name = None
-                  content_type = None
-              
-              if not payload:
+
+              content_code = content.get('code')
+
+              if not content_code:
+                  return
+
+              payload = content.get('payload')
+              file_name = content.get('fileName')
+              content_type = (content.get('type') or '').lower()
+
+              if payload is None:
                   print(f"  ERROR: no payload for {content_code}")
                   return
-              
+
+              # Détermination du nom final
               if file_name:
                   final_name = file_name
-              elif content_type:
-                  ext = content_type.lower()
+              else:
+
+                  ext = content_type
+
                   if ext == 'style':
                       ext = 'css'
+
                   elif ext == 'script':
                       ext = 'js'
-                  else:
-                      ext = ext.lower()
-                  final_name = f"{content_code}.{ext}"
-              else:
-                  final_name = content_code
-              
+
+                  final_name = (
+                      f"{content_code}.{ext}"
+                      if ext
+                      else content_code
+                  )
+
               filepath = os.path.join(output_dir, final_name)
-              os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else output_dir, exist_ok=True)
-              
-              if isinstance(payload, (dict, list)):
-                  with open(filepath, 'w', encoding='utf-8') as f:
-                      json.dump(payload, f, indent=2, ensure_ascii=False)
-              else:
-                  with open(filepath, 'w', encoding='utf-8') as f:
-                      f.write(str(payload))
-              
-              print(f"  SAVED: {filepath}")
-          
+
+              os.makedirs(
+                  os.path.dirname(filepath)
+                  if os.path.dirname(filepath)
+                  else output_dir,
+                  exist_ok=True
+              )
+
+              try:
+
+                  # Fichier/image => base64
+                  if content_type in ['file', 'picture']:
+
+                      file_data = base64.b64decode(payload)
+
+                      with open(filepath, 'wb') as f:
+                          f.write(file_data)
+
+                      print(f"  SAVED BINARY: {filepath}")
+
+                  # JSON
+                  elif isinstance(payload, (dict, list)):
+
+                      with open(filepath, 'w', encoding='utf-8') as f:
+                          json.dump(
+                              payload,
+                              f,
+                              indent=2,
+                              ensure_ascii=False
+                          )
+
+                      print(f"  SAVED JSON: {filepath}")
+
+                  # Texte classique
+                  else:
+
+                      with open(filepath, 'w', encoding='utf-8') as f:
+                          f.write(str(payload))
+
+                      print(f"  SAVED TEXT: {filepath}")
+
+              except Exception as e:
+                  print(f"  ERROR saving {content_code}: {e}")
+
+
           def fetch_node_contents(node_code, output_dir):
-              url = f"{API_URL}/contents/node/code/{node_code}"
+
+              url = (
+                  f"{API_URL}/contents/node/code/"
+                  f"{node_code}"
+                  f"?fillValues=true&payloadOnly=true&withFiles=true"
+              )
+
               print(f"Fetching contents for node: {node_code}")
               print(f"Calling: {url}")
-              
+
               response = fetch_url(url)
+
               if not response or response == 'null':
                   print(f"No contents found for node {node_code}")
                   return
-              
+
               try:
+
                   contents = json.loads(response)
+
                   if isinstance(contents, dict):
                       contents = [contents]
+
                   print(f"Found {len(contents)} content(s)")
-                  
+
                   for content in contents:
-                      content_code = content.get('code')
-                      if content_code:
-                          save_content(content_code, output_dir)
+                      save_content(content, output_dir)
+
               except json.JSONDecodeError as e:
                   print(f"Error parsing contents: {e}")
-          
+
+
           def process_node(node_code, current_dir):
+
               print(f"\n--- Processing node: {node_code} ---")
-              
+
               url = f"{API_URL}/nodes/parent/{node_code}"
+
               print(f"Calling: {url}")
-              
+
               response = fetch_url(url)
-              if not response or response == 'null' or response == '[]':
+
+              if (
+                  not response
+                  or response == 'null'
+                  or response == '[]'
+              ):
                   print(f"No child nodes found for {node_code}")
+
                   fetch_node_contents(node_code, current_dir)
+
                   return
-              
+
               try:
+
                   nodes = json.loads(response)
+
                   if isinstance(nodes, dict):
                       nodes = [nodes]
-                  
+
                   print(f"Found {len(nodes)} child node(s)")
-                  
+
                   for node in nodes:
+
+                      # Vérifie si le noeud doit être généré
+                      if not node.get('ssg', False):
+                          print(
+                              f"SKIPPED node (ssg=false): "
+                              f"{node.get('code')}"
+                          )
+                          continue
+
                       child_code = node.get('code')
                       child_folder = node.get('folder')
                       node_name = node.get('name', child_code)
-                      
+
                       if not child_code:
                           continue
-                      
+
                       if child_folder:
-                          target_dir = os.path.join(current_dir, child_folder)
+                          target_dir = os.path.join(
+                              current_dir,
+                              child_folder
+                          )
                       else:
-                          target_dir = os.path.join(current_dir, node_name)
-                      
-                      print(f"  Child node: {node_name} ({child_code}) -> folder: {target_dir}")
+                          target_dir = os.path.join(
+                              current_dir,
+                              node_name
+                          )
+
+                      print(
+                          f"  Child node: "
+                          f"{node_name} ({child_code}) "
+                          f"-> {target_dir}"
+                      )
+
                       os.makedirs(target_dir, exist_ok=True)
-                      
+
+                      # Sauvegarde les contenus du noeud
                       fetch_node_contents(child_code, target_dir)
+
+                      # Parcours récursif
                       process_node(child_code, target_dir)
-                      
+
               except json.JSONDecodeError as e:
+
                   print(f"Error parsing nodes: {e}")
+
                   fetch_node_contents(node_code, current_dir)
-          
-          # Récupérer les contenus du nœud racine
-          print(f"\nFetching root node contents...")
+
+
+          # Vérifie si le noeud racine existe et doit être traité
+          root_node_url = f"{API_URL}/nodes/code/{NODE_CODE}"
+
+          root_response = fetch_url(root_node_url)
+
+          if not root_response or root_response == 'null':
+              print("Root node not found")
+              exit(1)
+
+          try:
+
+              root_node = json.loads(root_response)
+
+              if not root_node.get('ssg', False):
+                  print("Root node ssg=false -> skipped")
+                  exit(0)
+
+          except Exception as e:
+              print(f"Error loading root node: {e}")
+              exit(1)
+
+          # Contenus du noeud racine
+          print("\nFetching root node contents...")
+
           fetch_node_contents(NODE_CODE, base_dir)
-          
-          # Traiter les sous-nœuds
+
+          # Sous-noeuds
           process_node(NODE_CODE, base_dir)
-          
+
           print("\n=== END ===")
+
           EOF
 
       - name: List saved files
         run: |
           echo "=== Files saved ==="
+
           find docs -type f 2>/dev/null | head -50
+
           echo "Total files in docs: $(find docs -type f 2>/dev/null | wc -l)"
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git checkout headless-cms || git checkout -b headless-cms
+
           git add docs/
+
           git status
+
           git diff --staged --quiet || git commit -m "Update nodes contents from webhook"
+
           git push origin headless-cms
+
           echo "Push completed"
 
       - name: Verify files on repo
         run: |
           echo "=== Verifying files after push ==="
+
           git pull origin headless-cms
+
           find docs -type f 2>/dev/null | head -20
