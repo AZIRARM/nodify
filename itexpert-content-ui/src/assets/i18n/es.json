@@ -448,5 +448,17 @@
   "BASIC_INFORMATION": "Información básica",
   "TECHNICAL_CONFIGURATION": "Configuración técnica",
   "LOAD_ERROR": "Error al cargar",
-  "PARENT_NOT_IN_SUBNODES": "El nodo padre no puede estar en los subnodos"
+  "PARENT_NOT_IN_SUBNODES": "El nodo padre no puede estar en los subnodos",
+
+   "NEWSLETTER": {
+    "FIELD": "Newsletter",
+    "CODE": "Código newsletter",
+    "TITLE": "Título",
+    "SUBJECT": "Asunto",
+    "CAMPAIGN_CODE": "Código campaña",
+    "CAMPAIGN_RECIPIENTS": "Destinatarios",
+    "START_DATE": "Fecha inicio",
+    "END_DATE": "Fecha fin",
+    "SCHEDULE_DATE": "Fecha programación"
+  }
 }

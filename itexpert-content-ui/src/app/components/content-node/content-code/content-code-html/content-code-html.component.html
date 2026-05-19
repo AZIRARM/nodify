@@ -8,6 +8,8 @@
     <app-content-code-infos [contentNode]="contentNode"></app-content-code-infos>
   </div>
 
+  <div class="spacer"></div>
+
   <div class="code-toolbar">
     <div class="toggle-buttons">
       @if (code()) {
@@ -31,6 +33,7 @@
       <mat-icon>{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
     </button>
   </div>
+
 
   <div class="code-editor-wrapper" [class.fullscreen]="isFullscreen()">
 

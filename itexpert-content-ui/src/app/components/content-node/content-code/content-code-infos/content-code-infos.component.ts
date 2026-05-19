@@ -4,6 +4,7 @@ import { SlugService } from 'src/app/services/SlugService';
 import { ContentNodeService } from 'src/app/services/ContentNodeService';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { NewsletterContent } from 'src/app/modeles/NewsletterContent';
 
 @Component({
   selector: 'app-content-code-infos',
@@ -42,5 +43,13 @@ export class ContentCodeInfosComponent {
           this.contentNode.slug = slug;
         }
       });
+  }
+
+  toggleNewsletter(event: any): void {
+    if (event.checked) {
+      if (!this.contentNode.newsletterContent) {
+        this.contentNode.newsletterContent = new NewsletterContent();
+      }
+    }
   }
 }

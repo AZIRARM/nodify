@@ -33,6 +33,7 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatBadgeModule } from "@angular/material/badge";
 import { MatCardModule } from "@angular/material/card";
 import { MatChipsModule } from "@angular/material/chips";
+import { MatTabsModule } from '@angular/material/tabs';
 
 // Third party
 import { ToastrModule } from 'ngx-toastr';
@@ -124,6 +125,8 @@ import { LockService } from './services/LockService';
 // Interceptors
 import { TokenInterceptor } from "./interceptors/TokenInterceptor";
 import { UnauthorizedComponent } from './components/ui/unauthorized/unauthorized.component';
+import { ChatbotService } from './services/ChatbotService';
+import { NewsletterComponent } from './components/content-node/content-code/content-code-html/newsletter/newsletter.component';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -188,7 +191,8 @@ export function defaultLanguage() {
     NodesViewDialogComponent,
     LoaderComponent,
     ReleaseLocksComponent,
-    UnauthorizedComponent
+    UnauthorizedComponent,
+    NewsletterComponent
   ],
   imports: [
     BrowserModule,
@@ -251,6 +255,7 @@ export function defaultLanguage() {
     MatCardModule,
     MatChipsModule,
     CodemirrorModule,
+    MatTabsModule
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
@@ -279,7 +284,8 @@ export function defaultLanguage() {
     AuthGuard,
     CookiesService,
     LoaderService,
-    LockService
+    LockService,
+    ChatbotService
   ],
   bootstrap: [AppComponent],
   exports: [LoaderComponent]

@@ -69,6 +69,44 @@
             </div>
           </div>
         </div>
+
+        <!-- Chatbot Configuration Section -->
+        <div class="info-row chatbot-config">
+          <div class="info-label">
+            <mat-icon>smart_toy</mat-icon>
+            <span>{{ "CHATBOT_CONFIG" | translate }}</span>
+          </div>
+          <div class="info-value chatbot-settings">
+            <div class="chatbot-toggle">
+              <mat-slide-toggle [(ngModel)]="editedUser.params.chatbotEnabled" [disabled]="!isEditing()"
+                (change)="onChatbotToggleChange($event)">
+                {{ "CHATBOT_ENABLED" | translate }}
+              </mat-slide-toggle>
+            </div>
+
+            @if (editedUser.params.chatbotEnabled) {
+            <div class="chatbot-fields">
+              <div class="chatbot-field">
+                <label>{{ "CHATBOT_URL" | translate }}</label>
+                <input matInput [(ngModel)]="editedUser.params.chatBotUrl" [disabled]="!isEditing()"
+                  placeholder="https://api.openai.com" class="edit-input">
+              </div>
+
+              <div class="chatbot-field">
+                <label>{{ "CHATBOT_API_KEY" | translate }}</label>
+                <input matInput type="password" [(ngModel)]="editedUser.params.chatBotApiKey" [disabled]="!isEditing()"
+                  placeholder="Enter API key" class="edit-input">
+              </div>
+
+              <div class="chatbot-field">
+                <label>{{ "CHATBOT_MODEL" | translate }}</label>
+                <input matInput [(ngModel)]="editedUser.params.chatBotModel" [disabled]="!isEditing()"
+                  placeholder="gpt-3.5-turbo" class="edit-input">
+              </div>
+            </div>
+            }
+          </div>
+        </div>
       </div>
 
       <div class="user-actions">

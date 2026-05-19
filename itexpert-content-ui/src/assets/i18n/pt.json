@@ -448,5 +448,17 @@
   "BASIC_INFORMATION": "Informações básicas",
   "TECHNICAL_CONFIGURATION": "Configuração técnica",
   "LOAD_ERROR": "Erro ao carregar",
-  "PARENT_NOT_IN_SUBNODES": "O nó pai não pode estar nos subnós"
+  "PARENT_NOT_IN_SUBNODES": "O nó pai não pode estar nos subnós",
+
+  "NEWSLETTER": {
+    "FIELD": "Newsletter",
+    "CODE": "Código newsletter",
+    "TITLE": "Título",
+    "SUBJECT": "Assunto",
+    "CAMPAIGN_CODE": "Código campanha",
+    "CAMPAIGN_RECIPIENTS": "Destinatários",
+    "START_DATE": "Data início",
+    "END_DATE": "Data fim",
+    "SCHEDULE_DATE": "Data programação"
+  }
 }

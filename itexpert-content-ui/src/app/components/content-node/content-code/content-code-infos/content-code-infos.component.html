@@ -1,87 +1,121 @@
-```html
-<div class="content-infos">
+<!-- Onglets principaux -->
+<mat-tab-group>
 
-  <!-- Formulaire en grille -->
-  <div class="info-grid">
+  <!-- ONGLET 1 : Informations générales -->
+  <mat-tab label="{{ 'BASIC_INFORMATION' | translate }}">
+    <div class="tab-content">
+      <div class="info-grid">
 
-    <!-- Code (readonly) -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "CODE" | translate }}</mat-label>
-      <input matInput [(ngModel)]="contentNode.code" [placeholder]="'CODE' | translate" readonly>
-      <mat-icon matSuffix>fingerprint</mat-icon>
-    </mat-form-field>
+        <!-- Code (readonly) -->
+        <mat-form-field appearance="outline" class="grid-item">
+          <mat-label>{{ "CODE" | translate }}</mat-label>
+          <input matInput [(ngModel)]="contentNode.code" [placeholder]="'CODE' | translate" readonly>
+          <mat-icon matSuffix>fingerprint</mat-icon>
+        </mat-form-field>
 
-    <!-- Slug avec validation -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "SLUG" | translate }}</mat-label>
-      <input matInput [(ngModel)]="contentNode.slug" (ngModelChange)="onSlugChange($event)"
-        [placeholder]="'SLUG' | translate" [class.invalid]="slugAvailable() === false"
-        [class.valid]="slugAvailable() === true">
-      <mat-icon matSuffix>link</mat-icon>
-    </mat-form-field>
+        <!-- Slug avec validation -->
+        <mat-form-field appearance="outline" class="grid-item">
+          <mat-label>{{ "SLUG" | translate }}</mat-label>
+          <input matInput [(ngModel)]="contentNode.slug" (ngModelChange)="onSlugChange($event)"
+            [placeholder]="'SLUG' | translate" [class.invalid]="slugAvailable() === false"
+            [class.valid]="slugAvailable() === true">
+          <mat-icon matSuffix>link</mat-icon>
+        </mat-form-field>
 
-    <!-- Max versions -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "MAX_VERSIONS_TO_KEEP" | translate }}</mat-label>
-      <input matInput type="number" [(ngModel)]="contentNode.maxVersionsToKeep"
-        [placeholder]="'MAX_VERSIONS' | translate" [defaultValue]="0" min="0" step="1" required>
-      <mat-icon matSuffix>history</mat-icon>
-    </mat-form-field>
+        <!-- Max versions -->
+        <mat-form-field appearance="outline" class="grid-item">
+          <mat-label>{{ "MAX_VERSIONS_TO_KEEP" | translate }}</mat-label>
+          <input matInput type="number" [(ngModel)]="contentNode.maxVersionsToKeep"
+            [placeholder]="'MAX_VERSIONS' | translate" [defaultValue]="0" min="0" step="1" required>
+          <mat-icon matSuffix>history</mat-icon>
+        </mat-form-field>
 
-    <!-- Trigger URL -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "TRIGGER_URL" | translate }}</mat-label>
-      <input matInput [(ngModel)]="contentNode.triggerUrl" [placeholder]="'TRIGGER_URL' | translate">
-      <mat-icon matSuffix>send</mat-icon>
-    </mat-form-field>
+        <!-- Description -->
+        <mat-form-field appearance="outline" class="grid-item grid-full">
+          <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
+          <input matInput [(ngModel)]="contentNode.description" [placeholder]="'DESCRIPTION' | translate">
+          <mat-icon matSuffix>description</mat-icon>
+        </mat-form-field>
 
-    <!-- Trigger Secret -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "TRIGGER_SECRET" | translate }}</mat-label>
-      <input matInput type="password" [(ngModel)]="contentNode.triggerSecret"
-        [placeholder]="'TRIGGER_SECRET' | translate">
-      <mat-icon matSuffix>vpn_key</mat-icon>
-    </mat-form-field>
-
-    <!-- Description -->
-    <mat-form-field appearance="outline" class="grid-item grid-full">
-      <mat-label>{{ "DESCRIPTION" | translate }}</mat-label>
-      <input matInput [(ngModel)]="contentNode.description" [placeholder]="'DESCRIPTION' | translate">
-      <mat-icon matSuffix>description</mat-icon>
-    </mat-form-field>
-
-    <!-- Folder Name -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "FOLDER" | translate }}</mat-label>
-      <input matInput [(ngModel)]="contentNode.folder" [placeholder]="'FOLDER' | translate">
-      <mat-icon matSuffix>folder</mat-icon>
-    </mat-form-field>
-
-    <!-- File Name -->
-    <mat-form-field appearance="outline" class="grid-item">
-      <mat-label>{{ "FILE_NAME" | translate }}</mat-label>
-      <input matInput [(ngModel)]="contentNode.fileName" [placeholder]="'FILE_NAME' | translate">
-      <mat-icon matSuffix>description</mat-icon>
-    </mat-form-field>
-
-    <!-- SSG -->
-    <div class="grid-item">
-      <mat-slide-toggle [(ngModel)]="contentNode.ssg">
-        {{ "SSG" | translate }} : {{ (contentNode.ssg ? 'YES' : 'NO') | translate }}
-      </mat-slide-toggle>
+        <!-- Message de validation du slug -->
+        @if (slugAvailable() !== undefined) {
+        <div class="slug-validation-message">
+          <div class="validation-badge" [class.success]="slugAvailable() === true"
+            [class.error]="slugAvailable() === false">
+            <mat-icon>{{ slugAvailable() === true ? 'check_circle' : 'error' }}</mat-icon>
+            <span>{{ (slugAvailable() === true ? 'SLUG_AVAILABLE' : 'SLUG_ALREADY_USED') | translate }}</span>
+          </div>
+        </div>
+        }
+      </div>
     </div>
+  </mat-tab>
 
-  </div>
+  <!-- ONGLET 2 : Configuration SSG -->
+  <mat-tab label="{{ 'SSG' | translate }}">
+    <div class="tab-content">
 
-  <!-- Message de validation du slug -->
-  @if (slugAvailable() !== undefined) {
-  <div class="slug-validation-message">
-    <div class="validation-badge" [class.success]="slugAvailable() === true" [class.error]="slugAvailable() === false">
-      <mat-icon>{{ slugAvailable() === true ? 'check_circle' : 'error' }}</mat-icon>
-      <span>{{ (slugAvailable() === true ? 'SLUG_AVAILABLE' : 'SLUG_ALREADY_USED') | translate }}</span>
+      <!-- Toggle SSG en tête d'onglet -->
+      <div class="ssg-toggle-header">
+        <mat-slide-toggle [(ngModel)]="contentNode.ssg">
+          {{ "SSG" | translate }} : {{ (contentNode.ssg ? 'ACTIVATED' : 'DEACTIVATED') | translate }}
+        </mat-slide-toggle>
+      </div>
+
+      <!-- Champs SSG (affichés seulement si activé) -->
+      @if (contentNode.ssg) {
+      <div class="ssg-fields">
+        <div class="info-grid">
+
+          <!-- Trigger URL -->
+          <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "TRIGGER_URL" | translate }}</mat-label>
+            <input matInput [(ngModel)]="contentNode.triggerUrl" [placeholder]="'TRIGGER_URL' | translate">
+            <mat-icon matSuffix>send</mat-icon>
+          </mat-form-field>
+
+          <!-- Trigger Secret -->
+          <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "TRIGGER_SECRET" | translate }}</mat-label>
+            <input matInput type="password" [(ngModel)]="contentNode.triggerSecret"
+              [placeholder]="'TRIGGER_SECRET' | translate">
+            <mat-icon matSuffix>vpn_key</mat-icon>
+          </mat-form-field>
+
+          <!-- Folder Name -->
+          <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "FOLDER" | translate }}</mat-label>
+            <input matInput [(ngModel)]="contentNode.folder" [placeholder]="'FOLDER' | translate">
+            <mat-icon matSuffix>folder</mat-icon>
+          </mat-form-field>
+
+          <!-- File Name -->
+          <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "FILE_NAME" | translate }}</mat-label>
+            <input matInput [(ngModel)]="contentNode.fileName" [placeholder]="'FILE_NAME' | translate">
+            <mat-icon matSuffix>description</mat-icon>
+          </mat-form-field>
+
+        </div>
+      </div>
+      } @else {
+      <div class="ssg-disabled-message">
+        <mat-icon>info</mat-icon>
+        <span>{{ 'SSG_DISABLED_MESSAGE' | translate }}</span>
+      </div>
+      }
     </div>
-  </div>
-  }
+  </mat-tab>
+  <mat-tab label="{{ 'NEWSLETTER.FIELD' | translate }}">
+    <div class="tab-content">
 
-</div>
-```
+      <div class="ssg-section">
+        <mat-slide-toggle [(ngModel)]="contentNode.newsletter" (change)="toggleNewsletter($event)">
+          {{ "NEWSLETTER.FIELD" | translate }} : {{ (contentNode.newsletter ? 'YES' : 'NO') | translate }}
+        </mat-slide-toggle>
+      </div>
+      <app-newsletter [newsletterContent]="contentNode.newsletterContent"></app-newsletter>
+    </div>
+  </mat-tab>
+
+</mat-tab-group>

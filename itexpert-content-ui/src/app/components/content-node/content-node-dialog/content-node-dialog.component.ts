@@ -195,6 +195,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       width: '80vw',
       disableClose: true
     });
+
     const dialogSub = this.dialogRefPublish.afterClosed()
       .subscribe(result => {
         if (result && result.data !== 'canceled') {
@@ -215,6 +216,47 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
           ).subscribe((trad: string) => {
             this.loggerService.success(trad);
             this.init();
+
+            if (content.type === 'HTML' && content.newsletter && content.newsletterContent && content.newsletterContent.newsLetterTriggerUrl && content.newsletterContent.newsLetterTriggerSecret) {
+              const newsletterUrl: string = content.newsletterContent.newsLetterTriggerUrl;
+              const newsletterHeaders: any = { 'Content-Type': 'application/json' };
+
+              if (content.newsletterContent.newsLetterTriggerSecret) {
+                newsletterHeaders['Authorization'] = `Bearer ${content.newsletterContent.newsLetterTriggerSecret}`;
+              }
+
+              fetch(newsletterUrl, {
+                method: 'POST',
+                headers: newsletterHeaders,
+                body: JSON.stringify({
+                  code: content.newsletterContent.newsLetterCode,
+                  title: content.newsletterContent.newsLetterTitle,
+                  subject: content.newsletterContent.newsLetterSubject,
+                  campaignCode: content.newsletterContent.newsLetterCampaignCode,
+                  recipients: content.newsletterContent.newsLetterCampaignRecipients,
+                  startDate: content.newsletterContent.newsLetterCampaignStartDate,
+                  endDate: content.newsletterContent.newsLetterCampaignEndDate,
+                  scheduleDate: content.newsletterContent.newsLetterCampaignCodeScheduleDate,
+                  content: content.content,
+                  contentType: content.type
+                })
+              }).then(response => {
+                if (response.ok) {
+                  this.translate.get("NEWSLETTER_SEND_SUCCESS").subscribe((translation: string) => {
+                    this.toast.success(translation);
+                  });
+                } else {
+                  this.translate.get("NEWSLETTER_SEND_ERROR").subscribe((translation: string) => {
+                    this.loggerService.error(translation);
+                  });
+                }
+              }).catch(err => {
+                console.error('Newsletter error:', err);
+                this.translate.get("NEWSLETTER_SEND_ERROR").subscribe((translation: string) => {
+                  this.loggerService.error(translation);
+                });
+              });
+            }
 
             if (content.triggerUrl) {
               this.translate.get("DEPLOY_TRIGGER_SUCCESS").subscribe((translation: string) => {

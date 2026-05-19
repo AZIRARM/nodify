@@ -30,4 +30,6 @@ public class UserPost {
 
     private List<String> projects;
 
+    private UserParameters params;
+
 }

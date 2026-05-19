@@ -448,5 +448,17 @@
   "BASIC_INFORMATION": "معلومات أساسية",
   "TECHNICAL_CONFIGURATION": "تكوين تقني",
   "LOAD_ERROR": "خطأ في التحميل",
-  "PARENT_NOT_IN_SUBNODES": "لا يمكن أن تكون العقدة الأصلية ضمن العقد الفرعية"
+  "PARENT_NOT_IN_SUBNODES": "لا يمكن أن تكون العقدة الأصلية ضمن العقد الفرعية",
+
+   "NEWSLETTER": {
+    "FIELD": "النشرة الإخبارية",
+    "CODE": "رمز النشرة الإخبارية",
+    "TITLE": "العنوان",
+    "SUBJECT": "الموضوع",
+    "CAMPAIGN_CODE": "رمز الحملة",
+    "CAMPAIGN_RECIPIENTS": "المستلمين",
+    "START_DATE": "تاريخ البدء",
+    "END_DATE": "تاريخ الانتهاء",
+    "SCHEDULE_DATE": "تاريخ الجدولة"
+  }
 }

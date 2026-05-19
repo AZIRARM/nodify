@@ -29,6 +29,7 @@ import { Subscription } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ChatbotConfig, ChatbotService } from 'src/app/services/ChatbotService';
 
 @Component({
   selector: 'app-nodes',
@@ -82,6 +83,10 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   private lockService = inject(LockService);
   private dialog = inject(MatDialog);
 
+  private chatbotService = inject(ChatbotService);
+  isChatbotInitialized = signal<boolean>(false);
+  chatbotStatus = signal<string>('initializing');
+
   ngOnInit() {
     this.user.set(this.userAccessService.getCurrentUser());
     this.init();
@@ -107,6 +112,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
+    this.resetChatbot();
   }
 
   private initLocks(nodes: Node[]) {
@@ -154,7 +160,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         }
         this.initLocks(response);
         this.processNodes(response);
-
+        this.initChatbot();
       });
     }
     this.subscriptions.push(requestSub);
@@ -211,11 +217,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   update(node: Node) {
     this.dialogRef = this.dialog.open(NodeDialogComponent, {
-        data: node,
-        height: '80vh',
-        width: '80vw',
-        disableClose: true
-      }
+      data: node,
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    }
     );
     const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
@@ -252,11 +258,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     node.snapshot = true;
     this.dialogRef = this.dialog.open(NodeDialogComponent, {
-        data: node,
-        height: '80vh',
-        width: '80vw',
-        disableClose: true
-      }
+      data: node,
+      height: '80vh',
+      width: '80vw',
+      disableClose: true
+    }
     );
     const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
@@ -366,13 +372,13 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   contents(node: Node) {
     this.dialogRefContents = this.dialog.open(ContentNodeDialogComponent, {
-        data: node,
-        height: "calc(100%)",
-        width: "calc(100%)",
-        maxWidth: "100%",
-        maxHeight: "100%",
-        disableClose: true
-      }
+      data: node,
+      height: "calc(100%)",
+      width: "calc(100%)",
+      maxWidth: "100%",
+      maxHeight: "100%",
+      disableClose: true
+    }
     );
     const dialogSub = this.dialogRefContents.afterClosed()
       .subscribe(result => {
@@ -408,17 +414,17 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   deleteds() {
     this.dialogRefDeleteds = this.dialog.open(DeletedItemsDialogComponent, {
-        height: '80vh',
-        width: '80vw',
-        disableClose: true,
-        data: {
-          parentNode: this.parentNode(),
-          titleKey: 'DELETED_NODES',
-          icon: 'delete_sweep',
-          displayTypeColumn: true,
-          deleteService: this.nodeService
-        }
+      height: '80vh',
+      width: '80vw',
+      disableClose: true,
+      data: {
+        parentNode: this.parentNode(),
+        titleKey: 'DELETED_NODES',
+        icon: 'delete_sweep',
+        displayTypeColumn: true,
+        deleteService: this.nodeService
       }
+    }
     );
     const dialogSub = this.dialogRefDeleteds.afterClosed()
       .subscribe(() => {
@@ -644,11 +650,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   viewTreeNode(element: Node) {
     this.dialogRefTreeNode = this.dialog.open(NodesViewDialogComponent, {
-        height: '80vh',
-        width: '80vw',
-        disableClose: true,
-        data: element
-      }
+      height: '80vh',
+      width: '80vw',
+      disableClose: true,
+      data: element
+    }
     );
     const dialogSub = this.dialogRefTreeNode.afterClosed()
       .subscribe(() => {
@@ -671,5 +677,63 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loggerService.error(translation);
       });
     });
+  }
+  isChatBotEnabled(): boolean {
+    /*
+    const user = this.userAccessService.getCurrentUser();
+    if (!user) {
+      return false;
+    }
+    return user.config && user.config.chatbotEnabled === true;
+    */
+    return true;
+  }
+
+  initChatbot(): void {
+    if (!this.isChatBotEnabled()) {
+      return;
+    }
+
+    const user = this.userAccessService.getCurrentUser();
+    const config: ChatbotConfig = {
+      /*url: user.params.chatbotUrl,
+      apiKey: user.params.chatbotApiKey,*/
+      url: "http://localhost:9000",
+      apiKey: "[ENCRYPTION_KEY]",
+      iconUrl: 'https://your-site.com/chatbot-icon.png',
+      welcomeMessage: 'Hello! How can I help you?',
+      context: 'You are an expert development assistant',
+      language: 'en'
+    };
+
+    this.chatbotService.initialize(config);
+    this.isChatbotInitialized.set(true);
+    this.chatbotStatus.set('ready');
+  }
+
+  resetChatbot(): void {
+    if (!this.isChatBotEnabled()) {
+      return;
+    }
+
+    this.chatbotService.destroy();
+    this.isChatbotInitialized.set(false);
+    this.chatbotStatus.set('reset');
+
+    const user = this.userAccessService.getCurrentUser();
+    const newConfig: ChatbotConfig = {
+      /*url: user.params.chatbotUrl,
+      apiKey: user.params.chatbotApiKey,*/
+      url: 'https://localhost:9000',
+      apiKey: '[ENCRYPTION_KEY]',
+      iconUrl: 'https://your-site.com/chatbot-icon.png',
+      welcomeMessage: 'Chatbot reset!',
+      context: 'New context',
+      language: 'en'
+    };
+
+    this.chatbotService.initialize(newConfig);
+    this.isChatbotInitialized.set(true);
+    this.chatbotStatus.set('ready');
   }
 }

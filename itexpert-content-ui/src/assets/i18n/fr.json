@@ -452,5 +452,17 @@
   "MANAGE_LANGUAGES": "Gérer les langues",
   "UNLOCK_RESOURCES": "Débloquer les ressources",
   "MANAGE_RESOURCE_LOCKS": "Gérer les verrous de ressources",
-  "SYSTEM_SETTINGS": "Paramètres système"
+  "SYSTEM_SETTINGS": "Paramètres système",
+
+  "NEWSLETTER": {
+    "FIELD": "Newsletter",
+    "CODE": "Code newsletter",
+    "TITLE": "Titre",
+    "SUBJECT": "Sujet",
+    "CAMPAIGN_CODE": "Code campagne",
+    "CAMPAIGN_RECIPIENTS": "Destinataires",
+    "START_DATE": "Date de début",
+    "END_DATE": "Date de fin",
+    "SCHEDULE_DATE": "Date de programmation"
+  }
 }

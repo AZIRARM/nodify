@@ -1,0 +1,70 @@
+<div class="newsletter-container">
+    @if (newsletterContent) {
+    <div class="infos-section">
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.TRIGGER_URL" | translate }}</mat-label>
+            <input matInput [(ngModel)]="newsletterContent.newsLetterTriggerUrl" (change)="onContentChange()">
+            <mat-icon matSuffix>link</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.TRIGGER_SECRET" | translate }}</mat-label>
+            <input matInput [(ngModel)]="newsletterContent.newsLetterTriggerSecret" (change)="onContentChange()">
+            <mat-icon matSuffix>lock</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.CODE" | translate }}</mat-label>
+            <input matInput [(ngModel)]="newsletterContent.newsLetterCode" (change)="onContentChange()">
+            <mat-icon matSuffix>code</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.TITLE" | translate }}</mat-label>
+            <input matInput [(ngModel)]="newsletterContent.newsLetterTitle" (change)="onContentChange()">
+            <mat-icon matSuffix>title</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.SUBJECT" | translate }}</mat-label>
+            <input matInput [(ngModel)]="newsletterContent.newsLetterSubject" (change)="onContentChange()">
+            <mat-icon matSuffix>subject</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.CAMPAIGN_CODE" | translate }}</mat-label>
+            <input matInput [(ngModel)]="newsletterContent.newsLetterCampaignCode" (change)="onContentChange()">
+            <mat-icon matSuffix>campaign</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.CAMPAIGN_RECIPIENTS" | translate }} (user1&#64;test.com,
+                user2&#64;test.com)</mat-label>
+            <input matInput [value]="getRecipientsString()" (input)="updateRecipients($event)"
+                (change)="onContentChange()">
+            <mat-icon matSuffix>people</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.START_DATE" | translate }}</mat-label>
+            <input matInput type="datetime-local" [(ngModel)]="newsletterContent.newsLetterCampaignStartDate"
+                (change)="onContentChange()">
+            <mat-icon matSuffix>event</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.END_DATE" | translate }}</mat-label>
+            <input matInput type="datetime-local" [(ngModel)]="newsletterContent.newsLetterCampaignEndDate"
+                (change)="onContentChange()">
+            <mat-icon matSuffix>event</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="grid-item">
+            <mat-label>{{ "NEWSLETTER.SCHEDULE_DATE" | translate }}</mat-label>
+            <input matInput type="datetime-local" [(ngModel)]="newsletterContent.newsLetterCampaignCodeScheduleDate"
+                (change)="onContentChange()">
+            <mat-icon matSuffix>schedule</mat-icon>
+        </mat-form-field>
+    </div>
+    }
+</div>

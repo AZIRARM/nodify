@@ -451,5 +451,17 @@
   "BASIC_INFORMATION": "Basic Information",
   "TECHNICAL_CONFIGURATION": "Technical Configuration",
   "LOAD_ERROR": "Error loading",
-  "PARENT_NOT_IN_SUBNODES": "The parent node cannot be in the sub-nodes"
+  "PARENT_NOT_IN_SUBNODES": "The parent node cannot be in the sub-nodes",
+
+  "NEWSLETTER": {
+    "FIELD": "Newsletter",
+    "CODE": "Newsletter code",
+    "TITLE": "Title",
+    "SUBJECT": "Subject",
+    "CAMPAIGN_CODE": "Campaign code",
+    "CAMPAIGN_RECIPIENTS": "Recipients",
+    "START_DATE": "Start date",
+    "END_DATE": "End date",
+    "SCHEDULE_DATE": "Schedule date"
+  }
 }

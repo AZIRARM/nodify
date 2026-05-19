@@ -1,0 +1,129 @@
+{
+    "id": "",
+    "name": "",
+    "code": "",
+    "defaultLanguage": "", // "FR", "EN", "ES"
+    "contents": [
+        {
+            "id": "",
+            "parentCode": "",
+            "parentCodeOrigin": "",
+            "code": "",
+            "type": "", // "HTML", "STYLE", "SCRIPT", "JSON"
+            "description": "",
+            "content": "",
+            "translations": [
+                {
+                    "language": "", // "FR", "EN", "ES"
+                    "key": "",
+                    "value": ""
+                }
+            ],
+            "values": [
+                {
+                    "key": "",
+                    "value": ""
+                }
+            ],
+            "rules": [
+                {
+                    "type": "BOOL",
+                    "name": "MAINTENANCE",
+                    "value": "false",
+                    "editable": false,
+                    "erasable": false,
+                    "behavior": false,
+                    "enable": false
+                },
+                {
+                    "type": "DATE",
+                    "name": "ACTIVATION_DATE",
+                    "editable": false,
+                    "erasable": false,
+                    "operator": "SUP_EQ",
+                    "behavior": false,
+                    "enable": false
+                },
+                {
+                    "type": "DATE",
+                    "name": "DEACTIVATION_DATE",
+                    "editable": false,
+                    "erasable": false,
+                    "operator": "SUP_EQ",
+                    "behavior": false,
+                    "enable": false
+                }
+            ],
+            "creationDate": 0,
+            "modificationDate": 0,
+            "modifiedBy": "",
+            "version": "",
+            "publicationDate": 0,
+            "status": "SNAPSHOT",
+            "favorite": false,
+            "triggerUrl": "",
+            "triggerSecret": "",
+            "fileName": "",
+            "ssg": false
+        }
+    ],
+    "subNodes": [
+        {
+            "id": "",
+            "name": "",
+            "code": "",
+            "defaultLanguage": "", // "FR", "EN", "ES"
+            "contents": [],
+            "rules": [],
+            "creationDate": 0,
+            "modificationDate": 0,
+            "modifiedBy": "",
+            "version": "",
+            "publicationDate": 0,
+            "status": "SNAPSHOT",
+            "favorite": false,
+            "folder": "",
+            "ssg": false
+        }
+    ],
+    "rules": [
+        {
+            "type": "BOOL",
+            "name": "MAINTENANCE",
+            "value": "false",
+            "editable": false,
+            "erasable": false,
+            "behavior": false,
+            "enable": false
+        },
+        {
+            "type": "DATE",
+            "name": "ACTIVATION_DATE",
+            "editable": false,
+            "erasable": false,
+            "operator": "SUP_EQ",
+            "behavior": false,
+            "enable": false
+        },
+        {
+            "type": "DATE",
+            "name": "DEACTIVATION_DATE",
+            "editable": false,
+            "erasable": false,
+            "operator": "SUP_EQ",
+            "behavior": false,
+            "enable": false
+        }
+    ],
+    "creationDate": 0,
+    "modificationDate": 0,
+    "modifiedBy": "",
+    "version": "",
+    "publicationDate": 0,
+    "status": "SNAPSHOT",
+    "favorite": false,
+    "triggerUrl": "",
+    "triggerSecret": "",
+    "folder": "",
+    "ssg": false
+}
