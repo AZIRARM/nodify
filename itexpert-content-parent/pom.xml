@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
     <properties>
         <lombok.version>1.18.30</lombok.version>
-        <org.springframework.boot>3.3.4</org.springframework.boot>
+        <org.springframework.boot>3.5.14</org.springframework.boot>
         <springdoc-openapi-webflux>2.3.0</springdoc-openapi-webflux>
         <mapstruct>1.5.3.Final</mapstruct>
         <commons-lang3>3.18.0</commons-lang3>
