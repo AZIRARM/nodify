@@ -25,7 +25,7 @@
     "@ngx-translate/core": "^16.0.0",
     "@ngx-translate/http-loader": "^16.0.0",
     "codemirror": "^5.65.18",
-    "echarts": "^5.6.0",
+    "echarts": "^6.1.0",
     "jwt-decode": "^4.0.0",
     "ngx-echarts": "^19.0.0",
     "ngx-markdown": "^19.0.0",
