@@ -7,8 +7,6 @@ import { UserService } from "../../../services/UserService";
 import { LoggerService } from 'src/app/services/LoggerService';
 import { TranslateService } from '@ngx-translate/core';
 import { take } from 'rxjs';
-import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { ChatbotService } from 'src/app/services/ChatbotService'; // Import your chatbot service
 
 @Component({
   selector: 'app-user-infos',
@@ -27,7 +25,6 @@ export class UserInfosComponent implements OnInit {
   private userService = inject(UserService);
   private translateService = inject(TranslateService);
   private loggerService = inject(LoggerService);
-  private chatbotService = inject(ChatbotService); // Inject chatbot service
 
   ngOnInit() {
     this.user.set(this.userAccessService.getCurrentUser());
@@ -53,9 +50,6 @@ export class UserInfosComponent implements OnInit {
         .subscribe((message: unknown) => {
           this.loggerService.success(message as string);
           this.ngOnInit();
-
-          // Reinitialize chatbot after saving settings
-          this.reinitChatbotIfNeeded(this.editedUser);
         });
     });
   }
@@ -68,38 +62,5 @@ export class UserInfosComponent implements OnInit {
     });
     this.dialogRef.afterClosed().subscribe(result => {
     });
-  }
-
-  onChatbotToggleChange(event: MatSlideToggleChange) {
-    this.editedUser.params.chatbotEnabled = event.checked;
-    if (!event.checked) {
-      // Clear API fields if disabled
-      this.editedUser.params.chatBotUrl = '';
-      this.editedUser.params.chatBotApiKey = '';
-      this.editedUser.params.chatBotModel = '';
-    }
-  }
-
-  private reinitChatbotIfNeeded(user: User): void {
-    if (user.params?.chatbotEnabled && user.params?.chatBotUrl && user.params?.chatBotApiKey) {
-      // Destroy existing chatbot
-      this.chatbotService.destroy();
-
-      // Initialize with new configuration
-      const config = {
-        url: user.params.chatBotUrl,
-        apiKey: user.params.chatBotApiKey,
-        iconUrl: 'https://your-site.com/chatbot-icon.png',
-        welcomeMessage: 'Hello! How can I help you?',
-        context: 'You are an expert assistant',
-        language: 'en'
-      };
-
-      this.chatbotService.initialize(config);
-      this.loggerService.success('Chatbot reconfigured successfully');
-    } else if (!user.params?.chatbotEnabled) {
-      // Destroy chatbot if disabled
-      this.chatbotService.destroy();
-    }
   }
 }

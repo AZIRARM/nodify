@@ -125,7 +125,6 @@ import { LockService } from './services/LockService';
 // Interceptors
 import { TokenInterceptor } from "./interceptors/TokenInterceptor";
 import { UnauthorizedComponent } from './components/ui/unauthorized/unauthorized.component';
-import { ChatbotService } from './services/ChatbotService';
 import { NewsletterComponent } from './components/content-node/content-code/content-code-html/newsletter/newsletter.component';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
@@ -284,8 +283,7 @@ export function defaultLanguage() {
     AuthGuard,
     CookiesService,
     LoaderService,
-    LockService,
-    ChatbotService
+    LockService
   ],
   bootstrap: [AppComponent],
   exports: [LoaderComponent]

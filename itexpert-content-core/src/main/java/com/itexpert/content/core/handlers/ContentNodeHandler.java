@@ -9,23 +9,22 @@ import com.itexpert.content.core.repositories.NodeRepository;
 import com.itexpert.content.core.utils.CommonsUtils;
 import com.itexpert.content.core.utils.RulesUtils;
 import com.itexpert.content.core.utils.SnapshotUtils;
+import com.itexpert.content.lib.enums.ContentTypeEnum;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @AllArgsConstructor
@@ -41,6 +40,7 @@ public class ContentNodeHandler {
     private final DataHandler dataHandler;
     private final ContentHelper contentHelper;
     private final ContentNodeSlugHelper contentNodeSlugHelper;
+    private final WebClient webClient;
 
     public Flux<ContentNode> findAll() {
         return contentNodeRepository.findAll().map(contentNode -> {
@@ -157,7 +157,76 @@ public class ContentNodeHandler {
                             });
                 })
                 .flatMap(model -> notify(model, NotificationEnum.DEPLOYMENT)
-                        .thenReturn(model));
+                        .flatMap(this::executeNewsletterTrigger)
+                        .flatMap(this::executeSsgTrigger)
+                );
+    }
+
+    private Mono<ContentNode> executeNewsletterTrigger(ContentNode model) {
+        if (model.isNewsletter()
+                && model.getType() != null
+                && ContentTypeEnum.HTML.name().equals(model.getType().name())
+                && model.getNewsletterContent() != null
+                && model.getNewsletterContent().getNewsLetterTriggerUrl() != null) {
+
+            Map<String, Object> clientPayload = new HashMap<>();
+            clientPayload.put("campaignCode", model.getNewsletterContent().getNewsLetterCampaignCode());
+            clientPayload.put("newsletterCode", model.getNewsletterContent().getNewsLetterCode());
+            clientPayload.put("contentCode", model.getCode());
+            clientPayload.put("title", model.getNewsletterContent().getNewsLetterTitle());
+            clientPayload.put("subject", model.getNewsletterContent().getNewsLetterSubject());
+            clientPayload.put("scheduledStart", model.getNewsletterContent().getNewsLetterCampaignCodeScheduleDate());
+            clientPayload.put("timestamp", Instant.now().toString());
+            clientPayload.put("startDate", model.getNewsletterContent().getNewsLetterCampaignStartDate());
+            clientPayload.put("endDate", model.getNewsletterContent().getNewsLetterCampaignEndDate());
+            clientPayload.put("emails", model.getNewsletterContent().getNewsLetterCampaignRecipients());
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("eventType", "newsletter");
+            body.put("clientPayload", clientPayload);
+
+            return webClient.post()
+                    .uri(model.getNewsletterContent().getNewsLetterTriggerUrl())
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + model.getNewsletterContent().getNewsLetterTriggerSecret())
+                    .bodyValue(body)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .flatMap(response -> this.notify(model, NotificationEnum.NEWSLETTER))
+                    .onErrorResume(e -> Mono.empty())
+                    .thenReturn(model);
+        }
+
+        return Mono.just(model);
+    }
+
+    private Mono<ContentNode> executeSsgTrigger(ContentNode model) {
+        if (model.isSsg() && model.getTriggerUrl() != null) {
+            Map<String, Object> clientPayload = new HashMap<>();
+            Map<String, Object> contentInfo = new HashMap<>();
+            contentInfo.put("code", model.getCode());
+            contentInfo.put("folder", model.getFolder());
+            contentInfo.put("type", model.getType());
+            contentInfo.put("timestamp", Instant.now().toString());
+            clientPayload.put("contents", List.of(contentInfo));
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("event_type", "ssg-content");
+            body.put("client_payload", clientPayload);
+
+            return webClient.post()
+                    .uri(model.getTriggerUrl())
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", model.getTriggerSecret() != null ? "Bearer " + model.getTriggerSecret() : null)
+                    .bodyValue(body)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .flatMap(response -> this.notify(model, NotificationEnum.SSG_CONTENT))
+                    .onErrorResume(e -> Mono.empty())
+                    .thenReturn(model);
+        }
+
+        return Mono.just(model);
     }
 
     public Flux<ContentNode> findAllByStatus(String status) {

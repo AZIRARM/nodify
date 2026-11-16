@@ -29,7 +29,6 @@ import { Subscription } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { ChatbotConfig, ChatbotService } from 'src/app/services/ChatbotService';
 
 @Component({
   selector: 'app-nodes',
@@ -83,10 +82,6 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   private lockService = inject(LockService);
   private dialog = inject(MatDialog);
 
-  private chatbotService = inject(ChatbotService);
-  isChatbotInitialized = signal<boolean>(false);
-  chatbotStatus = signal<string>('initializing');
-
   ngOnInit() {
     this.user.set(this.userAccessService.getCurrentUser());
     this.init();
@@ -112,7 +107,6 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.lockRefreshSub) {
       this.lockRefreshSub.unsubscribe();
     }
-    this.resetChatbot();
   }
 
   private initLocks(nodes: Node[]) {
@@ -160,7 +154,6 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         }
         this.initLocks(response);
         this.processNodes(response);
-        this.initChatbot();
       });
     }
     this.subscriptions.push(requestSub);
@@ -677,63 +670,5 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loggerService.error(translation);
       });
     });
-  }
-  isChatBotEnabled(): boolean {
-    /*
-    const user = this.userAccessService.getCurrentUser();
-    if (!user) {
-      return false;
-    }
-    return user.config && user.config.chatbotEnabled === true;
-    */
-    return true;
-  }
-
-  initChatbot(): void {
-    if (!this.isChatBotEnabled()) {
-      return;
-    }
-
-    const user = this.userAccessService.getCurrentUser();
-    const config: ChatbotConfig = {
-      /*url: user.params.chatbotUrl,
-      apiKey: user.params.chatbotApiKey,*/
-      url: "http://localhost:9000",
-      apiKey: "[ENCRYPTION_KEY]",
-      iconUrl: 'https://your-site.com/chatbot-icon.png',
-      welcomeMessage: 'Hello! How can I help you?',
-      context: 'You are an expert development assistant',
-      language: 'en'
-    };
-
-    this.chatbotService.initialize(config);
-    this.isChatbotInitialized.set(true);
-    this.chatbotStatus.set('ready');
-  }
-
-  resetChatbot(): void {
-    if (!this.isChatBotEnabled()) {
-      return;
-    }
-
-    this.chatbotService.destroy();
-    this.isChatbotInitialized.set(false);
-    this.chatbotStatus.set('reset');
-
-    const user = this.userAccessService.getCurrentUser();
-    const newConfig: ChatbotConfig = {
-      /*url: user.params.chatbotUrl,
-      apiKey: user.params.chatbotApiKey,*/
-      url: 'https://localhost:9000',
-      apiKey: '[ENCRYPTION_KEY]',
-      iconUrl: 'https://your-site.com/chatbot-icon.png',
-      welcomeMessage: 'Chatbot reset!',
-      context: 'New context',
-      language: 'en'
-    };
-
-    this.chatbotService.initialize(newConfig);
-    this.isChatbotInitialized.set(true);
-    this.chatbotStatus.set('ready');
   }
 }

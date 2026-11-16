@@ -3,6 +3,7 @@ package com.itexpert.content.api.mappers;
 import com.google.gson.Gson;
 import com.itexpert.content.lib.enums.ContentTypeEnum;
 import com.itexpert.content.lib.models.ContentNode;
+import com.itexpert.content.lib.models.NewsletterContent;
 import org.apache.commons.lang3.ObjectUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,7 +17,7 @@ public interface ContentNodeMapper {
             @Mapping(target = "triggerUrl", ignore = true),
             @Mapping(target = "triggerSecret", ignore = true),
             @Mapping(target = "newsletterContent", ignore = true),
-            @Mapping(target = "newsletter", ignore = true),
+            @Mapping(target = "newsletter", ignore = true)
     })
     ContentNode fromEntity(com.itexpert.content.lib.entities.ContentNode source);
 

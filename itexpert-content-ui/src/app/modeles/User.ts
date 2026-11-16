@@ -8,13 +8,4 @@ export class User {
   public validated: boolean;
   public roles: string[];
   public projects: string[];
-  public params: UserParams;
-}
-
-
-export class UserParams {
-  public chatBotUrl: string;
-  public chatBotApiKey: string;
-  public chatBotModel: string;
-  public chatbotEnabled: boolean;
 }

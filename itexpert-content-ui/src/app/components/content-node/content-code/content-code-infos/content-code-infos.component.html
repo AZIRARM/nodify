@@ -58,7 +58,7 @@
       <!-- Toggle SSG en tête d'onglet -->
       <div class="ssg-toggle-header">
         <mat-slide-toggle [(ngModel)]="contentNode.ssg">
-          {{ "SSG" | translate }} : {{ (contentNode.ssg ? 'ACTIVATED' : 'DEACTIVATED') | translate }}
+          {{ "SSG" | translate }} : {{ (contentNode.ssg ? 'YES' : 'NO') | translate }}
         </mat-slide-toggle>
       </div>
 
@@ -98,14 +98,10 @@
 
         </div>
       </div>
-      } @else {
-      <div class="ssg-disabled-message">
-        <mat-icon>info</mat-icon>
-        <span>{{ 'SSG_DISABLED_MESSAGE' | translate }}</span>
-      </div>
       }
     </div>
   </mat-tab>
+  @if (contentNode.type === "HTML") {
   <mat-tab label="{{ 'NEWSLETTER.FIELD' | translate }}">
     <div class="tab-content">
 
@@ -114,8 +110,10 @@
           {{ "NEWSLETTER.FIELD" | translate }} : {{ (contentNode.newsletter ? 'YES' : 'NO') | translate }}
         </mat-slide-toggle>
       </div>
+      @if(contentNode.newsletter){
       <app-newsletter [newsletterContent]="contentNode.newsletterContent"></app-newsletter>
+      }
     </div>
   </mat-tab>
-
+  }
 </mat-tab-group>

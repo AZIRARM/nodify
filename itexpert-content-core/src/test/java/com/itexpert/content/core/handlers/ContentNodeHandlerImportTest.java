@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -61,6 +62,9 @@ class ContentNodeHandlerImportTest {
 
     private ContentNodeHandler contentNodeHandler;
 
+    @Mock
+    private WebClient webClient;
+
     private com.itexpert.content.lib.models.ContentNode snapshotModel;
     private ContentNode snapshotEntity;
     private Notification mockNotification;
@@ -75,7 +79,8 @@ class ContentNodeHandlerImportTest {
                 notificationHandler,
                 dataHandler,
                 contentHelper,
-                contentNodeSlugHelper);
+                contentNodeSlugHelper,
+                webClient);
 
         mockNotification = Notification.builder()
                 .id(UUID.randomUUID())
