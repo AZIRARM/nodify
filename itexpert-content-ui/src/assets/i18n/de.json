@@ -407,6 +407,7 @@
   "FILE_LOCKED": "Datei gesperrt",
   "HTML": "HTML-Code",
   "SCRIPT": "JavaScript-Code",
+  "PYTHON": "Python (Erf.: KI-Agent)",
   "STYLE": "CSS-Code",
   "JSON": "JSON-Inhalt",
   "XML": "XML-Inhalt",

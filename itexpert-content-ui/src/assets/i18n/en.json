@@ -410,6 +410,7 @@
   "FILE_LOCKED": "File Locked",
   "HTML": "HTML Code",
   "SCRIPT": "JavaScript Code",
+  "PYTHON": "Python (exp: AI Agent)",
   "STYLE": "CSS Code",
   "JSON": "JSON Content",
   "XML": "XML Content",

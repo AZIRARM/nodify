@@ -107,8 +107,6 @@ import { UserService } from "./services/UserService";
 import { ParametersService } from "./services/ParametersService";
 import { NotificationService } from "./services/NotificationService";
 import { AccessRoleService } from "./services/AccessRoleService";
-import { FeedbackService } from "./services/FeedbackService";
-import { ContentClickService } from "./services/ContentClickService";
 import { ContentDisplayService } from "./services/ContentDisplayService";
 import { UserAccessService } from "./services/UserAccessService";
 import { AuthGuard } from "./services/AuthGuard";
@@ -126,6 +124,7 @@ import { LockService } from './services/LockService';
 import { TokenInterceptor } from "./interceptors/TokenInterceptor";
 import { UnauthorizedComponent } from './components/ui/unauthorized/unauthorized.component';
 import { NewsletterComponent } from './components/content-node/content-code/content-code-html/newsletter/newsletter.component';
+import { ContentCodePythonomponent } from './components/content-node/content-code/content-code-python/content-code-python.component';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -173,6 +172,7 @@ export function defaultLanguage() {
     ContentDatasComponent,
     ContentCodeComponent,
     ContentCodeJsComponent,
+    ContentCodePythonomponent,
     ContentCodeCssComponent,
     ContentCodeHtmlComponent,
     ContentCodeJsonComponent,
@@ -270,8 +270,6 @@ export function defaultLanguage() {
     ParametersService,
     NotificationService,
     AccessRoleService,
-    FeedbackService,
-    ContentClickService,
     ContentDisplayService,
     UserAccessService,
     ThemeService,

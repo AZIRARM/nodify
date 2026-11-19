@@ -406,6 +406,7 @@
   "FILE_LOCKED": "Fichier verrouillé",
   "HTML": "Code HTML",
   "SCRIPT": "Code JavaScript",
+  "PYTHON": "Python (ex.: Agent IA)",
   "STYLE": "Code CSS",
   "JSON": "Contenu JSON",
   "XML": "Contenu XML",

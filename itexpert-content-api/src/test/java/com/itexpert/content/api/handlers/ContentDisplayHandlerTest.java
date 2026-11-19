@@ -3,10 +3,8 @@ package com.itexpert.content.api.handlers;
 import com.itexpert.content.api.mappers.ContentDisplayMapper;
 import com.itexpert.content.api.repositories.ContentDisplayRepository;
 import com.itexpert.content.api.repositories.ContentNodeRepository;
-import com.itexpert.content.lib.enums.StatusEnum;
 import com.itexpert.content.lib.models.ContentDisplay;
-import com.itexpert.content.lib.models.ContentDisplayCharts;
-import org.apache.commons.lang3.ObjectUtils;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;

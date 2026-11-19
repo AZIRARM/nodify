@@ -47,26 +47,10 @@ export class ContentChartsComponent implements OnInit {
                 fontSize: 12,
                 formatter: (params: any) => {
                   const name = params.name || '';
-                  if (name.startsWith('FEEDBACK')) return `{feedback|${name}}`;
-                  if (name.startsWith('CLICKED')) return `{clicked|${name}}`;
                   if (name.startsWith('DISPLAYED')) return `{displayed|${name}}`;
                   return name;
                 },
                 rich: {
-                  feedback: {
-                    color: '#ffffff',
-                    backgroundColor: '#007bff',
-                    borderRadius: 4,
-                    padding: [2, 4],
-                    fontWeight: 'bold'
-                  },
-                  clicked: {
-                    color: '#ffffff',
-                    backgroundColor: '#28a745',
-                    borderRadius: 4,
-                    padding: [2, 4],
-                    fontWeight: 'bold'
-                  },
                   displayed: {
                     color: '#ffffff',
                     backgroundColor: '#ffc107',
@@ -114,9 +98,7 @@ export class ContentChartsComponent implements OnInit {
 
   private cleanTreeData(node: any): Observable<any> {
     const shouldTranslate = [
-      'FEEDBACKS', 'FEEDBACK', 'FEEDBACK_ALL',
-      'FEEDBACK_VERIFIED', 'FEEDBACK_NOT_VERIFIED',
-      'DISPLAYED', 'CLICKED'
+      'DISPLAYED'
     ];
 
     const isLeaf = !node.children || node.children.length === 0;
@@ -166,7 +148,7 @@ export class ContentChartsComponent implements OnInit {
   }
 
   private getIconForType(node: any): string {
-    if (!node.leaf && !node.type?.includes('FEEDBACK') && !node.type?.includes('NODIFY')) {
+    if (!node.leaf && !node.type?.includes('NODIFY')) {
       return 'image://assets/icons/node.svg';
     }
 
@@ -179,12 +161,7 @@ export class ContentChartsComponent implements OnInit {
       case 'STYLE': return 'image://assets/icons/css.svg';
       case 'FILE': return 'image://assets/icons/file.svg';
       case 'URLS': return 'image://assets/icons/url.svg';
-      case 'FEEDBACK': return 'image://assets/icons/feedback.svg';
-      case 'FEEDBACK_ALL': return 'image://assets/icons/all.svg';
-      case 'FEEDBACK_VERIFIED': return 'image://assets/icons/verified.svg';
-      case 'FEEDBACK_NOT_VERIFIED': return 'image://assets/icons/not_verified.svg';
       case 'DISPLAYED': return 'image://assets/icons/display.svg';
-      case 'CLICKED': return 'image://assets/icons/click.svg';
       case '0': return 'image://assets/icons/0.svg';
       case '1': return 'image://assets/icons/1.svg';
       case '2': return 'image://assets/icons/2.svg';

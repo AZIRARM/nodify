@@ -407,6 +407,8 @@
   "FILE_LOCKED": "Ficheiro bloqueado",
   "HTML": "Código HTML",
   "SCRIPT": "Código JavaScript",
+  "PYTHON": "Python (exp.: Agente de IA)",
+  "PYTHON": "Python ()",
   "STYLE": "Código CSS",
   "JSON": "Conteúdo JSON",
   "XML": "Conteúdo XML",

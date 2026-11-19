@@ -4,6 +4,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/markdown/markdown';
 import 'codemirror/mode/css/css';
 import 'codemirror/mode/htmlmixed/htmlmixed';
+import 'codemirror/mode/python/python';
 import 'codemirror/addon/display/fullscreen';
 
 import { AppModule } from './app/app.module';
