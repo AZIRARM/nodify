@@ -1,3 +1,4 @@
+
 package com.itexpert.content.api.endpoints;
 
 import com.itexpert.content.api.handlers.DataHandler;
@@ -15,7 +16,6 @@ import reactor.test.StepVerifier;
 
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,54 +56,66 @@ class DataEndPointTest {
         data.setModificationDate(987654321L);
     }
 
-    @Test
-    void findByContentCodeAndKeyShouldReturnData() {
-        when(dataHandler.findByContentNodeCodeAndKey(code, key)).thenReturn(Mono.just(data));
+    // GET /contents/{code} avec key
 
-        StepVerifier.create(dataEndPoint.findByContentCodeAndKey(code, key))
+    @Test
+    void findByContentCodeWithKeyShouldReturnData() {
+        when(dataHandler.findByContentNodeCodeAndKey(code, key))
+                .thenReturn(Mono.just(data));
+
+        StepVerifier.create(dataEndPoint.findByContentCode(code, key, null, 0, 50))
                 .expectNext(data)
                 .verifyComplete();
     }
 
     @Test
-    void findByContentCodeAndKeyShouldReturnEmpty() {
-        when(dataHandler.findByContentNodeCodeAndKey(code, key)).thenReturn(Mono.empty());
+    void findByContentCodeWithKeyShouldReturnEmpty() {
+        when(dataHandler.findByContentNodeCodeAndKey(code, key))
+                .thenReturn(Mono.empty());
 
-        StepVerifier.create(dataEndPoint.findByContentCodeAndKey(code, key))
+        StepVerifier.create(dataEndPoint.findByContentCode(code, key, null, 0, 50))
                 .verifyComplete();
     }
 
-    @Test
-    void findByContentCodeAndNameShouldReturnData() {
-        when(dataHandler.findByContentNodeCodeAndName(code, name)).thenReturn(Flux.just(data));
+    // GET /contents/{code} avec name
 
-        StepVerifier.create(dataEndPoint.findByContentCodeAndName(code, name))
+    @Test
+    void findByContentCodeWithNameShouldReturnData() {
+        when(dataHandler.findByContentNodeCodeAndName(code, name))
+                .thenReturn(Flux.just(data));
+
+        StepVerifier.create(dataEndPoint.findByContentCode(code, null, name, 0, 50))
                 .expectNext(data)
                 .verifyComplete();
     }
 
     @Test
-    void findByContentCodeAndNameShouldReturnEmpty() {
-        when(dataHandler.findByContentNodeCodeAndName(code, name)).thenReturn(Flux.empty());
+    void findByContentCodeWithNameShouldReturnEmpty() {
+        when(dataHandler.findByContentNodeCodeAndName(code, name))
+                .thenReturn(Flux.empty());
 
-        StepVerifier.create(dataEndPoint.findByContentCodeAndName(code, name))
+        StepVerifier.create(dataEndPoint.findByContentCode(code, null, name, 0, 50))
                 .verifyComplete();
     }
+
+    // GET /contents/{code} sans filtre (pagination)
 
     @Test
     void findByContentCodeShouldReturnData() {
-        when(dataHandler.findByContentCode(code, 0, 50)).thenReturn(Flux.just(data));
+        when(dataHandler.findByContentCode(code, 0, 50))
+                .thenReturn(Flux.just(data));
 
-        StepVerifier.create(dataEndPoint.findByContentCode(code, 0, 50))
+        StepVerifier.create(dataEndPoint.findByContentCode(code, null, null, 0, 50))
                 .expectNext(data)
                 .verifyComplete();
     }
 
     @Test
     void findByContentCodeShouldReturnEmpty() {
-        when(dataHandler.findByContentCode(code, 0, 50)).thenReturn(Flux.empty());
+        when(dataHandler.findByContentCode(code, 0, 50))
+                .thenReturn(Flux.empty());
 
-        StepVerifier.create(dataEndPoint.findByContentCode(code, 0, 50))
+        StepVerifier.create(dataEndPoint.findByContentCode(code, null, null, 0, 50))
                 .verifyComplete();
     }
 
@@ -127,7 +139,8 @@ class DataEndPointTest {
 
     @Test
     void countByContentCodeAndDataTypeShouldReturnCount() {
-        when(dataHandler.countByContentNodeCodeAndDataType(code, dataType)).thenReturn(Mono.just(3L));
+        when(dataHandler.countByContentNodeCodeAndDataType(code, dataType))
+                .thenReturn(Mono.just(3L));
 
         StepVerifier.create(dataEndPoint.countByContentCodeAndDataType(code, dataType))
                 .expectNext(3L)
@@ -136,7 +149,8 @@ class DataEndPointTest {
 
     @Test
     void countByContentCodeAndUserShouldReturnCount() {
-        when(dataHandler.countByContentNodeCodeAndUser(code, user)).thenReturn(Mono.just(2L));
+        when(dataHandler.countByContentNodeCodeAndUser(code, user))
+                .thenReturn(Mono.just(2L));
 
         StepVerifier.create(dataEndPoint.countByContentCodeAndUser(code, user))
                 .expectNext(2L)
@@ -197,7 +211,8 @@ class DataEndPointTest {
 
     @Test
     void findByDataTypeShouldReturnData() {
-        when(dataHandler.findByDataType(dataType, 0, 50)).thenReturn(Flux.just(data));
+        when(dataHandler.findByDataType(dataType, 0, 50))
+                .thenReturn(Flux.just(data));
 
         StepVerifier.create(dataEndPoint.findByDataType(dataType, 0, 50))
                 .expectNext(data)
@@ -206,7 +221,8 @@ class DataEndPointTest {
 
     @Test
     void findByDataTypeShouldReturnEmpty() {
-        when(dataHandler.findByDataType(dataType, 0, 50)).thenReturn(Flux.empty());
+        when(dataHandler.findByDataType(dataType, 0, 50))
+                .thenReturn(Flux.empty());
 
         StepVerifier.create(dataEndPoint.findByDataType(dataType, 0, 50))
                 .verifyComplete();
@@ -214,7 +230,8 @@ class DataEndPointTest {
 
     @Test
     void findByUserShouldReturnData() {
-        when(dataHandler.findByUser(user, 0, 50)).thenReturn(Flux.just(data));
+        when(dataHandler.findByUser(user, 0, 50))
+                .thenReturn(Flux.just(data));
 
         StepVerifier.create(dataEndPoint.findByUser(user, 0, 50))
                 .expectNext(data)
@@ -223,7 +240,8 @@ class DataEndPointTest {
 
     @Test
     void findByUserShouldReturnEmpty() {
-        when(dataHandler.findByUser(user, 0, 50)).thenReturn(Flux.empty());
+        when(dataHandler.findByUser(user, 0, 50))
+                .thenReturn(Flux.empty());
 
         StepVerifier.create(dataEndPoint.findByUser(user, 0, 50))
                 .verifyComplete();
@@ -231,7 +249,8 @@ class DataEndPointTest {
 
     @Test
     void searchByKeywordShouldReturnData() {
-        when(dataHandler.searchByKeyword(code, "keyword", 0, 50)).thenReturn(Flux.just(data));
+        when(dataHandler.searchByKeyword(code, "keyword", 0, 50))
+                .thenReturn(Flux.just(data));
 
         StepVerifier.create(dataEndPoint.searchByKeyword(code, "keyword", 0, 50))
                 .expectNext(data)
@@ -240,7 +259,8 @@ class DataEndPointTest {
 
     @Test
     void searchByKeywordShouldReturnEmpty() {
-        when(dataHandler.searchByKeyword(code, "keyword", 0, 50)).thenReturn(Flux.empty());
+        when(dataHandler.searchByKeyword(code, "keyword", 0, 50))
+                .thenReturn(Flux.empty());
 
         StepVerifier.create(dataEndPoint.searchByKeyword(code, "keyword", 0, 50))
                 .verifyComplete();
@@ -275,7 +295,8 @@ class DataEndPointTest {
 
     @Test
     void deleteByContentCodeAndKeyShouldReturnTrue() {
-        when(dataHandler.deleteByContentNodeCodeAndKey(code, key)).thenReturn(Mono.just(true));
+        when(dataHandler.deleteByContentNodeCodeAndKey(code, key))
+                .thenReturn(Mono.just(true));
 
         StepVerifier.create(dataEndPoint.deleteByContentCodeAndKey(code, key))
                 .expectNext(ResponseEntity.ok(true))

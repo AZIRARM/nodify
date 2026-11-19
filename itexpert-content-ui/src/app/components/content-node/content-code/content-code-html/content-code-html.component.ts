@@ -4,6 +4,8 @@ import { ContentNodeService } from "../../../../services/ContentNodeService";
 import { StatusEnum } from "../../../../modeles/StatusEnum";
 import { CodemirrorComponent } from "@ctrl/ngx-codemirror";
 import { MatDialogRef } from '@angular/material/dialog';
+import { NewsletterComponent } from "./newsletter/newsletter.component";
+import { NewsletterContent } from 'src/app/modeles/NewsletterContent';
 
 @Component({
   selector: 'app-content-code-html',

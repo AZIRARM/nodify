@@ -12,6 +12,7 @@ import com.itexpert.content.lib.models.UserPost;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -36,6 +37,8 @@ public class ContentNodeHandlerPublishTest {
 
     private ContentNodeSlugHelper contentNodeSlugHelper;
 
+    private WebClient webClient;
+
 
     @BeforeEach
     void setup() {
@@ -46,6 +49,7 @@ public class ContentNodeHandlerPublishTest {
         notificationHandler = mock(NotificationHandler.class);
         dataHandler = mock(DataHandler.class);
         contentHelper = mock(ContentHelper.class);
+        webClient = mock(WebClient.class);
         contentNodeHandler = new ContentNodeHandler(
                 contentNodeRepository,
                 contentNodeMapper,
@@ -54,7 +58,8 @@ public class ContentNodeHandlerPublishTest {
                 notificationHandler,
                 dataHandler,
                 contentHelper,
-                contentNodeSlugHelper);
+                contentNodeSlugHelper,
+                webClient);
 
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID())

@@ -23,18 +23,15 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        System.out.println("Loading Security Configuration...");
-
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                .authenticationManager(authenticationManager) // AJOUTER cette ligne
                 .securityContextRepository(securityContextRepository)
+                .authenticationManager(authenticationManager)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                        // .pathMatchers("/authentication/login").permitAll()
-                        .pathMatchers("/authentication/**").permitAll()
+                        .pathMatchers("/authentication/**").permitAll() // Laisse passer le login et /authentication/mode sans token
                         .pathMatchers("/.well-known/**").permitAll()
                         .pathMatchers("/v0/users/subscribe").permitAll()
                         .pathMatchers("/file").permitAll()
@@ -45,7 +42,7 @@ public class WebSecurityConfig {
                         .pathMatchers("/swagger-ui/**").permitAll()
                         .pathMatchers("/swagger-ui.html").permitAll()
                         .pathMatchers("/webjars/swagger-ui/**").permitAll()
-                        .anyExchange().authenticated())
+                        .anyExchange().authenticated()) // Exige un JWT valide pour tout le reste
                 .build();
     }
 

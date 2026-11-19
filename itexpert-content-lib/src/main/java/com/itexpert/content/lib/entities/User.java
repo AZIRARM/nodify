@@ -32,4 +32,7 @@ public class User implements Serializable, Cloneable {
     private List<String> roles;
 
     private List<String> projects;
+
+    private UserParameters params;
+
 }

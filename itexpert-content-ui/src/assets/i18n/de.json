@@ -407,6 +407,7 @@
   "FILE_LOCKED": "Datei gesperrt",
   "HTML": "HTML-Code",
   "SCRIPT": "JavaScript-Code",
+  "PYTHON": "Python (Erf.: KI-Agent)",
   "STYLE": "CSS-Code",
   "JSON": "JSON-Inhalt",
   "XML": "XML-Inhalt",
@@ -448,5 +449,17 @@
   "BASIC_INFORMATION": "Basisinformationen",
   "TECHNICAL_CONFIGURATION": "Technische Konfiguration",
   "LOAD_ERROR": "Fehler beim Laden",
-  "PARENT_NOT_IN_SUBNODES": "Der übergeordnete Knoten kann nicht in den untergeordneten Knoten sein"
+  "PARENT_NOT_IN_SUBNODES": "Der übergeordnete Knoten kann nicht in den untergeordneten Knoten sein",
+
+  "NEWSLETTER": {
+    "FIELD": "Newsletter",
+    "CODE": "Newsletter-Code",
+    "TITLE": "Titel",
+    "SUBJECT": "Betreff",
+    "CAMPAIGN_CODE": "Kampagnencode",
+    "CAMPAIGN_RECIPIENTS": "Empfänger",
+    "START_DATE": "Startdatum",
+    "END_DATE": "Enddatum",
+    "SCHEDULE_DATE": "Planungsdatum"
+  }
 }

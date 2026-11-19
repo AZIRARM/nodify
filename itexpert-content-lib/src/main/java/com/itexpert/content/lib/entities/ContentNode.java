@@ -77,6 +77,10 @@ public class ContentNode implements Serializable, Cloneable {
 
         private boolean ssg;
 
+        private NewsletterContent newsletterContent;
+
+        private boolean newsletter;
+
         public ContentNode clone() throws CloneNotSupportedException {
                 return (ContentNode) super.clone();
         }

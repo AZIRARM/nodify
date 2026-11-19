@@ -4,6 +4,7 @@ import { Rule } from "./Rule";
 import { ContentFile } from "./ContentFile";
 import { Translation } from "./Translation";
 import { LockInfo } from "./LockInfo";
+import { NewsletterContent } from "./NewsletterContent";
 
 export class ContentNode {
 
@@ -66,4 +67,8 @@ export class ContentNode {
   public fileName: string;
 
   public ssg: boolean;
+
+  public newsletter: boolean;
+
+  public newsletterContent: NewsletterContent;
 }

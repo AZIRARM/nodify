@@ -1,5 +1,7 @@
 package com.itexpert.content.api.helpers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itexpert.content.api.handlers.ContentDisplayHandler;
 import com.itexpert.content.api.mappers.ContentNodeMapper;
 import com.itexpert.content.api.repositories.ContentNodeRepository;
@@ -37,28 +39,13 @@ public class ContentHelper {
     private final PluginRepository pluginRepository;
     private final PluginHelper pluginHelper;
     private static final Pattern CONTENT_PATTERN = Pattern.compile("\\$content\\(([^)]+)\\)");
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-    /**
-     * Fills the content of a given ContentNode, handling nested content, translations, and values.
-     *
-     * @param element     The ContentNode to process.
-     * @param status      The status of the content.
-     * @param translation The translation language.
-     * @return A Mono emitting the processed ContentNode.
-     */
     public Mono<ContentNode> fillContents(ContentNode element, StatusEnum status, String translation) {
         return this.fillContentFactory(element, status, translation)
-                .onErrorReturn(element); // Returns original element on error.
+                .onErrorReturn(element);
     }
 
-    /**
-     * Recursive factory method to fill content, handling nested content references.
-     *
-     * @param element     The ContentNode to process.
-     * @param status      The status of the content.
-     * @param translation The translation language.
-     * @return A Mono emitting the processed ContentNode.
-     */
     Mono<ContentNode> fillContentFactory(ContentNode element, StatusEnum status, String translation) {
         List<String> codes = extractContentCodes(element.getContent());
 
@@ -73,37 +60,38 @@ public class ContentHelper {
 
         return getContents(codes, status)
                 .collectList()
-                .flatMap(children ->
-                        Flux.fromIterable(children)
-                                .flatMap(child -> fillContentFactory(child, status, translation))
-                                .collectList()
-                                .flatMap(resolvedChildren -> {
-                                    // remplacer uniquement les enfants valides
-                                    String newContent = element.getContent();
-                                    for (ContentNode child : resolvedChildren) {
-                                        newContent = newContent.replace("$content(" + child.getCode() + ")", child.getContent());
-                                    }
-                                    element.setContent(newContent);
+                .flatMap(children -> {
+                    if (children.isEmpty()) {
+                        log.warn("No ContentNode resolved for codes={} with status={} (parent code={})",
+                                codes, status, element.getCode());
+                    }
+                    return Flux.fromIterable(children)
+                            .flatMap(child -> fillContentFactory(child, status, translation))
+                            .collectList()
+                            .flatMap(resolvedChildren -> {
+                                String newContent = element.getContent();
+                                for (ContentNode child : resolvedChildren) {
+                                    newContent = newContent.replace(
+                                            "$content(" + child.getCode() + ")",
+                                            renderAsJsonValue(child.getContent())
+                                    );
+                                }
+                                element.setContent(newContent);
 
-                                    // finaliser puis évaluer le parent
-                                    return finalizeContent(element, status, translation)
-                                            .flatMap(finalized ->
-                                                    RulesUtils.evaluateContentNode(contentNodeMapper.fromEntity(finalized))
-                                                            .filter(Boolean::booleanValue)
-                                                            .map(keep -> finalized)
-                                            );
-                                })
-                );
+                                return finalizeContent(element, status, translation)
+                                        .flatMap(finalized ->
+                                                RulesUtils.evaluateContentNode(contentNodeMapper.fromEntity(finalized))
+                                                        .filter(Boolean::booleanValue)
+                                                        .map(keep -> finalized)
+                                        );
+                            });
+                });
     }
-
-
 
     private List<String> extractContentCodes(String content) {
         List<String> codes = new ArrayList<>();
         if (content == null) return codes;
-
         Matcher matcher = CONTENT_PATTERN.matcher(content);
-
         while (matcher.find()) {
             codes.add(matcher.group(1).trim());
         }
@@ -115,6 +103,11 @@ public class ContentHelper {
                 .collectList()
                 .map(nodes -> {
                     Node parentNode = this.getParentNode(nodes, element.getParentCode());
+                    if (parentNode == null) {
+                        log.warn("No parent Node found for ContentNode code={} parentCode={} status={} " +
+                                 "— $value()/$translate() will NOT be resolved",
+                                element.getCode(), element.getParentCode(), status);
+                    }
                     if (parentNode != null) {
                         element.setContent(this.translate(element, element.getTranslations(),
                                 ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
@@ -132,48 +125,32 @@ public class ContentHelper {
                         .thenReturn(element));
     }
 
-    /**
-     * Translates content based on given translations and default language.
-     *
-     * @param content         The ContentNode to translate.
-     * @param translations    List of translations.
-     * @param defaultLanguage Default language for translation.
-     * @return The translated content string.
-     */
     private String translate(ContentNode content, List<Translation> translations, String defaultLanguage) {
         if (ObjectUtils.isNotEmpty(translations) && ObjectUtils.isNotEmpty(content)) {
             for (Translation translation : translations) {
                 if (translation.getLanguage().trim().toUpperCase().equals(defaultLanguage.trim().toUpperCase())) {
-                    content.setContent(content.getContent().replace("$translate(" + translation.getKey().trim() + ")", translation.getValue()));
+                    content.setContent(content.getContent().replace(
+                            "$translate(" + translation.getKey().trim() + ")",
+                            jsonEscape(translation.getValue())
+                    ));
                 }
             }
         }
         return content.getContent();
     }
 
-    /**
-     * Fills content with values based on given values.
-     *
-     * @param content The ContentNode to fill values in.
-     * @param values  List of values.
-     * @return The content string with filled values.
-     */
     private String fillValues(ContentNode content, List<Value> values) {
         if (ObjectUtils.isNotEmpty(values) && ObjectUtils.isNotEmpty(content)) {
             for (Value value : values) {
-                content.setContent(content.getContent().replace("$value(" + value.getKey() + ")", value.getValue()));
+                content.setContent(content.getContent().replace(
+                        "$value(" + value.getKey() + ")",
+                        jsonEscape(value.getValue())
+                ));
             }
         }
         return content.getContent();
     }
 
-    /**
-     * Retrieves the parent Node from a list of Nodes based on the parent code.
-     *
-     * @param nodes List of Nodes.
-     * @param code  Parent code to search for.
-     * @return The parent Node, or null if not found.
-     */
     private Node getParentNode(List<Node> nodes, String code) {
         if (ObjectUtils.isNotEmpty(nodes) && ObjectUtils.isNotEmpty(code)) {
             for (Node node : nodes) {
@@ -185,45 +162,26 @@ public class ContentHelper {
         return null;
     }
 
-    /**
-     * Retrieves parent Nodes for a list of ContentNodes.
-     *
-     * @param contentNodes List of ContentNodes.
-     * @param status       The status of the Nodes.
-     * @return A Flux emitting parent Nodes.
-     */
     private Flux<Node> getNodes(List<ContentNode> contentNodes, StatusEnum status) {
         return Flux.fromIterable(contentNodes)
                 .flatMap(contentNode -> this.findParentsRecursive(contentNode.getParentCode(), status))
                 .distinct(Node::getCode);
     }
 
-    /**
-     * Retrieves parent Nodes for a single ContentNode.
-     *
-     * @param element The ContentNode.
-     * @param status  The status of the Nodes.
-     * @return A Flux emitting parent Nodes.
-     */
     private Flux<Node> getNodes(ContentNode element, StatusEnum status) {
         return Mono.just(element)
                 .flatMapMany(contentNode -> this.findParentsRecursive(contentNode.getParentCode(), status))
                 .distinct(Node::getCode);
     }
 
-    /**
-     * Retrieves ContentNodes based on a list of content codes.
-     *
-     * @param contentCodes List of content codes.
-     * @param status       The status of the ContentNodes.
-     * @return A Flux emitting ContentNodes.
-     */
     private Flux<ContentNode> getContents(List<String> contentCodes, StatusEnum status) {
         return Flux.fromIterable(contentCodes)
                 .flatMap(contentCode -> this.contentNodeRepository.findByCodeAndStatus(contentCode, status.name()))
                 .flatMap(this::addDisplay)
                 .flatMap(contentNode -> {
-                    if (ObjectUtils.isNotEmpty(contentNode) && ObjectUtils.isNotEmpty(contentNode.getContent()) && contentNode.getContent().contains("$content(")) {
+                    if (ObjectUtils.isNotEmpty(contentNode)
+                            && ObjectUtils.isNotEmpty(contentNode.getContent())
+                            && contentNode.getContent().contains("$content(")) {
                         return Flux.concat(Flux.just(contentNode), this.getContents(getContentCodes(contentNode), status));
                     }
                     return Flux.just(contentNode);
@@ -231,29 +189,16 @@ public class ContentHelper {
                 .distinct(ContentNode::getCode);
     }
 
-    /**
-     * Extracts content codes from a ContentNode's content.
-     *
-     * @param element The ContentNode.
-     * @return List of extracted content codes.
-     */
     private static List<String> getContentCodes(ContentNode element) {
-        Matcher matcher = Pattern.compile("\\$content\\(.*\\)").matcher(element.getContent());
         List<String> codes = new LinkedList<>();
+        if (element == null || element.getContent() == null) return codes;
+        Matcher matcher = CONTENT_PATTERN.matcher(element.getContent());
         while (matcher.find()) {
-            String fragment = matcher.group();
-            String code = fragment.replace("$content(", "").replace(")", "");
-            codes.add(code);
+            codes.add(matcher.group(1).trim());
         }
         return codes;
     }
 
-    /**
-     * Adds display information to a ContentNode.
-     *
-     * @param contentNode The ContentNode.
-     * @return A Mono emitting the ContentNode with display information.
-     */
     private Mono<ContentNode> addDisplay(ContentNode contentNode) {
         return this.contentDisplayHandler.findByContentCode(contentNode.getCode())
                 .switchIfEmpty(Mono.just(new ContentDisplay()))
@@ -266,18 +211,10 @@ public class ContentHelper {
                 }).flatMap(Mono::from);
     }
 
-    /**
-     * Recursively finds parent Nodes based on parent code.
-     *
-     * @param parentCode The parent code.
-     * @param status     The status of the Nodes.
-     * @return A Flux emitting parent Nodes.
-     */
     protected Flux<Node> findParentsRecursive(String parentCode, StatusEnum status) {
         if (ObjectUtils.isEmpty(parentCode)) {
             return Flux.empty();
         }
-
         return this.nodeRepository.findByCodeAndStatus(parentCode, status.name())
                 .flatMapMany(node -> {
                     if (ObjectUtils.isNotEmpty(node.getParentCode())) {
@@ -291,7 +228,6 @@ public class ContentHelper {
                 });
     }
 
-
     public Mono<com.itexpert.content.lib.models.ContentNode> evaluateContent(String code, StatusEnum status) {
         return this.findByCodeAndStatus(code, status)
                 .switchIfEmpty(Mono.empty());
@@ -304,5 +240,42 @@ public class ContentHelper {
                         .filter(aBoolean -> aBoolean)
                         .map(aBoolean -> content)
                 );
+    }
+
+    /**
+     * Échappe une valeur brute pour insertion DANS une chaîne JSON existante
+     * (cas des $value(...) et $translate(...) qui sont déjà entre guillemets).
+     */
+    private String jsonEscape(String raw) {
+        if (raw == null) return null;
+        return raw.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+    }
+
+    /**
+     * Rend le contenu d'un ContentNode enfant comme une VALEUR JSON valide,
+     * à injecter à la place d'un $content(...) qui est en position de valeur.
+     *
+     * Deux cas :
+     *  - contenu enfant = JSON valide (objet, tableau, scalaire) → injecté tel quel
+     *  - contenu enfant = texte brut (Python, SQL, HTML…) → injecté comme string JSON échappée
+     */
+    private String renderAsJsonValue(String raw) {
+        if (raw == null) return "null";
+        try {
+            JsonNode node = JSON_MAPPER.readTree(raw);
+            return JSON_MAPPER.writeValueAsString(node);
+        } catch (Exception e) {
+            log.debug("Child content is not JSON — rendering as JSON string value");
+            try {
+                return JSON_MAPPER.writeValueAsString(raw);
+            } catch (Exception ex) {
+                log.error("Cannot serialize child content as JSON string", ex);
+                return "\"\"";
+            }
+        }
     }
 }

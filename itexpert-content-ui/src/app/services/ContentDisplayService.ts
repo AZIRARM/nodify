@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Service} from "./Service";
 import {HttpClient} from "@angular/common/http";
-import {Feedback} from "../modeles/Feedback";
 
 @Injectable()
 export class ContentDisplayService extends Service {

@@ -33,6 +33,7 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatBadgeModule } from "@angular/material/badge";
 import { MatCardModule } from "@angular/material/card";
 import { MatChipsModule } from "@angular/material/chips";
+import { MatTabsModule } from '@angular/material/tabs';
 
 // Third party
 import { ToastrModule } from 'ngx-toastr';
@@ -106,8 +107,6 @@ import { UserService } from "./services/UserService";
 import { ParametersService } from "./services/ParametersService";
 import { NotificationService } from "./services/NotificationService";
 import { AccessRoleService } from "./services/AccessRoleService";
-import { FeedbackService } from "./services/FeedbackService";
-import { ContentClickService } from "./services/ContentClickService";
 import { ContentDisplayService } from "./services/ContentDisplayService";
 import { UserAccessService } from "./services/UserAccessService";
 import { AuthGuard } from "./services/AuthGuard";
@@ -124,6 +123,8 @@ import { LockService } from './services/LockService';
 // Interceptors
 import { TokenInterceptor } from "./interceptors/TokenInterceptor";
 import { UnauthorizedComponent } from './components/ui/unauthorized/unauthorized.component';
+import { NewsletterComponent } from './components/content-node/content-code/content-code-html/newsletter/newsletter.component';
+import { ContentCodePythonomponent } from './components/content-node/content-code/content-code-python/content-code-python.component';
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -171,6 +172,7 @@ export function defaultLanguage() {
     ContentDatasComponent,
     ContentCodeComponent,
     ContentCodeJsComponent,
+    ContentCodePythonomponent,
     ContentCodeCssComponent,
     ContentCodeHtmlComponent,
     ContentCodeJsonComponent,
@@ -188,7 +190,8 @@ export function defaultLanguage() {
     NodesViewDialogComponent,
     LoaderComponent,
     ReleaseLocksComponent,
-    UnauthorizedComponent
+    UnauthorizedComponent,
+    NewsletterComponent
   ],
   imports: [
     BrowserModule,
@@ -251,6 +254,7 @@ export function defaultLanguage() {
     MatCardModule,
     MatChipsModule,
     CodemirrorModule,
+    MatTabsModule
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
@@ -266,8 +270,6 @@ export function defaultLanguage() {
     ParametersService,
     NotificationService,
     AccessRoleService,
-    FeedbackService,
-    ContentClickService,
     ContentDisplayService,
     UserAccessService,
     ThemeService,

@@ -174,3 +174,12 @@
 ::ng-deep .CodeMirror-linenumber {
   color: #858585 !important;
 }
+
+.newsletter-section {
+  width: 100%;
+  margin-bottom: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  box-sizing: border-box;
+}

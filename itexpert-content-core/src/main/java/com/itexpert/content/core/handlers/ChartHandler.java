@@ -20,9 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class ChartHandler {
 
-    private final ContentClickHandler contentClickHandler;
     private final ContentDisplayHandler contentDisplayHandler;
-    private final FeedbackHandler feedbackHandler;
     private final NodeHandler nodeHandler;
     private final ContentNodeHandler contentNodeHandler;
 
@@ -73,9 +71,7 @@ public class ChartHandler {
                     treeNode.setChildren(children);
                     return treeNode;
                 })
-                .flatMap(this::fillDisplays)
-                .flatMap(this::fillClicks)
-                .flatMap(this::fillFeedbacks);
+                .flatMap(this::fillDisplays);
     }
 
     private Mono<Node> setContentsNodeWithStatus(Node node, String status) {
@@ -133,118 +129,6 @@ public class ChartHandler {
                     treeParent.setChildren(updatedChildren);
                     return treeParent;
                 });
-    }
-
-    private Mono<TreeNode> fillClicks(TreeNode treeParent) {
-        List<TreeNode> children = treeParent.getChildren();
-
-        return Flux.fromIterable(children)
-                .flatMap(child -> {
-                    if (child.isLeaf()) {
-                        return this.contentClickHandler.getChartsByContentCode(child.getCode())
-                                .collectList()
-                                .map(clickCharts -> {
-                                    if (ObjectUtils.isEmpty(child.getChildren())) {
-                                        child.setChildren(new ArrayList<>());
-                                    }
-
-                                    // Supprimer un nœud CLICKED existant
-                                    child.getChildren().removeIf(n -> "CLICKED".equals(n.getName()));
-
-                                    TreeNode clickNode = new TreeNode();
-                                    clickNode.setName("CLICKED");
-                                    clickNode.setType("CLICKED");
-
-                                    long total = clickCharts.stream()
-                                            .mapToLong(chart -> {
-                                                try {
-                                                    return Long.parseLong(chart.getValue());
-                                                } catch (NumberFormatException e) {
-                                                    return 0;
-                                                }
-                                            })
-                                            .sum();
-
-                                    clickNode.setValue(String.valueOf(total));
-                                    clickNode.setLeaf(true);
-
-                                    child.getChildren().add(clickNode);
-                                    return child;
-                                });
-                    } else {
-                        return fillClicks(child);
-                    }
-                })
-                .collectList()
-                .map(updatedChildren -> {
-                    treeParent.setChildren(updatedChildren);
-                    return treeParent;
-                });
-    }
-
-    private Mono<TreeNode> fillFeedbacks(TreeNode treeParent) {
-        List<TreeNode> children = treeParent.getChildren();
-
-        return Flux.fromIterable(children)
-                .flatMap(child -> {
-                    if (child.isLeaf()) {
-                        return this.feedbackHandler.getContentChartsByContent(child.getCode())
-                                .map(feedbackCharts -> {
-                                    if (ObjectUtils.isEmpty(child.getChildren())) {
-                                        child.setChildren(new ArrayList<>());
-                                    }
-
-                                    // Supprimer un nœud FEEDBACKS existant
-                                    child.getChildren().removeIf(n -> "FEEDBACKS".equals(n.getName()));
-
-                                    TreeNode feedbacksParent = new TreeNode();
-                                    feedbacksParent.setName("FEEDBACKS");
-                                    feedbacksParent.setType("FEEDBACK");
-                                    feedbacksParent.setChildren(new ArrayList<>());
-
-                                    feedbacksParent.getChildren().add(createFeedbackNode("FEEDBACK_ALL", aggregateChartsByName(feedbackCharts.getCharts())));
-                                    feedbacksParent.getChildren().add(createFeedbackNode("FEEDBACK_VERIFIED", feedbackCharts.getVerified()));
-                                    feedbacksParent.getChildren().add(createFeedbackNode("FEEDBACK_NOT_VERIFIED", feedbackCharts.getNotVerified()));
-
-                                    child.getChildren().add(feedbacksParent);
-                                    return child;
-                                });
-                    } else {
-                        return fillFeedbacks(child);
-                    }
-                })
-                .collectList()
-                .map(updatedChildren -> {
-                    treeParent.setChildren(updatedChildren);
-                    return treeParent;
-                });
-    }
-
-    private TreeNode createFeedbackNode(String name, List<Chart> charts) {
-        TreeNode feedbackNode = new TreeNode();
-        feedbackNode.setName(name);
-        feedbackNode.setType(name);
-        feedbackNode.setChildren(new ArrayList<>());
-
-        if (charts != null && !charts.isEmpty()) {
-            // Grouper par name, puis compter le nombre de valeurs associées à chaque name
-
-            charts.forEach(chart -> {
-                TreeNode evalNode = new TreeNode();
-                evalNode.setName(chart.getName()); // Exemple : "1", "2", etc.
-                evalNode.setValue(chart.getValue());
-                evalNode.setType(chart.getName());// Exemple : 3
-                evalNode.setLeaf(true);
-                feedbackNode.getChildren().add(evalNode);
-            });
-
-        }
-        List<TreeNode> children = feedbackNode.getChildren();
-        if (children != null) {
-            children.sort(Comparator.comparing(TreeNode::getName));
-        }
-
-        return feedbackNode;
     }
 
     private List<Chart> aggregateChartsByName(List<Chart> charts) {

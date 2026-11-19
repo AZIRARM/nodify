@@ -19,4 +19,8 @@ public class UserParameters {
     private String defaultLanguage;
     private String theme;
     private boolean ai;
+
+    private String chatbotUrl;
+    private String chatbotApiKey;
+    private String chatbotModel;
 }

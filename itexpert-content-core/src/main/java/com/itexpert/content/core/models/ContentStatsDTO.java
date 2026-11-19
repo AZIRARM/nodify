@@ -12,6 +12,5 @@ import java.util.Map;
 public class ContentStatsDTO {
     private String contentCode;
     private int displays;
-    private int clicks;
     private Map<Integer, Long> feedbacksPerEvaluation; // clé = note (1–5), valeur = nombre
 }
