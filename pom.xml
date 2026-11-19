@@ -22,49 +22,10 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
-    <!-- SonarQube Configuration -->
-    <sonar.host.url>https://sonar.azirar.ovh</sonar.host.url>
-    <sonar.token>${env.SONAR_TOKEN}</sonar.token>
-    <sonar.projectKey>com.nodify:parent</sonar.projectKey>
-    <sonar.projectName>Nodify - Parent</sonar.projectName>
-    <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
-    <sonar.ws.ignoreCertificates>true</sonar.ws.ignoreCertificates>
-    <sonar.java.binaries>target/classes</sonar.java.binaries>
-    
-    <!-- Exclude all pom.xml files and test files -->
-    <sonar.exclusions>
-      **/pom.xml,
-      **/node_modules/**,
-      **/dist/**,
-      **/*.spec.ts,
-      **/*.test.ts,
-      **/coverage/**,
-      **/target/**
-    </sonar.exclusions>
-    
-    <!-- Java binaries (only where code exists) -->
-    <sonar.java.binaries>
-      itexpert-content-core/target/classes
-    </sonar.java.binaries>
-    
-    <!-- Java coverage (only core has tests) -->
-    <sonar.coverage.jacoco.xmlReportPaths>
-      itexpert-content-core/target/site/jacoco/jacoco.xml
-    </sonar.coverage.jacoco.xmlReportPaths>
-    
-    <!-- Angular/TypeScript coverage (if exists) -->
-    <sonar.typescript.lcov.reportPaths>itexpert-content-ui/coverage/lcov.info</sonar.typescript.lcov.reportPaths>
-    <sonar.javascript.lcov.reportPaths>itexpert-content-ui/coverage/lcov.info</sonar.javascript.lcov.reportPaths>
   </properties>
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.sonarsource.scanner.maven</groupId>
-        <artifactId>sonar-maven-plugin</artifactId>
-        <version>3.10.0.2594</version>
-      </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
