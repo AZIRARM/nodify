@@ -38,8 +38,13 @@ public class ContentHelper {
     private final NodeRepository nodeRepository;
     private final PluginRepository pluginRepository;
     private final PluginHelper pluginHelper;
+    
     private static final Pattern CONTENT_PATTERN = Pattern.compile("\\$content\\(([^)]+)\\)");
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final ObjectMapper JSON_MAPPER;
+    static {
+        JSON_MAPPER = new ObjectMapper();
+        JSON_MAPPER.configure(com.fasterxml.jackson.core.JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
+    }
 
     public Mono<ContentNode> fillContents(ContentNode element, StatusEnum status, String translation) {
         return this.fillContentFactory(element, status, translation)
@@ -73,7 +78,7 @@ public class ContentHelper {
                                 for (ContentNode child : resolvedChildren) {
                                     newContent = newContent.replace(
                                             "$content(" + child.getCode() + ")",
-                                            renderAsJsonValue(child.getContent())
+                                            renderAsJsonValue(child.getContent()) // <-- C'est ici que la magie opère
                                     );
                                 }
                                 element.setContent(newContent);
@@ -243,8 +248,8 @@ public class ContentHelper {
     }
 
     /**
-     * Échappe une valeur brute pour insertion DANS une chaîne JSON existante
-     * (cas des $value(...) et $translate(...) qui sont déjà entre guillemets).
+     * Escapes a raw value for insertion INTO an existing JSON string
+     * (used for $value(...) and $translate(...) which are already inside quotes).
      */
     private String jsonEscape(String raw) {
         if (raw == null) return null;
@@ -256,26 +261,70 @@ public class ContentHelper {
     }
 
     /**
-     * Rend le contenu d'un ContentNode enfant comme une VALEUR JSON valide,
-     * à injecter à la place d'un $content(...) qui est en position de valeur.
-     *
-     * Deux cas :
-     *  - contenu enfant = JSON valide (objet, tableau, scalaire) → injecté tel quel
-     *  - contenu enfant = texte brut (Python, SQL, HTML…) → injecté comme string JSON échappée
+     * Renders the content of a child ContentNode as a valid JSON value.
+     * 
+     * Three cases handled:
+     * 1. Child is a valid JSON object/array -> injected natively (no extra quotes).
+     * 2. Child is a stringified JSON in DB (e.g., "{\"name\":\"fetch\"}") -> unwrapped and injected natively.
+     * 3. Child is plain text/code (e.g., Python) -> injected as a properly escaped JSON string.
+     * 
+     * Additionally, it strips HTML entities (\u003E, \u003C, \u0026) that Jackson 
+     * or Spring might inject by default, which would break Python code (e.g., >, <, &).
      */
     private String renderAsJsonValue(String raw) {
         if (raw == null) return "null";
+        
         try {
+            // First parsing attempt
             JsonNode node = JSON_MAPPER.readTree(raw);
-            return JSON_MAPPER.writeValueAsString(node);
+            
+            // CRITICAL FIX: If the parsed node is a TextNode, it means the content 
+            // in the database is a stringified JSON (e.g., "{\"name\":\"fetch\"}").
+            // We must try to parse the inner string to get the actual JSON object/array.
+            if (node.isTextual()) {
+                String innerText = node.asText();
+                try {
+                    // Second parsing attempt on the inner text
+                    JsonNode innerNode = JSON_MAPPER.readTree(innerText);
+                    // Successfully parsed inner JSON! Return it without surrounding quotes.
+                    return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(innerNode));
+                } catch (Exception innerEx) {
+                    // Inner text is NOT JSON (e.g., it's your Python code). 
+                    // We MUST return it as a valid JSON string (with quotes and escaped).
+                    try {
+                        return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(innerText));
+                    } catch (Exception ex) {
+                        // Ultimate fallback: manual escaping
+                        return "\"" + jsonEscape(innerText) + "\"";
+                    }
+                }
+            }
+            
+            // It's already a valid JSON object, array, or primitive (number, boolean).
+            // Return it as-is (no extra quotes added).
+            return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(node));
+            
         } catch (Exception e) {
-            log.debug("Child content is not JSON — rendering as JSON string value");
+            // The raw content is not JSON at all (e.g., a plain Python script).
+            // We MUST return it as a valid JSON string (with quotes and escaped).
             try {
-                return JSON_MAPPER.writeValueAsString(raw);
+                return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(raw));
             } catch (Exception ex) {
-                log.error("Cannot serialize child content as JSON string", ex);
-                return "\"\"";
+                // Ultimate fallback: manual escaping if Jackson somehow fails on a simple string
+                return "\"" + jsonEscape(raw) + "\"";
             }
         }
+    }
+
+    /**
+     * Helper method to strip HTML entities injected by Jackson or Spring Security.
+     * Jackson escapes <, >, and & to \u003C, \u003E, and \u0026 by default to prevent XSS.
+     * This breaks Python code (e.g., 'if len(x) > 10'), so we revert them to their raw characters.
+     */
+    private String unescapeHtmlEntities(String json) {
+        if (json == null) return null;
+        return json.replace("\\u003E", ">")
+                   .replace("\\u003C", "<")
+                   .replace("\\u0026", "&");
     }
 }
