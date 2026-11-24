@@ -411,6 +411,7 @@
   "HTML": "HTML Code",
   "SCRIPT": "JavaScript Code",
   "PYTHON": "Python (exp: AI Agent)",
+  "TXT": "Text",
   "STYLE": "CSS Code",
   "JSON": "JSON Content",
   "XML": "XML Content",

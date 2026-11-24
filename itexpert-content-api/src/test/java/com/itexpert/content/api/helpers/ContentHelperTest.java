@@ -402,4 +402,262 @@ class ContentHelperTest {
         when(contentDisplayHandler.addDisplay(anyString()))
                 .thenReturn(Mono.just(true));
     }
+
+    @Test
+    void testFillContents_ValueResolvedWithoutParentNode() {
+        ContentNode element = new ContentNode();
+        element.setCode("NO-PARENT-VALUE");
+        element.setContent("{\"provider\":\"$value(provider)\"}");
+        // Pas de parentCode → parentNode sera null
+
+        Value value = new Value();
+        value.setKey("provider");
+        value.setValue("ollama");
+        element.setValues(List.of(value));
+
+        mockCommonFinalization();
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> {
+                    assertFalse(result.getContent().contains("$value(provider)"),
+                            "Le $value() doit être résolu même sans parent Node");
+                    assertDoesNotThrow(() -> {
+                        JsonNode root = new ObjectMapper().readTree(result.getContent());
+                        assertEquals("ollama", root.get("provider").asText());
+                    });
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testFillContents_TranslateResolvedWithoutParentNode() {
+        ContentNode element = new ContentNode();
+        element.setCode("NO-PARENT-TRANSLATE");
+        element.setContent("{\"msg\":\"$translate(HELLO)\"}");
+
+        Translation fr = new Translation();
+        fr.setLanguage("fr");
+        fr.setKey("HELLO");
+        fr.setValue("Bonjour");
+        element.setTranslations(List.of(fr));
+
+        mockCommonFinalization();
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> {
+                    assertFalse(result.getContent().contains("$translate(HELLO)"),
+                            "Le $translate() doit être résolu même sans parent Node");
+                    assertDoesNotThrow(() -> {
+                        JsonNode root = new ObjectMapper().readTree(result.getContent());
+                        assertEquals("Bonjour", root.get("msg").asText());
+                    });
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testFillContents_TranslateFallsBackToEnglishWhenNoParentAndNoExplicitLang() {
+        ContentNode element = new ContentNode();
+        element.setCode("EN-FALLBACK");
+        element.setContent("{\"msg\":\"$translate(HELLO)\"}");
+
+        Translation en = new Translation();
+        en.setLanguage("en");
+        en.setKey("HELLO");
+        en.setValue("Hello");
+
+        Translation fr = new Translation();
+        fr.setLanguage("fr");
+        fr.setKey("HELLO");
+        fr.setValue("Bonjour");
+
+        element.setTranslations(List.of(en, fr));
+
+        mockCommonFinalization();
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, null))
+                .assertNext(result -> assertDoesNotThrow(() -> {
+                    JsonNode root = new ObjectMapper().readTree(result.getContent());
+                    assertEquals("Hello", root.get("msg").asText(),
+                            "Doit tomber sur la traduction 'en' par défaut (pas 'fr')");
+                }))
+                .verifyComplete();
+    }
+
+
+    @Test
+    void testFillContents_NullValueDoesNotThrowAndOtherValuesResolved() {
+        ContentNode element = new ContentNode();
+        element.setCode("NULL-VALUE");
+        element.setContent("{\"a\":\"$value(A)\",\"b\":\"$value(B)\"}");
+
+        Value a = new Value();
+        a.setKey("A");
+        a.setValue("alpha");
+
+        Value b = new Value();
+        b.setKey("B");
+        b.setValue(null);   // <-- déclencheur de la NPE avant le correctif
+
+        element.setValues(List.of(a, b));
+
+        mockCommonFinalization();
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> {
+                    // A doit être résolu
+                    assertFalse(result.getContent().contains("$value(A)"),
+                            "Le Value 'A' valide doit être résolu malgré le null de 'B'");
+                    // B reste en placeholder (on ne remplace pas par null)
+                    assertTrue(result.getContent().contains("$value(B)"),
+                            "Le placeholder du Value null reste en place, on ne remplace pas par null");
+                    // Et surtout : le contenu reste un JSON valide (pas de NPE)
+                    assertDoesNotThrow(() -> new ObjectMapper().readTree(result.getContent()));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testFillContents_NullTranslationValueDoesNotThrowAndOtherTranslationsResolved() {
+        ContentNode element = new ContentNode();
+        element.setCode("NULL-TRANSLATION");
+        element.setContent("{\"a\":\"$translate(A)\",\"b\":\"$translate(B)\"}");
+
+        Translation a = new Translation();
+        a.setLanguage("fr");
+        a.setKey("A");
+        a.setValue("alpha");
+
+        Translation b = new Translation();
+        b.setLanguage("fr");
+        b.setKey("B");
+        b.setValue(null);
+
+        element.setTranslations(List.of(a, b));
+
+        mockCommonFinalization();
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> {
+                    assertFalse(result.getContent().contains("$translate(A)"));
+                    assertTrue(result.getContent().contains("$translate(B)"));
+                    assertDoesNotThrow(() -> new ObjectMapper().readTree(result.getContent()));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testFillContents_NullValueKeyDoesNotThrow() {
+        ContentNode element = new ContentNode();
+        element.setCode("NULL-KEY");
+        element.setContent("{\"a\":\"$value(A)\"}");
+
+        Value a = new Value();
+        a.setKey("A");
+        a.setValue("alpha");
+
+        Value nullKey = new Value();
+        nullKey.setKey(null);
+        nullKey.setValue("whatever");
+
+        element.setValues(List.of(a, nullKey));
+
+        mockCommonFinalization();
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> {
+                    assertFalse(result.getContent().contains("$value(A)"));
+                    assertDoesNotThrow(() -> new ObjectMapper().readTree(result.getContent()));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testFillContents_ValueAndTranslateBothResolvedWithoutParent() {
+        ContentNode element = new ContentNode();
+        element.setCode("BOTH-NO-PARENT");
+        element.setContent("{\"provider\":\"$value(provider)\",\"msg\":\"$translate(HELLO)\"}");
+
+        Value value = new Value();
+        value.setKey("provider");
+        value.setValue("gemini");
+        element.setValues(List.of(value));
+
+        Translation tr = new Translation();
+        tr.setLanguage("fr");
+        tr.setKey("HELLO");
+        tr.setValue("Salut");
+        element.setTranslations(List.of(tr));
+
+        mockCommonFinalization();
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> {
+                    assertFalse(result.getContent().contains("$value(provider)"));
+                    assertFalse(result.getContent().contains("$translate(HELLO)"));
+                    assertDoesNotThrow(() -> {
+                        JsonNode root = new ObjectMapper().readTree(result.getContent());
+                        assertEquals("gemini", root.get("provider").asText());
+                        assertEquals("Salut", root.get("msg").asText());
+                    });
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testFillContents_NullValueOnChildDoesNotAbortParentResolution() {
+        ContentNode parent = new ContentNode();
+        parent.setCode("PARENT-NULL-CHILD");
+        parent.setContent("{\"v\":\"$value(V)\",\"child\":$content(CHILD)}");
+
+        Value parentValue = new Value();
+        parentValue.setKey("V");
+        parentValue.setValue("parent-ok");
+        parent.setValues(List.of(parentValue));
+
+        ContentNode child = new ContentNode();
+        child.setCode("CHILD");
+        child.setContent("{\"x\":\"$value(X)\"}");
+
+        Value childValue = new Value();
+        childValue.setKey("X");
+        childValue.setValue(null);
+        child.setValues(List.of(childValue));
+
+        mockCommonFinalization();
+        mockChildResolution("CHILD", child);
+
+        StepVerifier.create(contentHelper.fillContents(parent, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> {
+                    // Le parent ne doit PAS être renvoyé brut
+                    assertFalse(result.getContent().contains("$value(V)"),
+                            "La valeur du parent doit être résolue malgré le null chez l'enfant");
+                    assertFalse(result.getContent().contains("$content(CHILD)"),
+                            "Le $content() doit avoir été substitué");
+                    assertDoesNotThrow(() -> {
+                        JsonNode root = new ObjectMapper().readTree(result.getContent());
+                        assertEquals("parent-ok", root.get("v").asText());
+                        assertTrue(root.get("child").has("x"));
+                        // Le placeholder du child reste en place mais le JSON est valide
+                        assertEquals("$value(X)", root.get("child").get("x").asText());
+                    });
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testFillContents_OnErrorReturnsRawElement() {
+        ContentNode element = new ContentNode();
+        element.setCode("ERROR-CASE");
+        element.setContent("plain text");
+        String originalContent = element.getContent();
+
+        when(pluginHelper.fillPlugin(any()))
+                .thenReturn(Mono.error(new RuntimeException("boom")));
+
+        StepVerifier.create(contentHelper.fillContents(element, StatusEnum.PUBLISHED, "fr"))
+                .assertNext(result -> assertEquals(originalContent, result.getContent(),
+                        "En cas d'erreur, l'élément brut est renvoyé (onErrorReturn)"))
+                .verifyComplete();
+    }
 }

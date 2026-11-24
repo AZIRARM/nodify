@@ -113,7 +113,6 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -137,7 +136,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- JaCoCo Plugin pour la couverture de tests -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
