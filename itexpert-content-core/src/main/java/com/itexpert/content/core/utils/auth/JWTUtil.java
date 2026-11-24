@@ -2,6 +2,8 @@ package com.itexpert.content.core.utils.auth;
 
 import com.itexpert.content.lib.models.UserPost;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.InitializingBean;
@@ -67,7 +69,14 @@ public class JWTUtil implements InitializingBean {
                 .compact();
     }
 
-    public Boolean validateToken(String token) {
-        return !isTokenExpired(token);
+    public boolean validateToken(String token) {
+        try {
+            getAllClaimsFromToken(token);
+            return true;
+        } catch (ExpiredJwtException e) {
+            return false;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }

@@ -714,4 +714,139 @@ public class NodeHandlerPublishTest {
                 // NON-atomicité
                 // En exécutant plusieurs fois, vous verrez parfois publishedInDb > 1
         }
+
+
+        @Test
+        void findAllChildren_shouldPrioritizeSnapshotOverPublishedForSameCode() {
+                String parentCode = "PARENT-DEV";
+                String childCode = "CHILD-DEV";
+
+                Node childPublished = new Node();
+                childPublished.setId(UUID.randomUUID());
+                childPublished.setCode(childCode);
+                childPublished.setStatus(StatusEnum.PUBLISHED);
+                childPublished.setVersion("1");
+
+                Node childSnapshot = new Node();
+                childSnapshot.setId(UUID.randomUUID());
+                childSnapshot.setCode(childCode);
+                childSnapshot.setStatus(StatusEnum.SNAPSHOT);
+                childSnapshot.setVersion("2");
+
+                when(nodeRepository.findByCodeOrCodeParent(parentCode))
+                        .thenReturn(Flux.just(childPublished, childSnapshot));
+
+                when(nodeRepository.findByCodeOrCodeParent(childCode))
+                        .thenReturn(Flux.empty());
+
+                StepVerifier.create(nodeHandler.findAllChildren(parentCode))
+                        .expectNextMatches(node ->
+                                node.getCode().equals(childCode) &&
+                                        node.getStatus().equals(StatusEnum.SNAPSHOT) &&
+                                        node.getVersion().equals("2")
+                        )
+                        .verifyComplete();
+        }
+
+        @Test
+        void findAllChildren_shouldPrioritizeHigherVersionWhenStatusesAreIdentical() {
+                String parentCode = "PARENT-DEV";
+                String childCode = "CHILD-DEV";
+
+                Node childSnapshotV1 = new Node();
+                childSnapshotV1.setId(UUID.randomUUID());
+                childSnapshotV1.setCode(childCode);
+                childSnapshotV1.setStatus(StatusEnum.SNAPSHOT);
+                childSnapshotV1.setVersion("1");
+
+                Node childSnapshotV2 = new Node();
+                childSnapshotV2.setId(UUID.randomUUID());
+                childSnapshotV2.setCode(childCode);
+                childSnapshotV2.setStatus(StatusEnum.SNAPSHOT);
+                childSnapshotV2.setVersion("2");
+
+                when(nodeRepository.findByCodeOrCodeParent(parentCode))
+                        .thenReturn(Flux.just(childSnapshotV1, childSnapshotV2));
+
+                when(nodeRepository.findByCodeOrCodeParent(childCode))
+                        .thenReturn(Flux.empty());
+
+                StepVerifier.create(nodeHandler.findAllChildren(parentCode))
+                        .expectNextMatches(node ->
+                                node.getCode().equals(childCode) &&
+                                        node.getStatus().equals(StatusEnum.SNAPSHOT) &&
+                                        node.getVersion().equals("2")
+                        )
+                        .verifyComplete();
+        }
+
+        @Test
+        void publish_shouldProcessChildSnapshotAndNotFailWhenChildAlreadyHasPublishedVersion() {
+                String parentCode = "PARENT-DEV";
+                String childCode = "CHILD-DEV";
+                String user = "Admin";
+
+                Node parentSnapshot = new Node();
+                parentSnapshot.setId(UUID.randomUUID());
+                parentSnapshot.setCode(parentCode);
+                parentSnapshot.setStatus(StatusEnum.SNAPSHOT);
+                parentSnapshot.setVersion("1");
+
+                Node parentPublished = new Node();
+                parentPublished.setId(UUID.randomUUID());
+                parentPublished.setCode(parentCode);
+                parentPublished.setStatus(StatusEnum.PUBLISHED);
+                parentPublished.setVersion("0");
+
+                Node childPublished = new Node();
+                childPublished.setId(UUID.randomUUID());
+                childPublished.setCode(childCode);
+                childPublished.setStatus(StatusEnum.PUBLISHED);
+                childPublished.setVersion("1");
+
+                Node childSnapshot = new Node();
+                childSnapshot.setId(UUID.randomUUID());
+                childSnapshot.setCode(childCode);
+                childSnapshot.setStatus(StatusEnum.SNAPSHOT);
+                childSnapshot.setVersion("2");
+
+                when(nodeRepository.findByCodeAndStatus(parentCode, StatusEnum.SNAPSHOT.name()))
+                        .thenReturn(Mono.just(parentSnapshot));
+
+                when(nodeRepository.findByCodeAndStatus(parentCode, StatusEnum.PUBLISHED.name()))
+                        .thenReturn(Mono.just(parentPublished));
+
+                when(nodeRepository.findByCodeOrCodeParent(parentCode))
+                        .thenReturn(Flux.just(childPublished, childSnapshot));
+
+                when(nodeRepository.findByCodeOrCodeParent(childCode))
+                        .thenReturn(Flux.empty());
+
+                when(nodeRepository.findByCodeAndStatus(childCode, StatusEnum.PUBLISHED.name()))
+                        .thenReturn(Mono.just(childPublished));
+
+                when(nodeRepository.save(any(Node.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+                when(contentNodeHandler.findAllByNodeCodeAndStatus(any(), any())).thenReturn(Flux.empty());
+
+                NodeHandler spyHandler = Mockito.spy(nodeHandler);
+
+                StepVerifier.create(spyHandler.publish(parentCode, user))
+                        .assertNext(node -> {
+                                assert node.getStatus().equals(StatusEnum.PUBLISHED);
+                                assert node.getCode().equals(parentCode);
+                        })
+                        .verifyComplete();
+
+                ArgumentCaptor<Node> saveCaptor = ArgumentCaptor.forClass(Node.class);
+                verify(nodeRepository, atLeast(3)).save(saveCaptor.capture());
+
+                List<Node> savedNodes = saveCaptor.getAllValues();
+                boolean childSnapshotProcessed = savedNodes.stream()
+                        .anyMatch(n -> n.getCode().equals(childCode) &&
+                                n.getStatus().equals(StatusEnum.PUBLISHED) &&
+                                n.getVersion().equals("2"));
+
+                assert childSnapshotProcessed;
+        }
 }

@@ -3,13 +3,14 @@ import {
   OnInit,
   OnDestroy,
   inject,
-  signal,
-  effect
+  signal
 } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { TranslateService } from "@ngx-translate/core";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { interval, Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { SidenavService } from "../../../services/SidenavService";
 import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
@@ -38,21 +39,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private userAccessService = inject(UserAccessService);
 
   user = signal<any>(null);
-
   theme = signal('dark');
-
   nbNotifications = signal(0);
-
-  selectedLanguage = signal(
-    window.localStorage.getItem("defaultLanguage") || 'fr'
-  );
-
+  selectedLanguage = signal(window.localStorage.getItem("defaultLanguage") || 'fr');
   isDarkMode = signal(this.themeService.isDarkModeEnabled());
-
   isToolbarVisible = signal(false);
-
   showHint = signal(true);
-
   activeLink = signal('workspace');
 
   languageList = [
@@ -65,16 +57,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
 
   private hideTimer: any;
-  private websocketSubscription: any = null;
+  private websocketSubscription: Subscription | null = null;
+  private pollingSubscription: Subscription | null = null;
+  private mouseMoveListener: any;
   dialogRef!: MatDialogRef<ValidationDialogComponent>;
 
   ngOnInit() {
-
-    document.addEventListener('mousemove', (e) => {
+    this.mouseMoveListener = (e: MouseEvent) => {
       if (e.clientY < 10 && !this.isToolbarVisible()) {
         this.showToolbar();
       }
-    });
+    };
+    document.addEventListener('mousemove', this.mouseMoveListener);
 
     this.themeService.setTheme();
     this.initCountUreadedNotifications();
@@ -87,6 +81,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.websocketSubscription) {
       this.websocketSubscription.unsubscribe();
     }
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+    }
+    if (this.mouseMoveListener) {
+      document.removeEventListener('mousemove', this.mouseMoveListener);
+    }
   }
 
   isAdmin(): boolean {
@@ -98,11 +98,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-
     this.translate.get("LOGOUT_TITLE").subscribe(trad1 => {
-
       this.translate.get("LOGOUT_MESSAGE").subscribe(trad2 => {
-
         this.dialogRef = this.dialog.open(ValidationDialogComponent, {
           data: {
             title: trad1,
@@ -114,23 +111,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
         });
 
         this.dialogRef.afterClosed().subscribe(result => {
-
           if (result?.data === 'validated') {
             this.cookiesService.eraseAllCookies();
             this.router.navigate(["/login"]);
             window.location.reload();
           }
-
         });
-
       });
-
     });
-
   }
 
   initCountUreadedNotifications() {
-
     if (!this.authenticationService.isAuthenticated()) return;
 
     if (this.websocketSubscription) {
@@ -140,17 +131,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.websocketSubscription = this.notificationService
       .connectWebSocket(this.authenticationService.getAccessToken())
       .subscribe({
-
-        next: (data: any) => {
-          this.nbNotifications.set(data.count || 0);
+        next: (rawData: any) => {
+          const payload = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+          const count = typeof payload?.count === 'number' ? payload.count : 0;
+          this.nbNotifications.set(count);
         },
-
         error: (err: any) => console.error("Erreur WebSocket:", err),
-
         complete: () => console.log("Socket fermé")
-
       });
 
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+    }
+
+    this.pollingSubscription = interval(30000).pipe(
+      switchMap(() => this.notificationService.getUnreadCount())
+    ).subscribe({
+      next: (count: number) => {
+        this.nbNotifications.set(count);
+      },
+      error: (err: any) => console.error("Erreur polling notifications:", err)
+    });
   }
 
   changeSiteLanguage(localeCode: string): void {
@@ -170,9 +171,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   getCurrentLanguageLabel(): string {
-    const current = this.languageList
-      .find(lang => lang.code === this.selectedLanguage());
-
+    const current = this.languageList.find(lang => lang.code === this.selectedLanguage());
     return current ? current.label : this.selectedLanguage();
   }
 
@@ -183,7 +182,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   startHideTimer() {
     this.cancelHideTimer();
-
     this.hideTimer = setTimeout(() => {
       this.isToolbarVisible.set(false);
     }, 1500);

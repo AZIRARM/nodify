@@ -3,6 +3,7 @@ package com.itexpert.content.core.handlers.websockets;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itexpert.content.core.handlers.NotificationHandler;
+import com.itexpert.content.lib.models.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,9 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -24,6 +27,38 @@ import java.util.Map;
 public class NotificationSocketHandler implements WebSocketHandler {
 
     private final NotificationHandler notificationHandler;
+    private final ObjectMapper objectMapper;
+
+    private static final class NotificationSnapshot {
+        private final long count;
+        private final List<Notification> unread;
+
+        private NotificationSnapshot(long count, List<Notification> unread) {
+            this.count = count;
+            this.unread = unread;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+        public List<Notification> getUnread() {
+            return unread;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof NotificationSnapshot)) return false;
+            NotificationSnapshot that = (NotificationSnapshot) o;
+            return count == that.count && Objects.equals(unread, that.unread);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(count, unread);
+        }
+    }
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
@@ -38,23 +73,47 @@ public class NotificationSocketHandler implements WebSocketHandler {
 
         String userId = WebSocketAuthUtil.extractEmailFromToken(token);
 
-        int page = queryParams.getFirst("page") != null ? Integer.parseInt(queryParams.getFirst("page")) : 0;
-        int limit = queryParams.getFirst("limit") != null ? Integer.parseInt(queryParams.getFirst("limit")) : 50;
+        int page = parseIntOrDefault(queryParams.getFirst("page"), 0);
+        int limit = parseIntOrDefault(queryParams.getFirst("limit"), 50);
 
-        Flux<String> notifFlux = Flux.interval(Duration.ofSeconds(5))
+        Flux<NotificationSnapshot> snapshots = Flux.concat(
+                        Mono.just(0L),
+                        Flux.interval(Duration.ofSeconds(10))
+                )
                 .flatMap(tick -> notificationHandler.countUnreaded(userId)
                         .zipWith(notificationHandler.unreadedByUser(userId, page, limit).collectList())
-                        .map(tuple -> Map.of(
-                                "count", tuple.getT1(),
-                                "unread", tuple.getT2())))
-                .map(obj -> {
+                        .map(tuple -> new NotificationSnapshot(tuple.getT1(), tuple.getT2()))
+                        .onErrorResume(ex -> {
+                            log.warn("Failed to fetch notifications for user={}", userId, ex);
+                            return Mono.empty();
+                        }))
+                .distinctUntilChanged();
+
+        Flux<String> notifFlux = snapshots
+                .flatMap(snapshot -> {
+                    Map<String, Object> payload = Map.of(
+                            "count", snapshot.getCount(),
+                            "unread", snapshot.getUnread()
+                    );
                     try {
-                        return new ObjectMapper().writeValueAsString(obj);
+                        return Mono.just(objectMapper.writeValueAsString(payload));
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        log.error("Failed to serialize notifications for user={}", userId, e);
+                        return Mono.empty();
                     }
                 });
 
         return session.send(notifFlux.map(session::textMessage));
+    }
+
+    private int parseIntOrDefault(String value, int defaultValue) {
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            return defaultValue;
+        }
     }
 }

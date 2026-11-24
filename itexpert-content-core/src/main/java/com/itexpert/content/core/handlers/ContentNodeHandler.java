@@ -16,7 +16,6 @@ import com.itexpert.content.lib.models.ContentNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -53,13 +52,22 @@ public class ContentNodeHandler {
     }
 
     public Mono<ContentNode> save(ContentNode contentNode) {
-        return Mono.just(contentNode).filter(model -> ObjectUtils.isEmpty(model.getId()))
-                .flatMap(model -> contentNodeRepository
-                        .findByCodeAndStatus(contentNode.getCode(), StatusEnum.SNAPSHOT.name())
-                        .map(entity -> Mono.empty())
-                        .switchIfEmpty(saveFactory(contentNode, true))
+        return Mono.defer(() -> {
+            if (contentNode.getId() != null) {
+                return saveFactory(contentNode, false);
+            }
 
-                ).switchIfEmpty(this.saveFactory(contentNode, false));
+            return contentNodeRepository
+                    .findByCodeAndStatus(
+                            contentNode.getCode(),
+                            StatusEnum.SNAPSHOT.name()
+                    )
+                    .hasElement()
+                    .flatMap(exists -> exists
+                            ? Mono.<ContentNode>empty()
+                            : saveFactory(contentNode, true)
+                    );
+        });
     }
 
     private Mono saveFactory(ContentNode model, boolean isCreation) {
@@ -68,8 +76,12 @@ public class ContentNodeHandler {
                 contentNode.setId(UUID.randomUUID());
                 contentNode.setVersion("0");
                 contentNode.setStatus(StatusEnum.SNAPSHOT);
-                contentNode.setCreationDate(Instant.now().toEpochMilli());
-                contentNode.setModificationDate(contentNode.getCreationDate());
+
+                long now = Instant.now().toEpochMilli();
+                contentNode.setCreationDate(now);
+                contentNode.setModificationDate(now);
+
+                contentNode.setCode(generateCode(contentNode));
             } else {
                 contentNode.setModificationDate(Instant.now().toEpochMilli());
             }
@@ -110,6 +122,25 @@ public class ContentNodeHandler {
                 .onErrorReturn(Boolean.FALSE);
     }
 
+    private String generateCode(ContentNode contentNode) {
+
+        long timestamp = Instant.now().toEpochMilli();
+
+        String formattedType = Optional.ofNullable(contentNode.getType())
+                .map(Enum::name)
+                .orElse("CONTENT")
+                .replaceAll("[\\W_]+", "_")
+                .toUpperCase();
+
+        String prefix = Optional.ofNullable(contentNode.getParentCode())
+                .filter(code -> !code.isBlank())
+                .orElseGet(() -> Optional.ofNullable(contentNode.getCode())
+                        .filter(code -> !code.isBlank())
+                        .orElse("CONTENT"))
+                .split("-")[0];
+
+        return formattedType + "-" + prefix + "-" + timestamp;
+    }
     public Flux<ContentNode> findByNodeCodeAndStatus(String nodeCode, String status) {
         return contentNodeRepository.findByNodeCodeAndStatus(nodeCode, status)
                 .map(contentNodeMapper::fromEntity);

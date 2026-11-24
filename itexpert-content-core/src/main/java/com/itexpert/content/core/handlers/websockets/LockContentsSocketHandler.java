@@ -2,7 +2,7 @@ package com.itexpert.content.core.handlers.websockets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itexpert.content.core.handlers.RedisHandler;
+import com.itexpert.content.core.handlers.LockHandler;
 import com.itexpert.content.core.models.LockInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LockContentsSocketHandler implements WebSocketHandler {
 
-    private final RedisHandler redisHandler;
+    private final LockHandler lockHandler;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -34,12 +34,15 @@ public class LockContentsSocketHandler implements WebSocketHandler {
 
         log.info("WebSocket connection established for lock contents - session: {}", session.getId());
 
-        Flux<List<LockInfo>> locksListFlux = Flux.interval(Duration.ofSeconds(2))
-                .flatMap(tick -> redisHandler.getAllLocks()
-                        .collectList())
-                .doOnError(error -> log.error("Error retrieving locks from Redis", error))
-                .retry(3)
-                .onErrorResume(error -> Flux.empty());
+        Flux<List<LockInfo>> locksListFlux = Flux.concat(
+                        Mono.just(0L),
+                        Flux.interval(Duration.ofSeconds(5))
+                )
+                .flatMap(tick -> lockHandler.getAllLocks()
+                        .collectList()
+                        .onErrorResume(error -> Mono.just(List.of()))
+                )
+                .distinctUntilChanged();
 
         Flux<String> jsonFlux = locksListFlux
                 .map(locksList -> {
