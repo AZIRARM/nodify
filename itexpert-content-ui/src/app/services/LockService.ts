@@ -1,9 +1,9 @@
-import { Injectable, Inject, NgZone } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Service } from "./Service";
-import { AuthenticationService } from './AuthenticationService';
-import { interval, fromEvent, merge, Subscription, timer, forkJoin, Observable, of } from 'rxjs';
-import { debounceTime, switchMap } from 'rxjs/operators';
+import {Injectable, NgZone} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Service} from "./Service";
+import {AuthenticationService} from './AuthenticationService';
+import {fromEvent, interval, merge, Observable, of, Subscription, timer} from 'rxjs';
+import {debounceTime, switchMap} from 'rxjs/operators';
 import {Env} from "../../assets/configurations/environment";
 
 @Injectable()
@@ -24,17 +24,35 @@ export class LockService extends Service {
   }
 
   getLockInfoSocket(code: string, token: string): Observable<LockInfo> {
+    const self = this;
     return new Observable<LockInfo>(observer => {
       let socket: WebSocket;
       let reconnectTimeout: any;
+      let isUnsubscribed = false;
 
       function connect() {
+        if (isUnsubscribed) return;
+
         socket = new WebSocket(`${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/owner/?code=${code}&authorization=Bearer ${token}`);
 
-        socket.onmessage = event => observer.next(JSON.parse(event.data));
-        socket.onerror = err => observer.error(err);
+        socket.onmessage = event => {
+          if (isUnsubscribed) return;
+          self.ngZone.run(() => {
+            try {
+              observer.next(JSON.parse(event.data));
+            } catch (e) {
+              console.error('Parse error', e);
+            }
+          });
+        };
+
+        socket.onerror = err => {
+          if (isUnsubscribed) return;
+          self.ngZone.run(() => observer.error(err));
+        };
+
         socket.onclose = () => {
-          // Reconnexion après 3 secondes
+          if (isUnsubscribed) return;
           reconnectTimeout = setTimeout(connect, 3000);
         };
       }
@@ -42,16 +60,17 @@ export class LockService extends Service {
       connect();
 
       return () => {
+        isUnsubscribed = true;
         clearTimeout(reconnectTimeout);
-        socket.close();
+        if (socket) {
+          socket.onclose = null;
+          socket.onerror = null;
+          socket.onmessage = null;
+          socket.close();
+        }
       };
     });
   }
-
-/*
-getAll(): Observable<any[]>{
-  return super.get("all");
-}*/
 
   // --- Acquérir un lock ---
   acquire(code: string) {
@@ -130,30 +149,56 @@ getAll(): Observable<any[]>{
     });
   }
 
-handleAllLocks(): Observable<any> {
+  handleAllLocks(): Observable<LockInfo[]> {
+    const self = this;
     const token = this.authenticationService.getAccessToken();
+    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/lock-contents?authorization=Bearer ${encodeURIComponent(token)}`;
 
-    const url = `${Env.EXPERT_CONTENT_CORE_WEBSOCKET}/lock-contents?authorization=Bearer ${token}`;
+    return new Observable<LockInfo[]>(observer => {
+      let socket: WebSocket;
+      let reconnectTimeout: any;
+      let isUnsubscribed = false;
 
-    return new Observable(observer => {
+      function connect() {
+        if (isUnsubscribed) return;
 
-      const socket = new WebSocket(url);
+        socket = new WebSocket(url);
 
-      socket.onmessage = (event) => {
-        observer.next(JSON.parse(event.data));
+        socket.onmessage = (event) => {
+          if (isUnsubscribed) return;
+          self.ngZone.run(() => {
+            try {
+              const locksList = JSON.parse(event.data);
+              observer.next(locksList);
+            } catch (e) {
+              console.error('Parse error', e);
+            }
+          });
+        };
+
+        socket.onerror = (event) => {
+          if (isUnsubscribed) return;
+          self.ngZone.run(() => observer.error(event));
+        };
+
+        socket.onclose = () => {
+          if (isUnsubscribed) return;
+          reconnectTimeout = setTimeout(connect, 3000);
+        };
+      }
+
+      connect();
+
+      return () => {
+        isUnsubscribed = true;
+        clearTimeout(reconnectTimeout);
+        if (socket) {
+          socket.onclose = null;
+          socket.onerror = null;
+          socket.onmessage = null;
+          socket.close();
+        }
       };
-
-      socket.onerror = (event) => {
-        observer.error(event);
-      };
-
-      socket.onclose = () => {
-        observer.complete();
-      };
-
-      // Cleanup à l’unsubscribe
-      return () => socket.close();
     });
   }
-
 }

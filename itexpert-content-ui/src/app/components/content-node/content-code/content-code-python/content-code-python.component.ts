@@ -9,7 +9,7 @@ import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
     styleUrl: './content-code-python.component.css',
     standalone: false
 })
-export class ContentCodePythonomponent implements AfterViewInit{
+export class ContentCodePythonComponent implements AfterViewInit{
 
   @Output()
   @Input()

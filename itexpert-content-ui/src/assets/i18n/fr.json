@@ -407,6 +407,7 @@
   "HTML": "Code HTML",
   "SCRIPT": "Code JavaScript",
   "PYTHON": "Python (ex.: Agent IA)",
+  "TXT": "Texte",
   "STYLE": "Code CSS",
   "JSON": "Contenu JSON",
   "XML": "Contenu XML",

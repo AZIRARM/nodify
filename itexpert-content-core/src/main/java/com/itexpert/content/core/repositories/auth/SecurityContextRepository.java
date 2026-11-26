@@ -2,6 +2,7 @@ package com.itexpert.content.core.repositories.auth;
 
 import com.itexpert.content.core.handlers.UserHandler;
 import com.itexpert.content.core.utils.auth.AuthenticationManager;
+import io.jsonwebtoken.ExpiredJwtException; // <-- AJOUTER CET IMPORT
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -65,9 +66,16 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
                     log.info("Authentication successful for: {}", authentication.getPrincipal());
                     return Mono.just((SecurityContext) new SecurityContextImpl(authentication));
                 })
-                .doOnError(error -> log.error("Authentication error: {}", error.getMessage()))
+                .onErrorResume(ExpiredJwtException.class, e -> {
+                    log.warn("Token JWT expiré pour la requête : {} {}", swe.getRequest().getMethod(), swe.getRequest().getURI());
+                    return Mono.empty();
+                })
+                .onErrorResume(Exception.class, e -> {
+                    log.warn("Échec d'authentification (Token invalide ou autre erreur) : {}", e.getMessage());
+                    return Mono.empty();
+                })
                 .switchIfEmpty(Mono.defer(() -> {
-                    log.warn("Authentication failed - no authenticated user");
+                    log.debug("Authentication failed or empty - no security context loaded");
                     return Mono.empty();
                 }));
     }

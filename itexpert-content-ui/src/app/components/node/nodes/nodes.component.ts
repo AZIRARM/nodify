@@ -1,34 +1,33 @@
-import { Component, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, signal, WritableSignal } from '@angular/core';
-import { TranslateService } from "@ngx-translate/core";
-import { Router } from '@angular/router';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit, signal, ViewChild, WritableSignal} from '@angular/core';
+import {TranslateService} from "@ngx-translate/core";
+import {Router} from '@angular/router';
 
-import { Node } from "../../../modeles/Node";
-import { NodeService } from "../../../services/NodeService";
-import { MatTableDataSource, MatTable } from "@angular/material/table";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { NodeDialogComponent } from "../node-dialog/node-dialog.component";
-import { LoggerService } from "../../../services/LoggerService";
-import { LockService } from "../../../services/LockService";
-import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
-import { ValuesDialogComponent } from "../../commons/values-dialog/values-dialog.component";
-import { NodeRulesConditionsDialogComponent } from "../../commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component";
-import { ContentNodeDialogComponent } from "../../content-node/content-node-dialog/content-node-dialog.component";
-import { ContentNodeService } from "../../../services/ContentNodeService";
-import { ContentNode } from "../../../modeles/ContentNode";
-import { StatusEnum } from "../../../modeles/StatusEnum";
-import { PublishedItemsDialogComponent } from "../../commons/published-items-dialog/published-items-dialog.component";
-import { TranslationsDialogComponent } from "../../commons/translations-dialog/translations-dialog.component";
-import { UserService } from "../../../services/UserService";
-import { UserAccessService } from "../../../services/UserAccessService";
-import { AuthenticationService } from "../../../services/AuthenticationService";
-import { ToastrService } from "ngx-toastr";
-import { Env } from "../../../../assets/configurations/environment";
-import { DeletedItemsDialogComponent } from "../../commons/deleted-items-dialog/deleted-items-dialog.component";
-import { NodesViewDialogComponent } from "../nodes-view-dialog/nodes-view-dialog.component";
-import { Subscription } from 'rxjs';
-import { MatPaginator } from '@angular/material/paginator';
-import { catchError, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import {Node} from "../../../modeles/Node";
+import {NodeService} from "../../../services/NodeService";
+import {MatTable, MatTableDataSource} from "@angular/material/table";
+import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {NodeDialogComponent} from "../node-dialog/node-dialog.component";
+import {LoggerService} from "../../../services/LoggerService";
+import {LockService} from "../../../services/LockService";
+import {ValidationDialogComponent} from "../../commons/validation-dialog/validation-dialog.component";
+import {ValuesDialogComponent} from "../../commons/values-dialog/values-dialog.component";
+import {
+  NodeRulesConditionsDialogComponent
+} from "../../commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component";
+import {ContentNodeDialogComponent} from "../../content-node/content-node-dialog/content-node-dialog.component";
+import {ContentNodeService} from "../../../services/ContentNodeService";
+import {ContentNode} from "../../../modeles/ContentNode";
+import {StatusEnum} from "../../../modeles/StatusEnum";
+import {PublishedItemsDialogComponent} from "../../commons/published-items-dialog/published-items-dialog.component";
+import {TranslationsDialogComponent} from "../../commons/translations-dialog/translations-dialog.component";
+import {UserAccessService} from "../../../services/UserAccessService";
+import {ToastrService} from "ngx-toastr";
+import {Env} from "../../../../assets/configurations/environment";
+import {DeletedItemsDialogComponent} from "../../commons/deleted-items-dialog/deleted-items-dialog.component";
+import {NodesViewDialogComponent} from "../nodes-view-dialog/nodes-view-dialog.component";
+import {of, Subscription} from 'rxjs';
+import {MatPaginator} from '@angular/material/paginator';
+import {catchError, switchMap} from 'rxjs/operators';
 
 @Component({
   selector: 'app-nodes',
@@ -73,12 +72,10 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   private translate = inject(TranslateService);
   private loggerService = inject(LoggerService);
   public userAccessService = inject(UserAccessService);
-  private authService = inject(AuthenticationService);
   private toast = inject(ToastrService);
   private router = inject(Router);
   private nodeService = inject(NodeService);
   private contentNodeService = inject(ContentNodeService);
-  private userService = inject(UserService);
   private lockService = inject(LockService);
   private dialog = inject(MatDialog);
 
@@ -113,12 +110,46 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.lockSubscriptions.forEach(sub => sub.unsubscribe());
     this.lockSubscriptions = [];
 
-    nodes.forEach((node: Node) => {
-      const lockSub = this.lockService.getLockInfoSocket(node.code, this.authService.getAccessToken()).subscribe((lockInfo: any) => {
-        node.lockInfo = lockInfo;
+    if (this.lockRefreshSub) {
+      this.lockRefreshSub.unsubscribe();
+    }
+
+    // 🟢 UNE SEULE CONNEXION WEBSOCKET POUR TOUS LES LOCKS
+    this.lockRefreshSub = this.lockService.handleAllLocks().subscribe((locksList: any[]) => {
+      console.log('🔓 Locks reçus:', locksList);
+
+      // Mapper chaque lock au node correspondant
+      nodes.forEach((node: Node) => {
+        const lockData = locksList.find((lock: any) => lock.resourceCode === node.code);
+
+        if (lockData) {
+          node.lockInfo = {
+            owner: lockData.owner,
+            mine: lockData.mine,
+            locked: lockData.locked,
+            resourceCode: lockData.resourceCode
+          };
+        } else {
+          // 🟢 QUAND LE LOCK EST LIBÉRÉ, CRÉER UN LockInfo VIDE
+          node.lockInfo = {
+            owner: null,
+            mine: false,
+            locked: false,
+            resourceCode: node.code
+          };
+        }
       });
-      this.lockSubscriptions.push(lockSub);
+
+      // 🟢 FORCER LA MISE À JOUR EN CRÉANT UNE NOUVELLE INSTANCE
+      this.updateDataSource();
+
+      // 🟢 FORCER LE REDESSIN DU TABLEAU
+      if (this.table) {
+        this.table.renderRows();
+      }
     });
+
+    this.lockSubscriptions.push(this.lockRefreshSub);
   }
 
   init() {
@@ -210,11 +241,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   update(node: Node) {
     this.dialogRef = this.dialog.open(NodeDialogComponent, {
-      data: node,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    }
+        data: node,
+        height: '80vh',
+        width: '80vw',
+        disableClose: true
+      }
     );
     const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
@@ -251,11 +282,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     node.snapshot = true;
     this.dialogRef = this.dialog.open(NodeDialogComponent, {
-      data: node,
-      height: '80vh',
-      width: '80vw',
-      disableClose: true
-    }
+        data: node,
+        height: '80vh',
+        width: '80vw',
+        disableClose: true
+      }
     );
     const dialogSub = this.dialogRef.afterClosed()
       .subscribe(result => {
@@ -303,7 +334,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.toast.success(translation);
               });
 
-              const headers: any = { 'Content-Type': 'application/json' };
+              const headers: any = {'Content-Type': 'application/json'};
 
               if (node.triggerSecret) {
                 headers['Authorization'] = `Bearer ${node.triggerSecret}`;
@@ -365,13 +396,13 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   contents(node: Node) {
     this.dialogRefContents = this.dialog.open(ContentNodeDialogComponent, {
-      data: node,
-      height: "calc(100%)",
-      width: "calc(100%)",
-      maxWidth: "100%",
-      maxHeight: "100%",
-      disableClose: true
-    }
+        data: node,
+        height: "calc(100%)",
+        width: "calc(100%)",
+        maxWidth: "100%",
+        maxHeight: "100%",
+        disableClose: true
+      }
     );
     const dialogSub = this.dialogRefContents.afterClosed()
       .subscribe(result => {
@@ -407,17 +438,17 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   deleteds() {
     this.dialogRefDeleteds = this.dialog.open(DeletedItemsDialogComponent, {
-      height: '80vh',
-      width: '80vw',
-      disableClose: true,
-      data: {
-        parentNode: this.parentNode(),
-        titleKey: 'DELETED_NODES',
-        icon: 'delete_sweep',
-        displayTypeColumn: true,
-        deleteService: this.nodeService
+        height: '80vh',
+        width: '80vw',
+        disableClose: true,
+        data: {
+          parentNode: this.parentNode(),
+          titleKey: 'DELETED_NODES',
+          icon: 'delete_sweep',
+          displayTypeColumn: true,
+          deleteService: this.nodeService
+        }
       }
-    }
     );
     const dialogSub = this.dialogRefDeleteds.afterClosed()
       .subscribe(() => {
@@ -566,7 +597,7 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
   export(element: Node, environmentCode: string) {
     const exportSub = this.nodeService.export(element.code, environmentCode).subscribe((data: any) => {
       const jsonString = JSON.stringify(data, null, 2);
-      const blob: Blob = new Blob([jsonString], { type: 'application/json' });
+      const blob: Blob = new Blob([jsonString], {type: 'application/json'});
       const a = document.createElement('a');
       const objectUrl = URL.createObjectURL(blob);
       a.href = objectUrl;
@@ -643,11 +674,11 @@ export class NodesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   viewTreeNode(element: Node) {
     this.dialogRefTreeNode = this.dialog.open(NodesViewDialogComponent, {
-      height: '80vh',
-      width: '80vw',
-      disableClose: true,
-      data: element
-    }
+        height: '80vh',
+        width: '80vw',
+        disableClose: true,
+        data: element
+      }
     );
     const dialogSub = this.dialogRefTreeNode.afterClosed()
       .subscribe(() => {

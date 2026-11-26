@@ -3,7 +3,6 @@ package com.itexpert.content.core.handlers.websockets;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itexpert.content.core.handlers.DataHandler;
-import com.itexpert.content.core.utils.auth.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ import java.time.Duration;
 public class DatasSocketHandler implements WebSocketHandler {
 
     private final DataHandler dataHandler;
-    private final JWTUtil jwtUtil;
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {

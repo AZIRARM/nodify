@@ -1,13 +1,14 @@
 package com.itexpert.content.core.handlers;
 
 import com.itexpert.content.core.mappers.NotificationMapper;
-import com.itexpert.content.core.repositories.UserRepository;
+import com.itexpert.content.core.repositories.NotificationRepository;
 import com.itexpert.content.lib.enums.NotificationEnum;
 import com.itexpert.content.lib.models.Notification;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Range;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,21 +19,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class NotificationHandler {
 
-    private final ReactiveRedisTemplate<String, String> redisTemplate;
-    private final NotificationMapper notificationMapper;
-    private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationMapper mapper;
 
-    private String keyForUser(String user) {
-        return "NOTIFICATIONS:" + user;
-    }
-
-    /**
-     * Crée une nouvelle notification
-     */
     public Mono<Notification> create(NotificationEnum type,
                                      String description,
                                      String user,
@@ -40,34 +33,11 @@ public class NotificationHandler {
                                      String typeCode,
                                      String typeVersion,
                                      Boolean forAll) {
-
-        if (Boolean.TRUE.equals(forAll)) {
-            return this.userRepository.findAll()
-                    .filter(userPost -> !userPost.getEmail().equals(user))
-                    .flatMap(userPost -> createNotificationFactory(type, description, userPost.getEmail(), user, elementType, typeCode, typeVersion)
-                            .flatMap(this::save))
-                    .then( // quand toutes les notifs "forAll" sont enregistrées
-                            this.createNotificationFactory(type, description, user, user, elementType, typeCode, typeVersion)
-                                    .flatMap(this::save) // on sauvegarde celle de l’utilisateur passé en param
-                    );
-        } else {
-            return this.createNotificationFactory(type, description, user, user, elementType, typeCode, typeVersion)
-                    .flatMap(this::save);
-        }
-
-    }
-
-    private Mono<Notification> createNotificationFactory(NotificationEnum type,
-                                                         String description,
-                                                         String user,
-                                                         String modifiedBy,
-                                                         String elementType,
-                                                         String typeCode,
-                                                         String typeVersion) {
-        Notification notification = Notification.builder()
+        boolean isForAll = Boolean.TRUE.equals(forAll);
+        Notification model = Notification.builder()
                 .id(UUID.randomUUID())
                 .user(user)
-                .modifiedBy(modifiedBy)
+                .modifiedBy(user)
                 .type(elementType)
                 .typeCode(typeCode)
                 .typeVersion(typeVersion)
@@ -76,155 +46,71 @@ public class NotificationHandler {
                 .description(description)
                 .read(false)
                 .build();
-        return Mono.just(notification);
+
+        com.itexpert.content.lib.entities.Notification entity = mapper.toEntity(model, isForAll);
+        return notificationRepository.save(entity)
+                .map(saved -> mapper.toModel(saved, user));
     }
 
-
-    /**
-     * Sauvegarde : supprime d'abord toute entrée existante ayant le même id,
-     * puis ajoute la nouvelle JSON avec le score = date.
-     */
     public Mono<Notification> save(Notification notification) {
-        String key = keyForUser(notification.getUser());
-        String newJson = notificationMapper.toJson(notification);
-
-        Mono<Long> removedCount = redisTemplate.opsForZSet()
-                .range(key, Range.<Long>unbounded())
-                .flatMap(oldJson -> {
-                    Notification existing;
-                    try {
-                        existing = notificationMapper.fromJson(oldJson);
-                    } catch (Exception ex) {
-                        log.warn("save(): failed to parse existing JSON (skip): {}", oldJson, ex);
-                        return Mono.empty();
+        boolean isForAll = notification.getUser() == null || notification.getUser().isBlank();
+        return notificationRepository.findById(notification.getId())
+                .map(existing -> {
+                    List<String> readers = existing.getReaders() != null
+                            ? new ArrayList<>(existing.getReaders())
+                            : new ArrayList<>();
+                    if (notification.isRead() && notification.getUser() != null && !readers.contains(notification.getUser())) {
+                        readers.add(notification.getUser());
                     }
-                    if (existing != null && existing.getId().equals(notification.getId())) {
-                        log.debug("save(): removing old JSON for key {} id {}", key, existing.getId());
-                        return redisTemplate.opsForZSet().remove(key, oldJson);
-                    }
-                    return Mono.empty();
+                    return mapper.toEntity(notification, isForAll, readers);
                 })
-                .reduce(0L, Long::sum)
-                .defaultIfEmpty(0L);
-
-        return removedCount
-                .flatMap(r -> redisTemplate.opsForZSet().add(key, newJson, notification.getDate()))
-                .thenReturn(notification)
-                .doOnSuccess(n -> log.debug("Saved notification for {} id={}", key, n.getId()));
+                .defaultIfEmpty(mapper.toEntity(notification, isForAll))
+                .flatMap(notificationRepository::save)
+                .map(saved -> mapper.toModel(saved, notification.getUser()));
     }
 
-    /**
-     * Notifications non lues avec pagination
-     */
     public Flux<Notification> unreadedByUser(String user, int currentPage, int pageSize) {
-        String key = keyForUser(user);
+        int safePage = Math.max(0, currentPage);
+        int safeSize = Math.max(1, pageSize);
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "date"));
 
-        return redisTemplate.opsForZSet()
-                .reverseRange(key, Range.unbounded()) // récupérer toutes les notifications
-                .flatMap(json -> {
-                    try {
-                        Notification n = notificationMapper.fromJson(json);
-                        return Mono.just(n);
-                    } catch (Exception ex) {
-                        log.warn("unreadedByUser(): cannot parse JSON (skip): {}", json, ex);
-                        return Mono.empty();
-                    }
-                })
-                .filter(n -> !n.isRead())           // ne garder que les non lues
-                .skip((long) currentPage * pageSize) // appliquer la page
-                .take(pageSize);                     // limiter le nombre d'éléments
+        return notificationRepository.findUnreadByUser(user, pageable)
+                .map(entity -> mapper.toModel(entity, user));
     }
-
 
     public Mono<Long> countUnreaded(String user) {
-        return findAll(user)
-                .filter(n -> !n.isRead())
-                .count();
-    }
-
-    /**
-     * Récupère toutes les notifications (du plus récent au plus ancien)
-     */
-    private Flux<Notification> findAll(String user) {
-        String key = keyForUser(user);
-        return redisTemplate.opsForZSet()
-                .reverseRange(key, Range.<Long>unbounded())
-                .flatMap(json -> {
-                    try {
-                        return Mono.just(notificationMapper.fromJson(json));
-                    } catch (Exception ex) {
-                        log.warn("findAll(): cannot parse JSON (skip): {}", json, ex);
-                        return Mono.empty();
-                    }
-                });
+        return notificationRepository.countUnreadByUser(user);
     }
 
     public Mono<Notification> markRead(String user, UUID notificationId) {
-        return findById(user, notificationId)
-                .flatMap(n ->
-                        delete(notificationId)
-                                .flatMap(deleted -> deleted ? Mono.just(n) : Mono.empty())
-                );
+        return notificationRepository.findById(notificationId)
+                .flatMap(entity -> {
+                    List<String> readers = entity.getReaders() != null
+                            ? new ArrayList<>(entity.getReaders())
+                            : new ArrayList<>();
+                    if (!readers.contains(user)) {
+                        readers.add(user);
+                        entity.setReaders(readers);
+                        return notificationRepository.save(entity);
+                    }
+                    return Mono.just(entity);
+                })
+                .map(saved -> mapper.toModel(saved, user));
     }
 
     public Flux<Notification> markAllAsRead(String user) {
-        return findAll(user)
-                .collectList() // récupérer toutes les notifications
-                .flatMapMany(notifications -> {
-                    List<Mono<Notification>> results = new ArrayList<>();
-
-                    for (Notification n : notifications) {
-                        Mono<Notification> mono = delete(n.getId())
-                                .flatMap(deleted -> deleted ? Mono.just(n) : Mono.empty());
-                        results.add(mono);
+        return notificationRepository.findAllForUser(user)
+                .flatMap(entity -> {
+                    List<String> readers = entity.getReaders() != null
+                            ? new ArrayList<>(entity.getReaders())
+                            : new ArrayList<>();
+                    if (!readers.contains(user)) {
+                        readers.add(user);
+                        entity.setReaders(readers);
+                        return notificationRepository.save(entity);
                     }
-
-                    return Flux.concat(results); // concatène les Monos séquentiellement
-                });
-    }
-
-    /**
-     * Récupère une notification par ID
-     */
-    private Mono<Notification> findById(String user, UUID notificationId) {
-        String key = keyForUser(user);
-        return redisTemplate.opsForZSet()
-                .range(key, Range.<Long>unbounded())
-                .flatMap(json -> {
-                    try {
-                        return Mono.just(notificationMapper.fromJson(json));
-                    } catch (Exception ex) {
-                        log.warn("findById(): cannot parse JSON (skip): {}", json, ex);
-                        return Mono.empty();
-                    }
+                    return Mono.just(entity);
                 })
-                .filter(n -> n.getId().equals(notificationId))
-                .next();
-    }
-
-    /**
-     * Supprime une notification par ID (parcourt toutes les clés NOTIFICATIONS:*)
-     */
-    private Mono<Boolean> delete(UUID notificationId) {
-        return redisTemplate.keys("NOTIFICATIONS:*")
-                .flatMap(key -> redisTemplate.opsForZSet()
-                        .range(key, Range.<Long>unbounded())
-                        .flatMap(json -> {
-                            Notification n;
-                            try {
-                                n = notificationMapper.fromJson(json);
-                            } catch (Exception ex) {
-                                log.warn("delete(): cannot parse JSON (skip): {}", json, ex);
-                                return Mono.empty();
-                            }
-                            if (n.getId().equals(notificationId)) {
-                                log.debug("delete(): removing json for key {} id {}", key, notificationId);
-                                return redisTemplate.opsForZSet().remove(key, json);
-                            }
-                            return Mono.empty();
-                        }))
-                .next()
-                .map(count -> count > 0)
-                .defaultIfEmpty(false);
+                .map(saved -> mapper.toModel(saved, user));
     }
 }

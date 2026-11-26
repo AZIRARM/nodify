@@ -81,32 +81,68 @@ public class NodeHandler {
     }
 
     private Mono<Node> saveFactory(Node model, boolean isCreation) {
-        return Mono.just(model).map(node -> {
-            if (isCreation) {
-                node.setId(UUID.randomUUID());
-                node.setVersion("0");
-                node.setStatus(StatusEnum.SNAPSHOT);
-                node.setCreationDate(Instant.now().toEpochMilli());
-                node.setModificationDate(node.getCreationDate());
-            } else {
-                node.setModificationDate(Instant.now().toEpochMilli());
-            }
+        return Mono.just(model)
+                .map(node -> {
+                    if (isCreation) {
+                        node.setId(UUID.randomUUID());
+                        node.setVersion("0");
+                        node.setStatus(StatusEnum.SNAPSHOT);
 
-            if (ObjectUtils.isEmpty(node.getRules())) {
-                node.setRules(RulesUtils.getDefaultRules());
-            }
+                        long now = Instant.now().toEpochMilli();
+                        node.setCreationDate(now);
+                        node.setModificationDate(now);
 
-            if (ObjectUtils.isEmpty(node.getCode())) {
-                node.setCode(CommonsUtils.genererCode(node.getName()));
-            }
+                        node.setCode(generateCode(node));
 
-            return node;
-        })
+                    } else {
+                        node.setModificationDate(Instant.now().toEpochMilli());
+
+                        if (ObjectUtils.isEmpty(node.getCode())) {
+                            node.setCode(generateCode(node));
+                        }
+                    }
+
+                    if (ObjectUtils.isEmpty(node.getRules())) {
+                        node.setRules(RulesUtils.getDefaultRules());
+                    }
+
+                    return node;
+                })
                 .map(nodeMapper::fromModel)
                 .flatMap(nodeRepository::save)
                 .map(nodeMapper::fromEntity)
-                .flatMap(node -> this.notify(node, isCreation ? NotificationEnum.CREATION : NotificationEnum.UPDATE));
+                .flatMap(node -> this.notify(
+                        node,
+                        isCreation
+                                ? NotificationEnum.CREATION
+                                : NotificationEnum.UPDATE
+                ));
+    }
 
+    private String generateCode(Node node) {
+        long now = Instant.now().toEpochMilli();
+
+        String rawName = node.getName() != null
+                ? node.getName()
+                : "UNKNOWN";
+
+        String formattedName = rawName
+                .replaceAll("[\\W_]+", "_")
+                .toUpperCase();
+
+        String middlePart = "";
+
+        if (ObjectUtils.isNotEmpty(node.getParentCode())) {
+            String originPrefix = "NODE";
+
+            if (ObjectUtils.isNotEmpty(node.getParentCodeOrigin())) {
+                originPrefix = node.getParentCodeOrigin().split("-")[0];
+            }
+
+            middlePart = originPrefix + "-";
+        }
+
+        return formattedName + "-" + middlePart + now;
     }
 
     public Mono<Boolean> delete(String code, String modifiedBy) {
@@ -186,42 +222,90 @@ public class NodeHandler {
      */
     public Mono<Node> publish(String code, String modifiedBy) {
         return this.findByCodeAndStatus(code, StatusEnum.SNAPSHOT.name())
-                .switchIfEmpty(Mono.error(
-                        new IllegalStateException("Impossible de publier un noeud dont le statut n'est pas SNAPSHOT")))
-                .flatMap(parentNode -> publishRecursive(parentNode, modifiedBy));
+                .doOnNext(node -> log.info("SEARCH SNAPSHOT Node found for publication: code='{}', id='{}'",
+                        node.getCode(), node.getId()))
+                .switchIfEmpty(Mono.error(new IllegalStateException("Cannot publish a node whose status is not SNAPSHOT. Code: " + code)))
+                .flatMap(parentNode -> {
+                    log.info("START Beginning publishRecursive for parent: code='{}'", parentNode.getCode());
+                    return publishRecursive(parentNode, modifiedBy);
+                });
     }
 
     private Mono<Node> publishRecursive(Node nodeToProcess, String modifiedBy) {
         return Mono.just(nodeToProcess)
-                .doOnNext(node -> log.info("Publish Node Parent {}, version {}",
-                        node.getCode(), node.getVersion()))
-                .flatMap(node -> publishParentNode(node, modifiedBy))
-                .flatMap(publishedParentNode -> findAllChildren(publishedParentNode.getCode())
-                        .concatMap(childNode -> Mono.just(childNode)
-                                .doOnNext(child -> log.info("Publish Node Child {}, version {}",
-                                        child.getCode(), child.getVersion()))
-                                .flatMap(child -> publishParentNode(child, modifiedBy)))
-                        .collectList()
-                        .thenReturn(publishedParentNode));
+                .doOnNext(node -> log.info("START publishRecursive for Node: code='{}', id='{}', status='{}'",
+                        node.getCode(), node.getId(), node.getStatus()))
+                .flatMap(node ->
+                        publishParentNode(node, modifiedBy)
+                                .doOnError(e -> log.error("DB ERROR publishParentNode failed for Node: code='{}', id='{}', status='{}'. Error: {}",
+                                        node.getCode(), node.getId(), node.getStatus(), e.getMessage()))
+                )
+                .flatMap(publishedParentNode ->
+                        findAllChildren(publishedParentNode.getCode())
+                                .concatMap(childNode -> Mono.just(childNode)
+                                        .doOnNext(child -> log.info("PROCESSING CHILD code='{}', id='{}', status='{}'",
+                                                child.getCode(), child.getId(), child.getStatus()))
+                                        .flatMap(child -> publishParentNode(child, modifiedBy)
+                                                .doOnError(e -> log.error("DB ERROR publishParentNode failed for Child: code='{}', id='{}', status='{}'. Error: {}",
+                                                        child.getCode(), child.getId(), child.getStatus(), e.getMessage()))
+                                        )
+                                )
+                                .collectList()
+                                .doOnNext(childrenList -> log.info("CHILDREN Found {} children for parent code='{}'",
+                                        childrenList.size(), publishedParentNode.getCode()))
+                                .thenReturn(publishedParentNode)
+                );
     }
 
     private Mono<Node> publishParentNode(Node nodeToProcess, String modifiedBy) {
+        log.info("PUBLISH_PARENT_NODE START code='{}', id='{}', status='{}'",
+                nodeToProcess.getCode(), nodeToProcess.getId(), nodeToProcess.getStatus());
+
         return nodeRepository.findByCodeAndStatus(nodeToProcess.getCode(), StatusEnum.PUBLISHED.name())
+                .doOnNext(entity -> log.info("PUBLISH_PARENT_NODE Found existing PUBLISHED entity: code='{}', id='{}'",
+                        entity.getCode(), entity.getId()))
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.info("PUBLISH_PARENT_NODE No existing PUBLISHED entity found for code='{}'", nodeToProcess.getCode());
+                    return Mono.empty();
+                }))
                 .flatMap(existingPublishedEntity -> {
                     Node existingPublishedNode = nodeMapper.fromEntity(existingPublishedEntity);
+                    log.info("PUBLISH_PARENT_NODE Archiving existing PUBLISHED node: code='{}', id='{}'",
+                            existingPublishedNode.getCode(), existingPublishedNode.getId());
                     return archiveNode(existingPublishedNode, modifiedBy)
+                            .doOnNext(archived -> log.info("PUBLISH_PARENT_NODE Archive completed for code='{}', new status='{}'",
+                                    archived.getCode(), archived.getStatus()))
                             .thenReturn(existingPublishedNode);
                 })
-                .then(Mono.defer(() -> publishNode(nodeToProcess, modifiedBy)))
+                .then(Mono.defer(() -> {
+                    log.info("PUBLISH_PARENT_NODE Calling publishNode for code='{}', id='{}', status='{}'",
+                            nodeToProcess.getCode(), nodeToProcess.getId(), nodeToProcess.getStatus());
+                    return publishNode(nodeToProcess, modifiedBy)
+                            .doOnNext(published -> log.info("PUBLISH_PARENT_NODE publishNode completed: code='{}', id='{}', status='{}'",
+                                    published.getCode(), published.getId(), published.getStatus()));
+                }))
                 .flatMap(publishedParentNode -> contentNodeHandler.findAllByNodeCodeAndStatus(
-                        publishedParentNode.getCode(),
-                        StatusEnum.SNAPSHOT.name())
-                        .concatMap(contentNode -> contentNodeHandler.publish(contentNode.getCode(), true, modifiedBy))
+                                publishedParentNode.getCode(),
+                                StatusEnum.SNAPSHOT.name())
+                        .doOnNext(contentNode -> log.info("PUBLISH_PARENT_NODE Found content node to publish: code='{}', status='{}'",
+                                contentNode.getCode(), contentNode.getStatus()))
+                        .concatMap(contentNode -> contentNodeHandler.publish(contentNode.getCode(), true, modifiedBy)
+                                .doOnNext(publishedContent -> log.info("PUBLISH_PARENT_NODE Content node published: code='{}'",
+                                        publishedContent.getCode())))
                         .collectList()
+                        .doOnNext(list -> log.info("PUBLISH_PARENT_NODE Published {} content nodes for parent code='{}'",
+                                list.size(), publishedParentNode.getCode()))
                         .thenReturn(publishedParentNode))
-                .flatMap(publishedParentNode -> createSnapshot(publishedParentNode, modifiedBy)
-                        .flatMap(snapshotNode -> notify(snapshotNode, NotificationEnum.DEPLOYMENT)
-                                .thenReturn(snapshotNode)));
+                .flatMap(publishedParentNode -> {
+                    log.info("PUBLISH_PARENT_NODE Calling createSnapshot for code='{}', id='{}', status='{}'",
+                            publishedParentNode.getCode(), publishedParentNode.getId(), publishedParentNode.getStatus());
+                    return createSnapshot(publishedParentNode, modifiedBy)
+                            .doOnNext(snapshot -> log.info("PUBLISH_PARENT_NODE Snapshot created: code='{}', id='{}', status='{}'",
+                                    snapshot.getCode(), snapshot.getId(), snapshot.getStatus()))
+                            .flatMap(snapshotNode -> notify(snapshotNode, NotificationEnum.DEPLOYMENT)
+                                    .doOnNext(n -> log.info("PUBLISH_PARENT_NODE Notification sent for code='{}'", snapshotNode.getCode()))
+                                    .thenReturn(snapshotNode));
+                });
     }
 
     Mono<Node> createSnapshot(Node node, String modifiedBy) {
@@ -558,25 +642,59 @@ public class NodeHandler {
         return this.nodeRepository.countDistinctByParentCode(code).map(count -> count > 0);
     }
 
-    public Flux<Node> findAllChildren(String code) {
+    public Flux<Node> findAllChildren(String parentCode) {
+        log.info("FIND_ALL_CHILDREN START for parentCode='{}'", parentCode);
         Set<String> visitedCodes = Collections.synchronizedSet(new HashSet<>());
 
-        return findAllChildrenRecursive(code, visitedCodes)
-                .filter(node -> !node.getCode().equals(code)) // <-- on exclut le parent
+        return findAllChildrenRecursive(parentCode, visitedCodes)
+                .filter(node -> {
+                    boolean isParent = node.getCode().equals(parentCode);
+                    if (isParent) {
+                        log.info("FIND_ALL_CHILDREN FILTER: Excluding parent node code='{}', status='{}'", node.getCode(), node.getStatus());
+                    }
+                    return !isParent;
+                })
                 .groupBy(Node::getCode)
-                .flatMap(g -> g.reduce((a, b) -> a.getCode().compareTo(b.getCode()) > 0 ? a : b));
+                .flatMap(group -> group.reduce((a, b) -> {
+                    log.info("FIND_ALL_CHILDREN REDUCE: Comparing for code='{}' | Node A: status='{}', version='{}' | Node B: status='{}', version='{}'",
+                            a.getCode(), a.getStatus(), a.getVersion(), b.getStatus(), b.getVersion());
+
+                    Node kept;
+                    // 1. Priorité absolue au statut SNAPSHOT
+                    if ("SNAPSHOT".equals(a.getStatus()) && !"SNAPSHOT".equals(b.getStatus())) {
+                        kept = a;
+                    } else if ("SNAPSHOT".equals(b.getStatus()) && !"SNAPSHOT".equals(a.getStatus())) {
+                        kept = b;
+                    } else {
+                        // 2. Si même statut, on garde la version la plus élevée
+                        int versionA = Integer.parseInt(a.getVersion() != null ? a.getVersion() : "0");
+                        int versionB = Integer.parseInt(b.getVersion() != null ? b.getVersion() : "0");
+                        kept = versionA >= versionB ? a : b;
+                    }
+
+                    log.info("FIND_ALL_CHILDREN REDUCE: KEPT node for code='{}' -> status='{}', version='{}'",
+                            kept.getCode(), kept.getStatus(), kept.getVersion());
+                    return kept;
+                }))
+                .doOnNext(finalNode -> log.info("FIND_ALL_CHILDREN FINAL OUTPUT: code='{}', status='{}', id='{}'",
+                        finalNode.getCode(), finalNode.getStatus(), finalNode.getId()));
     }
 
     private Flux<Node> findAllChildrenRecursive(String code, Set<String> visitedCodes) {
-        // Évitez les cycles ou doublons en vérifiant si le code a déjà été visité
         if (!visitedCodes.add(code)) {
-            return Flux.empty(); // Si déjà visité, retournez un flux vide
+            log.debug("FIND_ALL_CHILDREN RECURSIVE: Skipping already visited code='{}'", code);
+            return Flux.empty();
         }
 
-        // Récupérez les enfants et appliquez la récursion
+        log.info("FIND_ALL_CHILDREN RECURSIVE: Querying DB for code or parentCode='{}'", code);
         return this.nodeRepository.findByCodeOrCodeParent(code)
-                .flatMap(node -> findAllChildrenRecursive(node.getCode(), visitedCodes) // Recherche récursive
-                        .startWith(this.nodeMapper.fromEntity(node))); // Inclure le nœud actuel
+                .doOnNext(entity -> log.info("FIND_ALL_CHILDREN DB RESULT: Found entity code='{}', status='{}', id='{}', parentCode='{}'",
+                        entity.getCode(), entity.getStatus(), entity.getId(), entity.getParentCode()))
+                .flatMap(node -> {
+                    Node mappedNode = this.nodeMapper.fromEntity(node);
+                    return findAllChildrenRecursive(mappedNode.getCode(), visitedCodes)
+                            .startWith(mappedNode);
+                });
     }
 
     public Flux<Node> findParentOrigin() {

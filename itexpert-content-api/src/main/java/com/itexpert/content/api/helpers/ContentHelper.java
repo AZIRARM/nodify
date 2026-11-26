@@ -38,11 +38,22 @@ public class ContentHelper {
     private final NodeRepository nodeRepository;
     private final PluginRepository pluginRepository;
     private final PluginHelper pluginHelper;
+
     private static final Pattern CONTENT_PATTERN = Pattern.compile("\\$content\\(([^)]+)\\)");
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final ObjectMapper JSON_MAPPER;
+    static {
+        JSON_MAPPER = new ObjectMapper();
+        JSON_MAPPER.configure(com.fasterxml.jackson.core.JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
+    }
 
     public Mono<ContentNode> fillContents(ContentNode element, StatusEnum status, String translation) {
         return this.fillContentFactory(element, status, translation)
+                .doOnError(e -> log.error(
+                        "fillContents failed for code={} status={} translation={} — returning raw element",
+                        element != null ? element.getCode() : null,
+                        status,
+                        translation,
+                        e))
                 .onErrorReturn(element);
     }
 
@@ -103,21 +114,27 @@ public class ContentHelper {
                 .collectList()
                 .map(nodes -> {
                     Node parentNode = this.getParentNode(nodes, element.getParentCode());
-                    if (parentNode == null) {
-                        log.warn("No parent Node found for ContentNode code={} parentCode={} status={} " +
-                                 "— $value()/$translate() will NOT be resolved",
-                                element.getCode(), element.getParentCode(), status);
-                    }
-                    if (parentNode != null) {
-                        element.setContent(this.translate(element, element.getTranslations(),
-                                ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
-                        element.setContent(this.fillValues(element, element.getValues()));
 
-                        nodes.forEach(node -> {
-                            element.setContent(this.translate(element, node.getTranslations(),
-                                    ObjectUtils.isNotEmpty(translation) ? translation : parentNode.getDefaultLanguage()));
-                            element.setContent(this.fillValues(element, node.getValues()));
-                        });
+                    String lang = ObjectUtils.isNotEmpty(translation)
+                            ? translation
+                            : (parentNode != null && ObjectUtils.isNotEmpty(parentNode.getDefaultLanguage())
+                               ? parentNode.getDefaultLanguage()
+                               : "en");
+
+                    if (parentNode == null) {
+                        log.warn("No parent Node found for ContentNode code={} parentCode={} status={} — " +
+                                        "falling back to language='{}' for $translate()/$value() resolution",
+                                element.getCode(), element.getParentCode(), status, lang);
+                    }
+
+                    // 1) Toujours résoudre l'élément courant (ses propres Value/Translation)
+                    element.setContent(this.translate(element, element.getTranslations(), lang));
+                    element.setContent(this.fillValues(element, element.getValues()));
+
+                    // 2) Puis celles héritées des ancêtres
+                    for (Node node : nodes) {
+                        element.setContent(this.translate(element, node.getTranslations(), lang));
+                        element.setContent(this.fillValues(element, node.getValues()));
                     }
                     return element;
                 })
@@ -126,14 +143,26 @@ public class ContentHelper {
     }
 
     private String translate(ContentNode content, List<Translation> translations, String defaultLanguage) {
-        if (ObjectUtils.isNotEmpty(translations) && ObjectUtils.isNotEmpty(content)) {
+        if (ObjectUtils.isNotEmpty(translations)
+                && ObjectUtils.isNotEmpty(content)
+                && ObjectUtils.isNotEmpty(defaultLanguage)) {
             for (Translation translation : translations) {
-                if (translation.getLanguage().trim().toUpperCase().equals(defaultLanguage.trim().toUpperCase())) {
-                    content.setContent(content.getContent().replace(
-                            "$translate(" + translation.getKey().trim() + ")",
-                            jsonEscape(translation.getValue())
-                    ));
+                if (translation.getKey() == null || translation.getLanguage() == null) {
+                    continue;
                 }
+                if (!translation.getLanguage().trim().equalsIgnoreCase(defaultLanguage.trim())) {
+                    continue;
+                }
+                String replacement = jsonEscape(translation.getValue());
+                if (replacement == null) {
+                    log.warn("Translation '{}' (lang={}) has null value on ContentNode code={} — $translate({}) left unresolved",
+                            translation.getKey(), defaultLanguage, content.getCode(), translation.getKey());
+                    continue;
+                }
+                content.setContent(content.getContent().replace(
+                        "$translate(" + translation.getKey().trim() + ")",
+                        replacement
+                ));
             }
         }
         return content.getContent();
@@ -142,9 +171,18 @@ public class ContentHelper {
     private String fillValues(ContentNode content, List<Value> values) {
         if (ObjectUtils.isNotEmpty(values) && ObjectUtils.isNotEmpty(content)) {
             for (Value value : values) {
+                if (value.getKey() == null) {
+                    continue;
+                }
+                String replacement = jsonEscape(value.getValue());
+                if (replacement == null) {
+                    log.warn("Value '{}' is null on ContentNode code={} — $value({}) left unresolved",
+                            value.getKey(), content.getCode(), value.getKey());
+                    continue;
+                }
                 content.setContent(content.getContent().replace(
                         "$value(" + value.getKey() + ")",
-                        jsonEscape(value.getValue())
+                        replacement
                 ));
             }
         }
@@ -176,7 +214,10 @@ public class ContentHelper {
 
     private Flux<ContentNode> getContents(List<String> contentCodes, StatusEnum status) {
         return Flux.fromIterable(contentCodes)
-                .flatMap(contentCode -> this.contentNodeRepository.findByCodeAndStatus(contentCode, status.name()))
+                .flatMap(contentCode -> this.contentNodeRepository.findByCodeAndStatus(contentCode, status.name())
+                        .doOnNext(c -> log.debug("Resolved child ContentNode code={} status={}", c.getCode(), status))
+                        .switchIfEmpty(Mono.fromRunnable(() -> log.warn(
+                                "Child ContentNode NOT FOUND code={} status={}", contentCode, status))))
                 .flatMap(this::addDisplay)
                 .flatMap(contentNode -> {
                     if (ObjectUtils.isNotEmpty(contentNode)
@@ -243,8 +284,9 @@ public class ContentHelper {
     }
 
     /**
-     * Échappe une valeur brute pour insertion DANS une chaîne JSON existante
-     * (cas des $value(...) et $translate(...) qui sont déjà entre guillemets).
+     * Escapes a raw value for insertion INTO an existing JSON string.
+     * Returns {@code null} when {@code raw} is null — callers MUST check for null
+     * (String.replace throws NPE if replacement is null).
      */
     private String jsonEscape(String raw) {
         if (raw == null) return null;
@@ -255,27 +297,41 @@ public class ContentHelper {
                 .replace("\t", "\\t");
     }
 
-    /**
-     * Rend le contenu d'un ContentNode enfant comme une VALEUR JSON valide,
-     * à injecter à la place d'un $content(...) qui est en position de valeur.
-     *
-     * Deux cas :
-     *  - contenu enfant = JSON valide (objet, tableau, scalaire) → injecté tel quel
-     *  - contenu enfant = texte brut (Python, SQL, HTML…) → injecté comme string JSON échappée
-     */
     private String renderAsJsonValue(String raw) {
         if (raw == null) return "null";
+
         try {
             JsonNode node = JSON_MAPPER.readTree(raw);
-            return JSON_MAPPER.writeValueAsString(node);
+
+            if (node.isTextual()) {
+                String innerText = node.asText();
+                try {
+                    JsonNode innerNode = JSON_MAPPER.readTree(innerText);
+                    return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(innerNode));
+                } catch (Exception innerEx) {
+                    try {
+                        return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(innerText));
+                    } catch (Exception ex) {
+                        return "\"" + jsonEscape(innerText) + "\"";
+                    }
+                }
+            }
+
+            return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(node));
+
         } catch (Exception e) {
-            log.debug("Child content is not JSON — rendering as JSON string value");
             try {
-                return JSON_MAPPER.writeValueAsString(raw);
+                return unescapeHtmlEntities(JSON_MAPPER.writeValueAsString(raw));
             } catch (Exception ex) {
-                log.error("Cannot serialize child content as JSON string", ex);
-                return "\"\"";
+                return "\"" + jsonEscape(raw) + "\"";
             }
         }
+    }
+
+    private String unescapeHtmlEntities(String json) {
+        if (json == null) return null;
+        return json.replace("\\u003E", ">")
+                .replace("\\u003C", "<")
+                .replace("\\u0026", "&");
     }
 }

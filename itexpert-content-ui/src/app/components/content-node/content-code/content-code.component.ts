@@ -8,7 +8,7 @@ import { LoggerService } from "../../../services/LoggerService";
 import { ContentNodeService } from "../../../services/ContentNodeService";
 import { ContentFile } from "../../../modeles/ContentFile";
 import { LockService } from 'src/app/services/LockService';
-import { interval, Subscription } from 'rxjs';
+import {  Subscription } from 'rxjs';
 import { AuthenticationService } from "../../../services/AuthenticationService";
 import { switchMap } from 'rxjs/operators';
 

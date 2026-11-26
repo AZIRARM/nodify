@@ -1,5 +1,6 @@
 package com.itexpert.content.api.config;
 
+import com.fasterxml.jackson.core.JsonGenerator; // <-- AJOUTER CET IMPORT
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -13,14 +14,19 @@ public class WebFluxJacksonConfig {
 
     @Bean
     public ServerCodecConfigurer serverCodecConfigurer(ObjectMapper mapper) {
-        // augmenter la limite Jackson (string base64)
+        
+        // 1. Augmenter la limite Jackson (string base64)
         mapper.getFactory().setStreamReadConstraints(
                 StreamReadConstraints.builder()
                         .maxStringLength(50_000_000) // 50MB au lieu de 5MB
                         .build()
         );
 
-        // augmenter la limite de buffer WebFlux
+        // 2. NOUVEAU : Désactiver l'échappement des caractères non-ASCII / HTML
+        // Cela empêche Jackson de transformer ">" en "\u003E", ce qui cassait ton code Python
+        mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
+
+        // 3. Augmenter la limite de buffer WebFlux
         Jackson2JsonDecoder decoder = new Jackson2JsonDecoder(mapper);
         decoder.setMaxInMemorySize(50 * 1024 * 1024); // 50MB
 

@@ -124,7 +124,12 @@ import { LockService } from './services/LockService';
 import { TokenInterceptor } from "./interceptors/TokenInterceptor";
 import { UnauthorizedComponent } from './components/ui/unauthorized/unauthorized.component';
 import { NewsletterComponent } from './components/content-node/content-code/content-code-html/newsletter/newsletter.component';
-import { ContentCodePythonomponent } from './components/content-node/content-code/content-code-python/content-code-python.component';
+import {
+  ContentCodePythonComponent
+} from './components/content-node/content-code/content-code-python/content-code-python.component';
+import {
+  ContentCodeTxtComponent
+} from "./components/content-node/content-code/content-code-txt/content-code-txt.component";
 
 echarts.use([TreeChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 
@@ -172,7 +177,8 @@ export function defaultLanguage() {
     ContentDatasComponent,
     ContentCodeComponent,
     ContentCodeJsComponent,
-    ContentCodePythonomponent,
+    ContentCodePythonComponent,
+    ContentCodeTxtComponent,
     ContentCodeCssComponent,
     ContentCodeHtmlComponent,
     ContentCodeJsonComponent,

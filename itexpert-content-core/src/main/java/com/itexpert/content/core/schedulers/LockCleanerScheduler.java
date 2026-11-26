@@ -1,39 +1,37 @@
 package com.itexpert.content.core.schedulers;
 
-import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import com.itexpert.content.core.entities.ResourceLock;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
+import java.time.Instant;
+
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class LockCleanerScheduler {
 
-  private final ReactiveStringRedisTemplate redisTemplate;
+    private final ReactiveMongoTemplate mongoTemplate;
 
-  public LockCleanerScheduler(ReactiveStringRedisTemplate redisTemplate) {
-    this.redisTemplate = redisTemplate;
-  }
+    @Scheduled(fixedDelayString = "${app.locks.cleanup-delay-ms:60000}")
+    public void cleanExpiredLocks() {
+        Query expiredQuery = Query.query(Criteria.where("expiresAt").lte(Instant.now()));
 
-  /**
-   * Vérifie toutes les heures si certains locks doivent être libérés.
-   */
-  @Scheduled(fixedRate = 60 * 60 * 1000) // toutes les heures
-  public void cleanExpiredLocks() {
-    redisTemplate.keys("lock:node:*")
-        .flatMap(key -> redisTemplate.getExpire(key)
-            .flatMap(ttl -> {
-              if (ttl == null || ttl.isZero() || ttl.isNegative()) {
-                // TTL expiré ou absent -> supprimer la clé
-                return redisTemplate.delete(key)
-                    .doOnSuccess(deleted -> {
-                      if (deleted > 0) {
-                        System.out.println("🔓 Lock libéré : " + key);
-                      }
-                    })
-                    .then();
-              }
-              return Mono.empty();
-            }))
-        .subscribe();
-  }
+        mongoTemplate.remove(expiredQuery, ResourceLock.class)
+                .doOnSuccess(result -> {
+                    if (result != null && result.getDeletedCount() > 0) {
+                        log.debug("Cleaned {} expired resource locks", result.getDeletedCount());
+                    }
+                })
+                .onErrorResume(error -> {
+                    log.error("Failed to clean expired resource locks", error);
+                    return reactor.core.publisher.Mono.empty();
+                })
+                .subscribe();
+    }
 }

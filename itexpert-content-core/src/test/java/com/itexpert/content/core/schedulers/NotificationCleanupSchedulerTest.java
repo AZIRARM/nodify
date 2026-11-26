@@ -1,260 +1,162 @@
 package com.itexpert.content.core.schedulers;
 
+import com.itexpert.content.core.repositories.NotificationRepository;
+import com.itexpert.content.lib.entities.Notification;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Range;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.core.ReactiveZSetOperations;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationCleanupSchedulerTest {
 
     @Mock
-    private ReactiveRedisTemplate<String, String> redisTemplate;
-
-    @Mock
-    private ReactiveZSetOperations<String, String> zSetOperations;
+    private NotificationRepository notificationRepository;
 
     @InjectMocks
     private NotificationCleanupScheduler notificationCleanupScheduler;
 
-    /**
-     * Test: Successfully cleans up notifications when user has more than
-     * MAX_NOTIFICATIONS.
-     */
-    @Test
-    void cleanupNotifications_ShouldDeleteExcessNotifications_WhenSizeExceedsLimit() {
-        String key = "NOTIFICATIONS:user:123";
-        Long currentSize = 1500L;
-        Long toRemove = 500L; // 1500 - 1000 = 500
-        Long removedCount = 500L;
+    private Notification buildNotification(int index) {
+        Notification notification = new Notification();
+        notification.setId(UUID.randomUUID());
+        notification.setUserId("user-123");
+        notification.setDate(Instant.now().minusSeconds(index).toEpochMilli());
+        return notification;
+    }
 
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key)).thenReturn(Mono.just(currentSize));
-        when(zSetOperations.removeRange(eq(key), any(Range.class))).thenReturn(Mono.just(removedCount));
+    private List<Notification> buildNotifications(int count) {
+        List<Notification> list = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            list.add(buildNotification(i));
+        }
+        return list;
+    }
+
+    @Test
+    void cleanupNotifications_ShouldDeleteExcessNotifications_WhenTotalExceedsLimit() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1005L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.fromIterable(buildNotifications(5)));
+        when(notificationRepository.deleteAllById(anyIterable())).thenReturn(Mono.empty());
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key);
-        verify(zSetOperations).removeRange(eq(key), any(Range.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository).deleteAllById(argThat(ids -> {
+            List<UUID> idList = new ArrayList<>();
+            ids.forEach(idList::add);
+            return idList.size() == 5;
+        }));
     }
 
-    /**
-     * Test: Does nothing when user has exactly MAX_NOTIFICATIONS.
-     */
     @Test
-    void cleanupNotifications_ShouldNotDeleteAnything_WhenSizeEqualsMax() {
-        String key = "NOTIFICATIONS:user:123";
-        Long currentSize = 1000L;
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key)).thenReturn(Mono.just(currentSize));
+    void cleanupNotifications_ShouldNotDeleteAnything_WhenTotalEqualsMax() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1000L));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key);
-        verify(zSetOperations, never()).removeRange(anyString(), any(Range.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
-    /**
-     * Test: Does nothing when user has less than MAX_NOTIFICATIONS.
-     */
     @Test
-    void cleanupNotifications_ShouldNotDeleteAnything_WhenSizeIsLessThanMax() {
-        String key = "NOTIFICATIONS:user:123";
-        Long currentSize = 500L;
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key)).thenReturn(Mono.just(currentSize));
+    void cleanupNotifications_ShouldNotDeleteAnything_WhenTotalIsLessThanMax() {
+        when(notificationRepository.count()).thenReturn(Mono.just(250L));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key);
-        verify(zSetOperations, never()).removeRange(anyString(), any(Range.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
-    /**
-     * Test: Handles multiple users/keys - deletes excess notifications for each.
-     */
     @Test
-    void cleanupNotifications_ShouldHandleMultipleKeys_Correctly() {
-        String key1 = "NOTIFICATIONS:user:111";
-        String key2 = "NOTIFICATIONS:user:222";
-        String key3 = "NOTIFICATIONS:user:333";
-        Long sizeKey1 = 1200L;
-        Long sizeKey2 = 800L; // Below limit - should not delete
-        Long sizeKey3 = 2000L;
-        Long toRemoveKey1 = 200L;
-        Long toRemoveKey3 = 1000L;
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key1, key2, key3));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key1)).thenReturn(Mono.just(sizeKey1));
-        when(zSetOperations.size(key2)).thenReturn(Mono.just(sizeKey2));
-        when(zSetOperations.size(key3)).thenReturn(Mono.just(sizeKey3));
-        when(zSetOperations.removeRange(eq(key1), any(Range.class))).thenReturn(Mono.just(toRemoveKey1));
-        when(zSetOperations.removeRange(eq(key3), any(Range.class))).thenReturn(Mono.just(toRemoveKey3));
+    void cleanupNotifications_ShouldNotDelete_WhenNoOldNotificationsFound() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1005L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.empty());
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key1);
-        verify(zSetOperations).size(key2);
-        verify(zSetOperations).size(key3);
-        verify(zSetOperations).removeRange(eq(key1), any(Range.class));
-        verify(zSetOperations, never()).removeRange(eq(key2), any(Range.class));
-        verify(zSetOperations).removeRange(eq(key3), any(Range.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
-    /**
-     * Test: Handles null size returned from Redis (key might not exist or has no
-     * members).
-     */
     @Test
-    void cleanupNotifications_ShouldNotDeleteAnything_WhenSizeIsNull() {
-        String key = "NOTIFICATIONS:user:123";
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key)).thenReturn(Mono.empty()); // Simulates null size
+    void cleanupNotifications_ShouldHandleEmptyCount() {
+        when(notificationRepository.count()).thenReturn(Mono.empty());
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key);
-        verify(zSetOperations, never()).removeRange(anyString(), any(Range.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
-    /**
-     * Test: Handles empty key set gracefully (no notifications to clean).
-     */
     @Test
-    void cleanupNotifications_ShouldDoNothing_WhenNoKeysFound() {
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.empty());
+    void cleanupNotifications_ShouldHandleError_WhenCountFails() {
+        when(notificationRepository.count())
+                .thenReturn(Mono.error(new RuntimeException("MongoDB connection failed")));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(redisTemplate, never()).opsForZSet();
-        verify(zSetOperations, never()).size(anyString());
-        verify(zSetOperations, never()).removeRange(anyString(), any(Range.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
-    /**
-     * Test: Handles error during keys retrieval gracefully.
-     */
     @Test
-    void cleanupNotifications_ShouldHandleError_WhenKeysRetrievalFails() {
-        RuntimeException error = new RuntimeException("Redis connection failed");
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.error(error));
-
-        // Should not throw exception (errors are handled within the subscription)
-        notificationCleanupScheduler.cleanupNotifications();
-
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(redisTemplate, never()).opsForZSet();
-    }
-
-    /**
-     * Test: Handles error during size retrieval - flux fails fast.
-     * Current behavior: When an error occurs on one key, the entire flux stops.
-     * Key2 is never processed because Key1 fails.
-     */
-    @Test
-    void cleanupNotifications_ShouldHandleError_WhenSizeRetrievalFails() {
-        String key1 = "NOTIFICATIONS:user:111";
-        String key2 = "NOTIFICATIONS:user:222";
-        RuntimeException error = new RuntimeException("Size retrieval failed");
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key1, key2));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key1)).thenReturn(Mono.error(error));
-        // size(key2) is NEVER called because flux fails at key1
+    void cleanupNotifications_ShouldHandleError_WhenFindOldestFails() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1005L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.error(new RuntimeException("Find failed")));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key1);
-        // size(key2) should never be called due to fail-fast behavior
-        verify(zSetOperations, never()).size(key2);
-        verify(zSetOperations, never()).removeRange(eq(key1), any(Range.class));
-        verify(zSetOperations, never()).removeRange(eq(key2), any(Range.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
-    /**
-     * Test: Handles error during removeRange operation gracefully.
-     */
     @Test
-    void cleanupNotifications_ShouldHandleError_WhenRemoveRangeFails() {
-        String key = "NOTIFICATIONS:user:123";
-        Long currentSize = 1500L;
-        RuntimeException error = new RuntimeException("Remove range operation failed");
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key)).thenReturn(Mono.just(currentSize));
-        when(zSetOperations.removeRange(eq(key), any(Range.class))).thenReturn(Mono.error(error));
-
-        // Should not throw exception (errors are handled within the subscription)
-        notificationCleanupScheduler.cleanupNotifications();
-
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key);
-        verify(zSetOperations).removeRange(eq(key), any(Range.class));
-    }
-
-    /**
-     * Test: Verifies the correct range is used for deletion (oldest notifications
-     * first).
-     */
-    @Test
-    void cleanupNotifications_ShouldUseCorrectRange_ForDeletion() {
-        String key = "NOTIFICATIONS:user:123";
-        Long currentSize = 1500L;
-        Long toRemove = 500L;
-
-        when(redisTemplate.keys("NOTIFICATIONS:*")).thenReturn(Flux.just(key));
-        when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
-        when(zSetOperations.size(key)).thenReturn(Mono.just(currentSize));
-        when(zSetOperations.removeRange(eq(key), any(Range.class))).thenReturn(Mono.just(toRemove));
+    void cleanupNotifications_ShouldHandleError_WhenDeleteFails() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1002L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.fromIterable(buildNotifications(2)));
+        when(notificationRepository.deleteAllById(anyIterable()))
+                .thenReturn(Mono.error(new RuntimeException("Delete failed")));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(redisTemplate).keys("NOTIFICATIONS:*");
-        verify(zSetOperations).size(key);
-        // Verify that removeRange was called with Range.closed(0, toRemove - 1)
-        // Which means: remove indices 0 through 499 (oldest 500 notifications)
-        verify(zSetOperations).removeRange(eq(key),
-                argThat(range -> range.toString().equals(Range.closed(0L, toRemove - 1).toString())));
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository).deleteAllById(anyIterable());
     }
 
-    /**
-     * Test: Verifies scheduled annotation configuration.
-     */
     @Test
     void cleanupNotifications_ShouldHaveCorrectScheduledAnnotation() throws NoSuchMethodException {
         var method = NotificationCleanupScheduler.class.getMethod("cleanupNotifications");
-        var scheduledAnnotation = method.getAnnotation(org.springframework.scheduling.annotation.Scheduled.class);
+        Scheduled scheduledAnnotation = method.getAnnotation(Scheduled.class);
 
-        org.assertj.core.api.Assertions.assertThat(scheduledAnnotation).isNotNull();
-        org.assertj.core.api.Assertions.assertThat(scheduledAnnotation.fixedDelay()).isEqualTo(60 * 60 * 1000);
+        assertThat(scheduledAnnotation).isNotNull();
+        assertThat(scheduledAnnotation.fixedDelay()).isEqualTo(60 * 60 * 1000);
     }
 }
