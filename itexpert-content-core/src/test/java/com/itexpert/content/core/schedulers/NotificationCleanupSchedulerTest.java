@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,32 +31,33 @@ class NotificationCleanupSchedulerTest {
     @InjectMocks
     private NotificationCleanupScheduler notificationCleanupScheduler;
 
-    private Notification buildNotification(String userId, int index) {
+    private Notification buildNotification(int index) {
         Notification notification = new Notification();
         notification.setId(UUID.randomUUID());
-        notification.setUserId(userId);
+        notification.setUserId("user-123");
         notification.setDate(Instant.now().minusSeconds(index).toEpochMilli());
         return notification;
     }
 
-    private List<Notification> buildNotifications(String userId, int count) {
+    private List<Notification> buildNotifications(int count) {
         List<Notification> list = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            list.add(buildNotification(userId, i));
+            list.add(buildNotification(i));
         }
         return list;
     }
 
     @Test
-    void cleanupNotifications_ShouldDeleteExcessNotifications_WhenSizeExceedsLimit() {
-        List<Notification> notifications = buildNotifications("user-123", 1005);
-
-        when(notificationRepository.findAll(any(Sort.class))).thenReturn(Flux.fromIterable(notifications));
+    void cleanupNotifications_ShouldDeleteExcessNotifications_WhenTotalExceedsLimit() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1005L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.fromIterable(buildNotifications(5)));
         when(notificationRepository.deleteAllById(anyIterable())).thenReturn(Mono.empty());
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(notificationRepository).findAll(any(Sort.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
         verify(notificationRepository).deleteAllById(argThat(ids -> {
             List<UUID> idList = new ArrayList<>();
             ids.forEach(idList::add);
@@ -65,77 +66,88 @@ class NotificationCleanupSchedulerTest {
     }
 
     @Test
-    void cleanupNotifications_ShouldNotDeleteAnything_WhenSizeEqualsMax() {
-        List<Notification> notifications = buildNotifications("user-123", 1000);
-
-        when(notificationRepository.findAll(any(Sort.class))).thenReturn(Flux.fromIterable(notifications));
+    void cleanupNotifications_ShouldNotDeleteAnything_WhenTotalEqualsMax() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1000L));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(notificationRepository).findAll(any(Sort.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
         verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
     @Test
-    void cleanupNotifications_ShouldNotDeleteAnything_WhenSizeIsLessThanMax() {
-        List<Notification> notifications = buildNotifications("user-123", 250);
-
-        when(notificationRepository.findAll(any(Sort.class))).thenReturn(Flux.fromIterable(notifications));
+    void cleanupNotifications_ShouldNotDeleteAnything_WhenTotalIsLessThanMax() {
+        when(notificationRepository.count()).thenReturn(Mono.just(250L));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(notificationRepository).findAll(any(Sort.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
         verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
     @Test
-    void cleanupNotifications_ShouldHandleMultipleUsers_Correctly() {
-        List<Notification> combined = new ArrayList<>();
-        combined.addAll(buildNotifications("user-111", 1003)); // 3 à supprimer
-        combined.addAll(buildNotifications("user-222", 500));  // 0 à supprimer
-        combined.addAll(buildNotifications("user-333", 1002)); // 2 à supprimer
-
-        when(notificationRepository.findAll(any(Sort.class))).thenReturn(Flux.fromIterable(combined));
-        when(notificationRepository.deleteAllById(anyIterable())).thenReturn(Mono.empty());
+    void cleanupNotifications_ShouldNotDelete_WhenNoOldNotificationsFound() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1005L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.empty());
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(notificationRepository).findAll(any(Sort.class));
-        verify(notificationRepository, times(2)).deleteAllById(anyIterable());
-    }
-
-    @Test
-    void cleanupNotifications_ShouldDoNothing_WhenNoNotificationsFound() {
-        when(notificationRepository.findAll(any(Sort.class))).thenReturn(Flux.empty());
-
-        notificationCleanupScheduler.cleanupNotifications();
-
-        verify(notificationRepository).findAll(any(Sort.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
         verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
     @Test
-    void cleanupNotifications_ShouldHandleError_WhenFindAllFails() {
-        when(notificationRepository.findAll(any(Sort.class)))
-                .thenReturn(Flux.error(new RuntimeException("MongoDB connection failed")));
+    void cleanupNotifications_ShouldHandleEmptyCount() {
+        when(notificationRepository.count()).thenReturn(Mono.empty());
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(notificationRepository).findAll(any(Sort.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
+    }
+
+    @Test
+    void cleanupNotifications_ShouldHandleError_WhenCountFails() {
+        when(notificationRepository.count())
+                .thenReturn(Mono.error(new RuntimeException("MongoDB connection failed")));
+
+        notificationCleanupScheduler.cleanupNotifications();
+
+        verify(notificationRepository).count();
+        verify(notificationRepository, never()).findOldestNotifications(any(Pageable.class));
+        verify(notificationRepository, never()).deleteAllById(anyIterable());
+    }
+
+    @Test
+    void cleanupNotifications_ShouldHandleError_WhenFindOldestFails() {
+        when(notificationRepository.count()).thenReturn(Mono.just(1005L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.error(new RuntimeException("Find failed")));
+
+        notificationCleanupScheduler.cleanupNotifications();
+
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
         verify(notificationRepository, never()).deleteAllById(anyIterable());
     }
 
     @Test
     void cleanupNotifications_ShouldHandleError_WhenDeleteFails() {
-        List<Notification> notifications = buildNotifications("user-123", 1002);
-
-        when(notificationRepository.findAll(any(Sort.class))).thenReturn(Flux.fromIterable(notifications));
+        when(notificationRepository.count()).thenReturn(Mono.just(1002L));
+        when(notificationRepository.findOldestNotifications(any(Pageable.class)))
+                .thenReturn(Flux.fromIterable(buildNotifications(2)));
         when(notificationRepository.deleteAllById(anyIterable()))
                 .thenReturn(Mono.error(new RuntimeException("Delete failed")));
 
         notificationCleanupScheduler.cleanupNotifications();
 
-        verify(notificationRepository).findAll(any(Sort.class));
+        verify(notificationRepository).count();
+        verify(notificationRepository).findOldestNotifications(any(Pageable.class));
         verify(notificationRepository).deleteAllById(anyIterable());
     }
 

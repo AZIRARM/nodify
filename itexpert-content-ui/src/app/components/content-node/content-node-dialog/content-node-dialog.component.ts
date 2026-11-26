@@ -1,4 +1,13 @@
-import { Component, Inject, OnDestroy, OnInit, inject, signal, WritableSignal } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  signal,
+  WritableSignal,
+  ViewChild,
+  AfterViewInit
+} from '@angular/core';
 import { Node } from "../../../modeles/Node";
 import { TranslateService } from "@ngx-translate/core";
 import { ToastrService } from "ngx-toastr";
@@ -6,16 +15,14 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material/dial
 import { ContentNodeService } from "../../../services/ContentNodeService";
 import { ContentNode } from "../../../modeles/ContentNode";
 import { ValidationDialogComponent } from "../../commons/validation-dialog/validation-dialog.component";
-import { MatTableDataSource } from "@angular/material/table";
+import {MatTable, MatTableDataSource} from "@angular/material/table";
 import { User } from "../../../modeles/User";
 import { LoggerService } from "../../../services/LoggerService";
-import { ContentUrl } from "../../../modeles/ContentUrl";
 import { NodeRulesConditionsDialogComponent } from "../../commons/node-rules-conditions-dialog/node-rules-conditions-dialog.component";
 import { ValuesDialogComponent } from "../../commons/values-dialog/values-dialog.component";
 import { StatusEnum } from "../../../modeles/StatusEnum";
 import { PublishedItemsDialogComponent } from "../../commons/published-items-dialog/published-items-dialog.component";
 import { TranslationsDialogComponent } from "../../commons/translations-dialog/translations-dialog.component";
-import { UserService } from "../../../services/UserService";
 import { UserAccessService } from "../../../services/UserAccessService";
 import { Env } from "../../../../assets/configurations/environment";
 import { DeletedItemsDialogComponent } from "../../commons/deleted-items-dialog/deleted-items-dialog.component";
@@ -25,8 +32,7 @@ import { DataService } from "../../../services/DataService";
 import { ContentCodeComponent } from "../content-code/content-code.component";
 import { LockService } from 'src/app/services/LockService';
 import { interval, Subscription, of } from 'rxjs';
-import { AuthenticationService } from "../../../services/AuthenticationService";
-import { catchError, finalize, switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-node-content-dialog',
@@ -34,7 +40,7 @@ import { catchError, finalize, switchMap } from 'rxjs/operators';
   styleUrls: ['./content-node-dialog.component.css'],
   standalone: false
 })
-export class ContentNodeDialogComponent implements OnInit, OnDestroy {
+export class ContentNodeDialogComponent implements OnInit, OnDestroy, AfterViewInit {
   user: WritableSignal<User> = signal<User>({} as User);
   node: Node;
   type: string;
@@ -69,11 +75,11 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   public userAccessService = inject(UserAccessService);
   public nodeService = inject(NodeService);
   public dialogRef = inject(MatDialogRef<ContentNodeDialogComponent>);
-  private userService = inject(UserService);
   private lockService = inject(LockService);
-  private authenticationService = inject(AuthenticationService);
   private dialog = inject(MatDialog);
   private content = inject(MAT_DIALOG_DATA);
+
+  @ViewChild(MatTable) table!: MatTable<ContentNode>;
 
   constructor() {
     if (this.content) {
@@ -84,6 +90,9 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.user.set(this.userAccessService.getCurrentUser());
     this.init();
+  }
+
+  ngAfterViewInit() {
   }
 
   ngOnDestroy(): void {
@@ -99,12 +108,47 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.lockSubscriptions.forEach(sub => sub.unsubscribe());
     this.lockSubscriptions = [];
 
-    contents.forEach((content: ContentNode) => {
-      const lockSub = this.lockService.getLockInfoSocket(content.code, this.authenticationService.getAccessToken()).subscribe((lockInfo: any) => {
-        content.lockInfo = lockInfo;
+    if (this.lockRefreshSub) {
+      this.lockRefreshSub.unsubscribe();
+    }
+
+    // 🟢 UNE SEULE CONNEXION WEBSOCKET POUR TOUS LES LOCKS
+    this.lockRefreshSub = this.lockService.handleAllLocks().subscribe((locksList: any[]) => {
+      contents.forEach((content: ContentNode) => {
+        const lockData = locksList.find((lock: any) => lock.resourceCode === content.code);
+
+        if (lockData) {
+          content.lockInfo = {
+            owner: lockData.owner,
+            mine: lockData.mine,
+            locked: lockData.locked,
+            resourceCode: lockData.resourceCode
+          };
+        } else {
+          // 🟢 QUAND LE LOCK EST LIBÉRÉ, CRÉER UN LockInfo VIDE
+          content.lockInfo = {
+            owner: null,
+            mine: false,
+            locked: false,
+            resourceCode: content.code
+          };
+        }
       });
-      this.lockSubscriptions.push(lockSub);
+
+      // 🟢 FORCER LA MISE À JOUR DU TABLEAU
+      this.updateDataSource();
+      if (this.table) {
+        this.table.renderRows();
+      }
     });
+
+    this.lockSubscriptions.push(this.lockRefreshSub);
+  }
+
+  private updateDataSource() {
+    const currentData = this.dataSource().data;
+    const newDataSource = new MatTableDataSource<ContentNode>(currentData);
+    this.dataSource.set(newDataSource);
   }
 
   init() {
@@ -128,7 +172,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         return a.code.localeCompare(b.code);
       });
 
-      this.dataSource.set(new MatTableDataSource(response));
+      this.dataSource.set(new MatTableDataSource<ContentNode>(response));
       this.initEnvironments();
     });
     this.subscriptions.push(contentSub);
@@ -290,19 +334,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
     this.update(this.currentContent);
   }
 
-  addUrl() {
-    if (this.type === 'URLS') {
-      if (!this.currentContent.urls)
-        this.currentContent.urls = [];
-
-      let url: ContentUrl = new ContentUrl();
-      url.url = "";
-      url.type = "";
-      url.description = "";
-      this.currentContent.urls.push(url);
-    }
-  }
-
   rules(content: ContentNode) {
     this.dialogRefRules = this.dialog.open(NodeRulesConditionsDialogComponent, {
       data: content,
@@ -332,7 +363,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
   }
 
   private save(content: ContentNode) {
-
     content.modifiedBy = this.user().id;
     content.parentCode = this.node.code;
     content.parentCodeOrigin = this.node.parentCodeOrigin;
@@ -405,14 +435,6 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
         }
       });
     this.subscriptions.push(dialogSub);
-  }
-
-  deleteUrl(url: ContentUrl) {
-    if (url) {
-      this.currentContent.urls = this.currentContent.urls.filter((v: ContentUrl) =>
-        (v.url !== url.url && v.type !== url.type && v.description !== url.description)
-      );
-    }
   }
 
   export(element: ContentNode, environmentCode: string) {
@@ -513,6 +535,7 @@ export class ContentNodeDialogComponent implements OnInit, OnDestroy {
       });
     this.subscriptions.push(dialogSub);
   }
+
   fetchDatas(contents: any) {
     this.dataSubscriptions.forEach(sub => sub.unsubscribe());
     this.dataSubscriptions = [];

@@ -36,7 +36,8 @@
               "codemirror/mode/css/css",
               "codemirror/mode/htmlmixed/htmlmixed",
               "codemirror/mode/javascript/javascript",
-              "codemirror/mode/markdown/markdown"
+              "codemirror/mode/markdown/markdown",
+              "codemirror/mode/python/python"
             ]
           },
           "configurations": {
